@@ -1,3 +1,14 @@
-node_modules
-dist
+# Environment variables
 *.local
+
+# Dependencies
+/node_modules
+
+# TypeScript build output
+/dist
+
+# OS generated files
+.DS_Store
+
+# Test coverage
+/coverage
