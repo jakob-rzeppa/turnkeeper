@@ -2,12 +2,6 @@
   "name": "turnkeeper-backend",
   "version": "0.0.0",
   "type": "module",
-  "imports": {
-    "#*": {
-      "default": "./dist/*",
-      "development": "./src/*"
-    }
-  },
   "scripts": {
     "dev": "tsx --watch src/index.ts",
     "start": "node dist/index.js",
@@ -23,8 +17,10 @@
     "coverage": "vitest run --coverage"
   },
   "dependencies": {
+    "@types/socket.io": "^3.0.1",
     "dotenv": "^17.2.1",
-    "express": "^5.1.0"
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1"
   },
   "devDependencies": {
     "@eslint/js": "^9.33.0",
