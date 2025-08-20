@@ -1,11 +1,21 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import { onMounted } from 'vue';
+import { socket } from './socket';
+
+onMounted(() => {
+  socket.auth = { username: 'jakob' };
+
+  socket.connect();
+});
+
+function sendMessage() {
+  socket.send('hi');
+}
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <h1>Hello</h1>
+  <button @click="sendMessage">Send Message</button>
 </template>
 
 <style scoped></style>
