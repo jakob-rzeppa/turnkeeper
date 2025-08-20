@@ -30,10 +30,6 @@ io.on("connection", (socket) => {
     socket.on("message", (message) => {
         console.log(`Received message: ${message}`);
     });
-
-    // socket.on("disconnect", () => {
-    //     console.log(`Client disconnected: ${socket.id}`);
-    // });
 });
 
 httpServer.listen(port, () => {
