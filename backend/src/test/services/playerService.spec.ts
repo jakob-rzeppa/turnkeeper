@@ -12,29 +12,15 @@ test("addPlayer", () => {
     expect(players).toHaveLength(1);
     expect(players[0]).toEqual({
         name: "Alice",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map(),
     });
-});
-
-test("checkIfPlayerExists", () => {
-    players.push({
-        name: "Alice",
-        isConnected: false,
-        stats: new Map<string, string | string[] | number | boolean>(),
-    });
-
-    const exists = playerService.checkIfPlayerExists("Alice");
-    expect(exists).toBe(true);
-
-    const notExists = playerService.checkIfPlayerExists("Bob");
-    expect(notExists).toBe(false);
 });
 
 test("getPlayer", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>(),
     });
 
@@ -43,7 +29,7 @@ test("getPlayer", () => {
     expect(actualPlayers).toEqual(
         expect.objectContaining({
             name: "Bob",
-            isConnected: false,
+            currentConnectionId: null,
         })
     );
 });
@@ -51,7 +37,7 @@ test("getPlayer", () => {
 test("getPlayer creates a deep copy", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>([
             ["hp", 200],
             ["jobs", ["warrior", "mage"]],
@@ -77,12 +63,12 @@ test("getPlayer creates a deep copy", () => {
 test("getPlayers", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>(),
     });
     players.push({
         name: "Bob2",
-        isConnected: true,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>(),
     });
 
@@ -91,8 +77,11 @@ test("getPlayers", () => {
     expect(actualPlayers).toHaveLength(2);
     expect(actualPlayers).toEqual(
         expect.arrayContaining([
-            expect.objectContaining({ name: "Bob", isConnected: false }),
-            expect.objectContaining({ name: "Bob2", isConnected: true }),
+            expect.objectContaining({ name: "Bob", currentConnectionId: null }),
+            expect.objectContaining({
+                name: "Bob2",
+                currentConnectionId: null,
+            }),
         ])
     );
 });
@@ -100,7 +89,7 @@ test("getPlayers", () => {
 test("getPlayers creates a deep copy", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>([
             ["hp", 200],
             ["jobs", ["warrior", "mage"]],
@@ -121,56 +110,40 @@ test("getPlayers creates a deep copy", () => {
     expect(actualPlayers[0].stats.get("jobs")).toEqual(["warrior", "mage"]);
 });
 
-test("checkPlayerConnection false", () => {
+test("setConnection", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>(),
     });
 
-    const isConnected = playerService.checkPlayerConnection("Bob");
-    expect(isConnected).toBe(false);
+    playerService.setConnection("Bob", "123");
+
+    expect(players[0].currentConnectionId).toBe("123");
 });
 
-test("checkPlayerConnection true", () => {
-    players.push({
-        name: "Bob",
-        isConnected: true,
-        stats: new Map<string, string | string[] | number | boolean>(),
-    });
-
-    const isConnected = playerService.checkPlayerConnection("Bob");
-    expect(isConnected).toBe(true);
+test("setConnection no player", () => {
+    expect(() => playerService.setConnection("Bob", "123")).toThrowError(
+        "Player Bob does not exist"
+    );
 });
 
-test("setConnection true", () => {
+test("setConnection already connected", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: "222",
         stats: new Map<string, string | string[] | number | boolean>(),
     });
 
-    playerService.setConnection("Bob", true);
-
-    expect(players[0].isConnected).toBe(true);
-});
-
-test("setConnection false", () => {
-    players.push({
-        name: "Bob",
-        isConnected: true,
-        stats: new Map<string, string | string[] | number | boolean>(),
-    });
-
-    playerService.setConnection("Bob", false);
-
-    expect(players[0].isConnected).toBe(false);
+    expect(() => playerService.setConnection("Bob", "123")).toThrowError(
+        "Player Bob is already connected"
+    );
 });
 
 test("removePlayer", () => {
     players.push({
         name: "Bob",
-        isConnected: false,
+        currentConnectionId: null,
         stats: new Map<string, string | string[] | number | boolean>([
             ["hp", 200],
             ["jobs", ["warrior", "mage"]],
