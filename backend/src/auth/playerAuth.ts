@@ -2,7 +2,7 @@ import { Socket } from "socket.io";
 import playerService from "../services/playerService.js";
 
 export function authenticatePlayer(socket: Socket) {
-    const name = socket.handshake.auth.username;
+    const name = socket.handshake.auth.name;
 
     // When refreshing the page the connection is lost therefore the client needs to be re-authenticated
     socket.on("disconnect", () => {
