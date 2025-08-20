@@ -32,6 +32,10 @@ export default {
             ),
         }));
     },
+    getConnectionId: (name: string) => {
+        const player = players.find((player) => player.name === name);
+        return player ? player.currentConnectionId : null;
+    },
     setConnection: (name: string, connectionId: string) => {
         const player = players.find((player) => player.name === name);
 
@@ -44,6 +48,16 @@ export default {
         }
 
         player.currentConnectionId = connectionId;
+    },
+    removeConnection: (name: string) => {
+        const player = players.find((player) => player.name === name);
+        if (player) {
+            player.currentConnectionId = null;
+        }
+    },
+    checkIfPlayerAlreadyConnected: (name: string) => {
+        const player = players.find((player) => player.name === name);
+        return player ? player.currentConnectionId !== null : false;
     },
     removePlayer: (name: string) => {
         const index = players.findIndex((player) => player.name === name);

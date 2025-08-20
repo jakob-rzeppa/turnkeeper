@@ -110,6 +110,28 @@ test("getPlayers creates a deep copy", () => {
     expect(actualPlayers[0].stats.get("jobs")).toEqual(["warrior", "mage"]);
 });
 
+test("getConnectionId", () => {
+    players.push({
+        name: "Bob",
+        currentConnectionId: "123",
+        stats: new Map<string, string | string[] | number | boolean>(),
+    });
+
+    const connectionId = playerService.getConnectionId("Bob");
+    expect(connectionId).toBe("123");
+});
+
+test("getConnectionId null", () => {
+    players.push({
+        name: "Bob",
+        currentConnectionId: null,
+        stats: new Map<string, string | string[] | number | boolean>(),
+    });
+
+    const connectionId = playerService.getConnectionId("Bob");
+    expect(connectionId).toBe(null);
+});
+
 test("setConnection", () => {
     players.push({
         name: "Bob",
@@ -138,6 +160,40 @@ test("setConnection already connected", () => {
     expect(() => playerService.setConnection("Bob", "123")).toThrowError(
         "Player Bob is already connected"
     );
+});
+
+test("removeConnection", () => {
+    players.push({
+        name: "Bob",
+        currentConnectionId: "222",
+        stats: new Map<string, string | string[] | number | boolean>(),
+    });
+
+    playerService.removeConnection("Bob");
+
+    expect(players[0].currentConnectionId).toBe(null);
+});
+
+test("checkIfPlayerAlreadyConnected true", () => {
+    players.push({
+        name: "Bob",
+        currentConnectionId: "222",
+        stats: new Map<string, string | string[] | number | boolean>(),
+    });
+
+    const isConnected = playerService.checkIfPlayerAlreadyConnected("Bob");
+    expect(isConnected).toBe(true);
+});
+
+test("checkIfPlayerAlreadyConnected false", () => {
+    players.push({
+        name: "Bob",
+        currentConnectionId: null,
+        stats: new Map<string, string | string[] | number | boolean>(),
+    });
+
+    const isConnected = playerService.checkIfPlayerAlreadyConnected("Bob");
+    expect(isConnected).toBe(false);
 });
 
 test("removePlayer", () => {
