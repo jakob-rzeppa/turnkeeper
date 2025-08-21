@@ -5,7 +5,7 @@ export const stats = new Map<
     Map<string, PlayerStatValueTypes>
 >();
 
-export default {
+const statsService = {
     getStats: (playerName: string): Map<string, PlayerStatValueTypes> => {
         const playerStats = stats.get(playerName);
 
@@ -23,6 +23,16 @@ export default {
         });
 
         return new Map(copiedEntries);
+    },
+    getStatsForAllPlayers: (): Map<
+        string,
+        Map<string, PlayerStatValueTypes>
+    > => {
+        const allStats = new Map<string, Map<string, PlayerStatValueTypes>>();
+        for (const playerName of stats.keys()) {
+            allStats.set(playerName, statsService.getStats(playerName));
+        }
+        return allStats;
     },
     updateStat: (
         playerName: string,
@@ -57,3 +67,5 @@ export default {
         }
     },
 };
+
+export default statsService;

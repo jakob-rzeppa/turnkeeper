@@ -18,6 +18,86 @@ describe("statsService", () => {
         });
 
         it("should return a Map of stats for an existing player", () => {
+            const firstPlayerName = "existingPlayer";
+            const firstPlayerStats = new Map<string, PlayerStatValueTypes>([
+                ["score", 100],
+                ["lives", 3],
+                ["powerUps", ["speed", "shield"]],
+            ]);
+            stats.set(firstPlayerName, firstPlayerStats);
+            const secondPlayerName = "anotherPlayer";
+            const secondPlayerStats = new Map<string, PlayerStatValueTypes>([
+                ["score", 200],
+                ["lives", 5],
+                ["powerUps", ["invisibility"]],
+            ]);
+            stats.set(secondPlayerName, secondPlayerStats);
+
+            const result = statsService.getStatsForAllPlayers();
+
+            expect(result).toEqual(
+                new Map<string, Map<string, PlayerStatValueTypes>>([
+                    [firstPlayerName, firstPlayerStats],
+                    [secondPlayerName, secondPlayerStats],
+                ])
+            );
+        });
+
+        it("should return deep copy of the stats", () => {
+            const firstPlayerName = "existingPlayer";
+            const firstPlayerStats = new Map<string, PlayerStatValueTypes>([
+                ["score", 100],
+                ["lives", 3],
+                ["powerUps", ["speed", "shield"]],
+            ]);
+            stats.set(firstPlayerName, firstPlayerStats);
+            const secondPlayerName = "anotherPlayer";
+            const secondPlayerStats = new Map<string, PlayerStatValueTypes>([
+                ["score", 200],
+                ["lives", 5],
+                ["powerUps", ["invisibility"]],
+            ]);
+            stats.set(secondPlayerName, secondPlayerStats);
+
+            const result = statsService.getStatsForAllPlayers();
+
+            result.get(firstPlayerName)?.set("score", 300);
+            expect(firstPlayerStats.get("score")).toBe(100);
+
+            result.get(secondPlayerName)?.set("score", 400);
+            expect(secondPlayerStats.get("score")).toBe(200);
+
+            (result.get(firstPlayerName)?.get("powerUps") as string[])?.push(
+                "invisibility"
+            );
+            expect(firstPlayerStats.get("powerUps")).toEqual([
+                "speed",
+                "shield",
+            ]);
+
+            (result.get(secondPlayerName)?.get("powerUps") as string[])?.push(
+                "speed"
+            );
+            expect(secondPlayerStats.get("powerUps")).toEqual(["invisibility"]);
+
+            expect(result).not.toEqual(
+                new Map<string, Map<string, PlayerStatValueTypes>>([
+                    [firstPlayerName, firstPlayerStats],
+                    [secondPlayerName, secondPlayerStats],
+                ])
+            );
+        });
+    });
+
+    describe("getStatsForAllPlayers", () => {
+        it("should return an empty Map for no players", () => {
+            const result = statsService.getStatsForAllPlayers();
+            expect(result).toEqual(
+                new Map<string, Map<string, PlayerStatValueTypes>>()
+            );
+        });
+
+        it("should return a Map with all players and their corresponding stats", () => {
             const playerName = "existingPlayer";
             const playerStats = new Map<string, PlayerStatValueTypes>([
                 ["score", 100],
@@ -26,31 +106,13 @@ describe("statsService", () => {
             ]);
             stats.set(playerName, playerStats);
 
-            const result = statsService.getStats(playerName);
+            const result = statsService.getStatsForAllPlayers();
 
-            expect(result).toEqual(playerStats);
-        });
-
-        it("should return deep copy of the stats", () => {
-            const playerName = "existingPlayer";
-            const playerStats = new Map<string, PlayerStatValueTypes>([
-                ["score", 100],
-                ["job", "medic"],
-                ["powerUps", ["speed", "shield"]],
-            ]);
-            stats.set(playerName, playerStats);
-
-            const result = statsService.getStats(playerName);
-
-            // Modify the result and ensure the original stats are not affected
-            result.set("score", 200);
-            result.set("job", "engineer");
-            (result.get("powerUps") as string[]).push("invisibility");
-
-            expect(result).not.toEqual(playerStats);
-            expect(playerStats.get("score")).toBe(100);
-            expect(playerStats.get("job")).toBe("medic");
-            expect(playerStats.get("powerUps")).toEqual(["speed", "shield"]);
+            expect(result).toEqual(
+                new Map<string, Map<string, PlayerStatValueTypes>>([
+                    [playerName, playerStats],
+                ])
+            );
         });
     });
 
