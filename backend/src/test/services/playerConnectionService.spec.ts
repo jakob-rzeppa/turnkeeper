@@ -1,96 +1,65 @@
-import { beforeEach, expect, test } from "vitest";
-import { players } from "../../services/playerService.js";
-import playerConnectionService from "../../services/playerConnectionService.js";
+import { describe, it, expect, beforeEach } from "vitest";
+import playerConnectionService, {
+    connections,
+} from "../../services/playerConnectionService.js";
 
-beforeEach(() => {
-    // Clear the players array before each test
-    players.length = 0;
-});
+// Mock Socket object
+function createMockSocket(id: string) {
+    return { id } as any;
+}
 
-test("getConnectionId", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: "123",
-        stats: new Map<string, string | string[] | number | boolean>(),
+describe("playerConnectionService", () => {
+    beforeEach(() => {
+        connections.clear();
     });
 
-    const connectionId = playerConnectionService.getConnectionId("Bob");
-    expect(connectionId).toBe("123");
-});
+    it("setConnection should add a socket for a player", () => {
+        const socket = createMockSocket("socket1");
 
-test("getConnectionId null", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: null,
-        stats: new Map<string, string | string[] | number | boolean>(),
+        playerConnectionService.setConnection("alice", socket);
+
+        expect(connections.get("alice")).toBe(socket);
     });
 
-    const connectionId = playerConnectionService.getConnectionId("Bob");
-    expect(connectionId).toBe(null);
-});
+    it("getConnectionId should return the socket id if connected", () => {
+        const socket = createMockSocket("socket2");
+        connections.set("bob", socket);
 
-test("setConnection", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: null,
-        stats: new Map<string, string | string[] | number | boolean>(),
+        expect(playerConnectionService.getConnectionId("bob")).toBe("socket2");
     });
 
-    playerConnectionService.setConnection("Bob", "123");
-
-    expect(players[0].currentConnectionId).toBe("123");
-});
-
-test("setConnection no player", () => {
-    expect(() =>
-        playerConnectionService.setConnection("Bob", "123")
-    ).toThrowError("Player Bob does not exist");
-});
-
-test("setConnection already connected", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: "222",
-        stats: new Map<string, string | string[] | number | boolean>(),
+    it("getConnectionId should return null if not connected", () => {
+        expect(playerConnectionService.getConnectionId("charlie")).toBeNull();
     });
 
-    expect(() =>
-        playerConnectionService.setConnection("Bob", "123")
-    ).toThrowError("Player Bob is already connected");
-});
+    it("checkIfPlayerAlreadyConnected should return true if player is connected", () => {
+        const socket = createMockSocket("socket3");
+        connections.set("dave", socket);
 
-test("removeConnection", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: "222",
-        stats: new Map<string, string | string[] | number | boolean>(),
+        expect(
+            playerConnectionService.checkIfPlayerAlreadyConnected("dave")
+        ).toBe(true);
     });
 
-    playerConnectionService.removeConnection("Bob");
-
-    expect(players[0].currentConnectionId).toBe(null);
-});
-
-test("checkIfPlayerAlreadyConnected true", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: "222",
-        stats: new Map<string, string | string[] | number | boolean>(),
+    it("checkIfPlayerAlreadyConnected should return false if player is not connected", () => {
+        expect(
+            playerConnectionService.checkIfPlayerAlreadyConnected("eve")
+        ).toBe(false);
     });
 
-    const isConnected =
-        playerConnectionService.checkIfPlayerAlreadyConnected("Bob");
-    expect(isConnected).toBe(true);
-});
+    it("checkIfPlayerAlreadyConnected should return false if player is set to null", () => {
+        connections.set("frank", createMockSocket("socket4"));
 
-test("checkIfPlayerAlreadyConnected false", () => {
-    players.push({
-        name: "Bob",
-        currentConnectionId: null,
-        stats: new Map<string, string | string[] | number | boolean>(),
+        playerConnectionService.removeConnection("frank");
+
+        expect(connections.get("frank")).toBeNull();
     });
 
-    const isConnected =
-        playerConnectionService.checkIfPlayerAlreadyConnected("Bob");
-    expect(isConnected).toBe(false);
+    it("removeConnection should set the player connection to null", () => {
+        connections.set("grace", createMockSocket("socket5"));
+
+        playerConnectionService.removeConnection("grace");
+
+        expect(connections.get("grace")).toBeNull();
+    });
 });

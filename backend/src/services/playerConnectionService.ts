@@ -1,31 +1,22 @@
+import { Socket } from "socket.io";
 import { players } from "./playerService.js";
 
+// player name -> socket
+export const connections = new Map<string, Socket | null>();
+
 export default {
-    getConnectionId: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        return player ? player.currentConnectionId : null;
+    getConnectionId: (name: string): string | null => {
+        const socket = connections.get(name);
+        return socket ? socket.id : null;
     },
-    checkIfPlayerAlreadyConnected: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        return player ? player.currentConnectionId !== null : false;
+    checkIfPlayerAlreadyConnected: (name: string): boolean => {
+        const socket = connections.get(name);
+        return socket !== undefined ? socket !== null : false;
     },
-    setConnection: (name: string, connectionId: string) => {
-        const player = players.find((player) => player.name === name);
-
-        if (!player) {
-            throw new Error(`Player ${name} does not exist`);
-        }
-
-        if (player.currentConnectionId !== null) {
-            throw new Error(`Player ${name} is already connected`);
-        }
-
-        player.currentConnectionId = connectionId;
+    setConnection: (name: string, socket: Socket): void => {
+        connections.set(name, socket);
     },
     removeConnection: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        if (player) {
-            player.currentConnectionId = null;
-        }
+        connections.set(name, null);
     },
 };

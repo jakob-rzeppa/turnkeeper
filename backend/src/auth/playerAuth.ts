@@ -29,6 +29,6 @@ export function authenticatePlayer(socket: Socket) {
 
     console.log(`Player connection for ${name} established: ${socket.id}`);
     playerService.addPlayer(name);
-    playerConnectionService.setConnection(name, socket.id);
+    playerConnectionService.setConnection(name, socket);
     return true;
 }
