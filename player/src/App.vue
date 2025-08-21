@@ -1,21 +1,26 @@
 <script setup lang="ts">
-import { onMounted } from 'vue';
-import { socket } from './socket';
+import connectionService, { socket } from './util/connectionService'
 
-onMounted(() => {
-  socket.auth = { username: 'jakob' };
+import Login from './components/Login.vue'
 
-  socket.connect();
-});
+const isConnected = connectionService.isConnected()
 
 function sendMessage() {
-  socket.send('hi');
+  socket.send('hi')
+}
+
+function disconnect() {
+  connectionService.disconnect()
 }
 </script>
 
 <template>
-  <h1>Hello</h1>
-  <button @click="sendMessage">Send Message</button>
+  <Login v-if="!isConnected" />
+  <main>
+    <h1>Hello</h1>
+    <button @click="sendMessage">Send Message</button>
+    <button @click="disconnect">Disconnect</button>
+  </main>
 </template>
 
 <style scoped></style>
