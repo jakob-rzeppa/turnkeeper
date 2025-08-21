@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import { players } from "./playerService.js";
 
 // player name -> socket
 export const connections = new Map<string, Socket | null>();

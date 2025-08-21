@@ -1,5 +1,4 @@
 import { Socket } from "socket.io";
-import playerService from "../services/playerService.js";
 import playerConnectionService from "../services/playerConnectionService.js";
 
 export function authenticatePlayer(socket: Socket) {
@@ -28,7 +27,6 @@ export function authenticatePlayer(socket: Socket) {
     }
 
     console.log(`Player connection for ${name} established: ${socket.id}`);
-    playerService.addPlayer(name);
     playerConnectionService.setConnection(name, socket);
     return true;
 }
