@@ -32,33 +32,6 @@ export default {
             ),
         }));
     },
-    getConnectionId: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        return player ? player.currentConnectionId : null;
-    },
-    setConnection: (name: string, connectionId: string) => {
-        const player = players.find((player) => player.name === name);
-
-        if (!player) {
-            throw new Error(`Player ${name} does not exist`);
-        }
-
-        if (player.currentConnectionId !== null) {
-            throw new Error(`Player ${name} is already connected`);
-        }
-
-        player.currentConnectionId = connectionId;
-    },
-    removeConnection: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        if (player) {
-            player.currentConnectionId = null;
-        }
-    },
-    checkIfPlayerAlreadyConnected: (name: string) => {
-        const player = players.find((player) => player.name === name);
-        return player ? player.currentConnectionId !== null : false;
-    },
     removePlayer: (name: string) => {
         const index = players.findIndex((player) => player.name === name);
         if (index !== -1) {
