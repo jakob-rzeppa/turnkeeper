@@ -1,11 +1,26 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import connectionService, { socket } from './util/connectionService'
+
+import Login from './components/Login.vue'
+
+const isConnected = connectionService.isConnected()
+
+function sendMessage() {
+  socket.send('hi')
+}
+
+function disconnect() {
+  connectionService.disconnect()
+}
+</script>
 
 <template>
-  <h1>You did it!</h1>
-  <p>
-    Visit <a href="https://vuejs.org/" target="_blank" rel="noopener">vuejs.org</a> to read the
-    documentation
-  </p>
+  <Login v-if="!isConnected" />
+  <main>
+    <h1>Hello</h1>
+    <button @click="sendMessage">Send Message</button>
+    <button @click="disconnect">Disconnect</button>
+  </main>
 </template>
 
 <style scoped></style>
