@@ -1,25 +1,26 @@
-type Stat = {
+export type Stat = {
     name: string;
     value: boolean | number | string | string[];
 };
 
-type Player = {
+export type Player = {
     name: string;
     stats: Stat[];
 };
 
-const players: Player[] = [];
+export const players: Player[] = [];
 
 const playerService = {
     getAllPlayers: () => players,
-    getPlayerByName: (name: string) => players.find((p) => p.name === name),
+    getPlayerByName: (name: string) =>
+        players.find((p) => p.name === name) || null,
     addPlayer: (player: Player) => {
         players.push(player);
     },
-    updatePlayer: (name: string, stats: Stat[]) => {
+    updatePlayer: (name: string, updatedFields: Partial<Player>) => {
         const player = players.find((p) => p.name === name);
         if (player) {
-            player.stats = stats;
+            Object.assign(player, updatedFields);
         }
     },
     removePlayer: (name: string) => {
@@ -29,3 +30,5 @@ const playerService = {
         }
     },
 };
+
+export default playerService;
