@@ -1,14 +1,18 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
 import playerService from "../../services/playerService.js";
 import statsService from "../../services/statsService.js";
 
 describe("statsService", () => {
-    beforeEach(() => {
+    beforeAll(() => {
         playerService.getAllPlayers = vi.fn();
         playerService.getPlayerByName = vi.fn();
         playerService.addPlayer = vi.fn();
         playerService.updatePlayer = vi.fn();
         playerService.removePlayer = vi.fn();
+    });
+
+    afterEach(() => {
+        vi.clearAllMocks();
     });
 
     describe("addStatToAllPlayers", () => {
