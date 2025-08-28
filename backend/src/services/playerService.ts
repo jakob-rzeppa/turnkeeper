@@ -15,6 +15,10 @@ const playerService = {
     getPlayerByName: (name: string) =>
         players.find((p) => p.name === name) || null,
     addPlayer: (player: Player) => {
+        if (players.some((p) => p.name === player.name)) {
+            return;
+        }
+
         players.push(player);
     },
     updatePlayer: (name: string, updatedFields: Partial<Player>) => {

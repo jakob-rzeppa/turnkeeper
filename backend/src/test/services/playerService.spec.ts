@@ -50,6 +50,22 @@ describe("playerService", () => {
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(newPlayer);
         });
+
+        it("shouldn't add a player if a player with the same name exists", () => {
+            const player = {
+                name: "Alice",
+                stats: [{ name: "hp", value: 200 }],
+            };
+
+            players.push(player);
+
+            const newPlayer: Player = { name: "Alice", stats: [] };
+
+            playerService.addPlayer(newPlayer);
+
+            expect(players).toHaveLength(1);
+            expect(players[0]).toEqual(player);
+        });
     });
 
     describe("updatePlayer", () => {
