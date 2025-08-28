@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+import playerService from "../services/playerService.js";
 
 export const connection: { socket: Socket | null } = { socket: null };
 
@@ -21,6 +22,17 @@ const gmController = {
             console.log(`Removing connection for Game Master: ${socket.id}`);
             connection.socket = null;
         });
+    },
+    sendPlayerData() {
+        if (connection.socket) {
+            const players = playerService.getAllPlayers();
+
+            connection.socket.emit("players", players);
+
+            console.log(`Sent player data to Game Master`);
+        } else {
+            console.warn("No Game Master connected. Cannot send player data.");
+        }
     },
 };
 

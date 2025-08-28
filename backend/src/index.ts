@@ -19,6 +19,7 @@ io.on("connection", (socket) => {
 
     if (gmConnection) {
         gmController.initConnection(socket);
+        gmController.sendPlayerData();
     } else if (!authenticatePlayer(socket)) {
         socket.disconnect();
     }
