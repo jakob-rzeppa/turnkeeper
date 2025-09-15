@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import playerService from "../services/playerService.js";
+import playerService from "../repositories/playerRepository.js";
 
 export const connection: { socket: Socket | null } = { socket: null };
 

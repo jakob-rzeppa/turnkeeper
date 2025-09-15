@@ -1,14 +1,14 @@
 import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import playerService from "../../services/playerService.js";
-import statsService from "../../services/statsService.js";
+import playerRepository from "../../repositories/playerRepository.js";
+import statsService from "../../services/playerStatsHandler.js";
 
 describe("statsService", () => {
     beforeAll(() => {
-        playerService.getAllPlayers = vi.fn();
-        playerService.getPlayerByName = vi.fn();
-        playerService.addPlayer = vi.fn();
-        playerService.updatePlayer = vi.fn();
-        playerService.removePlayer = vi.fn();
+        playerRepository.getAllPlayers = vi.fn();
+        playerRepository.getPlayerByName = vi.fn();
+        playerRepository.addPlayer = vi.fn();
+        playerRepository.updatePlayer = vi.fn();
+        playerRepository.removePlayer = vi.fn();
     });
 
     afterEach(() => {
@@ -19,21 +19,21 @@ describe("statsService", () => {
         it("should add a stat to all players", () => {
             const stat = { name: "goals", value: 1 };
 
-            playerService.getAllPlayers = vi.fn().mockReturnValue([
+            playerRepository.getAllPlayers = vi.fn().mockReturnValue([
                 { name: "Player 1", stats: [] },
                 { name: "Player 2", stats: [] },
             ]);
 
             statsService.addStatToAllPlayers(stat);
 
-            expect(playerService.updatePlayer).toHaveBeenNthCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenNthCalledWith(
                 1,
                 "Player 1",
                 {
                     stats: [{ name: "goals", value: 1 }],
                 }
             );
-            expect(playerService.updatePlayer).toHaveBeenNthCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenNthCalledWith(
                 2,
                 "Player 2",
                 {
@@ -45,15 +45,15 @@ describe("statsService", () => {
         it("should add a stat only the players that don't have it yet", () => {
             const stat = { name: "goals", value: 1 };
 
-            playerService.getAllPlayers = vi.fn().mockReturnValue([
+            playerRepository.getAllPlayers = vi.fn().mockReturnValue([
                 { name: "Player 1", stats: [{ name: "goals", value: 2 }] },
                 { name: "Player 2", stats: [] },
             ]);
 
             statsService.addStatToAllPlayers(stat);
 
-            expect(playerService.updatePlayer).toHaveBeenCalledTimes(1);
-            expect(playerService.updatePlayer).toHaveBeenCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledTimes(1);
+            expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 "Player 2",
                 {
                     stats: [{ name: "goals", value: 1 }],
@@ -66,14 +66,14 @@ describe("statsService", () => {
         it("should add a stat to a specific player", () => {
             const stat = { name: "goals", value: 1 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue({
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue({
                 name: "Player 1",
                 stats: [],
             });
 
             statsService.addStatToPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).toHaveBeenCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 "Player 1",
                 {
                     stats: [{ name: "goals", value: 1 }],
@@ -84,24 +84,24 @@ describe("statsService", () => {
         it("shouldn't add a stat if the player doesn't exist", () => {
             const stat = { name: "goals", value: 1 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue(null);
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue(null);
 
             statsService.addStatToPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).not.toHaveBeenCalled();
+            expect(playerRepository.updatePlayer).not.toHaveBeenCalled();
         });
 
         it("shouldn't add a stat if the player already has the stat", () => {
             const stat = { name: "goals", value: 1 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue({
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue({
                 name: "Player 1",
                 stats: [{ name: "goals", value: 2 }],
             });
 
             statsService.addStatToPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).not.toHaveBeenCalled();
+            expect(playerRepository.updatePlayer).not.toHaveBeenCalled();
         });
     });
 
@@ -109,22 +109,22 @@ describe("statsService", () => {
         it("should update a stat for all players", () => {
             const stat = { name: "goals", value: 3 };
 
-            playerService.getAllPlayers = vi.fn().mockReturnValue([
+            playerRepository.getAllPlayers = vi.fn().mockReturnValue([
                 { name: "Player 1", stats: [{ name: "goals", value: 2 }] },
                 { name: "Player 2", stats: [{ name: "goals", value: 1 }] },
             ]);
 
             statsService.updateStatOfAllPlayers(stat);
 
-            expect(playerService.updatePlayer).toHaveBeenCalledTimes(2);
-            expect(playerService.updatePlayer).toHaveBeenNthCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledTimes(2);
+            expect(playerRepository.updatePlayer).toHaveBeenNthCalledWith(
                 1,
                 "Player 1",
                 {
                     stats: [{ name: "goals", value: 3 }],
                 }
             );
-            expect(playerService.updatePlayer).toHaveBeenNthCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenNthCalledWith(
                 2,
                 "Player 2",
                 {
@@ -136,15 +136,15 @@ describe("statsService", () => {
         it("shouldn't update a stat if the player doesn't have it", () => {
             const stat = { name: "goals", value: 3 };
 
-            playerService.getAllPlayers = vi.fn().mockReturnValue([
+            playerRepository.getAllPlayers = vi.fn().mockReturnValue([
                 { name: "Player 1", stats: [{ name: "assists", value: 2 }] },
                 { name: "Player 2", stats: [{ name: "goals", value: 1 }] },
             ]);
 
             statsService.updateStatOfAllPlayers(stat);
 
-            expect(playerService.updatePlayer).toHaveBeenCalledTimes(1);
-            expect(playerService.updatePlayer).toHaveBeenCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledTimes(1);
+            expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 "Player 2",
                 {
                     stats: [{ name: "goals", value: 3 }],
@@ -157,14 +157,14 @@ describe("statsService", () => {
         it("should update a stat for a specific player", () => {
             const stat = { name: "goals", value: 3 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue({
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue({
                 name: "Player 1",
                 stats: [{ name: "goals", value: 2 }],
             });
 
             statsService.updateStatOfPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).toHaveBeenCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 "Player 1",
                 {
                     stats: [{ name: "goals", value: 3 }],
@@ -175,30 +175,30 @@ describe("statsService", () => {
         it("shouldn't update a stat if the player doesn't exist", () => {
             const stat = { name: "goals", value: 3 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue(null);
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue(null);
 
             statsService.updateStatOfPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).not.toHaveBeenCalled();
+            expect(playerRepository.updatePlayer).not.toHaveBeenCalled();
         });
 
         it("shouldn't update a stat if the player doesn't have it", () => {
             const stat = { name: "goals", value: 3 };
 
-            playerService.getPlayerByName = vi.fn().mockReturnValue({
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue({
                 name: "Player 1",
                 stats: [{ name: "assists", value: 2 }],
             });
 
             statsService.updateStatOfPlayer("Player 1", stat);
 
-            expect(playerService.updatePlayer).not.toHaveBeenCalled();
+            expect(playerRepository.updatePlayer).not.toHaveBeenCalled();
         });
     });
 
     describe("removeStatFromPlayer", () => {
         it("should remove a stat from a specific player", () => {
-            playerService.getPlayerByName = vi.fn().mockReturnValue({
+            playerRepository.getPlayerByName = vi.fn().mockReturnValue({
                 name: "Player 1",
                 stats: [
                     { name: "goals", value: 2 },
@@ -208,7 +208,7 @@ describe("statsService", () => {
 
             statsService.removeStatFromPlayer("Player 1", "goals");
 
-            expect(playerService.updatePlayer).toHaveBeenCalledWith(
+            expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 "Player 1",
                 {
                     stats: [{ name: "assists", value: 1 }],

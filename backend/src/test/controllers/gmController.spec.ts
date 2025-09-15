@@ -1,7 +1,7 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
 import gmController, { connection } from "../../controllers/gmController.js";
 import { Socket } from "socket.io";
-import playerService from "../../services/playerService.js";
+import playerRepository from "../../repositories/playerRepository.js";
 
 vi.mock("../../../services/statsService.js");
 
@@ -72,7 +72,7 @@ describe("gmController", () => {
         });
 
         it("should send player data to the Game Master", () => {
-            playerService.getAllPlayers = vi.fn().mockReturnValue([
+            playerRepository.getAllPlayers = vi.fn().mockReturnValue([
                 { name: "Player 1", stats: [] },
                 { name: "Player 2", stats: [] },
             ]);

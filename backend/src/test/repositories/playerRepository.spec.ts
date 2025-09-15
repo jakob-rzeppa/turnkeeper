@@ -1,10 +1,10 @@
 import { beforeEach, describe, expect, it } from "vitest";
-import playerService, {
+import playerRepository, {
     Player,
     players,
-} from "../../services/playerService.js";
+} from "../../repositories/playerRepository.js";
 
-describe("playerService", () => {
+describe("playerRepository", () => {
     beforeEach(() => {
         players.length = 0;
     });
@@ -13,14 +13,14 @@ describe("playerService", () => {
         it("should return all players", () => {
             players.push({ name: "Alice", stats: [] });
 
-            const result = playerService.getAllPlayers();
+            const result = playerRepository.getAllPlayers();
 
             expect(result).toHaveLength(1);
             expect(result[0].name).toBe("Alice");
         });
 
         it("should return an empty array if no players exist", () => {
-            const result = playerService.getAllPlayers();
+            const result = playerRepository.getAllPlayers();
             expect(result).toHaveLength(0);
         });
     });
@@ -29,14 +29,15 @@ describe("playerService", () => {
         it("should return a player by name", () => {
             players.push({ name: "Bob", stats: [] });
 
-            const result = playerService.getPlayerByName("Bob");
+            const result = playerRepository.getPlayerByName("Bob");
 
             expect(result).toBeDefined();
             expect(result?.name).toBe("Bob");
         });
 
         it("should return null if player does not exist", () => {
-            const result = playerService.getPlayerByName("NonExistentPlayer");
+            const result =
+                playerRepository.getPlayerByName("NonExistentPlayer");
             expect(result).toBeNull();
         });
     });
@@ -45,7 +46,7 @@ describe("playerService", () => {
         it("should add a player", () => {
             const newPlayer: Player = { name: "Charlie", stats: [] };
 
-            playerService.addPlayer(newPlayer);
+            playerRepository.addPlayer("Charlie");
 
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(newPlayer);
@@ -59,9 +60,7 @@ describe("playerService", () => {
 
             players.push(player);
 
-            const newPlayer: Player = { name: "Alice", stats: [] };
-
-            playerService.addPlayer(newPlayer);
+            playerRepository.addPlayer("Alice");
 
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(player);
@@ -81,7 +80,7 @@ describe("playerService", () => {
                 ],
             };
 
-            playerService.updatePlayer("Bob", updatedPlayer);
+            playerRepository.updatePlayer("Bob", updatedPlayer);
 
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(updatedPlayer);
@@ -92,7 +91,7 @@ describe("playerService", () => {
         it("should remove a player", () => {
             players.push({ name: "Bob", stats: [] });
 
-            playerService.removePlayer("Bob");
+            playerRepository.removePlayer("Bob");
 
             expect(players).toHaveLength(0);
         });

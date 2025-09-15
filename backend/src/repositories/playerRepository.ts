@@ -10,7 +10,7 @@ export type Player = {
 
 export const players: Player[] = [];
 
-const playerService = {
+const playerRepository = {
     getAllPlayers: () => players,
     getPlayerByName: (name: string) =>
         players.find((p) => p.name === name) || null,
@@ -35,4 +35,4 @@ const playerService = {
     },
 };
 
-export default playerService;
+export default playerRepository;

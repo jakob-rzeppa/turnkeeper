@@ -1,19 +1,19 @@
-import playerService, { Stat } from "./playerService.js";
+import playerRepository, { Stat } from "../repositories/playerRepository.js";
 
 const statsService = {
     addStatToAllPlayers: (stat: Stat) => {
-        playerService.getAllPlayers().forEach((player) => {
+        playerRepository.getAllPlayers().forEach((player) => {
             if (player.stats.some((s) => s.name === stat.name)) {
                 return;
             }
 
-            playerService.updatePlayer(player.name, {
+            playerRepository.updatePlayer(player.name, {
                 stats: [...player.stats, stat],
             });
         });
     },
     addStatToPlayer: (playerName: string, stat: Stat) => {
-        const player = playerService.getPlayerByName(playerName);
+        const player = playerRepository.getPlayerByName(playerName);
 
         if (!player) {
             return;
@@ -24,18 +24,18 @@ const statsService = {
         }
 
         if (player) {
-            playerService.updatePlayer(playerName, {
+            playerRepository.updatePlayer(playerName, {
                 stats: [...player.stats, stat],
             });
         }
     },
     updateStatOfAllPlayers: (stat: Stat) => {
-        playerService.getAllPlayers().forEach((player) => {
+        playerRepository.getAllPlayers().forEach((player) => {
             if (!player.stats.some((s) => s.name === stat.name)) {
                 return;
             }
 
-            playerService.updatePlayer(player.name, {
+            playerRepository.updatePlayer(player.name, {
                 stats: player.stats.map((s) =>
                     s.name === stat.name ? { ...s, value: stat.value } : s
                 ),
@@ -43,7 +43,7 @@ const statsService = {
         });
     },
     updateStatOfPlayer: (playerName: string, stat: Stat) => {
-        const player = playerService.getPlayerByName(playerName);
+        const player = playerRepository.getPlayerByName(playerName);
 
         if (!player) {
             return;
@@ -53,20 +53,20 @@ const statsService = {
             return;
         }
 
-        playerService.updatePlayer(playerName, {
+        playerRepository.updatePlayer(playerName, {
             stats: player.stats.map((s) =>
                 s.name === stat.name ? { ...s, value: stat.value } : s
             ),
         });
     },
     removeStatFromPlayer: (playerName: string, statName: string) => {
-        const player = playerService.getPlayerByName(playerName);
+        const player = playerRepository.getPlayerByName(playerName);
 
         if (!player) {
             return;
         }
 
-        playerService.updatePlayer(playerName, {
+        playerRepository.updatePlayer(playerName, {
             stats: player.stats.filter((s) => s.name !== statName),
         });
     },
