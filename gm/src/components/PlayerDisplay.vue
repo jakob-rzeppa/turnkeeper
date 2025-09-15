@@ -1,5 +1,6 @@
 <script lang="ts" setup>
 import { usePlayerStore } from '@/stores/playerStore'
+import { socket } from '@/util/connection'
 import { ref } from 'vue'
 
 const newPlayerName = ref('')
@@ -8,7 +9,7 @@ const playerStore = usePlayerStore()
 
 function addPlayer() {
     if (newPlayerName.value.trim()) {
-        playerStore.players.push({ name: newPlayerName.value, stats: [] })
+        socket.emit('players:create', newPlayerName.value.trim())
         newPlayerName.value = ''
     }
 }
