@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import connectionService, { socket } from './connectionHandlers/connection'
+import connectionService, { socket } from './util/connection'
 
 import Login from './components/Login.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'

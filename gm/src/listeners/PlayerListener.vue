@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { socket } from '../connectionHandlers/connection'
+import { socket } from '../util/connection'
 import { usePlayerStore } from '@/stores/playerStore'
 
 const playerStore = usePlayerStore()

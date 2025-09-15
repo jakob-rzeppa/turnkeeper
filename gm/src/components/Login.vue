@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import connectionService from '@/connectionHandlers/connection'
+import connectionService from '@/util/connection'
 </script>
 
 <template>
