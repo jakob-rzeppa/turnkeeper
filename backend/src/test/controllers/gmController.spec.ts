@@ -1,5 +1,9 @@
 import { describe, it, expect, beforeEach, vi, afterEach } from "vitest";
-import gmController, { connection } from "../../controllers/gmController.js";
+import {
+    connection,
+    initConnection,
+    sendPlayerData,
+} from "../../controllers/gmController.js";
 import { Socket } from "socket.io";
 import playerRepository from "../../repositories/playerRepository.js";
 
@@ -27,7 +31,7 @@ describe("gmController", () => {
                 disconnect: vi.fn(),
             } as unknown as Socket;
 
-            gmController.initConnection(socket);
+            initConnection(socket);
 
             expect(connection.socket).toBe(socket);
 
@@ -53,7 +57,7 @@ describe("gmController", () => {
                 disconnect: vi.fn(),
             } as unknown as Socket;
 
-            gmController.initConnection(socket2);
+            initConnection(socket2);
 
             expect(connection.socket).toBe(socket1);
 
@@ -77,7 +81,7 @@ describe("gmController", () => {
                 { name: "Player 2", stats: [] },
             ]);
 
-            gmController.sendPlayerData();
+            sendPlayerData();
 
             expect(connection.socket!.emit).toHaveBeenCalledWith("players", [
                 { name: "Player 1", stats: [] },
@@ -88,7 +92,7 @@ describe("gmController", () => {
         it("should not send player data if no connection exists", () => {
             connection.socket = null;
 
-            gmController.sendPlayerData();
+            sendPlayerData();
 
             expect(console.warn).toHaveBeenCalledWith(
                 "No Game Master connected. Cannot send player data."
