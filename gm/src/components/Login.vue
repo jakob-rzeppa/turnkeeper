@@ -1,11 +1,7 @@
 <script setup lang="ts">
-import { ref } from 'vue'
-
-import connectionService from '@/util/connectionService'
-
-const name = ref('')
+import connectionService from '@/connectionHandlers/connection'
 </script>
 
 <template>
-  <button @click="() => connectionService.connect()">Login</button>
+    <button @click="() => connectionService.connect()">Login</button>
 </template>
