@@ -2,7 +2,6 @@ import { createServer } from "http";
 import { Server } from "socket.io";
 
 import config from "./config/config.js";
-import { authenticatePlayer } from "./auth/playerAuth.js";
 import gmController from "./controllers/gmController.js";
 
 const port = config.port;
@@ -20,8 +19,6 @@ io.on("connection", (socket) => {
     if (gmConnection) {
         gmController.initConnection(socket);
         gmController.sendPlayerData();
-    } else if (!authenticatePlayer(socket)) {
-        socket.disconnect();
     }
 });
 
