@@ -14,7 +14,7 @@ const playerRepository = {
     getAllPlayers: () => players,
     getPlayerByName: (name: string) =>
         players.find((p) => p.name === name) || null,
-    addPlayer: (playerName: string) => {
+    createPlayer: (playerName: string) => {
         if (players.some((p) => p.name === playerName)) {
             return;
         }

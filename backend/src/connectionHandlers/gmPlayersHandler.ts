@@ -6,15 +6,15 @@ const sendPlayers = (socket: Socket) => {
     socket.emit("players", players);
 };
 
-const addPlayer = (playerData: { name: string }) => {
-    playerRepository.addPlayer(playerData.name);
+const createPlayer = (playerData: { name: string }) => {
+    playerRepository.createPlayer(playerData.name);
 };
 
 export const registerGmPlayersHandler = (socket: Socket) => {
     sendPlayers(socket);
 
     socket.on("players:create", (playerData) => {
-        addPlayer(playerData);
+        createPlayer(playerData);
         sendPlayers(socket);
     });
 };

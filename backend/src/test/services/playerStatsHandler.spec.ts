@@ -6,7 +6,7 @@ describe("statsService", () => {
     beforeAll(() => {
         playerRepository.getAllPlayers = vi.fn();
         playerRepository.getPlayerByName = vi.fn();
-        playerRepository.addPlayer = vi.fn();
+        playerRepository.createPlayer = vi.fn();
         playerRepository.updatePlayer = vi.fn();
         playerRepository.removePlayer = vi.fn();
     });

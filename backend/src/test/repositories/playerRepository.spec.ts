@@ -46,7 +46,7 @@ describe("playerRepository", () => {
         it("should add a player", () => {
             const newPlayer: Player = { name: "Charlie", stats: [] };
 
-            playerRepository.addPlayer("Charlie");
+            playerRepository.createPlayer("Charlie");
 
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(newPlayer);
@@ -60,7 +60,7 @@ describe("playerRepository", () => {
 
             players.push(player);
 
-            playerRepository.addPlayer("Alice");
+            playerRepository.createPlayer("Alice");
 
             expect(players).toHaveLength(1);
             expect(players[0]).toEqual(player);
