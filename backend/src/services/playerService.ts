@@ -14,12 +14,12 @@ const playerService = {
     getAllPlayers: () => players,
     getPlayerByName: (name: string) =>
         players.find((p) => p.name === name) || null,
-    addPlayer: (player: Player) => {
-        if (players.some((p) => p.name === player.name)) {
+    addPlayer: (playerName: string) => {
+        if (players.some((p) => p.name === playerName)) {
             return;
         }
 
-        players.push(player);
+        players.push({ name: playerName, stats: [] });
     },
     updatePlayer: (name: string, updatedFields: Partial<Player>) => {
         const player = players.find((p) => p.name === name);
