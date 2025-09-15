@@ -2,16 +2,9 @@
 import { usePlayerStore } from '@/stores/playerStore'
 import { ref } from 'vue'
 
-import { socket } from '@/connectionHandlers/connection'
+const newPlayerName = ref('')
 
 const playerStore = usePlayerStore()
-
-socket.on('players', (players) => {
-    console.log('Received players in connection handler:', players)
-    playerStore.players = players
-})
-
-const newPlayerName = ref('')
 
 function addPlayer() {
     if (newPlayerName.value.trim()) {

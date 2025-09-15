@@ -3,6 +3,7 @@ import connectionService, { socket } from './connectionHandlers/connection'
 
 import Login from './components/Login.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'
+import PlayerListener from './listeners/PlayerListener.vue'
 
 const isConnected = connectionService.isConnected()
 
@@ -21,8 +22,7 @@ function disconnect() {
         <h1>Hello</h1>
         <button @click="sendMessage">Send Message</button>
         <button @click="disconnect">Disconnect</button>
-        <PlayerListener>
-            <PlayerDisplay />
-        </PlayerListener>
+        <PlayerDisplay />
+        <PlayerListener />
     </main>
 </template>
