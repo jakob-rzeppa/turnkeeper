@@ -9,3 +9,5 @@ socket.on('players', (players) => {
     playerStore.players = players
 })
 </script>
+
+<template></template>

@@ -1,29 +1,17 @@
-import { usePlayerStore } from '@/stores/playerStore'
 import io from 'socket.io-client'
-import { onMounted, ref } from 'vue'
+import { ref } from 'vue'
 
 export const socket = io('http://localhost:3000/gm', { autoConnect: false })
 
 const connected = ref(false)
 
-onMounted(() => {
-    const playerStore = usePlayerStore()
-
-    socket.onAny((event, ...args) => {
-        console.log(event, args)
-    })
-
-    socket.on('players', (players) => {
-        console.log('Received players:', players)
-
-        playerStore.players = players
-    })
+socket.onAny((event, ...args) => {
+    console.log(event, args)
 })
 
 export default {
     connect: () => {
         try {
-            socket.auth = { gmConnection: true }
             socket.connect()
             connected.value = true
         } catch (error) {
