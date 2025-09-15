@@ -2,7 +2,7 @@ import { usePlayerStore } from '@/stores/playerStore'
 import io from 'socket.io-client'
 import { onMounted, ref } from 'vue'
 
-export const socket = io('http://localhost:3000', { autoConnect: false })
+export const socket = io('http://localhost:3000/gm', { autoConnect: false })
 
 const connected = ref(false)
 

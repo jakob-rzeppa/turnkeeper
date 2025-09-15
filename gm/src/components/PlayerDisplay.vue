@@ -9,7 +9,7 @@ const playerStore = usePlayerStore()
 
 function addPlayer() {
     if (newPlayerName.value.trim()) {
-        socket.emit('players:create', newPlayerName.value.trim())
+        socket.emit('players:create', { name: newPlayerName.value.trim() })
         newPlayerName.value = ''
     }
 }
