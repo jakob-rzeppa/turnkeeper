@@ -5,7 +5,6 @@ import { usePlayerStore } from '@/stores/playerStore'
 const playerStore = usePlayerStore()
 
 socket.on('players', (players) => {
-    console.log('Received players:', players)
     playerStore.players = players
 })
 </script>
