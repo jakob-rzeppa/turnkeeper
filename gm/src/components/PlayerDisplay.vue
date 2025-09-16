@@ -7,7 +7,7 @@ const newPlayerName = ref('')
 
 const playerStore = usePlayerStore()
 
-function addPlayer() {
+function createPlayer() {
     if (newPlayerName.value.trim()) {
         socket.emit('players:create', { name: newPlayerName.value.trim() })
         newPlayerName.value = ''
@@ -31,6 +31,6 @@ function addPlayer() {
     </div>
     <div>
         <input type="text" v-model="newPlayerName" placeholder="Enter player name" />
-        <button @click="addPlayer">Add Player</button>
+        <button @click="createPlayer">Create Player</button>
     </div>
 </template>
