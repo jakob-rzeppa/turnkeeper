@@ -1,10 +1,8 @@
 import { createServer } from "http";
-import { Server, Socket } from "socket.io";
+import { Server } from "socket.io";
 
 import config from "./config/config.js";
 
-import { registerGmPlayersHandler } from "./connectionHandlers/gmPlayersHandler.js";
-import { create } from "domain";
 import { createGmSocket } from "./sockets/gmSocket.js";
 
 const port = config.port;
