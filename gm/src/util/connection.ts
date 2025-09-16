@@ -3,6 +3,10 @@ import { ref } from 'vue'
 
 export const socket = io('http://localhost:3000/gm', { autoConnect: false })
 
+socket.on('connect_error', (err) => {
+    console.error(err.message)
+})
+
 const connected = ref(false)
 
 socket.onAny((event, ...args) => {
