@@ -1,6 +1,11 @@
 import { Socket } from "socket.io";
 import playerRepository from "../../repositories/playerRepository.js";
 
+/*
+ * The player/playersHandler is responsible for handling the player-specific events and data relevant for each player.
+ * For example, sending the player's own data, or public data of other players.
+ */
+
 const sendPlayerInfo = ({
     socket,
     playerId,
