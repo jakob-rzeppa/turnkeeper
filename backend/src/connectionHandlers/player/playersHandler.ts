@@ -13,17 +13,17 @@ const sendPlayerInfo = ({
     socket: Socket;
     playerId: string;
 }) => {
-    const players = playerRepository.getPlayerById(playerId);
+    const player = playerRepository.getPlayerById(playerId);
 
-    if (!players) {
+    if (!player) {
         console.error(`Player with ID ${playerId} not found`);
         socket.disconnect(true);
         return;
     }
 
-    const { id, name, stats } = players;
+    const { id, name, stats } = player;
 
-    socket.emit("players", { id, name, stats });
+    socket.emit("player", { id, name, stats });
 };
 
 export const registerPlayersHandler = ({
