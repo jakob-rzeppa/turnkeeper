@@ -7,13 +7,13 @@ const statsService = {
                 return;
             }
 
-            playerRepository.updatePlayer(player.name, {
+            playerRepository.updatePlayer(player.id, {
                 stats: [...player.stats, stat],
             });
         });
     },
-    addStatToPlayer: (playerName: string, stat: Stat) => {
-        const player = playerRepository.getPlayerByName(playerName);
+    addStatToPlayer: (playerId: string, stat: Stat) => {
+        const player = playerRepository.getPlayerById(playerId);
 
         if (!player) {
             return;
@@ -24,7 +24,7 @@ const statsService = {
         }
 
         if (player) {
-            playerRepository.updatePlayer(playerName, {
+            playerRepository.updatePlayer(playerId, {
                 stats: [...player.stats, stat],
             });
         }
@@ -42,8 +42,8 @@ const statsService = {
             });
         });
     },
-    updateStatOfPlayer: (playerName: string, stat: Stat) => {
-        const player = playerRepository.getPlayerByName(playerName);
+    updateStatOfPlayer: (playerId: string, stat: Stat) => {
+        const player = playerRepository.getPlayerById(playerId);
 
         if (!player) {
             return;
@@ -53,20 +53,20 @@ const statsService = {
             return;
         }
 
-        playerRepository.updatePlayer(playerName, {
+        playerRepository.updatePlayer(playerId, {
             stats: player.stats.map((s) =>
                 s.name === stat.name ? { ...s, value: stat.value } : s
             ),
         });
     },
-    removeStatFromPlayer: (playerName: string, statName: string) => {
-        const player = playerRepository.getPlayerByName(playerName);
+    removeStatFromPlayer: (playerId: string, statName: string) => {
+        const player = playerRepository.getPlayerById(playerId);
 
         if (!player) {
             return;
         }
 
-        playerRepository.updatePlayer(playerName, {
+        playerRepository.updatePlayer(playerId, {
             stats: player.stats.filter((s) => s.name !== statName),
         });
     },
