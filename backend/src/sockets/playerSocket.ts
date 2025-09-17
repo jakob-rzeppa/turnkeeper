@@ -1,13 +1,26 @@
 import { Server, Socket } from "socket.io";
 import { authenticatePlayer, disconnectPlayer } from "../auth/playerAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
+import { registerPlayerPlayersHandler } from "../connectionHandlers/playerPlayersHandler.js";
 
 const onPlayerConnection = (socket: Socket): void => {
-    console.log(`Player connected: ${socket.id}`);
+    const playerId = playerRepository.getPlayerIdByName(
+        socket.handshake.auth.playerName
+    );
+
+    if (!playerId) {
+        console.error("Player ID not found after authentication");
+        socket.disconnect(true);
+        return;
+    }
+
+    console.log(`Player with ID ${playerId} connected: ${socket.id}`);
+
+    registerPlayerPlayersHandler({ socket, playerId });
 
     socket.on("disconnect", () => {
-        disconnectPlayer({ playerId: socket.id });
-        console.log(`Player disconnected: ${socket.id}`);
+        disconnectPlayer({ playerId: playerId });
+        console.log(`Player with ID ${playerId} disconnected: ${socket.id}`);
     });
 };
 
