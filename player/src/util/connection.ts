@@ -14,8 +14,9 @@ socket.onAny((event, ...args) => {
 })
 
 export default {
-  connect: () => {
+  connect: ({ playerName, playerSecret }: { playerName: string; playerSecret: string }): void => {
     try {
+      socket.auth = { playerName, playerSecret }
       socket.connect()
       connected.value = true
     } catch (error) {
