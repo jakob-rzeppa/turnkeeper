@@ -1,3 +1,5 @@
+import makePlayerSecret from "../util/makePlayerSecret.js";
+
 export type Stat = {
     name: string;
     value: boolean | number | string | string[];
@@ -5,6 +7,7 @@ export type Stat = {
 
 export type Player = {
     name: string;
+    secret: string;
     stats: Stat[];
 };
 
@@ -19,7 +22,11 @@ const playerRepository = {
             return;
         }
 
-        players.push({ name: playerName, stats: [] });
+        players.push({
+            name: playerName,
+            secret: makePlayerSecret({ length: 8 }),
+            stats: [],
+        });
     },
     updatePlayer: (name: string, updatedFields: Partial<Player>) => {
         const player = players.find((p) => p.name === name);
