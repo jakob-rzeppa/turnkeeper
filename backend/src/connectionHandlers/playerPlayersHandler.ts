@@ -11,7 +11,9 @@ const sendPlayerInfo = ({
     const players = playerRepository.getPlayerById(playerId);
 
     if (!players) {
-        throw new Error("Player not found");
+        console.error(`Player with ID ${playerId} not found`);
+        socket.disconnect(true);
+        return;
     }
 
     const { id, name, stats } = players;
