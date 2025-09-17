@@ -1,7 +1,11 @@
 import io from 'socket.io-client'
 import { ref } from 'vue'
 
-export const socket = io('http://localhost:3000', { autoConnect: false })
+export const socket = io('http://localhost:3000/player', { autoConnect: false })
+
+socket.on('connect_error', (err) => {
+  console.error(err.message)
+})
 
 const connected = ref(false)
 
@@ -10,9 +14,8 @@ socket.onAny((event, ...args) => {
 })
 
 export default {
-  connect: (name: string) => {
+  connect: () => {
     try {
-      socket.auth = { name, gmConnection: false }
       socket.connect()
       connected.value = true
     } catch (error) {
