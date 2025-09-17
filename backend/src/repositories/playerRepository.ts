@@ -17,6 +17,8 @@ export const players: Player[] = [];
 const playerRepository = {
     getAllPlayers: () => players,
     getPlayerById: (id: string) => players.find((p) => p.id === id) || null,
+    getPlayerByName: (name: string) =>
+        players.find((p) => p.name === name) || null,
     createPlayer: (playerName: string) => {
         // Ensure unique name
         if (players.some((p) => p.name === playerName)) {
