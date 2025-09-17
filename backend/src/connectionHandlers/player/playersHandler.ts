@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import playerRepository from "../repositories/playerRepository.js";
+import playerRepository from "../../repositories/playerRepository.js";
 
 const sendPlayerInfo = ({
     socket,
@@ -21,7 +21,7 @@ const sendPlayerInfo = ({
     socket.emit("players", { id, name, stats });
 };
 
-export const registerPlayerPlayersHandler = ({
+export const registerPlayersHandler = ({
     socket,
     playerId,
 }: {

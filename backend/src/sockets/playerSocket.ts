@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { authenticatePlayer, disconnectPlayer } from "../auth/playerAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { registerPlayerPlayersHandler } from "../connectionHandlers/playerPlayersHandler.js";
+import { registerPlayersHandler } from "../connectionHandlers/player/playersHandler.js";
 
 const onPlayerConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
@@ -16,7 +16,7 @@ const onPlayerConnection = (socket: Socket): void => {
 
     console.log(`Player with ID ${playerId} connected: ${socket.id}`);
 
-    registerPlayerPlayersHandler({ socket, playerId });
+    registerPlayersHandler({ socket, playerId });
 
     socket.on("disconnect", () => {
         disconnectPlayer({ playerId: playerId });

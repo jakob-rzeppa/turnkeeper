@@ -1,11 +1,11 @@
 import { Server, Socket } from "socket.io";
-import { registerGmPlayersHandler } from "../connectionHandlers/gmPlayersHandler.js";
+import { registerPlayersHandler } from "../connectionHandlers/gm/playersHandler.js";
 import { authenticateGm, disconnectGm } from "../auth/gmAuth.js";
 
 const onGmConnection = (socket: Socket) => {
     console.log(`GM connected: ${socket.id}`);
 
-    registerGmPlayersHandler(socket);
+    registerPlayersHandler(socket);
 
     socket.on("disconnect", () => {
         disconnectGm();
