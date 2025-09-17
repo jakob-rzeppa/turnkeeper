@@ -6,6 +6,7 @@ export type Stat = {
 };
 
 export type Player = {
+    id: string;
     name: string;
     secret: string;
     stats: Stat[];
@@ -15,27 +16,34 @@ export const players: Player[] = [];
 
 const playerRepository = {
     getAllPlayers: () => players,
-    getPlayerByName: (name: string) =>
-        players.find((p) => p.name === name) || null,
+    getPlayerById: (id: string) => players.find((p) => p.id === id) || null,
     createPlayer: (playerName: string) => {
+        // Ensure unique name
         if (players.some((p) => p.name === playerName)) {
             return;
         }
 
+        // Ensure unique ID
+        let randomUUID = crypto.randomUUID();
+        while (players.some((p) => p.id === randomUUID)) {
+            randomUUID = crypto.randomUUID();
+        }
+
         players.push({
+            id: randomUUID,
             name: playerName,
             secret: makePlayerSecret({ length: 8 }),
             stats: [],
         });
     },
-    updatePlayer: (name: string, updatedFields: Partial<Player>) => {
-        const player = players.find((p) => p.name === name);
+    updatePlayer: (id: string, updatedFields: Partial<Omit<Player, "id">>) => {
+        const player = players.find((p) => p.id === id);
         if (player) {
             Object.assign(player, updatedFields);
         }
     },
-    removePlayer: (name: string) => {
-        const index = players.findIndex((p) => p.name === name);
+    removePlayer: (id: string) => {
+        const index = players.findIndex((p) => p.id === id);
         if (index !== -1) {
             players.splice(index, 1);
         }
