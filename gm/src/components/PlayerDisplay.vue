@@ -1,7 +1,10 @@
 <script lang="ts" setup>
+import { ref } from 'vue'
+
 import { usePlayerStore } from '@/stores/playerStore'
 import { socket } from '@/util/connection'
-import { ref } from 'vue'
+import PlayerEditor from './PlayerEditor.vue'
+import type { Player } from '@/types/player'
 
 const newPlayerName = ref('')
 
@@ -13,11 +16,24 @@ function createPlayer() {
         newPlayerName.value = ''
     }
 }
+
+const playerToEdit = ref(null as null | Player)
+
+function openPlayerEditor(playerName: string) {
+    const player = playerStore.players.find((p) => p.name === playerName)
+    if (player) {
+        playerToEdit.value = player
+    }
+}
 </script>
 
 <template>
     <hr />
-    <div v-for="player in playerStore.players" :key="player.name">
+    <div
+        v-for="player in playerStore.players"
+        :key="player.name"
+        @click="openPlayerEditor(player.name)"
+    >
         <h3>{{ player.name }}</h3>
         <p>Secret: {{ player.secret }}</p>
         <ul>
@@ -34,4 +50,5 @@ function createPlayer() {
         <input type="text" v-model="newPlayerName" placeholder="Enter player name" />
         <button @click="createPlayer">Create Player</button>
     </div>
+    <PlayerEditor :player="playerToEdit" />
 </template>
