@@ -19,6 +19,7 @@ function createPlayer() {
     <hr />
     <div v-for="player in playerStore.players" :key="player.name">
         <h3>{{ player.name }}</h3>
+        <p>Secret: {{ player.secret }}</p>
         <ul>
             <li v-for="(stat, index) in player.stats" :key="index">
                 {{ stat }}
