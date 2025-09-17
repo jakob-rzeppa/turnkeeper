@@ -21,16 +21,16 @@ const setPlayerAlreadyConnected = ({
 };
 
 export const authenticatePlayer = ({
-    playerName,
+    playerId,
     playerSecret,
 }: {
-    playerName: string;
+    playerId: string;
     playerSecret: string;
-}): void => {
-    const player = playerRepository.getPlayerByName(playerName);
+}): string => {
+    const player = playerRepository.getPlayerById(playerId);
 
     if (!player) {
-        throw new Error("Player with that name not found");
+        throw new Error("Player not found");
     }
 
     if (player.secret !== playerSecret) {
@@ -42,6 +42,8 @@ export const authenticatePlayer = ({
     }
 
     setPlayerAlreadyConnected({ playerId: player.id, connected: true });
+
+    return player.id;
 };
 
 export const disconnectPlayer = ({ playerId }: { playerId: string }): void => {
