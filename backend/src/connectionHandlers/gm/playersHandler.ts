@@ -15,11 +15,26 @@ const createPlayer = (playerData: { name: string }) => {
     playerRepository.createPlayer(playerData.name);
 };
 
+const updatePlayer = ({
+    playerId,
+    playerData,
+}: {
+    playerId: string;
+    playerData: { name?: string; secret?: string };
+}) => {
+    playerRepository.updatePlayer(playerId, playerData);
+};
+
 export const registerPlayersHandler = (socket: Socket) => {
     sendPlayers(socket);
 
     socket.on("players:create", (playerData) => {
         createPlayer(playerData);
+        sendPlayers(socket);
+    });
+
+    socket.on("players:update", ({ playerId, playerData }) => {
+        updatePlayer({ playerId, playerData });
         sendPlayers(socket);
     });
 };
