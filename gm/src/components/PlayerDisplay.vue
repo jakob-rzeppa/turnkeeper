@@ -3,7 +3,6 @@ import { ref } from 'vue'
 
 import { usePlayerStore } from '@/stores/playerStore'
 import { socket } from '@/util/connection'
-import PlayerEditor from './PlayerEditor.vue'
 import type { Player } from '@/types/player'
 
 const newPlayerName = ref('')
@@ -50,5 +49,4 @@ function openPlayerEditor(playerName: string) {
         <input type="text" v-model="newPlayerName" placeholder="Enter player name" />
         <button @click="createPlayer">Create Player</button>
     </div>
-    <PlayerEditor :player="playerToEdit" />
 </template>
