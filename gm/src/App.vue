@@ -4,6 +4,7 @@ import connectionService, { socket } from './util/connection'
 import Login from './components/Login.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'
 import PlayerListener from './listeners/PlayerListener.vue'
+import ModalController from './components/modal/ModalController.vue'
 
 const isConnected = connectionService.isConnected()
 
@@ -25,4 +26,5 @@ function disconnect() {
         <PlayerDisplay />
         <PlayerListener />
     </main>
+    <ModalController />
 </template>
