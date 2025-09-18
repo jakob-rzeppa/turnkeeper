@@ -13,7 +13,11 @@ const modalStore = useModalStore()
             :z-index="1000"
             @close="modalStore.closeTopModal"
         >
-            <component :is="modalStore.topModal.component" v-bind="modalStore.topModal.props" />
+            <component
+                :is="modalStore.topModal.component"
+                v-bind="modalStore.topModal.props"
+                @close="modalStore.closeTopModal"
+            />
         </BaseModal>
     </Teleport>
 </template>
