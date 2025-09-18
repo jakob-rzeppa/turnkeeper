@@ -1,13 +1,15 @@
 <script lang="ts" setup>
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
 
 import { usePlayerStore } from '@/stores/playerStore'
 import { socket } from '@/util/connection'
-import type { Player } from '@/types/player'
+import { useModalStore } from '@/stores/modalStore'
+import PlayerEditorModal from './modal/PlayerEditorModal.vue'
 
 const newPlayerName = ref('')
 
 const playerStore = usePlayerStore()
+const modalStore = useModalStore()
 
 function createPlayer() {
     if (newPlayerName.value.trim()) {
@@ -16,12 +18,11 @@ function createPlayer() {
     }
 }
 
-const playerToEdit = ref(null as null | Player)
-
-function openPlayerEditor(playerName: string) {
-    const player = playerStore.players.find((p) => p.name === playerName)
+function openPlayerEditor(playerId: string) {
+    const player = playerStore.players.find((p) => p.id === playerId)
     if (player) {
-        playerToEdit.value = player
+        const playerEditorModal = shallowRef(PlayerEditorModal)
+        modalStore.openModal(playerEditorModal, { player })
     }
 }
 </script>
@@ -30,8 +31,8 @@ function openPlayerEditor(playerName: string) {
     <hr />
     <div
         v-for="player in playerStore.players"
-        :key="player.name"
-        @click="openPlayerEditor(player.name)"
+        :key="player.id"
+        @click="openPlayerEditor(player.id)"
     >
         <h3>{{ player.name }}</h3>
         <p>Secret: {{ player.secret }}</p>
