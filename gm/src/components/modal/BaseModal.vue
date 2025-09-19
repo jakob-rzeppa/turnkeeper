@@ -11,10 +11,8 @@ const emit = defineEmits(['close'])
  */
 
 function handleEscape(event: KeyboardEvent) {
-    event.stopPropagation()
-    event.preventDefault()
-
     if (event.key === 'Escape' || event.key === 'Esc') {
+        event.preventDefault()
         emit('close')
     }
 }
