@@ -8,10 +8,6 @@ import ModalController from './components/modal/ModalController.vue'
 
 const isConnected = connectionService.isConnected()
 
-function sendMessage() {
-    socket.send('hi')
-}
-
 function disconnect() {
     connectionService.disconnect()
 }
@@ -20,8 +16,6 @@ function disconnect() {
 <template>
     <Login v-if="!isConnected" />
     <main>
-        <h1>Hello</h1>
-        <button @click="sendMessage">Send Message</button>
         <button @click="disconnect">Disconnect</button>
         <PlayerDisplay />
         <PlayerListener />
