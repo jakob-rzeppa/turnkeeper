@@ -1,4 +1,6 @@
 <script setup lang="ts">
+import { onMounted, onUnmounted } from 'vue'
+
 const props = defineProps<{ zIndex: number }>()
 
 const emit = defineEmits(['close'])
@@ -7,6 +9,14 @@ const emit = defineEmits(['close'])
  * A base modal component that provides a backdrop and centers its content.
  * It emits a 'close' event when the backdrop is clicked.
  */
+
+function handleEscape(event: KeyboardEvent) {
+    if (event.key === 'Escape' || event.key === 'Esc') {
+        emit('close')
+    }
+}
+onMounted(() => document.addEventListener('keydown', handleEscape))
+onUnmounted(() => document.removeEventListener('keydown', handleEscape))
 </script>
 
 <template>
