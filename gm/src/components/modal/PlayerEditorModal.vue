@@ -57,11 +57,14 @@ function updatePlayer(): void {
 }
 
 function deletePlayer(): void {
-    confirm(
-        `Are you sure you want to delete player ${props.player.name}? This action cannot be undone.`,
-    )
-    socket.emit('players:delete', { playerId: props.player.id })
-    emit('close')
+    if (
+        confirm(
+            `Are you sure you want to delete player ${props.player.name}? This action cannot be undone.`,
+        )
+    ) {
+        socket.emit('players:delete', { playerId: props.player.id })
+        emit('close')
+    }
 }
 
 function openNewStatModal(): void {
