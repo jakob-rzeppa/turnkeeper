@@ -1,15 +1,21 @@
 <script setup lang="ts">
+import type { Player } from '@/types/player'
 import { socket } from '@/util/connection'
-import { ref } from 'vue'
+import { ref, shallowRef } from 'vue'
+import NewStatModal from './NewStatModal.vue'
+import { useModalStore } from '@/stores/modalStore'
 
 const props = defineProps<{
-    player: { id: string; name: string; secret: string; stats: string[] }
+    player: Player
 }>()
 
 const emit = defineEmits(['close'])
 
+const modalStore = useModalStore()
+
 const playerName = ref(props.player.name)
 const playerSecret = ref(props.player.secret)
+const playerStats = ref(props.player.stats)
 
 const updatePlayer = () => {
     socket.emit('players:update', {
@@ -20,6 +26,11 @@ const updatePlayer = () => {
         },
     })
     emit('close')
+}
+
+function openNewStatModal() {
+    const newStatModal = shallowRef(NewStatModal)
+    modalStore.openModal(newStatModal, { playerId: props.player.id, playerName: props.player.name })
 }
 </script>
 
@@ -33,5 +44,13 @@ const updatePlayer = () => {
         <span class="label">Secret</span>
         <input type="text" v-model="playerSecret" />
     </label>
+    <div class="flex flex-col gap-2">
+        <h2 class="text-2xl text-center text-primary">Stats</h2>
+        <label v-for="stat in playerStats" :key="stat.name">
+            <span class="label">{{ stat.name }}</span>
+            <input type="text" v-model="stat.value" />
+        </label>
+        <button class="btn btn-secondary" @click="openNewStatModal">Add Stat</button>
+    </div>
     <button class="btn btn-primary" @click="updatePlayer">Update Player</button>
 </template>
