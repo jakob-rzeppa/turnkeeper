@@ -24,6 +24,7 @@ const updatePlayer = () => {
 </script>
 
 <template>
+    <h1 class="text-4xl text-center text-primary">Edit player</h1>
     <label class="input input-primary">
         <span class="label">Name</span>
         <input type="text" v-model="playerName" />
