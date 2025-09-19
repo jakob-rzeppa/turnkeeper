@@ -46,6 +46,16 @@ const createStatForAllPlayers = (statData: {
     playerRepository.createStatForAllPlayers(statData);
 };
 
+const removeStatFromPlayer = ({
+    playerId,
+    statName,
+}: {
+    playerId: string;
+    statName: string;
+}) => {
+    playerRepository.removeStatFromPlayer(playerId, statName);
+};
+
 export const registerPlayersHandler = (socket: Socket) => {
     sendPlayers(socket);
 
@@ -80,6 +90,14 @@ export const registerPlayersHandler = (socket: Socket) => {
             } else {
                 createStatForAllPlayers(statData);
             }
+            sendPlayers(socket);
+        }
+    );
+
+    socket.on(
+        "players:stats:remove",
+        ({ playerId, statName }: { playerId: string; statName: string }) => {
+            removeStatFromPlayer({ playerId, statName });
             sendPlayers(socket);
         }
     );

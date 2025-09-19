@@ -6,6 +6,7 @@ import NewStatModal from './NewStatModal.vue'
 import { useModalStore } from '@/stores/modalStore'
 import { usePlayerStore } from '@/stores/playerStore'
 
+// The Player prop needs to be a deep clone
 const props = defineProps<{
     player: Player
 }>()
@@ -36,10 +37,17 @@ watch(
             return
         }
 
-        // Only change the values that are different to avoid overwriting user input
+        // Only change the values that are different to avoid overwriting user input. All values need to be copied if they aren't primitive.
         if (player.name !== playerNameRef.value) playerNameRef.value = player.name
         if (player.secret !== playerSecretRef.value) playerSecretRef.value = player.secret
-        if (player.stats !== playerStatsRef.value) playerStatsRef.value = player.stats
+        for (const stat of player.stats) {
+            const existingStat = playerStatsRef.value.find((s) => s.name === stat.name)
+            if (existingStat) {
+                if (existingStat.value !== stat.value) existingStat.value = stat.value
+            } else {
+                playerStatsRef.value.push({ ...stat })
+            }
+        }
     },
     { deep: true },
 )
@@ -70,6 +78,12 @@ function deletePlayer(): void {
 function openNewStatModal(): void {
     const newStatModal = shallowRef(NewStatModal)
     modalStore.openModal(newStatModal, { playerId: props.player.id, playerName: props.player.name })
+    // Changes via the NewStatModal will be reflected in the playerStatsRef via the watch above
+}
+
+function removeStatFromPlayer(statName: string): void {
+    socket.emit('players:stats:remove', { playerId: props.player.id, statName })
+    // The playerStore will be updated via the socket event, which will also update the playerStatsRef via the watch above
 }
 </script>
 
@@ -85,10 +99,18 @@ function openNewStatModal(): void {
     </label>
     <div class="flex flex-col gap-2 p-4 border border-secondary rounded-lg">
         <h2 class="text-2xl text-center text-secondary">Stats</h2>
-        <label class="input w-full" v-for="stat in playerStatsRef" :key="stat.name">
-            <span class="label">{{ stat.name }}</span>
-            <input type="text" v-model="stat.value" />
-        </label>
+        <div class="w-full flex flex-row gap-2" v-for="stat in playerStatsRef" :key="stat.name">
+            <label class="input w-full">
+                <span class="label">{{ stat.name }}</span>
+                <input type="text" v-model="stat.value" />
+            </label>
+            <button
+                class="btn btn-secondary bg-base-100 btn-outline"
+                @click="removeStatFromPlayer(stat.name)"
+            >
+                x
+            </button>
+        </div>
         <button class="btn btn-secondary" @click="openNewStatModal">Add Stat</button>
     </div>
     <button class="btn btn-primary btn-lg" @click="updatePlayer">Update Player</button>

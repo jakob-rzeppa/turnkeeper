@@ -69,6 +69,12 @@ const playerRepository = {
             player.stats.push(stat);
         });
     },
+    removeStatFromPlayer: (playerId: string, statName: string) => {
+        const player = players.find((p) => p.id === playerId);
+        if (player) {
+            player.stats = player.stats.filter((s) => s.name !== statName);
+        }
+    },
 };
 
 export default playerRepository;

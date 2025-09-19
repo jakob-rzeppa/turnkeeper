@@ -11,9 +11,11 @@ const modalStore = useModalStore()
 
 function openPlayerEditor(playerId: string) {
     const player = playerStore.players.find((p) => p.id === playerId)
+
+    const playerClone = player ? JSON.parse(JSON.stringify(player)) : null
     if (player) {
         const playerEditorModal = shallowRef(PlayerEditorModal)
-        modalStore.openModal(playerEditorModal, { player })
+        modalStore.openModal(playerEditorModal, { player: playerClone })
     }
 }
 
