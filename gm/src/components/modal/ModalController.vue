@@ -2,6 +2,10 @@
 import { useModalStore } from '@/stores/modalStore'
 import BaseModal from '@/components/modal/BaseModal.vue'
 
+/*
+ * This component is responsible for rendering the topmost modal from the modal store.
+ */
+
 const modalStore = useModalStore()
 </script>
 

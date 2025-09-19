@@ -1,6 +1,11 @@
 import { defineStore } from 'pinia'
 import type { ShallowRef } from 'vue'
 
+/*
+ * This Store manages the open Modals in the application.
+ * It keeps track of the open modals in a stack.
+ */
+
 interface Modal {
     id: number
     component: ShallowRef<any>
