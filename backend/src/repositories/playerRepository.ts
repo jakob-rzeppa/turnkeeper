@@ -50,6 +50,25 @@ const playerRepository = {
             players.splice(index, 1);
         }
     },
+    createStatForPlayer: (playerId: string, stat: Stat) => {
+        const player = players.find((p) => p.id === playerId);
+        if (player) {
+            // Ensure unique stat name
+            if (player.stats.some((s) => s.name === stat.name)) {
+                return;
+            }
+            player.stats.push(stat);
+        }
+    },
+    createStatForAllPlayers: (stat: Stat) => {
+        players.forEach((player) => {
+            // Ensure unique stat name
+            if (player.stats.some((s) => s.name === stat.name)) {
+                return;
+            }
+            player.stats.push(stat);
+        });
+    },
 };
 
 export default playerRepository;

@@ -1,5 +1,5 @@
 import { Socket } from "socket.io";
-import playerRepository from "../../repositories/playerRepository.js";
+import playerRepository, { Stat } from "../../repositories/playerRepository.js";
 
 /*
  * The gm/playersHandler is responsible for handling the player-specific events and data for the GM.
@@ -25,6 +25,23 @@ const updatePlayer = ({
     playerRepository.updatePlayer(playerId, playerData);
 };
 
+const createStatForPlayer = ({
+    playerId,
+    statData,
+}: {
+    playerId: string;
+    statData: { name: string; value: boolean | number | string | string[] };
+}) => {
+    playerRepository.createStatForPlayer(playerId, statData);
+};
+
+const createStatForAllPlayers = (statData: {
+    name: string;
+    value: boolean | number | string | string[];
+}) => {
+    playerRepository.createStatForAllPlayers(statData);
+};
+
 export const registerPlayersHandler = (socket: Socket) => {
     sendPlayers(socket);
 
@@ -37,4 +54,24 @@ export const registerPlayersHandler = (socket: Socket) => {
         updatePlayer({ playerId, playerData });
         sendPlayers(socket);
     });
+
+    socket.on(
+        "players:stats:create",
+        ({
+            scope,
+            playerId,
+            statData,
+        }: {
+            scope: "global" | "player";
+            playerId?: string;
+            statData: Stat;
+        }) => {
+            if (scope === "player" && playerId) {
+                createStatForPlayer({ playerId, statData });
+            } else {
+                createStatForAllPlayers(statData);
+            }
+            sendPlayers(socket);
+        }
+    );
 };
