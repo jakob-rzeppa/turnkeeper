@@ -7,10 +7,13 @@ const emit = defineEmits(['close'])
 
 /*
  * A base modal component that provides a backdrop and centers its content.
- * It emits a 'close' event when the backdrop is clicked.
+ * It emits a 'close' event when the backdrop is clicked or escape is pressed.
  */
 
 function handleEscape(event: KeyboardEvent) {
+    event.stopPropagation()
+    event.preventDefault()
+
     if (event.key === 'Escape' || event.key === 'Esc') {
         emit('close')
     }
