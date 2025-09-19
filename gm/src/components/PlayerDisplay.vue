@@ -24,14 +24,14 @@ function openNewPlayerModal() {
 </script>
 
 <template>
-    <div class="bg-base-200 p-4 border border-secondary">
+    <div class="p-4 border rounded-sm bg-base-200">
         <h2 class="text-3xl font-bold">Players</h2>
         <div class="flex flex-row gap-4 p-4">
             <div
                 v-for="player in playerStore.players"
                 :key="player.id"
                 @click="openPlayerEditor(player.id)"
-                class="card cursor-pointer hover:shadow-lg transition-shadow bg-base-100 card-lg border-primary border"
+                class="card cursor-pointer hover:shadow-lg transition-shadow bg-base-100 card-lg border-primary border rounded-sm"
             >
                 <div class="card-body">
                     <h3 class="text-3xl font-bold card-title text-primary">{{ player.name }}</h3>
@@ -49,6 +49,6 @@ function openNewPlayerModal() {
                 <p>No players to display.</p>
             </div>
         </div>
-        <button class="btn" @click="openNewPlayerModal">Create Player</button>
+        <button class="btn btn-secondary" @click="openNewPlayerModal">Create Player</button>
     </div>
 </template>

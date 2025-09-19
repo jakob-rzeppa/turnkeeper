@@ -83,8 +83,8 @@ function openNewStatModal(): void {
         <span class="label">Secret</span>
         <input type="text" v-model="playerSecretRef" />
     </label>
-    <div class="flex flex-col gap-2 p-4 border border-primary rounded-lg">
-        <h2 class="text-2xl text-center text-primary">Stats</h2>
+    <div class="flex flex-col gap-2 p-4 border border-secondary rounded-lg">
+        <h2 class="text-2xl text-center text-secondary">Stats</h2>
         <label class="input w-full" v-for="stat in playerStatsRef" :key="stat.name">
             <span class="label">{{ stat.name }}</span>
             <input type="text" v-model="stat.value" />
@@ -92,5 +92,5 @@ function openNewStatModal(): void {
         <button class="btn btn-secondary" @click="openNewStatModal">Add Stat</button>
     </div>
     <button class="btn btn-primary btn-lg" @click="updatePlayer">Update Player</button>
-    <button class="btn btn-error btn-sm" @click="deletePlayer">Delete Player</button>
+    <button class="btn btn-error btn-sm btn-outline" @click="deletePlayer">Delete Player</button>
 </template>

@@ -24,7 +24,7 @@ onUnmounted(() => document.removeEventListener('keydown', handleEscape))
     <div :style="{ zIndex: props.zIndex }" class="fixed w-screen h-screen top-0 left-0">
         <div @click="emit('close')" class="w-full h-full backdrop-blur-sm" />
         <div
-            class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-lg shadow-lg bg-base-200 min-w-1/2 min-h-1/2"
+            class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-sm shadow-lg bg-base-200 min-w-1/2 min-h-1/2 border"
         >
             <div class="flex flex-col gap-4 justify-center h-full">
                 <slot />

@@ -6,7 +6,7 @@ import ConnectionController from './components/ConnectionController.vue'
 </script>
 
 <template>
-    <main>
+    <main class="bg-base-300 h-screen p-12">
         <ConnectionController />
         <PlayerDisplay />
         <PlayerListener />
