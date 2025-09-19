@@ -1,9 +1,10 @@
 <script setup lang="ts">
 import type { Player } from '@/types/player'
 import { socket } from '@/util/connection'
-import { ref, shallowRef } from 'vue'
+import { ref, shallowRef, watch } from 'vue'
 import NewStatModal from './NewStatModal.vue'
 import { useModalStore } from '@/stores/modalStore'
+import { usePlayerStore } from '@/stores/playerStore'
 
 const props = defineProps<{
     player: Player
@@ -12,18 +13,44 @@ const props = defineProps<{
 const emit = defineEmits(['close'])
 
 const modalStore = useModalStore()
+const playerStore = usePlayerStore()
 
-const playerName = ref(props.player.name)
-const playerSecret = ref(props.player.secret)
-const playerStats = ref(props.player.stats)
+/*
+ * Even though we update the refs if the playerStore changes we get the initial values from the props.
+ * That way we don't have to deal with a possibly undefined player while the modal is open.
+ * If the player is deleted while the modal is open, we just close the modal (see next watch).
+ */
+const playerNameRef = ref(props.player.name)
+const playerSecretRef = ref(props.player.secret)
+const playerStatsRef = ref(props.player.stats)
+
+// Update Player info, when the player in the backend changes
+watch(
+    () => playerStore.players,
+    () => {
+        const player = playerStore.players.find((p) => p.id === props.player.id)
+
+        // When the player is not found (deleted), close the modal
+        if (!player) {
+            emit('close')
+            return
+        }
+
+        // Only change the values that are different to avoid overwriting user input
+        if (player.name !== playerNameRef.value) playerNameRef.value = player.name
+        if (player.secret !== playerSecretRef.value) playerSecretRef.value = player.secret
+        if (player.stats !== playerStatsRef.value) playerStatsRef.value = player.stats
+    },
+    { deep: true },
+)
 
 const updatePlayer = () => {
     socket.emit('players:update', {
         playerId: props.player.id,
         playerData: {
-            name: playerName.value,
-            secret: playerSecret.value,
-            stats: playerStats.value,
+            name: playerNameRef.value,
+            secret: playerSecretRef.value,
+            stats: playerStatsRef.value,
         },
     })
     emit('close')
@@ -39,15 +66,15 @@ function openNewStatModal() {
     <h1 class="text-4xl text-center text-primary">Edit player</h1>
     <label class="input input-primary w-full">
         <span class="label">Name</span>
-        <input type="text" v-model="playerName" />
+        <input type="text" v-model="playerNameRef" />
     </label>
     <label class="input input-primary w-full">
         <span class="label">Secret</span>
-        <input type="text" v-model="playerSecret" />
+        <input type="text" v-model="playerSecretRef" />
     </label>
     <div class="flex flex-col gap-2 p-4 border border-primary rounded-lg">
         <h2 class="text-2xl text-center text-primary">Stats</h2>
-        <label class="input w-full" v-for="stat in playerStats" :key="stat.name">
+        <label class="input w-full" v-for="stat in playerStatsRef" :key="stat.name">
             <span class="label">{{ stat.name }}</span>
             <input type="text" v-model="stat.value" />
         </label>
