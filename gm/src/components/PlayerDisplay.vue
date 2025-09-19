@@ -35,7 +35,7 @@ function openNewPlayerModal() {
             >
                 <div class="card-body">
                     <h3 class="text-3xl font-bold card-title text-primary">{{ player.name }}</h3>
-                    <p>Secret: {{ player.secret }}</p>
+                    <p class="badge badge-sm">Secret: {{ player.secret }}</p>
                     <div class="flex flex-col gap-2">
                         <h4 class="text-lg text-primary">Stats</h4>
                         <div class="input w-full" v-for="stat in player.stats" :key="stat.name">
