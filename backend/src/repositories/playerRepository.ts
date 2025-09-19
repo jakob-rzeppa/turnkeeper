@@ -44,7 +44,7 @@ const playerRepository = {
             Object.assign(player, updatedFields);
         }
     },
-    removePlayer: (id: string) => {
+    deletePlayer: (id: string) => {
         const index = players.findIndex((p) => p.id === id);
         if (index !== -1) {
             players.splice(index, 1);

@@ -25,6 +25,10 @@ const updatePlayer = ({
     playerRepository.updatePlayer(playerId, playerData);
 };
 
+const deletePlayer = (playerId: string) => {
+    playerRepository.deletePlayer(playerId);
+};
+
 const createStatForPlayer = ({
     playerId,
     statData,
@@ -52,6 +56,11 @@ export const registerPlayersHandler = (socket: Socket) => {
 
     socket.on("players:update", ({ playerId, playerData }) => {
         updatePlayer({ playerId, playerData });
+        sendPlayers(socket);
+    });
+
+    socket.on("players:delete", ({ playerId }: { playerId: string }) => {
+        deletePlayer(playerId);
         sendPlayers(socket);
     });
 
