@@ -44,7 +44,7 @@ watch(
     { deep: true },
 )
 
-const updatePlayer = () => {
+function updatePlayer(): void {
     socket.emit('players:update', {
         playerId: props.player.id,
         playerData: {
@@ -56,7 +56,15 @@ const updatePlayer = () => {
     emit('close')
 }
 
-function openNewStatModal() {
+function deletePlayer(): void {
+    confirm(
+        `Are you sure you want to delete player ${props.player.name}? This action cannot be undone.`,
+    )
+    socket.emit('players:delete', { playerId: props.player.id })
+    emit('close')
+}
+
+function openNewStatModal(): void {
     const newStatModal = shallowRef(NewStatModal)
     modalStore.openModal(newStatModal, { playerId: props.player.id, playerName: props.player.name })
 }
@@ -80,5 +88,6 @@ function openNewStatModal() {
         </label>
         <button class="btn btn-secondary" @click="openNewStatModal">Add Stat</button>
     </div>
-    <button class="btn btn-primary" @click="updatePlayer">Update Player</button>
+    <button class="btn btn-primary btn-lg" @click="updatePlayer">Update Player</button>
+    <button class="btn btn-error btn-sm" @click="deletePlayer">Delete Player</button>
 </template>
