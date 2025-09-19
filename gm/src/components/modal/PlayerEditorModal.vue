@@ -23,6 +23,7 @@ const updatePlayer = () => {
         playerData: {
             name: playerName.value,
             secret: playerSecret.value,
+            stats: playerStats.value,
         },
     })
     emit('close')
@@ -36,17 +37,17 @@ function openNewStatModal() {
 
 <template>
     <h1 class="text-4xl text-center text-primary">Edit player</h1>
-    <label class="input input-primary">
+    <label class="input input-primary w-full">
         <span class="label">Name</span>
         <input type="text" v-model="playerName" />
     </label>
-    <label class="input input-primary">
+    <label class="input input-primary w-full">
         <span class="label">Secret</span>
         <input type="text" v-model="playerSecret" />
     </label>
-    <div class="flex flex-col gap-2">
+    <div class="flex flex-col gap-2 p-4 border border-primary rounded-lg">
         <h2 class="text-2xl text-center text-primary">Stats</h2>
-        <label v-for="stat in playerStats" :key="stat.name">
+        <label class="input w-full" v-for="stat in playerStats" :key="stat.name">
             <span class="label">{{ stat.name }}</span>
             <input type="text" v-model="stat.value" />
         </label>
