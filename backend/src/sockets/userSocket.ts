@@ -1,9 +1,9 @@
 import { Server, Socket } from "socket.io";
-import { authenticatePlayer, disconnectPlayer } from "../auth/playerAuth.js";
+import { authenticateUser, disconnectUser } from "../auth/userAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { registerPlayersHandler } from "../connectionHandlers/player/playersHandler.js";
+import { registerUserPlayersHandler } from "../connectionHandlers/client/userPlayersHandler.js";
 
-const onPlayerConnection = (socket: Socket): void => {
+const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
         socket.handshake.auth.playerName
     );
@@ -14,18 +14,20 @@ const onPlayerConnection = (socket: Socket): void => {
         return;
     }
 
-    console.log(`Player with ID ${playerId} connected: ${socket.id}`);
+    console.log(`User for Player with ID ${playerId} connected: ${socket.id}`);
 
-    registerPlayersHandler({ socket, playerId });
+    registerUserPlayersHandler({ socket, playerId });
 
     socket.on("disconnect", () => {
-        disconnectPlayer({ playerId: playerId });
-        console.log(`Player with ID ${playerId} disconnected: ${socket.id}`);
+        disconnectUser({ playerId: playerId });
+        console.log(
+            `User for Player with ID ${playerId} disconnected: ${socket.id}`
+        );
     });
 };
 
-export const createPlayerSocket = (io: Server): void => {
-    const namespace = io.of("/player");
+export const createUserSocket = (io: Server): void => {
+    const namespace = io.of("/user");
 
     namespace.use((socket, next) => {
         const { playerName, playerSecret } = socket.handshake.auth;
@@ -37,7 +39,7 @@ export const createPlayerSocket = (io: Server): void => {
         }
 
         try {
-            authenticatePlayer({ playerId, playerSecret });
+            authenticateUser({ playerId, playerSecret });
             next();
         } catch (error: unknown) {
             if (error instanceof Error) {
@@ -46,5 +48,5 @@ export const createPlayerSocket = (io: Server): void => {
         }
     });
 
-    namespace.on("connection", onPlayerConnection);
+    namespace.on("connection", onUserConnection);
 };

@@ -2,7 +2,7 @@ import playerRepository from "../repositories/playerRepository.js";
 
 const arePlayersAlreadyConnected = new Map<string, boolean>();
 
-const isPlayerAlreadyConnected = ({
+const isUserForPlayerAlreadyConnected = ({
     playerId,
 }: {
     playerId: string;
@@ -10,7 +10,7 @@ const isPlayerAlreadyConnected = ({
     return arePlayersAlreadyConnected.get(playerId) || false;
 };
 
-const setPlayerAlreadyConnected = ({
+const setConnectedUserForPlayer = ({
     playerId,
     connected,
 }: {
@@ -20,7 +20,7 @@ const setPlayerAlreadyConnected = ({
     arePlayersAlreadyConnected.set(playerId, connected);
 };
 
-export const authenticatePlayer = ({
+export const authenticateUser = ({
     playerId,
     playerSecret,
 }: {
@@ -37,15 +37,15 @@ export const authenticatePlayer = ({
         throw new Error("Invalid player credentials");
     }
 
-    if (isPlayerAlreadyConnected({ playerId: player.id })) {
+    if (isUserForPlayerAlreadyConnected({ playerId: player.id })) {
         throw new Error("Player already connected");
     }
 
-    setPlayerAlreadyConnected({ playerId: player.id, connected: true });
+    setConnectedUserForPlayer({ playerId: player.id, connected: true });
 
     return player.id;
 };
 
-export const disconnectPlayer = ({ playerId }: { playerId: string }): void => {
-    setPlayerAlreadyConnected({ playerId, connected: false });
+export const disconnectUser = ({ playerId }: { playerId: string }): void => {
+    setConnectedUserForPlayer({ playerId, connected: false });
 };

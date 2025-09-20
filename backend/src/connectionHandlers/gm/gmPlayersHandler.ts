@@ -1,11 +1,6 @@
 import { Socket } from "socket.io";
 import playerRepository, { Stat } from "../../repositories/playerRepository.js";
 
-/*
- * The gm/playersHandler is responsible for handling the player-specific events and data for the GM.
- * For example, creating new players and sending the list of all players.
- */
-
 const sendPlayers = (socket: Socket) => {
     const players = playerRepository.getAllPlayers();
     socket.emit("players", players);
@@ -56,7 +51,7 @@ const removeStatFromPlayer = ({
     playerRepository.removeStatFromPlayer(playerId, statName);
 };
 
-export const registerPlayersHandler = (socket: Socket) => {
+export const registerGmPlayersHandler = (socket: Socket) => {
     sendPlayers(socket);
 
     socket.on("players:create", (playerData) => {
