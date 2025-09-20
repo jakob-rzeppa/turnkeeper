@@ -2,6 +2,10 @@ import { Socket } from "socket.io";
 import { gameloop } from "../../services/gameloop.js";
 import playerRepository from "../../repositories/playerRepository.js";
 
+/*
+ * Handlers for GM to control the game loop (turns, rounds, player order)
+ */
+
 const sendPlayerOrder = (socket: Socket) => {
     const playerOrder = gameloop.getPlayerOrder();
 
@@ -12,7 +16,7 @@ const sendPlayerOrder = (socket: Socket) => {
     socket.emit("gameloop:order", { playerOrder: playerOrderWithNames });
 };
 
-const initGameLoop = () => {
+const initGameloop = () => {
     const allPlayers = playerRepository.getAllPlayers();
     const playerIds = allPlayers.map((p) => p.id);
     gameloop.init(playerIds);
@@ -22,7 +26,7 @@ const nextTurn = () => {
     gameloop.nextTurn();
 };
 
-export const registerGmTurnHandler = (socket: Socket) => {
+export const registerGmGameHandler = (socket: Socket) => {
     sendPlayerOrder(socket);
 
     socket.on("gameloop:next", () => {
@@ -30,7 +34,7 @@ export const registerGmTurnHandler = (socket: Socket) => {
     });
 
     socket.on("gameloop:init", () => {
-        initGameLoop();
+        initGameloop();
         sendPlayerOrder(socket);
     });
 };
