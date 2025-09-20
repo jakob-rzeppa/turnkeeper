@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const scopeRef = ref('global' as 'global' | 'player')
+const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global')
 const statNameRef = ref('')
 const statInitialValueRef = ref('')
 
@@ -35,7 +35,7 @@ const createStat = () => {
     <label class="select select-primary">
         <span class="label">Scope</span>
         <select v-model="scopeRef">
-            <option value="global" selected>Global</option>
+            <option value="global">Global</option>
             <option value="player" :disabled="!props.playerId">
                 Player {{ props.playerName ?? '(unknown)' }}
             </option>
