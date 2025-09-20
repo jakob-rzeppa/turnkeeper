@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { socket } from '@/util/connection'
-import { onMounted, ref } from 'vue'
+import { ref, shallowRef } from 'vue'
+import InitGameModal from './modal/InitGameModal.vue'
+import { useModalStore } from '@/stores/modalStore'
+
+const modalStore = useModalStore()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
@@ -8,18 +12,19 @@ socket.on('gameloop:order', (data: { playerOrder: { id: string; name: string }[]
     playerOrderRef.value = data.playerOrder
 })
 
-const initGameLoop = () => {
-    socket.emit('gameloop:init', {})
+function openInitGameModal() {
+    const initGameModal = shallowRef(InitGameModal)
+    modalStore.openModal(initGameModal)
 }
 </script>
 
 <template>
     <div>
-        <button class="btn btn-secondary btn-sm mb-2" @click="initGameLoop">Init Game Loop</button>
         <div class="breadcrumbs">
             <ul>
                 <li v-for="player in playerOrderRef" :key="player.id">{{ player.name }}</li>
             </ul>
         </div>
+        <button class="btn btn-primary btn-sm w-fit" @click="openInitGameModal">Init Game</button>
     </div>
 </template>
