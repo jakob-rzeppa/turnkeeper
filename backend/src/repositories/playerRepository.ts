@@ -19,6 +19,8 @@ const playerRepository = {
     getPlayerById: (id: string) => players.find((p) => p.id === id) || null,
     getPlayerIdByName: (name: string) =>
         players.find((p) => p.name === name)?.id || null,
+    getPlayerNameById: (id: string) =>
+        players.find((p) => p.id === id)?.name || null,
     createPlayer: (playerName: string) => {
         // Ensure unique name
         if (players.some((p) => p.name === playerName)) {
