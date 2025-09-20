@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { authenticateUser, disconnectUser } from "../auth/userAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { registerUserPlayersHandler } from "../connectionHandlers/client/userPlayersHandler.js";
+import { registerUserPlayersHandler } from "../connectionHandlers/user/userPlayersHandler.js";
 
 const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
