@@ -1,7 +1,7 @@
 import io from 'socket.io-client'
 import { ref } from 'vue'
 
-export const socket = io('http://localhost:3000/player', { autoConnect: false })
+export const socket = io('http://localhost:3000/user', { autoConnect: false })
 
 socket.on('connect_error', (err) => {
   console.error(err.message)
