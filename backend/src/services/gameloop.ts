@@ -33,8 +33,12 @@ export const gameloop = {
             console.log(`Starting round ${round.roundNumber}`);
         }
     },
-    getCurrentPlayerId: () => {
-        return playerOrder[round.currentPlayerIndex];
+    getRoundInformation: () => {
+        return {
+            roundNumber: round.roundNumber,
+            currentPlayerIndex: round.currentPlayerIndex,
+            currentPlayerId: playerOrder[round.currentPlayerIndex],
+        };
     },
     getPlayerOrder: () => {
         return playerOrder;

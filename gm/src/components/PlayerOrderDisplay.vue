@@ -8,8 +8,8 @@ const modalStore = useModalStore()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
-socket.on('game:turn:players:order', (data: { playerOrder: { id: string; name: string }[] }) => {
-    playerOrderRef.value = data.playerOrder
+socket.on('game:turn', ({ playerOrder }: { playerOrder: { id: string; name: string }[] }) => {
+    playerOrderRef.value = playerOrder
 })
 
 function openInitGameModal() {
