@@ -5,4 +5,9 @@ export const usePlayerStore = defineStore('player', {
     state: () => ({
         players: [] as Player[],
     }),
+    getters: {
+        getPlayerById: (state) => {
+            return (id: string) => state.players.find((p) => p.id === id)
+        },
+    },
 })

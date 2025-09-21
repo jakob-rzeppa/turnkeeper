@@ -37,7 +37,6 @@ export const gameloop = {
         return {
             roundNumber: round.roundNumber,
             currentPlayerIndex: round.currentPlayerIndex,
-            currentPlayerId: playerOrder[round.currentPlayerIndex],
         };
     },
     getPlayerOrder: () => {
