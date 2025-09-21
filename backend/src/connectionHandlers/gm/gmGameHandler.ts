@@ -13,13 +13,13 @@ const sendPlayerOrder = (socket: Socket) => {
         id,
         name: playerRepository.getPlayerNameById(id) || `Player ${index + 1}`,
     }));
-    socket.emit("gameloop:order", { playerOrder: playerOrderWithNames });
+    socket.emit("game:turn:players:order", {
+        playerOrder: playerOrderWithNames,
+    });
 };
 
-const initGameloop = () => {
-    const allPlayers = playerRepository.getAllPlayers();
-    const playerIds = allPlayers.map((p) => p.id);
-    gameloop.init(playerIds);
+const initGameloop = (playerIdsInOrder: string[]) => {
+    gameloop.init(playerIdsInOrder);
 };
 
 const nextTurn = () => {
@@ -29,12 +29,15 @@ const nextTurn = () => {
 export const registerGmGameHandler = (socket: Socket) => {
     sendPlayerOrder(socket);
 
-    socket.on("gameloop:next", () => {
+    socket.on("game:turn:next", () => {
         nextTurn();
     });
 
-    socket.on("gameloop:init", () => {
-        initGameloop();
-        sendPlayerOrder(socket);
-    });
+    socket.on(
+        "game:init",
+        ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
+            initGameloop(playerIdsInOrder);
+            sendPlayerOrder(socket);
+        }
+    );
 };

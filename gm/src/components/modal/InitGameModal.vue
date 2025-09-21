@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { usePlayerStore } from '@/stores/playerStore'
+import { socket } from '@/util/connection'
 import { ref } from 'vue'
 import draggable from 'vuedraggable'
 
@@ -13,15 +14,17 @@ playerOrderRef.value = playerStore.players.map((player) => ({
     id: player.id,
     name: player.name,
 }))
+
+function startGame() {
+    socket.emit('game:init', { playerIdsInOrder: playerOrderRef.value.map((p) => p.id) })
+    emit('close')
+}
 </script>
 
 <template>
-    <h1 class="text-2xl font-bold text-center">Init Game</h1>
-    <draggable
-        v-model="playerOrderRef"
-        item-key="id"
-        class="list bg-base-100 rounded-box shadow-md"
-    >
+    <h2 class="text-2xl font-bold text-center">Init Game</h2>
+    <p class="text-center mb-4">Drag and drop to set the player order</p>
+    <draggable v-model="playerOrderRef" item-key="id" class="list bg-base-100 shadow-md rounded-sm">
         <template #item="{ element: player, index }">
             <li class="list-row cursor-pointer" :key="index">
                 <div class="list-col-grow">
@@ -33,4 +36,5 @@ playerOrderRef.value = playerStore.players.map((player) => ({
             </li>
         </template>
     </draggable>
+    <button class="btn btn-primary mt-4 w-full" @click="startGame">Start Game</button>
 </template>

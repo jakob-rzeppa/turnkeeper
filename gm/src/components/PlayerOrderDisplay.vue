@@ -8,7 +8,7 @@ const modalStore = useModalStore()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
-socket.on('gameloop:order', (data: { playerOrder: { id: string; name: string }[] }) => {
+socket.on('game:turn:players:order', (data: { playerOrder: { id: string; name: string }[] }) => {
     playerOrderRef.value = data.playerOrder
 })
 
