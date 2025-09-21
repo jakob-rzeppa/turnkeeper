@@ -10,7 +10,7 @@ export const useTurnStore = defineStore('turn', {
     }),
     getters: {
         currentPlayerId: (state) => {
-            return state.playerOrder[state.round.currentPlayerIndex].id
+            return state.playerOrder[state.round.currentPlayerIndex]?.id ?? null
         },
     },
 })
