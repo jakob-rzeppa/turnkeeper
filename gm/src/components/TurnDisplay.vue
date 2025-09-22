@@ -3,12 +3,10 @@ import { socket } from '@/util/connection'
 import { computed, shallowRef } from 'vue'
 import InitGameModal from './modal/InitGameModal.vue'
 import { useModalStore } from '@/stores/modalStore'
-import { usePlayerStore } from '@/stores/playerStore'
 import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from './input/PlayerEditor.vue'
 
 const modalStore = useModalStore()
-const playerStore = usePlayerStore()
 const turnStore = useTurnStore()
 
 socket.on(
@@ -27,6 +25,10 @@ socket.on(
         }
     },
 )
+
+function endTurn() {
+    socket.emit('game:turn:next')
+}
 
 function openInitGameModal() {
     const initGameModal = shallowRef(InitGameModal)
@@ -51,6 +53,7 @@ function openInitGameModal() {
                 </li>
             </ul>
         </div>
+        <button class="btn btn-accent" @click="endTurn">End turn</button>
         <div v-if="turnStore.currentPlayerId">
             <PlayerEditor :playerId="turnStore.currentPlayerId" />
         </div>
