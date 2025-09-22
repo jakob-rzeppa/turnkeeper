@@ -2,99 +2,129 @@ import { Socket } from "socket.io";
 import playerRepository from "../../repositories/playerRepository.js";
 import { Stat } from "../../types/playerTypes.js";
 
-const sendPlayers = (socket: Socket) => {
-    const players = playerRepository.getAllPlayers();
-    socket.emit("players", players);
-};
+export default class GmPlayersHandler {
+    // Singleton instance / register only one GM players handler at a time
+    private static instance: GmPlayersHandler | null = null;
 
-const createPlayer = (playerData: { name: string }) => {
-    playerRepository.createPlayer(playerData.name);
-};
+    public static registerSocket = (s: Socket) => {
+        GmPlayersHandler.instance = new GmPlayersHandler(s);
+    };
 
-const updatePlayer = ({
-    playerId,
-    playerData,
-}: {
-    playerId: string;
-    playerData: { name?: string; secret?: string };
-}) => {
-    playerRepository.updatePlayer(playerId, playerData);
-};
+    public static unregisterSocket = () => {
+        GmPlayersHandler.instance = null;
+    };
 
-const deletePlayer = (playerId: string) => {
-    playerRepository.deletePlayer(playerId);
-};
+    public static getInstance = () => {
+        return this.instance;
+    };
 
-const createStatForPlayer = ({
-    playerId,
-    statData,
-}: {
-    playerId: string;
-    statData: { name: string; value: boolean | number | string | string[] };
-}) => {
-    playerRepository.createStatForPlayer(playerId, statData);
-};
+    private socket: Socket;
 
-const createStatForAllPlayers = (statData: {
-    name: string;
-    value: boolean | number | string | string[];
-}) => {
-    playerRepository.createStatForAllPlayers(statData);
-};
+    private constructor(s: Socket) {
+        this.socket = s;
 
-const removeStatFromPlayer = ({
-    playerId,
-    statName,
-}: {
-    playerId: string;
-    statName: string;
-}) => {
-    playerRepository.removeStatFromPlayer(playerId, statName);
-};
+        this.sendPlayers();
 
-export const registerGmPlayersHandler = (socket: Socket) => {
-    sendPlayers(socket);
+        this.socket.on("players:create", (playerData) => {
+            this.createPlayer(playerData);
+            this.sendPlayers();
+        });
 
-    socket.on("players:create", (playerData) => {
-        createPlayer(playerData);
-        sendPlayers(socket);
-    });
+        this.socket.on("players:update", ({ playerId, playerData }) => {
+            this.updatePlayer({ playerId, playerData });
+            this.sendPlayers();
+        });
 
-    socket.on("players:update", ({ playerId, playerData }) => {
-        updatePlayer({ playerId, playerData });
-        sendPlayers(socket);
-    });
-
-    socket.on("players:delete", ({ playerId }: { playerId: string }) => {
-        deletePlayer(playerId);
-        sendPlayers(socket);
-    });
-
-    socket.on(
-        "players:stats:create",
-        ({
-            scope,
-            playerId,
-            statData,
-        }: {
-            scope: "global" | "player";
-            playerId?: string;
-            statData: Stat;
-        }) => {
-            if (scope === "player" && playerId) {
-                createStatForPlayer({ playerId, statData });
-            } else {
-                createStatForAllPlayers(statData);
+        this.socket.on(
+            "players:delete",
+            ({ playerId }: { playerId: string }) => {
+                this.deletePlayer(playerId);
+                this.sendPlayers();
             }
-            sendPlayers(socket);
-        }
-    );
+        );
 
-    socket.on(
-        "players:stats:remove",
-        ({ playerId, statName }: { playerId: string; statName: string }) => {
-            removeStatFromPlayer({ playerId, statName });
-            sendPlayers(socket);
-        }
-    );
-};
+        this.socket.on(
+            "players:stats:create",
+            ({
+                scope,
+                playerId,
+                statData,
+            }: {
+                scope: "global" | "player";
+                playerId?: string;
+                statData: Stat;
+            }) => {
+                if (scope === "player" && playerId) {
+                    this.createStatForPlayer({ playerId, statData });
+                } else {
+                    this.createStatForAllPlayers(statData);
+                }
+                this.sendPlayers();
+            }
+        );
+
+        this.socket.on(
+            "players:stats:remove",
+            ({
+                playerId,
+                statName,
+            }: {
+                playerId: string;
+                statName: string;
+            }) => {
+                this.removeStatFromPlayer({ playerId, statName });
+                this.sendPlayers();
+            }
+        );
+    }
+
+    private sendPlayers() {
+        const players = playerRepository.getAllPlayers();
+        this.socket.emit("players", players);
+    }
+
+    private createPlayer(playerData: { name: string }) {
+        playerRepository.createPlayer(playerData.name);
+    }
+
+    private updatePlayer({
+        playerId,
+        playerData,
+    }: {
+        playerId: string;
+        playerData: { name?: string; secret?: string };
+    }) {
+        playerRepository.updatePlayer(playerId, playerData);
+    }
+
+    private deletePlayer(playerId: string) {
+        playerRepository.deletePlayer(playerId);
+    }
+
+    private createStatForPlayer({
+        playerId,
+        statData,
+    }: {
+        playerId: string;
+        statData: { name: string; value: boolean | number | string | string[] };
+    }) {
+        playerRepository.createStatForPlayer(playerId, statData);
+    }
+
+    private createStatForAllPlayers(statData: {
+        name: string;
+        value: boolean | number | string | string[];
+    }) {
+        playerRepository.createStatForAllPlayers(statData);
+    }
+
+    private removeStatFromPlayer({
+        playerId,
+        statName,
+    }: {
+        playerId: string;
+        statName: string;
+    }) {
+        playerRepository.removeStatFromPlayer(playerId, statName);
+    }
+}

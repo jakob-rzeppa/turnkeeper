@@ -1,9 +1,9 @@
 import { Server, Socket } from "socket.io";
-import { registerGmPlayersHandler } from "../connectionHandlers/gm/gmPlayersHandler.js";
 import { authenticateGm, disconnectGm } from "../auth/gmAuth.js";
 import logger from "../services/logger.js";
 import GmLogsHandler from "../connectionHandlers/gm/gmLogsHandler.js";
 import GmGameHandler from "../connectionHandlers/gm/gmGameHandler.js";
+import GmPlayersHandler from "../connectionHandlers/gm/gmPlayersHandler.js";
 
 const onGmConnection = (socket: Socket) => {
     logger.info({
@@ -11,7 +11,7 @@ const onGmConnection = (socket: Socket) => {
         data: { socketId: socket.id },
     });
 
-    registerGmPlayersHandler(socket);
+    GmPlayersHandler.registerSocket(socket);
     GmGameHandler.registerSocket(socket);
     GmLogsHandler.registerSocket(socket);
 
