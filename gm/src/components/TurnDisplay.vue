@@ -40,7 +40,15 @@ function openInitGameModal() {
         <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>
-                <li v-for="player in turnStore.playerOrder" :key="player.id">{{ player.name }}</li>
+                <li v-for="player in turnStore.playerOrder" :key="player.id">
+                    <span
+                        class="font-bold text-accent"
+                        v-if="turnStore.currentPlayerId === player.id"
+                    >
+                        {{ player.name }}
+                    </span>
+                    <span v-else>{{ player.name }}</span>
+                </li>
             </ul>
         </div>
         <div v-if="turnStore.currentPlayerId">
