@@ -1,5 +1,6 @@
 import { Socket } from "socket.io";
-import playerRepository, { Stat } from "../../repositories/playerRepository.js";
+import playerRepository from "../../repositories/playerRepository.js";
+import { Stat } from "../../types/playerTypes.js";
 
 const sendPlayers = (socket: Socket) => {
     const players = playerRepository.getAllPlayers();
