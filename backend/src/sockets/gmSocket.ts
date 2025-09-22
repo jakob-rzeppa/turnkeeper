@@ -1,9 +1,9 @@
 import { Server, Socket } from "socket.io";
 import { registerGmPlayersHandler } from "../connectionHandlers/gm/gmPlayersHandler.js";
 import { authenticateGm, disconnectGm } from "../auth/gmAuth.js";
-import { registerGmGameHandler } from "../connectionHandlers/gm/gmGameHandler.js";
 import logger from "../services/logger.js";
 import GmLogsHandler from "../connectionHandlers/gm/gmLogsHandler.js";
+import GmGameHandler from "../connectionHandlers/gm/gmGameHandler.js";
 
 const onGmConnection = (socket: Socket) => {
     logger.info({
@@ -12,12 +12,12 @@ const onGmConnection = (socket: Socket) => {
     });
 
     registerGmPlayersHandler(socket);
-    registerGmGameHandler(socket);
-    GmLogsHandler.registerGmLogsHandler(socket);
+    GmGameHandler.registerSocket(socket);
+    GmLogsHandler.registerSocket(socket);
 
     socket.on("disconnect", () => {
         disconnectGm();
-        GmLogsHandler.unregisterGmLogsHandler();
+        GmLogsHandler.unregisterSocket();
         logger.info({
             message: "GM disconnected",
             data: { socketId: socket.id },

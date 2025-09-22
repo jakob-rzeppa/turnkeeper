@@ -3,43 +3,63 @@ import { gameloop } from "../../services/gameloop.js";
 import playerRepository from "../../repositories/playerRepository.js";
 
 /*
- * Handlers for GM to control the game loop (turns, rounds, player order)
+ * Handler for GM to control the game loop (turns, rounds, player order)
  */
 
-const sendTurnInfo = (socket: Socket) => {
-    const playerOrder = gameloop.getPlayerOrder();
-    const playerOrderWithNames = playerOrder.map((id, index) => ({
-        id,
-        name: playerRepository.getPlayerNameById(id) || `Player ${index + 1}`,
-    }));
+export default class GmGameHandler {
+    // Singleton instance / register only one GM game handler at a time
+    private static instance: GmGameHandler | null = null;
 
-    socket.emit("game:turn", {
-        playerOrder: playerOrderWithNames,
-        round: gameloop.getRoundInformation(),
-    });
-};
+    public static registerSocket = (s: Socket) => {
+        GmGameHandler.instance = new GmGameHandler(s);
+    };
 
-const initGameloop = (playerIdsInOrder: string[]) => {
-    gameloop.init(playerIdsInOrder);
-};
+    public static unregisterSocket = () => {
+        GmGameHandler.instance = null;
+    };
 
-const nextTurn = () => {
-    gameloop.nextTurn();
-};
+    public static getInstance = () => {
+        return this.instance;
+    };
 
-export const registerGmGameHandler = (socket: Socket) => {
-    sendTurnInfo(socket);
+    private socket: Socket;
 
-    socket.on("game:turn:next", () => {
-        nextTurn();
-        sendTurnInfo(socket);
-    });
+    private constructor(s: Socket) {
+        this.socket = s;
 
-    socket.on(
-        "game:init",
-        ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
-            initGameloop(playerIdsInOrder);
-            sendTurnInfo(socket);
-        }
-    );
-};
+        this.socket.on("game:turn:next", () => {
+            this.nextTurn();
+            this.sendTurnInfo();
+        });
+
+        this.socket.on(
+            "game:init",
+            ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
+                this.initGameloop(playerIdsInOrder);
+                this.sendTurnInfo();
+            }
+        );
+    }
+
+    private sendTurnInfo() {
+        const playerOrder = gameloop.getPlayerOrder();
+        const playerOrderWithNames = playerOrder.map((id, index) => ({
+            id,
+            name:
+                playerRepository.getPlayerNameById(id) || `Player ${index + 1}`,
+        }));
+
+        this.socket.emit("game:turn", {
+            playerOrder: playerOrderWithNames,
+            round: gameloop.getRoundInformation(),
+        });
+    }
+
+    private initGameloop(playerIdsInOrder: string[]) {
+        gameloop.init(playerIdsInOrder);
+    }
+
+    private nextTurn() {
+        gameloop.nextTurn();
+    }
+}
