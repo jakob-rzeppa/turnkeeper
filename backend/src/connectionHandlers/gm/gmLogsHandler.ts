@@ -1,6 +1,5 @@
 import { Socket } from "socket.io";
 import { LogEntry } from "../../types/logTypes.js";
-import logger from "../../services/logger.js";
 
 export default class GmLogsHandler {
     // Singleton instance / register only one GM logs handler at a time
