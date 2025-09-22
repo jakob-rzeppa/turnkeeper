@@ -2,6 +2,7 @@ import { Server, Socket } from "socket.io";
 import { authenticateUser, disconnectUser } from "../auth/userAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
 import { registerUserPlayersHandler } from "../connectionHandlers/user/userPlayersHandler.js";
+import logger from "../services/logger.js";
 
 const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
@@ -14,15 +15,19 @@ const onUserConnection = (socket: Socket): void => {
         return;
     }
 
-    console.log(`User for Player with ID ${playerId} connected: ${socket.id}`);
+    logger.info({
+        message: "User connected",
+        data: { playerId, socketId: socket.id },
+    });
 
     registerUserPlayersHandler({ socket, playerId });
 
     socket.on("disconnect", () => {
         disconnectUser({ playerId: playerId });
-        console.log(
-            `User for Player with ID ${playerId} disconnected: ${socket.id}`
-        );
+        logger.info({
+            message: "User disconnected",
+            data: { playerId, socketId: socket.id },
+        });
     });
 };
 

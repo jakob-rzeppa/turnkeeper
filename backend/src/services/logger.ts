@@ -24,6 +24,7 @@ const logger = {
     error: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
         logger.log({ ...logEntry, severity: "error" });
     },
+    // Log is a separate function to handle sending logs to different outputs in the future
     log: (logEntry: Omit<LogEntry, "timestamp">) => {
         const completeLogEntry: LogEntry = {
             ...logEntry,

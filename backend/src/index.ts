@@ -5,6 +5,7 @@ import config from "./config/config.js";
 
 import { createGmSocket } from "./sockets/gmSocket.js";
 import { createUserSocket } from "./sockets/userSocket.js";
+import logger from "./services/logger.js";
 
 const port = config.port;
 
@@ -19,5 +20,10 @@ createGmSocket(io);
 createUserSocket(io);
 
 httpServer.listen(port, () => {
-    console.log(`Server is running on port ${port}`);
+    `Server is running on port ${port}`;
+
+    logger.info({
+        message: "Server is running",
+        data: { port },
+    });
 });

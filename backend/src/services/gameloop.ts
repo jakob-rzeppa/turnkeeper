@@ -1,3 +1,5 @@
+import logger from "./logger.js";
+
 // playerIds in order
 const playerOrder = [] as string[];
 
@@ -9,7 +11,10 @@ const round = {
 export const gameloop = {
     init: (newPlayerOrder: string[]) => {
         if (newPlayerOrder.length === 0) {
-            console.log("No players to start the game loop provided");
+            logger.error({
+                message:
+                    "No players to start the game loop provided. Aborting initialization",
+            });
             return;
         }
 
@@ -19,19 +24,39 @@ export const gameloop = {
         // Reset and set player order
         playerOrder.splice(0, playerOrder.length, ...newPlayerOrder);
 
-        console.log("Game loop initialized");
+        logger.info({
+            message: "Game loop initialized",
+        });
     },
     nextTurn: () => {
         if (playerOrder.length === 0) return;
 
+        logger.info({
+            message: "End of turn",
+            data: {
+                roundNumber: round.roundNumber,
+                playerId: playerOrder[round.currentPlayerIndex],
+            },
+        });
+
         round.currentPlayerIndex = round.currentPlayerIndex + 1;
-        console.log("Next turn");
 
         if (round.currentPlayerIndex > playerOrder.length - 1) {
             round.roundNumber += 1;
             round.currentPlayerIndex = 0;
-            console.log(`Starting round ${round.roundNumber}`);
+            logger.info({
+                message: "New round started",
+                data: { roundNumber: round.roundNumber },
+            });
         }
+
+        logger.info({
+            message: "Start of turn",
+            data: {
+                roundNumber: round.roundNumber,
+                playerId: playerOrder[round.currentPlayerIndex],
+            },
+        });
     },
     getRoundInformation: () => {
         return {
