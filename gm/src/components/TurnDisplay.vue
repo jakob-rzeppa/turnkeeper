@@ -32,11 +32,6 @@ function openInitGameModal() {
     const initGameModal = shallowRef(InitGameModal)
     modalStore.openModal(initGameModal)
 }
-
-const currentPlayerId = computed(() => {
-    const currentPlayerId = turnStore.currentPlayerId
-    if (!currentPlayerId) return null
-})
 </script>
 
 <template>
@@ -48,8 +43,8 @@ const currentPlayerId = computed(() => {
                 <li v-for="player in turnStore.playerOrder" :key="player.id">{{ player.name }}</li>
             </ul>
         </div>
-        <div v-if="currentPlayerId">
-            <PlayerEditor :playerId="currentPlayerId" />
+        <div v-if="turnStore.currentPlayerId">
+            <PlayerEditor :playerId="turnStore.currentPlayerId" />
         </div>
         <div v-else>
             <p>No current player</p>
