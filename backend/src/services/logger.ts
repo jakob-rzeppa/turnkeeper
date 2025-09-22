@@ -1,3 +1,4 @@
+import GmLogsHandler from "../connectionHandlers/gm/gmLogsHandler.js";
 import { LogEntry } from "../types/logTypes.js";
 
 function formatLogEntry(logEntry: LogEntry): string {
@@ -44,6 +45,12 @@ const logger = {
                 break;
             default:
                 console.log(formattedLogEntry);
+        }
+
+        // Send logs to the GM if connected
+        const gmLogsHandler = GmLogsHandler.getInstance();
+        if (gmLogsHandler) {
+            gmLogsHandler.sendLog(completeLogEntry);
         }
     },
 };
