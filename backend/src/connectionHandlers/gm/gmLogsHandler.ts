@@ -6,11 +6,11 @@ export default class GmLogsHandler {
     // Singleton instance / register only one GM logs handler at a time
     private static instance: GmLogsHandler | null = null;
 
-    public static registerGmLogsHandler = (s: Socket) => {
+    public static registerSocket = (s: Socket) => {
         GmLogsHandler.instance = new GmLogsHandler(s);
     };
 
-    public static unregisterGmLogsHandler = () => {
+    public static unregisterSocket = () => {
         GmLogsHandler.instance = null;
     };
 
