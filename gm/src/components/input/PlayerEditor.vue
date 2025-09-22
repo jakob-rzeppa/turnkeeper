@@ -1,13 +1,12 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
 import { usePlayerStore } from '@/stores/playerStore'
-import type { Player } from '@/types/player'
 import { socket } from '@/util/connection'
 import { ref, shallowRef, watch } from 'vue'
 import NewStatModal from '../modal/NewStatModal.vue'
 
 const props = defineProps<{
-    player: Player
+    playerId: string
 }>()
 
 const emit = defineEmits(['done'])
@@ -19,15 +18,29 @@ const playerStore = usePlayerStore()
  * Even though we update the refs if the playerStore changes we get the initial values from the props.
  * That way we don't have to deal with a possibly undefined player while the modal is open.
  */
-const playerNameRef = ref(props.player.name)
-const playerSecretRef = ref(props.player.secret)
-const playerStatsRef = ref(props.player.stats.map((s) => ({ ...s })))
+const playerNameRef = ref('')
+const playerSecretRef = ref('')
+const playerStatsRef = ref<{ name: string; value: boolean | number | string | string[] }[]>([])
+
+watch(
+    () => props.playerId,
+    (playerId) => {
+        const newPlayer = playerStore.getPlayerById(playerId)
+        console.log('Loaded player:', newPlayer)
+        if (!newPlayer) return
+
+        playerNameRef.value = newPlayer.name
+        playerSecretRef.value = newPlayer.secret
+        playerStatsRef.value = newPlayer.stats.map((s) => ({ ...s }))
+    },
+    { immediate: true },
+)
 
 // Update Player info, when the player in the backend changes
 watch(
     () => playerStore.players,
     () => {
-        const updatedPlayer = playerStore.players.find((p) => p.id === props.player.id)
+        const updatedPlayer = playerStore.players.find((p) => p.id === props.playerId)
 
         // When the player is not found (deleted), close the modal
         if (!updatedPlayer) {
@@ -44,7 +57,7 @@ watch(
 
 function updatePlayer(): void {
     socket.emit('players:update', {
-        playerId: props.player.id,
+        playerId: props.playerId,
         playerData: {
             name: playerNameRef.value,
             secret: playerSecretRef.value,
@@ -57,14 +70,14 @@ function updatePlayer(): void {
 function openNewStatModal(): void {
     const newStatModal = shallowRef(NewStatModal)
     modalStore.openModal(newStatModal, {
-        playerId: props.player.id,
-        playerName: props.player.name,
+        playerId: props.playerId,
+        playerName: playerNameRef.value,
     })
     // Changes via the NewStatModal will be reflected in the playerStatsRef via the watch above
 }
 
 function removeStatFromPlayer(statName: string): void {
-    socket.emit('players:stats:remove', { playerId: props.player.id, statName })
+    socket.emit('players:stats:remove', { playerId: props.playerId, statName })
     // The playerStore will be updated via the socket event, which will also update the playerStatsRef via the watch above
 }
 </script>

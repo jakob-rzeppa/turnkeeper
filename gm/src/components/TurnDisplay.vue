@@ -1,10 +1,11 @@
 <script setup lang="ts">
 import { socket } from '@/util/connection'
-import { ref, shallowRef } from 'vue'
+import { computed, shallowRef } from 'vue'
 import InitGameModal from './modal/InitGameModal.vue'
 import { useModalStore } from '@/stores/modalStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useTurnStore } from '@/stores/turnStore'
+import PlayerEditor from './input/PlayerEditor.vue'
 
 const modalStore = useModalStore()
 const playerStore = usePlayerStore()
@@ -31,22 +32,27 @@ function openInitGameModal() {
     const initGameModal = shallowRef(InitGameModal)
     modalStore.openModal(initGameModal)
 }
+
+const currentPlayerId = computed(() => {
+    const currentPlayerId = turnStore.currentPlayerId
+    if (!currentPlayerId) return null
+})
 </script>
 
 <template>
     <button class="btn btn-primary btn-sm w-fit" @click="openInitGameModal">Init Game</button>
     <div class="p-4 border rounded-sm bg-base-200">
+        <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>
-                <li v-for="player in playerStore.players" :key="player.id">{{ player.name }}</li>
+                <li v-for="player in turnStore.playerOrder" :key="player.id">{{ player.name }}</li>
             </ul>
         </div>
-        <div>
-            <p>Round: {{ turnStore.round.roundNumber }}</p>
-            <p>
-                Current Player:
-                {{ turnStore.playerOrder[turnStore.round.currentPlayerIndex]?.name ?? 'N/A' }}
-            </p>
+        <div v-if="currentPlayerId">
+            <PlayerEditor :playerId="currentPlayerId" />
+        </div>
+        <div v-else>
+            <p>No current player</p>
         </div>
     </div>
 </template>

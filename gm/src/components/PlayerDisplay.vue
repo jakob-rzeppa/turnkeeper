@@ -1,5 +1,5 @@
 <script lang="ts" setup>
-import { ref, shallowRef } from 'vue'
+import { shallowRef } from 'vue'
 
 import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
@@ -12,11 +12,8 @@ const modalStore = useModalStore()
 function openPlayerEditor(playerId: string) {
     const player = playerStore.players.find((p) => p.id === playerId)
 
-    const playerClone = player ? JSON.parse(JSON.stringify(player)) : null
-    if (player) {
-        const playerEditorModal = shallowRef(PlayerEditorModal)
-        modalStore.openModal(playerEditorModal, { player: playerClone })
-    }
+    const playerEditorModal = shallowRef(PlayerEditorModal)
+    modalStore.openModal(playerEditorModal, { playerId })
 }
 
 function openNewPlayerModal() {
