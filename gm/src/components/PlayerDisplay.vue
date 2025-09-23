@@ -23,8 +23,8 @@ function openNewPlayerModal() {
 </script>
 
 <template>
-    <div class="p-4 border rounded-sm bg-base-200">
-        <h2 class="text-3xl font-bold">Players</h2>
+    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+        <legend class="fieldset-legend">Players</legend>
         <div class="flex flex-row gap-4 p-4">
             <div
                 v-for="player in playerStore.players"
@@ -49,5 +49,5 @@ function openNewPlayerModal() {
             </div>
         </div>
         <button class="btn btn-secondary" @click="openNewPlayerModal">Create Player</button>
-    </div>
+    </fieldset>
 </template>

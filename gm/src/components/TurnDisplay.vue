@@ -38,7 +38,7 @@ function openInitGameModal() {
 
 <template>
     <button class="btn btn-primary btn-sm w-fit" @click="openInitGameModal">Init Game</button>
-    <div class="p-4 border rounded-sm bg-base-200">
+    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
         <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>
@@ -60,5 +60,5 @@ function openInitGameModal() {
         <div v-else>
             <p>No current player</p>
         </div>
-    </div>
+    </fieldset>
 </template>
