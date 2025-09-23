@@ -24,6 +24,6 @@ httpServer.listen(port, () => {
 
     logger.info({
         message: "Server is running",
-        data: { port },
+        details: { port },
     });
 });

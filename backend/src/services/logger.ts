@@ -2,14 +2,14 @@ import GmLogsHandler from "../connectionHandlers/gm/gmLogsHandler.js";
 import { LogEntry } from "../types/logTypes.js";
 
 function formatLogEntry(logEntry: LogEntry): string {
-    const { timestamp, severity, message, data } = logEntry;
+    const { timestamp, severity, message, details } = logEntry;
     let formattedEntry = `[${timestamp.toISOString()}] [${severity.toUpperCase()}] ${message}`;
 
-    if (data) {
-        const dataStr = Object.entries(data)
+    if (details) {
+        const detailsStr = Object.entries(details)
             .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
             .join(", ");
-        formattedEntry += ` | ${dataStr}`;
+        formattedEntry += ` | ${detailsStr}`;
     }
 
     return formattedEntry;

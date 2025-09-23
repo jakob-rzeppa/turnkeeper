@@ -33,7 +33,7 @@ export const gameloop = {
 
         logger.info({
             message: "End of turn",
-            data: {
+            details: {
                 roundNumber: round.roundNumber,
                 playerId: playerOrder[round.currentPlayerIndex],
             },
@@ -46,13 +46,13 @@ export const gameloop = {
             round.currentPlayerIndex = 0;
             logger.info({
                 message: "New round started",
-                data: { roundNumber: round.roundNumber },
+                details: { roundNumber: round.roundNumber },
             });
         }
 
         logger.info({
             message: "Start of turn",
-            data: {
+            details: {
                 roundNumber: round.roundNumber,
                 playerId: playerOrder[round.currentPlayerIndex],
             },
