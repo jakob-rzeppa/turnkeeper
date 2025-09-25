@@ -7,7 +7,6 @@ import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from '../input/PlayerEditor.vue'
 import DisplayContainer from './DisplayContainer.vue'
 
-const modalStore = useModalStore()
 const turnStore = useTurnStore()
 
 socket.on(
@@ -30,16 +29,10 @@ socket.on(
 function endTurn() {
     socket.emit('game:turn:next')
 }
-
-function openInitGameModal() {
-    const initGameModal = shallowRef(InitGameModal)
-    modalStore.openModal(initGameModal)
-}
 </script>
 
 <template>
     <DisplayContainer label="Turn">
-        <button class="btn btn-primary btn-sm w-full" @click="openInitGameModal">Init Game</button>
         <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>

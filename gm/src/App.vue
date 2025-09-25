@@ -8,12 +8,14 @@ import TurnListener from './listeners/TurnListener.vue'
 import LogDisplay from './components/display/LogDisplay.vue'
 import LogListener from './listeners/LogListener.vue'
 import Drawer from './components/Drawer.vue'
+import InitGameButton from './components/InitGameButton.vue'
 </script>
 
 <template>
     <main class="bg-base-300 h-screen p-12">
         <Drawer>
             <ConnectionController />
+            <InitGameButton />
         </Drawer>
         <div class="grid grid-cols-2 gap-4">
             <TurnDisplay />
