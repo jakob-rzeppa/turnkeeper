@@ -1,10 +1,10 @@
 <script setup lang="ts">
 import { socket } from '@/util/connection'
 import { computed, shallowRef } from 'vue'
-import InitGameModal from './modal/InitGameModal.vue'
+import InitGameModal from '../modal/InitGameModal.vue'
 import { useModalStore } from '@/stores/modalStore'
 import { useTurnStore } from '@/stores/turnStore'
-import PlayerEditor from './input/PlayerEditor.vue'
+import PlayerEditor from '../input/PlayerEditor.vue'
 import DisplayContainer from './DisplayContainer.vue'
 
 const modalStore = useModalStore()

@@ -3,8 +3,8 @@ import { shallowRef } from 'vue'
 
 import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
-import PlayerEditorModal from './modal/PlayerEditorModal.vue'
-import NewPlayerModal from './modal/NewPlayerModal.vue'
+import PlayerEditorModal from '../modal/PlayerEditorModal.vue'
+import NewPlayerModal from '../modal/NewPlayerModal.vue'
 import DisplayContainer from './DisplayContainer.vue'
 
 const playerStore = usePlayerStore()
