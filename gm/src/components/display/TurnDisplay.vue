@@ -38,8 +38,8 @@ function openInitGameModal() {
 </script>
 
 <template>
-    <button class="btn btn-primary btn-sm w-full" @click="openInitGameModal">Init Game</button>
-    <DisplayContainer>
+    <DisplayContainer label="Turn">
+        <button class="btn btn-primary btn-sm w-full" @click="openInitGameModal">Init Game</button>
         <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>

@@ -12,7 +12,7 @@ import LogListener from './listeners/LogListener.vue'
 <template>
     <main class="bg-base-300 h-screen p-12">
         <ConnectionController />
-        <div class="grid">
+        <div class="grid grid-cols-2 gap-4">
             <TurnDisplay />
             <LogDisplay />
             <PlayerDisplay />

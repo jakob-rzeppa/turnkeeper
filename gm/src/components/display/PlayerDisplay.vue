@@ -24,7 +24,7 @@ function openNewPlayerModal() {
 </script>
 
 <template>
-    <DisplayContainer label="Players">
+    <DisplayContainer label="Players" class="col-span-2">
         <div class="flex flex-row gap-4 p-4">
             <div
                 v-for="player in playerStore.players"
