@@ -12,11 +12,13 @@ import LogListener from './listeners/LogListener.vue'
 <template>
     <main class="bg-base-300 h-screen p-12">
         <ConnectionController />
-        <TurnDisplay />
+        <div class="grid">
+            <TurnDisplay />
+            <LogDisplay />
+            <PlayerDisplay />
+        </div>
         <TurnListener />
-        <LogDisplay />
         <LogListener />
-        <PlayerDisplay />
         <PlayerListener />
     </main>
     <ModalController />

@@ -5,6 +5,7 @@ import InitGameModal from './modal/InitGameModal.vue'
 import { useModalStore } from '@/stores/modalStore'
 import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from './input/PlayerEditor.vue'
+import DisplayContainer from './DisplayContainer.vue'
 
 const modalStore = useModalStore()
 const turnStore = useTurnStore()
@@ -37,8 +38,8 @@ function openInitGameModal() {
 </script>
 
 <template>
-    <button class="btn btn-primary btn-sm w-fit" @click="openInitGameModal">Init Game</button>
-    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
+    <button class="btn btn-primary btn-sm w-full" @click="openInitGameModal">Init Game</button>
+    <DisplayContainer>
         <p>Round: {{ turnStore.round.roundNumber }}</p>
         <div class="breadcrumbs">
             <ul>
@@ -60,5 +61,5 @@ function openInitGameModal() {
         <div v-else>
             <p>No current player</p>
         </div>
-    </fieldset>
+    </DisplayContainer>
 </template>

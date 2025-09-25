@@ -5,6 +5,7 @@ import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
 import PlayerEditorModal from './modal/PlayerEditorModal.vue'
 import NewPlayerModal from './modal/NewPlayerModal.vue'
+import DisplayContainer from './DisplayContainer.vue'
 
 const playerStore = usePlayerStore()
 const modalStore = useModalStore()
@@ -23,8 +24,7 @@ function openNewPlayerModal() {
 </script>
 
 <template>
-    <fieldset class="fieldset bg-base-200 border-base-300 rounded-box w-xs border p-4">
-        <legend class="fieldset-legend">Players</legend>
+    <DisplayContainer label="Players">
         <div class="flex flex-row gap-4 p-4">
             <div
                 v-for="player in playerStore.players"
@@ -49,5 +49,5 @@ function openNewPlayerModal() {
             </div>
         </div>
         <button class="btn btn-secondary" @click="openNewPlayerModal">Create Player</button>
-    </fieldset>
+    </DisplayContainer>
 </template>
