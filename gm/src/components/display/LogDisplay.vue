@@ -9,7 +9,9 @@ const logStore = useLogStore()
     <DisplayContainer label="Logs">
         <ul>
             <li v-for="(log, index) in logStore.logs" :key="index">
-                <strong>{{ log.timestamp }} [{{ log.severity }}]</strong>: {{ log.message }}
+                <strong>{{ new Date(log.timestamp).toLocaleString() }} [{{ log.severity }}]</strong
+                >:
+                {{ log.message }}
                 <span v-if="log.details">| </span>
                 <span v-if="log.details">Details: {{ log.details }}</span>
             </li>
