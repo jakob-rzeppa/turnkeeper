@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import PlayerDisplay from './components/PlayerDisplay.vue'
+import PlayerDisplay from './components/display/PlayerDisplay.vue'
 import PlayerListener from './listeners/PlayerListener.vue'
 import ModalController from './components/modal/ModalController.vue'
 import ConnectionController from './components/ConnectionController.vue'
-import TurnDisplay from './components/TurnDisplay.vue'
+import TurnDisplay from './components/display/TurnDisplay.vue'
 import TurnListener from './listeners/TurnListener.vue'
-import LogDisplay from './components/LogDisplay.vue'
+import LogDisplay from './components/display/LogDisplay.vue'
 import LogListener from './listeners/LogListener.vue'
 </script>
 
