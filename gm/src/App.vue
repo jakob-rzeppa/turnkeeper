@@ -9,6 +9,7 @@ import LogDisplay from './components/display/LogDisplay.vue'
 import LogListener from './listeners/LogListener.vue'
 import Drawer from './components/Drawer.vue'
 import InitGameButton from './components/InitGameButton.vue'
+import connection from './util/connection'
 </script>
 
 <template>
@@ -17,14 +18,19 @@ import InitGameButton from './components/InitGameButton.vue'
             <ConnectionController />
             <InitGameButton />
         </Drawer>
-        <div class="grid grid-cols-2 gap-4">
-            <TurnDisplay />
-            <LogDisplay />
-            <PlayerDisplay />
+        <div v-if="connection.isConnected().value">
+            <div class="grid grid-cols-2 gap-4">
+                <TurnDisplay />
+                <LogDisplay />
+                <PlayerDisplay />
+            </div>
+            <TurnListener />
+            <LogListener />
+            <PlayerListener />
         </div>
-        <TurnListener />
-        <LogListener />
-        <PlayerListener />
+        <div v-else class="flex flex-col items-center justify-center h-full">
+            <span class="loading loading-bars loading-xl"></span>
+        </div>
     </main>
     <ModalController />
 </template>
