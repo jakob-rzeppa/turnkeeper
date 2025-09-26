@@ -43,7 +43,7 @@ export default class GmGameHandler {
         );
     }
 
-    private sendTurnInfo() {
+    public sendTurnInfo() {
         const playerOrder = gameloop.getPlayerOrder();
         const playerOrderWithNames = playerOrder.map((id, index) => ({
             id,

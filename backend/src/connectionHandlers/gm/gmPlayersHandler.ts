@@ -1,6 +1,9 @@
 import { Socket } from "socket.io";
 import playerRepository from "../../repositories/playerRepository.js";
 import { Stat } from "../../types/playerTypes.js";
+import { gameloop } from "../../services/gameloop.js";
+import logger from "../../services/logger.js";
+import GmGameHandler from "./gmGameHandler.js";
 
 export default class GmPlayersHandler {
     // Singleton instance / register only one GM players handler at a time
@@ -28,6 +31,12 @@ export default class GmPlayersHandler {
         this.socket.on("players:create", (playerData) => {
             this.createPlayer(playerData);
             this.sendPlayers();
+
+            // Resend turn info to update player order
+            const gmGameHandler = GmGameHandler.getInstance();
+            if (gmGameHandler) {
+                gmGameHandler.sendTurnInfo();
+            }
         });
 
         this.socket.on("players:update", ({ playerId, playerData }) => {
@@ -85,6 +94,25 @@ export default class GmPlayersHandler {
 
     private createPlayer(playerData: { name: string }) {
         playerRepository.createPlayer(playerData.name);
+
+        // If the game loop is already initialized, add the new player to the turn order
+        if (!gameloop.isInitialized()) {
+            return;
+        }
+
+        const playerId = playerRepository.getPlayerIdByName(playerData.name);
+        if (!playerId) {
+            return;
+        }
+
+        gameloop.addPlayerToTurnOrder(playerId);
+
+        logger.info({
+            message: "Player added to turn order",
+            details: {
+                playerName: playerData.name,
+            },
+        });
     }
 
     private updatePlayer({

@@ -68,6 +68,19 @@ export const gameloop = {
             },
         });
     },
+    addPlayerToTurnOrder: (playerId: string) => {
+        if (game.playerOrder.includes(playerId)) {
+            logger.warn({
+                message: `Player ${playerId} is already in the turn order. Skipping addition.`,
+            });
+            return;
+        }
+        game.playerOrder.push(playerId);
+        logger.info({
+            message: "Player added to turn order.",
+            details: { playerId },
+        });
+    },
     getRoundInformation: () => {
         return {
             roundNumber: game.round.roundNumber,
