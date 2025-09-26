@@ -51,6 +51,7 @@ export default class GmGameHandler {
 
         this.socket.emit("game:turn", {
             playerOrder: playerOrderWithNames,
+            isInitialized: gameloop.isInitialized(),
             round: gameloop.getRoundInformation(),
         });
     }

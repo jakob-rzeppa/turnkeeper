@@ -77,4 +77,7 @@ export const gameloop = {
     getPlayerOrder: () => {
         return game.playerOrder;
     },
+    isInitialized: () => {
+        return game.isInitialized;
+    },
 };
