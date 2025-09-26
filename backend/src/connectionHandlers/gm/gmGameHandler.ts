@@ -27,6 +27,8 @@ export default class GmGameHandler {
     private constructor(s: Socket) {
         this.socket = s;
 
+        this.sendTurnInfo();
+
         this.socket.on("game:turn:next", () => {
             this.nextTurn();
             this.sendTurnInfo();
