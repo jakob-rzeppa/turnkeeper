@@ -4,22 +4,14 @@ import { shallowRef } from 'vue'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
 import PlayerEditorModal from '../modal/PlayerEditorModal.vue'
-import NewPlayerModal from '../modal/NewPlayerModal.vue'
 import DisplayContainer from './DisplayContainer.vue'
 
 const playerStore = usePlayerStore()
 const modalStore = useModalStore()
 
 function openPlayerEditor(playerId: string) {
-    const player = playerStore.players.find((p) => p.id === playerId)
-
     const playerEditorModal = shallowRef(PlayerEditorModal)
     modalStore.openModal(playerEditorModal, { playerId })
-}
-
-function openNewPlayerModal() {
-    const newPlayerModal = shallowRef(NewPlayerModal)
-    modalStore.openModal(newPlayerModal)
 }
 </script>
 
@@ -48,6 +40,5 @@ function openNewPlayerModal() {
                 <p>No players to display.</p>
             </div>
         </div>
-        <button class="btn btn-secondary" @click="openNewPlayerModal">Create Player</button>
     </DisplayContainer>
 </template>

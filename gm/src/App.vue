@@ -10,6 +10,7 @@ import LogListener from './listeners/LogListener.vue'
 import Drawer from './components/Drawer.vue'
 import InitGameButton from './components/InitGameButton.vue'
 import connection from './util/connection'
+import CreatePlayerButton from './components/CreatePlayerButton.vue'
 </script>
 
 <template>
@@ -17,6 +18,7 @@ import connection from './util/connection'
         <Drawer>
             <ConnectionController />
             <InitGameButton />
+            <CreatePlayerButton />
         </Drawer>
         <div v-if="connection.isConnected().value">
             <div class="grid grid-cols-2 gap-4">
