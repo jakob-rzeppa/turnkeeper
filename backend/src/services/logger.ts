@@ -19,7 +19,7 @@ const logger = {
     info: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
         logger.log({ ...logEntry, severity: "info" });
     },
-    warning: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
+    warn: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
         logger.log({ ...logEntry, severity: "warning" });
     },
     error: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
