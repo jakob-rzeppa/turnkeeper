@@ -1,8 +1,5 @@
 <script setup lang="ts">
 import { socket } from '@/util/connection'
-import { computed, shallowRef } from 'vue'
-import InitGameModal from '../modal/InitGameModal.vue'
-import { useModalStore } from '@/stores/modalStore'
 import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from '../input/PlayerEditor.vue'
 import DisplayContainer from './DisplayContainer.vue'
@@ -33,26 +30,29 @@ function endTurn() {
 
 <template>
     <DisplayContainer label="Turn">
-        <p>Round: {{ turnStore.round.roundNumber }}</p>
-        <div class="breadcrumbs">
-            <ul>
-                <li v-for="player in turnStore.playerOrder" :key="player.id">
-                    <span
-                        class="font-bold text-accent"
-                        v-if="turnStore.currentPlayerId === player.id"
-                    >
-                        {{ player.name }}
-                    </span>
-                    <span v-else>{{ player.name }}</span>
-                </li>
-            </ul>
+        <div v-if="turnStore.isInitialized" class="flex flex-col gap-4">
+            <p>Round: {{ turnStore.round.roundNumber }}</p>
+            <div class="breadcrumbs">
+                <ul>
+                    <li v-for="player in turnStore.playerOrder" :key="player.id">
+                        <span
+                            class="font-bold text-accent"
+                            v-if="turnStore.currentPlayerId === player.id"
+                        >
+                            {{ player.name }}
+                        </span>
+                        <span v-else>{{ player.name }}</span>
+                    </li>
+                </ul>
+            </div>
+            <button class="btn btn-accent" @click="endTurn">End turn</button>
+            <div v-if="turnStore.currentPlayerId">
+                <PlayerEditor :playerId="turnStore.currentPlayerId" />
+            </div>
+            <div v-else>
+                <p>No current player</p>
+            </div>
         </div>
-        <button class="btn btn-accent" @click="endTurn">End turn</button>
-        <div v-if="turnStore.currentPlayerId">
-            <PlayerEditor :playerId="turnStore.currentPlayerId" />
-        </div>
-        <div v-else>
-            <p>No current player</p>
-        </div>
+        <div v-else>Game not initialized</div>
     </DisplayContainer>
 </template>

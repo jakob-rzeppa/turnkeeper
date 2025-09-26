@@ -3,6 +3,7 @@ import { defineStore } from 'pinia'
 export const useTurnStore = defineStore('turn', {
     state: () => ({
         playerOrder: [] as { id: string; name: string }[],
+        isInitialized: false,
         round: {
             roundNumber: 0,
             currentPlayerIndex: 0,
