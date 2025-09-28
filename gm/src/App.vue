@@ -11,6 +11,7 @@ import Drawer from './components/Drawer.vue'
 import InitGameButton from './components/InitGameButton.vue'
 import connection from './util/connection'
 import CreatePlayerButton from './components/CreatePlayerButton.vue'
+import UpdatePlayerOrderButton from './components/UpdatePlayerOrderButton.vue'
 </script>
 
 <template>
@@ -18,6 +19,7 @@ import CreatePlayerButton from './components/CreatePlayerButton.vue'
         <Drawer>
             <ConnectionController />
             <InitGameButton />
+            <UpdatePlayerOrderButton />
             <CreatePlayerButton />
         </Drawer>
         <div v-if="connection.isConnected().value">

@@ -81,6 +81,29 @@ export const gameloop = {
             details: { playerId },
         });
     },
+    setPlayerOrder: (newPlayerOrder: string[]) => {
+        if (newPlayerOrder.length === 0) {
+            logger.error({
+                message:
+                    "No players provided to set the player order. Aborting operation.",
+            });
+            return;
+        }
+
+        if (newPlayerOrder.length !== game.playerOrder.length) {
+            logger.error({
+                message:
+                    "The new player order length does not match the current player order length. Aborting operation.",
+            });
+            return;
+        }
+
+        game.playerOrder.splice(0, game.playerOrder.length, ...newPlayerOrder);
+
+        logger.info({
+            message: "Player order updated.",
+        });
+    },
     getRoundInformation: () => {
         return {
             roundNumber: game.round.roundNumber,

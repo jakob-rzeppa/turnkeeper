@@ -41,6 +41,14 @@ export default class GmGameHandler {
                 this.sendTurnInfo();
             }
         );
+
+        this.socket.on(
+            "game:playerOrder:update",
+            ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
+                this.updatePlayerOrder(playerIdsInOrder);
+                this.sendTurnInfo();
+            }
+        );
     }
 
     public sendTurnInfo() {
@@ -60,6 +68,10 @@ export default class GmGameHandler {
 
     private initGameloop(playerIdsInOrder: string[]) {
         gameloop.init(playerIdsInOrder);
+    }
+
+    private updatePlayerOrder(playerIdsInOrder: string[]) {
+        gameloop.setPlayerOrder(playerIdsInOrder);
     }
 
     private nextTurn() {
