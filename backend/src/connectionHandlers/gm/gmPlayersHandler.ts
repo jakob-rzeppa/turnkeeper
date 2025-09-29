@@ -106,13 +106,6 @@ export default class GmPlayersHandler {
         }
 
         gameloop.addPlayerToTurnOrder(playerId);
-
-        logger.info({
-            message: "Player added to turn order",
-            details: {
-                playerName: playerData.name,
-            },
-        });
     }
 
     private updatePlayer({
