@@ -38,10 +38,15 @@ export const useTurnStore = defineStore('turn', () => {
         },
     )
 
+    function nextTurn() {
+        socket.emit('game:turn:next')
+    }
+
     return {
         playerOrder,
         isInitialized,
         round,
         currentPlayerId,
+        nextTurn,
     }
 })

@@ -2,30 +2,11 @@
 import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from '../player/PlayerEditor.vue'
 import DisplayContainer from '../DisplayContainer.vue'
-import useConnection from '@/composables/connection'
 
 const turnStore = useTurnStore()
-const { socket } = useConnection()
-
-socket.on(
-    'game:turn',
-    ({
-        playerOrder,
-        round,
-    }: {
-        playerOrder: { id: string; name: string }[]
-        round: { roundNumber: number; currentPlayerIndex: number }
-    }) => {
-        turnStore.playerOrder = playerOrder
-        turnStore.round = {
-            roundNumber: round.roundNumber,
-            currentPlayerIndex: round.currentPlayerIndex,
-        }
-    },
-)
 
 function endTurn() {
-    socket.emit('game:turn:next')
+    turnStore.nextTurn()
 }
 </script>
 
