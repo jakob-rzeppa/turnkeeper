@@ -4,7 +4,8 @@ import { computed, ref } from 'vue'
 
 const { socket } = useConnection()
 
-export const useTurnStore = defineStore('turn', () => {
+// The game store stores all the information about the current game state.
+export const useGameStore = defineStore('game', () => {
     // The store shall only be modified by events from the backend.
     const playerOrder = ref<{ id: string; name: string }[]>([])
     const isInitialized = ref(false)

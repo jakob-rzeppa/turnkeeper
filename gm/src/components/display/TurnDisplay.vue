@@ -1,25 +1,25 @@
 <script setup lang="ts">
-import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from '../player/PlayerEditor.vue'
 import DisplayContainer from '../DisplayContainer.vue'
+import { useGameStore } from '@/stores/gameStore'
 
-const turnStore = useTurnStore()
+const gameStore = useGameStore()
 
 function endTurn() {
-    turnStore.nextTurn()
+    gameStore.nextTurn()
 }
 </script>
 
 <template>
     <DisplayContainer label="Turn">
-        <div v-if="turnStore.isInitialized" class="flex flex-col gap-4">
-            <p>Round: {{ turnStore.round.roundNumber }}</p>
+        <div v-if="gameStore.isInitialized" class="flex flex-col gap-4">
+            <p>Round: {{ gameStore.round.roundNumber }}</p>
             <div class="breadcrumbs">
                 <ul>
-                    <li v-for="player in turnStore.playerOrder" :key="player.id">
+                    <li v-for="player in gameStore.playerOrder" :key="player.id">
                         <span
                             class="font-bold text-accent"
-                            v-if="turnStore.currentPlayerId === player.id"
+                            v-if="gameStore.currentPlayerId === player.id"
                         >
                             {{ player.name }}
                         </span>
@@ -28,8 +28,8 @@ function endTurn() {
                 </ul>
             </div>
             <button class="btn btn-accent" @click="endTurn">End turn</button>
-            <div v-if="turnStore.currentPlayerId">
-                <PlayerEditor :playerId="turnStore.currentPlayerId" />
+            <div v-if="gameStore.currentPlayerId">
+                <PlayerEditor :playerId="gameStore.currentPlayerId" />
             </div>
             <div v-else>
                 <p>No current player</p>

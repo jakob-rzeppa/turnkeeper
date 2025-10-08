@@ -1,17 +1,17 @@
 <script setup lang="ts">
 import useConnection from '@/composables/connection'
-import { useTurnStore } from '@/stores/turnStore'
+import { useGameStore } from '@/stores/gameStore'
 import { ref } from 'vue'
 import draggable from 'vuedraggable'
 
 const emit = defineEmits(['close'])
 
-const turnStore = useTurnStore()
+const gameStore = useGameStore()
 const { socket } = useConnection()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
-playerOrderRef.value = [...turnStore.playerOrder]
+playerOrderRef.value = [...gameStore.playerOrder]
 
 function startGame() {
     socket.emit('game:playerOrder:update', {
