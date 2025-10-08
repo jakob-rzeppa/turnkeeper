@@ -1,10 +1,11 @@
 <script setup lang="ts">
-import { socket } from '@/util/connection'
 import { useTurnStore } from '@/stores/turnStore'
 import PlayerEditor from '../input/PlayerEditor.vue'
 import DisplayContainer from './DisplayContainer.vue'
+import useConnection from '@/composables/connection'
 
 const turnStore = useTurnStore()
+const { socket } = useConnection()
 
 socket.on(
     'game:turn',

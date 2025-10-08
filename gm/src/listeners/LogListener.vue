@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import useConnection from '@/composables/connection'
 import { useLogStore } from '@/stores/logStore'
-import { socket } from '../util/connection'
 
 const logStore = useLogStore()
+const { socket } = useConnection()
 
 socket.on('log', (logEntry) => {
     logStore.logs.push(logEntry)

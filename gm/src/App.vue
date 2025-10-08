@@ -9,9 +9,11 @@ import LogDisplay from './components/display/LogDisplay.vue'
 import LogListener from './listeners/LogListener.vue'
 import Drawer from './components/Drawer.vue'
 import InitGameButton from './components/InitGameButton.vue'
-import connection from './util/connection'
+import connection from './composables/connection'
 import CreatePlayerButton from './components/CreatePlayerButton.vue'
 import UpdatePlayerOrderButton from './components/UpdatePlayerOrderButton.vue'
+
+const { isConnected } = connection()
 </script>
 
 <template>
@@ -22,7 +24,7 @@ import UpdatePlayerOrderButton from './components/UpdatePlayerOrderButton.vue'
             <UpdatePlayerOrderButton />
             <CreatePlayerButton />
         </Drawer>
-        <div v-if="connection.isConnected().value">
+        <div v-if="isConnected">
             <div class="grid grid-cols-2 gap-4">
                 <TurnDisplay />
                 <LogDisplay />

@@ -1,8 +1,9 @@
 <script setup lang="ts">
+import useConnection from '@/composables/connection'
 import { useTurnStore } from '@/stores/turnStore'
-import { socket } from '../util/connection'
 
 const turnStore = useTurnStore()
+const { socket } = useConnection()
 
 socket.on(
     'game:turn',

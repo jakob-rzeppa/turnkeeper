@@ -1,12 +1,13 @@
 <script setup lang="ts">
+import useConnection from '@/composables/connection'
 import { useTurnStore } from '@/stores/turnStore'
-import { socket } from '@/util/connection'
 import { ref } from 'vue'
 import draggable from 'vuedraggable'
 
 const emit = defineEmits(['close'])
 
 const turnStore = useTurnStore()
+const { socket } = useConnection()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 

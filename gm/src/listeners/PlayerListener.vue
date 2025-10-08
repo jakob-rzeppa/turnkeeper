@@ -1,8 +1,9 @@
 <script setup lang="ts">
-import { socket } from '../util/connection'
+import useConnection from '@/composables/connection'
 import { usePlayerStore } from '@/stores/playerStore'
 
 const playerStore = usePlayerStore()
+const { socket } = useConnection()
 
 socket.on('players', (players) => {
     playerStore.players = players

@@ -1,15 +1,7 @@
 <script setup lang="ts">
-import connection from '@/util/connection'
+import useConnection from '@/composables/connection'
 
-const isConnected = connection.isConnected()
-
-function connect() {
-    connection.connect()
-}
-
-function disconnect() {
-    connection.disconnect()
-}
+const { isConnected, connect, disconnect } = useConnection()
 </script>
 
 <template>

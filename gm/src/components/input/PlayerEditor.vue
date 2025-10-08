@@ -1,9 +1,9 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
 import { usePlayerStore } from '@/stores/playerStore'
-import { socket } from '@/util/connection'
 import { ref, shallowRef, watch } from 'vue'
 import NewStatModal from '../modal/NewStatModal.vue'
+import useConnection from '@/composables/connection'
 
 const props = defineProps<{
     playerId: string
@@ -13,6 +13,7 @@ const emit = defineEmits(['done'])
 
 const modalStore = useModalStore()
 const playerStore = usePlayerStore()
+const { socket } = useConnection()
 
 /*
  * Even though we update the refs if the playerStore changes we get the initial values from the props.

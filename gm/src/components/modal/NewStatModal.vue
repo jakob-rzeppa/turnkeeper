@@ -1,6 +1,6 @@
 <script setup lang="ts">
+import useConnection from '@/composables/connection'
 import type { PlayerStat } from '@/types/player'
-import { socket } from '@/util/connection'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -9,6 +9,8 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+
+const { socket } = useConnection()
 
 const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global')
 const statNameRef = ref('')

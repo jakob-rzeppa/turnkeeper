@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PlayerEditor from '../input/PlayerEditor.vue'
-import { socket } from '@/util/connection'
+import useConnection from '@/composables/connection'
 
 // The Player prop needs to be a deep clone
 const props = defineProps<{
@@ -8,6 +8,7 @@ const props = defineProps<{
 }>()
 
 const emit = defineEmits(['close'])
+const { socket } = useConnection()
 
 function deletePlayer(): void {
     if (

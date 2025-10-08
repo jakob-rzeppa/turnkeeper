@@ -1,8 +1,10 @@
 <script setup lang="ts">
-import { socket } from '@/util/connection'
 import { ref } from 'vue'
+import useConnection from '@/composables/connection'
 
 const emit = defineEmits(['close'])
+
+const { socket } = useConnection()
 
 const newPlayerNameRef = ref('')
 
