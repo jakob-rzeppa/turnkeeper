@@ -5,6 +5,7 @@ import { computed, ref } from 'vue'
 const { socket } = useConnection()
 
 export const useTurnStore = defineStore('turn', () => {
+    // The store shall only be modified by events from the backend.
     const playerOrder = ref<{ id: string; name: string }[]>([])
     const isInitialized = ref(false)
     const round = ref({

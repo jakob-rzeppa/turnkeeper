@@ -6,6 +6,7 @@ import { ref } from 'vue'
 const { socket } = useConnection()
 
 export const usePlayerStore = defineStore('player', () => {
+    // The store shall only be modified by events from the backend.
     const players = ref<Player[]>([])
     const getPlayerById = (id: string) => {
         return players.value.find((p) => p.id === id)
