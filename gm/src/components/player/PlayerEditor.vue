@@ -41,7 +41,7 @@ watch(
 watch(
     () => playerStore.players,
     () => {
-        const updatedPlayer = playerStore.players.find((p) => p.id === props.playerId)
+        const updatedPlayer = playerStore.getPlayerById(props.playerId)
 
         // When the player is not found (deleted), close the modal
         if (!updatedPlayer) {
@@ -57,13 +57,10 @@ watch(
 )
 
 function updatePlayer(): void {
-    socket.emit('players:update', {
-        playerId: props.playerId,
-        playerData: {
-            name: playerNameRef.value,
-            secret: playerSecretRef.value,
-            stats: playerStatsRef.value,
-        },
+    playerStore.updatePlayer(props.playerId, {
+        name: playerNameRef.value,
+        secret: playerSecretRef.value,
+        stats: playerStatsRef.value,
     })
     emit('done')
 }
@@ -78,8 +75,7 @@ function openNewStatModal(): void {
 }
 
 function removeStatFromPlayer(statName: string): void {
-    socket.emit('players:stats:remove', { playerId: props.playerId, statName })
-    // The playerStore will be updated via the socket event, which will also update the playerStatsRef via the watch above
+    playerStore.removeStatFromPlayer(props.playerId, statName)
 }
 </script>
 

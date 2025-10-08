@@ -1,18 +1,16 @@
 <script setup lang="ts">
+import { usePlayerStore } from '@/stores/playerStore'
 import { ref } from 'vue'
-import useConnection from '@/composables/connection'
 
 const emit = defineEmits(['close'])
 
-const { socket } = useConnection()
+const playerStore = usePlayerStore()
 
 const newPlayerNameRef = ref('')
 
 function createPlayer() {
-    if (newPlayerNameRef.value.trim()) {
-        socket.emit('players:create', { name: newPlayerNameRef.value.trim() })
-        emit('close')
-    }
+    playerStore.createPlayer(newPlayerNameRef.value)
+    emit('close')
 }
 </script>
 
