@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import useConnection from '@/composables/connection'
+import { useGameStore } from '@/stores/gameStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { ref } from 'vue'
 import draggable from 'vuedraggable'
@@ -7,7 +8,7 @@ import draggable from 'vuedraggable'
 const emit = defineEmits(['close'])
 
 const playerStore = usePlayerStore()
-const { socket } = useConnection()
+const gameStore = useGameStore()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
@@ -17,7 +18,7 @@ playerOrderRef.value = playerStore.players.map((player) => ({
 }))
 
 function startGame() {
-    socket.emit('game:init', { playerIdsInOrder: playerOrderRef.value.map((p) => p.id) })
+    gameStore.initGame(playerOrderRef.value.map((p) => p.id))
     emit('close')
 }
 </script>
