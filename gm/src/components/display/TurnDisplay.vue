@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useTurnStore } from '@/stores/turnStore'
-import PlayerEditor from '../input/PlayerEditor.vue'
-import DisplayContainer from './DisplayContainer.vue'
+import PlayerEditor from '../player/PlayerEditor.vue'
+import DisplayContainer from '../DisplayContainer.vue'
 import useConnection from '@/composables/connection'
 
 const turnStore = useTurnStore()

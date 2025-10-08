@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import PlayerEditor from '../input/PlayerEditor.vue'
+import PlayerEditor from './PlayerEditor.vue'
 import useConnection from '@/composables/connection'
 
 // The Player prop needs to be a deep clone
