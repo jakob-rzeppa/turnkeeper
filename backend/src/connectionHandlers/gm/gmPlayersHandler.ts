@@ -42,6 +42,12 @@ export default class GmPlayersHandler {
         this.socket.on("players:update", ({ playerId, playerData }) => {
             this.updatePlayer({ playerId, playerData });
             this.sendPlayers();
+
+            // Resend turn info to update player order
+            const gmGameHandler = GmGameHandler.getInstance();
+            if (gmGameHandler) {
+                gmGameHandler.sendTurnInfo();
+            }
         });
 
         this.socket.on(
@@ -49,6 +55,12 @@ export default class GmPlayersHandler {
             ({ playerId }: { playerId: string }) => {
                 this.deletePlayer(playerId);
                 this.sendPlayers();
+
+                // Resend turn info to update player order
+                const gmGameHandler = GmGameHandler.getInstance();
+                if (gmGameHandler) {
+                    gmGameHandler.sendTurnInfo();
+                }
             }
         );
 
@@ -120,6 +132,7 @@ export default class GmPlayersHandler {
 
     private deletePlayer(playerId: string) {
         playerRepository.deletePlayer(playerId);
+        gameloop.removeDeletePlayersFromPlayerOrder();
     }
 
     private createStatForPlayer({

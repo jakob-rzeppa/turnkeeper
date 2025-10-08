@@ -1,3 +1,4 @@
+import playerRepository from "../repositories/playerRepository.js";
 import logger from "./logger.js";
 
 const game = {
@@ -103,6 +104,13 @@ export const gameloop = {
         logger.info({
             message: "Player order updated.",
         });
+    },
+    // Needs to be called whenever players are deleted to ensure the turn order is accurate
+    removeDeletePlayersFromPlayerOrder: () => {
+        const allPlayerIds = playerRepository.getAllPlayers().map((p) => p.id);
+        game.playerOrder = game.playerOrder.filter((playerId) =>
+            allPlayerIds.includes(playerId)
+        );
     },
     getRoundInformation: () => {
         return {
