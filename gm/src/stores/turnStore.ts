@@ -1,17 +1,46 @@
+import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
+import { computed, ref } from 'vue'
 
-export const useTurnStore = defineStore('turn', {
-    state: () => ({
-        playerOrder: [] as { id: string; name: string }[],
-        isInitialized: false,
-        round: {
-            roundNumber: 0,
-            currentPlayerIndex: 0,
+const { socket } = useConnection()
+
+export const useTurnStore = defineStore('turn', () => {
+    const playerOrder = ref<{ id: string; name: string }[]>([])
+    const isInitialized = ref(false)
+    const round = ref({
+        roundNumber: 0,
+        currentPlayerIndex: 0,
+    })
+
+    const currentPlayerId = computed(() => {
+        return playerOrder.value[round.value.currentPlayerIndex]?.id ?? null
+    })
+
+    // Listener for updates from server
+    socket.on(
+        'game:turn',
+        ({
+            playerOrder: newPlayerOrder,
+            round: newRound,
+            isInitialized: newIsInitialized,
+        }: {
+            playerOrder: { id: string; name: string }[]
+            round: { roundNumber: number; currentPlayerIndex: number }
+            isInitialized: boolean
+        }) => {
+            playerOrder.value = newPlayerOrder
+            round.value = {
+                roundNumber: newRound.roundNumber,
+                currentPlayerIndex: newRound.currentPlayerIndex,
+            }
+            isInitialized.value = newIsInitialized
         },
-    }),
-    getters: {
-        currentPlayerId: (state) => {
-            return state.playerOrder[state.round.currentPlayerIndex]?.id ?? null
-        },
-    },
+    )
+
+    return {
+        playerOrder,
+        isInitialized,
+        round,
+        currentPlayerId,
+    }
 })

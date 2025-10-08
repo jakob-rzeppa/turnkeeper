@@ -1,12 +1,9 @@
 <script setup lang="ts">
 import PlayerDisplay from './components/display/PlayerDisplay.vue'
-import PlayerListener from './listeners/PlayerListener.vue'
 import ModalController from './components/modal/ModalController.vue'
 import ConnectionController from './components/ConnectionController.vue'
 import TurnDisplay from './components/display/TurnDisplay.vue'
-import TurnListener from './listeners/TurnListener.vue'
 import LogDisplay from './components/display/LogDisplay.vue'
-import LogListener from './listeners/LogListener.vue'
 import Drawer from './components/Drawer.vue'
 import InitGameButton from './components/InitGameButton.vue'
 import connection from './composables/connection'
@@ -30,9 +27,6 @@ const { isConnected } = connection()
                 <LogDisplay />
                 <PlayerDisplay />
             </div>
-            <TurnListener />
-            <LogListener />
-            <PlayerListener />
         </div>
         <div v-else class="flex flex-col items-center justify-center h-full">
             <span class="loading loading-bars loading-xl"></span>
