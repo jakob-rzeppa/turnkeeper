@@ -1,14 +1,14 @@
 <script setup lang="ts">
 import PlayerDisplay from './components/player/PlayerDisplay.vue'
 import ModalController from './components/modal/ModalController.vue'
-import ConnectionController from './components/ConnectionController.vue'
+import ConnectionController from './components/connection/ConnectionController.vue'
 import TurnDisplay from './components/display/TurnDisplay.vue'
 import LogDisplay from './components/log/LogDisplay.vue'
-import Drawer from './components/Drawer.vue'
-import InitGameButton from './components/InitGameButton.vue'
+import Drawer from './components/container/Drawer.vue'
+import InitGameButton from './components/game/InitGameButton.vue'
 import connection from './composables/connection'
 import CreatePlayerButton from './components/player/CreatePlayerButton.vue'
-import UpdatePlayerOrderButton from './components/UpdatePlayerOrderButton.vue'
+import UpdatePlayerOrderButton from './components/game/UpdatePlayerOrderButton.vue'
 
 const { isConnected } = connection()
 </script>

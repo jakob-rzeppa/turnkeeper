@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
 import { shallowRef } from 'vue'
-import NewStatModal from '../modal/NewStatModal.vue'
+import NewStatModal from './NewStatModal.vue'
 import { usePlayerStore } from '@/stores/playerStore'
 
 const props = defineProps<{

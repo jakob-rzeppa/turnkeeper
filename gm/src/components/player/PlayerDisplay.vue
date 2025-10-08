@@ -4,7 +4,7 @@ import { shallowRef } from 'vue'
 import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
 import PlayerEditorModal from '../player/PlayerEditorModal.vue'
-import DisplayContainer from '../DisplayContainer.vue'
+import DisplayContainer from '../container/DisplayContainer.vue'
 
 const playerStore = usePlayerStore()
 const modalStore = useModalStore()

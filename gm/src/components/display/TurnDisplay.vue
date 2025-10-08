@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import PlayerEditor from '../player/PlayerEditor.vue'
-import DisplayContainer from '../DisplayContainer.vue'
+import DisplayContainer from '../container/DisplayContainer.vue'
 import { useGameStore } from '@/stores/gameStore'
 
 const gameStore = useGameStore()

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useLogStore } from '@/stores/logStore'
-import DisplayContainer from '../DisplayContainer.vue'
+import DisplayContainer from '../container/DisplayContainer.vue'
 
 const logStore = useLogStore()
 </script>
