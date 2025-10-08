@@ -35,10 +35,8 @@ watch(
 
 // Update Player info, when the player in the backend changes
 watch(
-    () => playerStore.players,
-    () => {
-        const updatedPlayer = playerStore.getPlayerById(props.playerId)
-
+    () => playerStore.getPlayerById(props.playerId),
+    (updatedPlayer) => {
         // When the player is not found (deleted), close the modal
         if (!updatedPlayer) {
             emit('done')
@@ -49,7 +47,6 @@ watch(
         playerSecretRef.value = updatedPlayer.secret
         playerStatsRef.value = updatedPlayer.stats.map((s) => ({ ...s }))
     },
-    { deep: true },
 )
 
 function updatePlayer(): void {

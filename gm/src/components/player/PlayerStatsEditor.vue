@@ -19,7 +19,6 @@ function openNewStatModal(): void {
         playerId: props.playerId,
         playerName: props.playerName,
     })
-    // Changes via the NewStatModal will be reflected in the playerStatsRef via the watch above
 }
 
 function removeStatFromPlayer(statName: string): void {
