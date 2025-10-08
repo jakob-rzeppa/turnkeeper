@@ -13,10 +13,8 @@ const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
 playerOrderRef.value = [...gameStore.playerOrder]
 
-function startGame() {
-    socket.emit('game:playerOrder:update', {
-        playerIdsInOrder: playerOrderRef.value.map((p) => p.id),
-    })
+function updatePlayerOrder() {
+    gameStore.updatePlayerOrder(playerOrderRef.value.map((p) => p.id))
     emit('close')
 }
 </script>
@@ -36,5 +34,7 @@ function startGame() {
             </li>
         </template>
     </draggable>
-    <button class="btn btn-primary mt-4 w-full" @click="startGame">Update Player Order</button>
+    <button class="btn btn-primary mt-4 w-full" @click="updatePlayerOrder">
+        Update Player Order
+    </button>
 </template>
