@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import useConnection from '@/composables/connection'
+import { usePlayerStore } from '@/stores/playerStore'
 import type { PlayerStat } from '@/types/player'
 import { ref } from 'vue'
 
@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const { socket } = useConnection()
+const playerStore = usePlayerStore()
 
 const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global')
 const statNameRef = ref('')
@@ -22,11 +22,7 @@ const createStat = () => {
         value: statInitialValueRef.value,
     }
 
-    socket.emit('players:stats:create', {
-        scope: scopeRef.value,
-        playerId: props.playerId,
-        statData,
-    })
+    playerStore.createStatForPlayer(statData, scopeRef.value, props.playerId)
 
     emit('close')
 }

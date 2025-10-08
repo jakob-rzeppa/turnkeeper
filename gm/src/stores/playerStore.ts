@@ -1,5 +1,5 @@
 import useConnection from '@/composables/connection'
-import type { Player } from '@/types/player'
+import type { Player, PlayerStat } from '@/types/player'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 
@@ -34,6 +34,18 @@ export const usePlayerStore = defineStore('player', () => {
         socket.emit('players:delete', { playerId })
     }
 
+    function createStatForPlayer(
+        statData: PlayerStat,
+        scope: 'global' | 'player',
+        playerId?: string,
+    ): void {
+        socket.emit('players:stats:create', {
+            scope,
+            playerId,
+            statData,
+        })
+    }
+
     function removeStatFromPlayer(playerId: string, statName: string): void {
         socket.emit('players:stats:remove', { playerId, statName })
     }
@@ -44,6 +56,7 @@ export const usePlayerStore = defineStore('player', () => {
         createPlayer,
         updatePlayer,
         deletePlayer,
+        createStatForPlayer,
         removeStatFromPlayer,
     }
 })
