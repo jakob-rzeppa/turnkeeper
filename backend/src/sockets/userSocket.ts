@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "../services/logger.js";
-import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
+import UserController from "../connectionControllers/UserController.js";
 
 const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
@@ -17,7 +17,7 @@ const onUserConnection = (socket: Socket): void => {
         return;
     }
 
-    if (UserPlayersEmitter.isConnected(playerId)) {
+    if (UserController.isConnected(playerId)) {
         logger.error({
             message:
                 "User connection failed: User for Player already connected",
@@ -32,10 +32,10 @@ const onUserConnection = (socket: Socket): void => {
         details: { playerId },
     });
 
-    UserPlayersEmitter.registerSocket(playerId, socket);
+    UserController.registerSocket(playerId, socket);
 
     socket.on("disconnect", () => {
-        UserPlayersEmitter.unregisterSocket(playerId);
+        UserController.unregisterSocket(playerId);
         logger.info({
             message: "User disconnected",
             details: { playerId, socketId: socket.id },
