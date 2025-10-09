@@ -1,8 +1,7 @@
 import { Server, Socket } from "socket.io";
-import { authenticateUser, disconnectUser } from "../auth/userAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { registerUserPlayersHandler } from "../connectionListeners/user/userPlayersHandler.js";
 import logger from "../services/logger.js";
+import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
 
 const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
@@ -10,20 +9,33 @@ const onUserConnection = (socket: Socket): void => {
     );
 
     if (!playerId) {
-        console.error("Player ID not found after authentication");
-        socket.disconnect(true);
+        logger.error({
+            message: "User connection failed: Player not found",
+            details: { playerId },
+        });
+        socket.disconnect();
+        return;
+    }
+
+    if (UserPlayersEmitter.isConnected(playerId)) {
+        logger.error({
+            message:
+                "User connection failed: User for Player already connected",
+            details: { playerId },
+        });
+        socket.disconnect();
         return;
     }
 
     logger.info({
         message: "User connected",
-        details: { playerId, socketId: socket.id },
+        details: { playerId },
     });
 
-    registerUserPlayersHandler({ socket, playerId });
+    UserPlayersEmitter.registerSocket(playerId, socket);
 
     socket.on("disconnect", () => {
-        disconnectUser({ playerId: playerId });
+        UserPlayersEmitter.unregisterSocket(playerId);
         logger.info({
             message: "User disconnected",
             details: { playerId, socketId: socket.id },
@@ -33,25 +45,6 @@ const onUserConnection = (socket: Socket): void => {
 
 export const createUserSocket = (io: Server): void => {
     const namespace = io.of("/user");
-
-    namespace.use((socket, next) => {
-        const { playerName, playerSecret } = socket.handshake.auth;
-
-        const playerId = playerRepository.getPlayerIdByName(playerName);
-
-        if (!playerId) {
-            return next(new Error("Player with that name not found"));
-        }
-
-        try {
-            authenticateUser({ playerId, playerSecret });
-            next();
-        } catch (error: unknown) {
-            if (error instanceof Error) {
-                next(error);
-            }
-        }
-    });
 
     namespace.on("connection", onUserConnection);
 };
