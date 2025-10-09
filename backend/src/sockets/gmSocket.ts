@@ -8,7 +8,7 @@ import GmPlayersHandler from "../connectionHandlers/gm/gmPlayersHandler.js";
 const onGmConnection = (socket: Socket) => {
     logger.info({
         message: "GM connected",
-        data: { socketId: socket.id },
+        details: { socketId: socket.id },
     });
 
     GmPlayersHandler.registerSocket(socket);
@@ -20,7 +20,7 @@ const onGmConnection = (socket: Socket) => {
         GmLogsHandler.unregisterSocket();
         logger.info({
             message: "GM disconnected",
-            data: { socketId: socket.id },
+            details: { socketId: socket.id },
         });
     });
 };

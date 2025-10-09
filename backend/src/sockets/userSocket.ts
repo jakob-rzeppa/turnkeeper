@@ -17,7 +17,7 @@ const onUserConnection = (socket: Socket): void => {
 
     logger.info({
         message: "User connected",
-        data: { playerId, socketId: socket.id },
+        details: { playerId, socketId: socket.id },
     });
 
     registerUserPlayersHandler({ socket, playerId });
@@ -26,7 +26,7 @@ const onUserConnection = (socket: Socket): void => {
         disconnectUser({ playerId: playerId });
         logger.info({
             message: "User disconnected",
-            data: { playerId, socketId: socket.id },
+            details: { playerId, socketId: socket.id },
         });
     });
 };
