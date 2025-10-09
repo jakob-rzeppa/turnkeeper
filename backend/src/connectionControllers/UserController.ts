@@ -26,7 +26,15 @@ export default class UserController {
     // Emitters
     public userPlayersEmitter: UserPlayersEmitter;
 
+    public socket: Socket;
+
     private constructor(playerId: string, s: Socket) {
-        this.userPlayersEmitter = new UserPlayersEmitter(playerId, s);
+        this.socket = s;
+
+        this.userPlayersEmitter = new UserPlayersEmitter(playerId, this.socket);
+    }
+
+    public disconnect() {
+        this.socket.disconnect();
     }
 }

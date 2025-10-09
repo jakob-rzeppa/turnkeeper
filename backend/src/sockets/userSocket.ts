@@ -48,7 +48,7 @@ const onUserConnection = (socket: Socket): void => {
         UserController.unregisterSocket(playerId);
         logger.info({
             message: "User disconnected",
-            details: { playerId, socketId: socket.id },
+            details: { playerId },
         });
     });
 };

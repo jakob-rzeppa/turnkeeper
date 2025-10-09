@@ -1,4 +1,5 @@
 import GmController from "../connectionControllers/GmController.js";
+import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import { gameloop } from "./gameloop.js";
 
@@ -36,6 +37,8 @@ const playerHandler = {
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
 
         gameloop.removeDeletePlayersFromPlayerOrder();
+
+        UserController.getInstance(playerId)?.disconnect();
     },
     createStatForPlayer({
         playerId,
