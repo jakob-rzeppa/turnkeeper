@@ -42,6 +42,25 @@ export const gameloop = {
 
         GmGameEmitter.getInstance()?.sendGameInfo();
     },
+    end: () => {
+        if (!game.isInitialized) {
+            logger.error({
+                message: "Game loop not initialized. Aborting end operation",
+            });
+            return;
+        }
+
+        game.round.roundNumber = 0;
+        game.round.currentPlayerIndex = 0;
+        game.isInitialized = false;
+        game.playerOrder = [];
+
+        logger.info({
+            message: "Game ended",
+        });
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
+    },
     nextTurn: () => {
         if (game.playerOrder.length === 0) return;
 

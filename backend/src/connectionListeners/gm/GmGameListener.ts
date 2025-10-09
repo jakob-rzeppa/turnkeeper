@@ -37,6 +37,10 @@ export default class GmGameListener {
             }
         );
 
+        this.socket.on("game:end", () => {
+            this.endGame();
+        });
+
         this.socket.on(
             "game:playerOrder:update",
             ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
@@ -47,6 +51,10 @@ export default class GmGameListener {
 
     private initGameloop(playerIdsInOrder: string[]) {
         gameloop.init(playerIdsInOrder);
+    }
+
+    private endGame() {
+        gameloop.end();
     }
 
     private updatePlayerOrder(playerIdsInOrder: string[]) {

@@ -43,6 +43,10 @@ export const useGameStore = defineStore('game', () => {
         socket.emit('game:init', { playerIdsInOrder })
     }
 
+    function endGame() {
+        socket.emit('game:end')
+    }
+
     function updatePlayerOrder(playerIdsInOrder: string[]) {
         socket.emit('game:playerOrder:update', {
             playerIdsInOrder,
@@ -61,5 +65,6 @@ export const useGameStore = defineStore('game', () => {
         nextTurn,
         initGame,
         updatePlayerOrder,
+        endGame,
     }
 })

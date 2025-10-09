@@ -9,6 +9,7 @@ import InitGameButton from './components/game/InitGameButton.vue'
 import connection from './composables/connection'
 import CreatePlayerButton from './components/player/CreatePlayerButton.vue'
 import UpdatePlayerOrderButton from './components/game/UpdatePlayerOrderButton.vue'
+import EndGameButton from './components/game/EndGameButton.vue'
 
 const { isConnected } = connection()
 </script>
@@ -20,6 +21,7 @@ const { isConnected } = connection()
             <InitGameButton />
             <UpdatePlayerOrderButton />
             <CreatePlayerButton />
+            <EndGameButton />
         </Drawer>
         <div v-if="isConnected">
             <div class="grid grid-cols-2 gap-4">
