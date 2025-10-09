@@ -1,7 +1,7 @@
 import { Server, Socket } from "socket.io";
 import { authenticateUser, disconnectUser } from "../auth/userAuth.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { registerUserPlayersHandler } from "../connectionHandlers/user/userPlayersHandler.js";
+import { registerUserPlayersHandler } from "../connectionListeners/user/userPlayersHandler.js";
 import logger from "../services/logger.js";
 
 const onUserConnection = (socket: Socket): void => {
