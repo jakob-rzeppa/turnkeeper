@@ -9,6 +9,10 @@ export default class GmController {
     // Singleton instance / register only one GM players listener at a time
     private static instance: GmController | null = null;
 
+    public static isConnected = (): boolean => {
+        return this.instance !== null;
+    };
+
     public static registerSocket = (s: Socket) => {
         GmController.instance = new GmController(s);
     };
