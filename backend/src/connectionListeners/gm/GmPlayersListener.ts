@@ -3,24 +3,9 @@ import { Stat } from "../../types/playerTypes.js";
 import playerHandler from "../../services/playersHandler.js";
 
 export default class GmPlayersListener {
-    // Singleton instance / register only one GM players listener at a time
-    private static instance: GmPlayersListener | null = null;
-
-    public static registerSocket = (s: Socket) => {
-        GmPlayersListener.instance = new GmPlayersListener(s);
-    };
-
-    public static unregisterSocket = () => {
-        GmPlayersListener.instance = null;
-    };
-
-    public static getInstance = () => {
-        return this.instance;
-    };
-
     private socket: Socket;
 
-    private constructor(s: Socket) {
+    public constructor(s: Socket) {
         this.socket = s;
 
         this.socket.on("players:create", (playerData) => {

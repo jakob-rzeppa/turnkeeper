@@ -1,4 +1,4 @@
-import GmGameEmitter from "../connectionEmitters/gm/GmGameEmitter.js";
+import GmController from "../connectionControllers/GmController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "./logger.js";
 
@@ -40,7 +40,7 @@ export const gameloop = {
             message: "Game loop initialized",
         });
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     end: () => {
         if (!game.isInitialized) {
@@ -59,7 +59,7 @@ export const gameloop = {
             message: "Game ended",
         });
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     nextTurn: () => {
         if (game.playerOrder.length === 0) return;
@@ -91,7 +91,7 @@ export const gameloop = {
             },
         });
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     addPlayerToTurnOrder: (playerId: string) => {
         if (game.playerOrder.includes(playerId)) {
@@ -106,7 +106,7 @@ export const gameloop = {
             details: { playerId },
         });
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     setPlayerOrder: (newPlayerOrder: string[]) => {
         if (newPlayerOrder.length === 0) {
@@ -131,7 +131,7 @@ export const gameloop = {
             message: "Player order updated.",
         });
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     // Needs to be called whenever players are deleted to ensure the turn order is accurate
     removeDeletePlayersFromPlayerOrder: () => {
@@ -140,7 +140,7 @@ export const gameloop = {
             allPlayerIds.includes(playerId)
         );
 
-        GmGameEmitter.getInstance()?.sendGameInfo();
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     getRoundInformation: () => {
         return {

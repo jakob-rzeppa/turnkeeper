@@ -1,4 +1,4 @@
-import GmLogsEmitter from "../connectionEmitters/gm/GmLogsEmitter.js";
+import GmController from "../connectionControllers/GmController.js";
 import { LogEntry } from "../types/logTypes.js";
 
 function formatLogEntry(logEntry: LogEntry): string {
@@ -48,10 +48,7 @@ const logger = {
         }
 
         // Send logs to the GM if connected
-        const gmLogsEmitter = GmLogsEmitter.getInstance();
-        if (gmLogsEmitter) {
-            gmLogsEmitter.sendLog(completeLogEntry);
-        }
+        GmController.getInstance()?.gmLogsEmitter.sendLog(completeLogEntry);
     },
 };
 
