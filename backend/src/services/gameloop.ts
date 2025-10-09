@@ -1,3 +1,4 @@
+import GmGameEmitter from "../connectionEmitters/gm/GmGameEmitter.js";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "./logger.js";
 
@@ -38,6 +39,8 @@ export const gameloop = {
         logger.info({
             message: "Game loop initialized",
         });
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
     },
     nextTurn: () => {
         if (game.playerOrder.length === 0) return;
@@ -68,6 +71,8 @@ export const gameloop = {
                 playerId: game.playerOrder[game.round.currentPlayerIndex],
             },
         });
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
     },
     addPlayerToTurnOrder: (playerId: string) => {
         if (game.playerOrder.includes(playerId)) {
@@ -81,6 +86,8 @@ export const gameloop = {
             message: "Player added to turn order.",
             details: { playerId },
         });
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
     },
     setPlayerOrder: (newPlayerOrder: string[]) => {
         if (newPlayerOrder.length === 0) {
@@ -104,6 +111,8 @@ export const gameloop = {
         logger.info({
             message: "Player order updated.",
         });
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
     },
     // Needs to be called whenever players are deleted to ensure the turn order is accurate
     removeDeletePlayersFromPlayerOrder: () => {
@@ -111,6 +120,8 @@ export const gameloop = {
         game.playerOrder = game.playerOrder.filter((playerId) =>
             allPlayerIds.includes(playerId)
         );
+
+        GmGameEmitter.getInstance()?.sendGameInfo();
     },
     getRoundInformation: () => {
         return {

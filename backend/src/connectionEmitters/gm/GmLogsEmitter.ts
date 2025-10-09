@@ -1,16 +1,16 @@
 import { Socket } from "socket.io";
 import { LogEntry } from "../../types/logTypes.js";
 
-export default class GmLogsHandler {
-    // Singleton instance / register only one GM logs handler at a time
-    private static instance: GmLogsHandler | null = null;
+export default class GmLogsEmitter {
+    // Singleton instance / register only one GM logs emitter at a time
+    private static instance: GmLogsEmitter | null = null;
 
     public static registerSocket = (s: Socket) => {
-        GmLogsHandler.instance = new GmLogsHandler(s);
+        GmLogsEmitter.instance = new GmLogsEmitter(s);
     };
 
     public static unregisterSocket = () => {
-        GmLogsHandler.instance = null;
+        GmLogsEmitter.instance = null;
     };
 
     public static getInstance = () => {
