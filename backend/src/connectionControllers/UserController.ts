@@ -19,6 +19,10 @@ export default class UserController {
         return this.instances.get(playerId);
     };
 
+    public static getAllInstances = () => {
+        return Array.from(this.instances.values());
+    };
+
     public static isConnected = (playerId: string): boolean => {
         return this.instances.has(playerId);
     };

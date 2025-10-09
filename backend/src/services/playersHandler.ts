@@ -29,16 +29,19 @@ const playerHandler = {
     }) {
         playerRepository.updatePlayer(playerId, playerData);
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(
+            playerId
+        )?.userPlayersEmitter.sendOwnPlayer();
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
     deletePlayer(playerId: string) {
         playerRepository.deletePlayer(playerId);
+
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(playerId)?.disconnect();
 
         gameloop.removeDeletePlayersFromPlayerOrder();
-
-        UserController.getInstance(playerId)?.disconnect();
     },
     createStatForPlayer({
         playerId,
@@ -48,14 +51,22 @@ const playerHandler = {
         statData: { name: string; value: boolean | number | string | string[] };
     }) {
         playerRepository.createStatForPlayer(playerId, statData);
+
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(
+            playerId
+        )?.userPlayersEmitter.sendOwnPlayer();
     },
     createStatForAllPlayers(statData: {
         name: string;
         value: boolean | number | string | string[];
     }) {
         playerRepository.createStatForAllPlayers(statData);
+
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userPlayersEmitter.sendOwnPlayer();
+        });
     },
     removeStatFromPlayer({
         playerId,
@@ -65,7 +76,11 @@ const playerHandler = {
         statName: string;
     }) {
         playerRepository.removeStatFromPlayer(playerId, statName);
+
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(
+            playerId
+        )?.userPlayersEmitter.sendOwnPlayer();
     },
 };
 
