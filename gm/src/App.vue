@@ -10,8 +10,16 @@ import connection from './composables/connection'
 import CreatePlayerButton from './components/player/CreatePlayerButton.vue'
 import UpdatePlayerOrderButton from './components/game/UpdatePlayerOrderButton.vue'
 import EndGameButton from './components/game/EndGameButton.vue'
+import { useGameStore } from './stores/gameStore'
+import { useLogStore } from './stores/logStore'
+import { usePlayerStore } from './stores/playerStore'
 
 const { isConnected } = connection()
+
+// Initialize all stores, that define listeners for backend updates, so that they are ready when the gm connects to the backend
+useGameStore()
+useLogStore()
+usePlayerStore()
 </script>
 
 <template>

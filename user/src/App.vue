@@ -6,7 +6,7 @@ import { usePlayerStore } from './stores/playerStore'
 
 const { isConnected } = useConnection()
 
-// Initialize all stores, that use listeners for backend updates
+// Initialize all stores, that define listeners for backend updates, so that they are ready when the user connects to the backend
 usePlayerStore()
 </script>
 
