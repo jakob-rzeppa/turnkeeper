@@ -9,7 +9,7 @@ export const usePlayerStore = defineStore('player', () => {
     const connection = useConnection()
 
     connection.socket.on('player', (newPlayer) => {
-        player.value = newPlayer
+        player.value = newPlayer || null
     })
 
     return { player }
