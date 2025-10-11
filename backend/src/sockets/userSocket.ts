@@ -1,8 +1,9 @@
 import { Server, Socket } from "socket.io";
+
+import { isUserSecretValid } from "../auth/userAuth.js";
+import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "../services/logger.js";
-import UserController from "../connectionControllers/UserController.js";
-import { isUserSecretValid } from "../auth/userAuth.js";
 
 const onUserConnection = (socket: Socket): void => {
     const playerId = playerRepository.getPlayerIdByName(
@@ -11,8 +12,8 @@ const onUserConnection = (socket: Socket): void => {
 
     if (!playerId) {
         logger.error({
-            message: "User connection failed: Player not found",
             details: { playerId },
+            message: "User connection failed: Player not found",
         });
         socket.disconnect();
         return;
@@ -20,8 +21,8 @@ const onUserConnection = (socket: Socket): void => {
 
     if (!isUserSecretValid(playerId, socket.handshake.auth.playerSecret)) {
         logger.error({
-            message: "User connection failed: Invalid secret",
             details: { playerId },
+            message: "User connection failed: Invalid secret",
         });
         socket.disconnect();
         return;
@@ -29,17 +30,17 @@ const onUserConnection = (socket: Socket): void => {
 
     if (UserController.isConnected(playerId)) {
         logger.error({
+            details: { playerId },
             message:
                 "User connection failed: User for Player already connected",
-            details: { playerId },
         });
         socket.disconnect();
         return;
     }
 
     logger.info({
-        message: "User connected",
         details: { playerId },
+        message: "User connected",
     });
 
     UserController.registerSocket(playerId, socket);
@@ -47,8 +48,8 @@ const onUserConnection = (socket: Socket): void => {
     socket.on("disconnect", () => {
         UserController.unregisterSocket(playerId);
         logger.info({
-            message: "User disconnected",
             details: { playerId },
+            message: "User disconnected",
         });
     });
 };

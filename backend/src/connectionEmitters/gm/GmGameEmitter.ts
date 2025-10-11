@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
-import { gameloop } from "../../services/gameloop.js";
+
 import playerRepository from "../../repositories/playerRepository.js";
+import { gameloop } from "../../services/gameloop.js";
 
 export default class GmGameEmitter {
     private socket: Socket;
@@ -21,8 +22,8 @@ export default class GmGameEmitter {
         }));
 
         this.socket.emit("game:turn", {
-            playerOrder: playerOrderWithNames,
             isInitialized: gameloop.isInitialized(),
+            playerOrder: playerOrderWithNames,
             round: gameloop.getRoundInformation(),
         });
     }

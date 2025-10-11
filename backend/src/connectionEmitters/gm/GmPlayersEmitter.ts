@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+
 import playerRepository from "../../repositories/playerRepository.js";
 
 export default class GmPlayersEmitter {

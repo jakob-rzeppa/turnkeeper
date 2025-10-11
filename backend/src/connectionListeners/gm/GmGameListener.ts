@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+
 import { gameloop } from "../../services/gameloop.js";
 
 /**
@@ -34,19 +35,19 @@ export default class GmGameListener {
         );
     }
 
-    private initGameloop(playerIdsInOrder: string[]) {
-        gameloop.init(playerIdsInOrder);
-    }
-
     private endGame() {
         gameloop.end();
     }
 
-    private updatePlayerOrder(playerIdsInOrder: string[]) {
-        gameloop.setPlayerOrder(playerIdsInOrder);
+    private initGameloop(playerIdsInOrder: string[]) {
+        gameloop.init(playerIdsInOrder);
     }
 
     private nextTurn() {
         gameloop.nextTurn();
+    }
+
+    private updatePlayerOrder(playerIdsInOrder: string[]) {
+        gameloop.setPlayerOrder(playerIdsInOrder);
     }
 }

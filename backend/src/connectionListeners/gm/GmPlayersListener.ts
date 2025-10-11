@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
-import { Stat } from "../../types/playerTypes.js";
+
 import playerHandler from "../../services/playersHandler.js";
+import { Stat } from "../../types/playerTypes.js";
 
 export default class GmPlayersListener {
     private socket: Socket;
@@ -12,8 +13,8 @@ export default class GmPlayersListener {
             playerHandler.createPlayer(playerData);
         });
 
-        this.socket.on("players:update", ({ playerId, playerData }) => {
-            playerHandler.updatePlayer({ playerId, playerData });
+        this.socket.on("players:update", ({ playerData, playerId }) => {
+            playerHandler.updatePlayer({ playerData, playerId });
         });
 
         this.socket.on(
@@ -26,12 +27,12 @@ export default class GmPlayersListener {
         this.socket.on(
             "players:stats:create",
             ({
-                scope,
                 playerId,
+                scope,
                 statData,
             }: {
-                scope: "global" | "player";
                 playerId?: string;
+                scope: "global" | "player";
                 statData: Stat;
             }) => {
                 if (scope === "player" && playerId) {

@@ -2,7 +2,7 @@ import GmController from "../connectionControllers/GmController.js";
 import { LogEntry } from "../types/logTypes.js";
 
 function formatLogEntry(logEntry: LogEntry): string {
-    const { timestamp, severity, message, details } = logEntry;
+    const { details, message, severity, timestamp } = logEntry;
     let formattedEntry = `[${timestamp.toISOString()}] [${severity.toUpperCase()}] ${message}`;
 
     if (details) {
@@ -16,14 +16,11 @@ function formatLogEntry(logEntry: LogEntry): string {
 }
 
 const logger = {
-    info: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
-        logger.log({ ...logEntry, severity: "info" });
-    },
-    warn: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
-        logger.log({ ...logEntry, severity: "warning" });
-    },
-    error: (logEntry: Omit<LogEntry, "timestamp" | "severity">) => {
+    error: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
         logger.log({ ...logEntry, severity: "error" });
+    },
+    info: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
+        logger.log({ ...logEntry, severity: "info" });
     },
     // Log is a separate function to handle sending logs to different outputs in the future
     log: (logEntry: Omit<LogEntry, "timestamp">) => {
@@ -34,14 +31,14 @@ const logger = {
 
         const formattedLogEntry = formatLogEntry(completeLogEntry);
         switch (completeLogEntry.severity) {
+            case "error":
+                console.error(formattedLogEntry);
+                break;
             case "info":
                 console.info(formattedLogEntry);
                 break;
             case "warning":
                 console.warn(formattedLogEntry);
-                break;
-            case "error":
-                console.error(formattedLogEntry);
                 break;
             default:
                 console.log(formattedLogEntry);
@@ -49,6 +46,9 @@ const logger = {
 
         // Send logs to the GM if connected
         GmController.getInstance()?.gmLogsEmitter.sendLog(completeLogEntry);
+    },
+    warn: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
+        logger.log({ ...logEntry, severity: "warning" });
     },
 };
 

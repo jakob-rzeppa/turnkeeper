@@ -20,28 +20,16 @@ const playerHandler = {
 
         gameloop.addPlayerToTurnOrder(playerId);
     },
-    updatePlayer({
-        playerId,
-        playerData,
-    }: {
-        playerId: string;
-        playerData: { name?: string; secret?: string };
+    createStatForAllPlayers(statData: {
+        name: string;
+        value: boolean | number | string | string[];
     }) {
-        playerRepository.updatePlayer(playerId, playerData);
-        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(
-            playerId
-        )?.userPlayersEmitter.sendOwnPlayer();
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-    },
-    deletePlayer(playerId: string) {
-        playerRepository.deletePlayer(playerId);
+        playerRepository.createStatForAllPlayers(statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(playerId)?.disconnect();
-
-        gameloop.removeDeletePlayersFromPlayerOrder();
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userPlayersEmitter.sendOwnPlayer();
+        });
     },
     createStatForPlayer({
         playerId,
@@ -57,16 +45,13 @@ const playerHandler = {
             playerId
         )?.userPlayersEmitter.sendOwnPlayer();
     },
-    createStatForAllPlayers(statData: {
-        name: string;
-        value: boolean | number | string | string[];
-    }) {
-        playerRepository.createStatForAllPlayers(statData);
+    deletePlayer(playerId: string) {
+        playerRepository.deletePlayer(playerId);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userPlayersEmitter.sendOwnPlayer();
-        });
+        UserController.getInstance(playerId)?.disconnect();
+
+        gameloop.removeDeletePlayersFromPlayerOrder();
     },
     removeStatFromPlayer({
         playerId,
@@ -81,6 +66,21 @@ const playerHandler = {
         UserController.getInstance(
             playerId
         )?.userPlayersEmitter.sendOwnPlayer();
+    },
+    updatePlayer({
+        playerData,
+        playerId,
+    }: {
+        playerData: { name?: string; secret?: string };
+        playerId: string;
+    }) {
+        playerRepository.updatePlayer(playerId, playerData);
+        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(
+            playerId
+        )?.userPlayersEmitter.sendOwnPlayer();
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
 };
 

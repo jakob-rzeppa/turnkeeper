@@ -1,9 +1,33 @@
 import { Socket } from "socket.io";
+
 import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
 
 export default class UserController {
     // Multiple instances / register one user controller per playerId
-    private static instances: Map<string, UserController> = new Map();
+    private static instances = new Map<string, UserController>();
+
+    public socket: Socket;
+
+    // Emitters
+    public userPlayersEmitter: UserPlayersEmitter;
+
+    private constructor(playerId: string, s: Socket) {
+        this.socket = s;
+
+        this.userPlayersEmitter = new UserPlayersEmitter(playerId, this.socket);
+    }
+
+    public static getAllInstances = () => {
+        return Array.from(this.instances.values());
+    };
+
+    public static getInstance = (playerId: string) => {
+        return this.instances.get(playerId);
+    };
+
+    public static isConnected = (playerId: string): boolean => {
+        return this.instances.has(playerId);
+    };
 
     public static registerSocket = (playerId: string, s: Socket) => {
         if (!this.instances.has(playerId)) {
@@ -14,29 +38,6 @@ export default class UserController {
     public static unregisterSocket = (playerId: string) => {
         this.instances.delete(playerId);
     };
-
-    public static getInstance = (playerId: string) => {
-        return this.instances.get(playerId);
-    };
-
-    public static getAllInstances = () => {
-        return Array.from(this.instances.values());
-    };
-
-    public static isConnected = (playerId: string): boolean => {
-        return this.instances.has(playerId);
-    };
-
-    // Emitters
-    public userPlayersEmitter: UserPlayersEmitter;
-
-    public socket: Socket;
-
-    private constructor(playerId: string, s: Socket) {
-        this.socket = s;
-
-        this.userPlayersEmitter = new UserPlayersEmitter(playerId, this.socket);
-    }
 
     public disconnect() {
         this.socket.disconnect();

@@ -6,12 +6,55 @@ const game = {
     isInitialized: false,
     playerOrder: [] as string[], // array of player IDs in turn order
     round: {
-        roundNumber: 0,
         currentPlayerIndex: 0,
+        roundNumber: 0,
     },
 };
 
 export const gameloop = {
+    addPlayerToTurnOrder: (playerId: string) => {
+        if (game.playerOrder.includes(playerId)) {
+            logger.warn({
+                message: `Player ${playerId} is already in the turn order. Skipping addition.`,
+            });
+            return;
+        }
+        game.playerOrder.push(playerId);
+        logger.info({
+            details: { playerId },
+            message: "Player added to turn order.",
+        });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+    },
+    end: () => {
+        if (!game.isInitialized) {
+            logger.error({
+                message: "Game loop not initialized. Aborting end operation",
+            });
+            return;
+        }
+
+        game.round.roundNumber = 0;
+        game.round.currentPlayerIndex = 0;
+        game.isInitialized = false;
+        game.playerOrder = [];
+
+        logger.info({
+            message: "Game ended",
+        });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+    },
+    getPlayerOrder: () => {
+        return game.playerOrder;
+    },
+    getRoundInformation: () => {
+        return {
+            currentPlayerIndex: game.round.currentPlayerIndex,
+            roundNumber: game.round.roundNumber,
+        };
+    },
     init: (newPlayerOrder: string[]) => {
         if (game.isInitialized) {
             logger.error({
@@ -42,34 +85,18 @@ export const gameloop = {
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
-    end: () => {
-        if (!game.isInitialized) {
-            logger.error({
-                message: "Game loop not initialized. Aborting end operation",
-            });
-            return;
-        }
-
-        game.round.roundNumber = 0;
-        game.round.currentPlayerIndex = 0;
-        game.isInitialized = false;
-        game.playerOrder = [];
-
-        logger.info({
-            message: "Game ended",
-        });
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+    isInitialized: () => {
+        return game.isInitialized;
     },
     nextTurn: () => {
         if (game.playerOrder.length === 0) return;
 
         logger.info({
-            message: "End of turn",
             details: {
-                roundNumber: game.round.roundNumber,
                 playerId: game.playerOrder[game.round.currentPlayerIndex],
+                roundNumber: game.round.roundNumber,
             },
+            message: "End of turn",
         });
 
         game.round.currentPlayerIndex = game.round.currentPlayerIndex + 1;
@@ -78,33 +105,27 @@ export const gameloop = {
             game.round.roundNumber += 1;
             game.round.currentPlayerIndex = 0;
             logger.info({
-                message: "New round started",
                 details: { roundNumber: game.round.roundNumber },
+                message: "New round started",
             });
         }
 
         logger.info({
-            message: "Start of turn",
             details: {
-                roundNumber: game.round.roundNumber,
                 playerId: game.playerOrder[game.round.currentPlayerIndex],
+                roundNumber: game.round.roundNumber,
             },
+            message: "Start of turn",
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
-    addPlayerToTurnOrder: (playerId: string) => {
-        if (game.playerOrder.includes(playerId)) {
-            logger.warn({
-                message: `Player ${playerId} is already in the turn order. Skipping addition.`,
-            });
-            return;
-        }
-        game.playerOrder.push(playerId);
-        logger.info({
-            message: "Player added to turn order.",
-            details: { playerId },
-        });
+    // Needs to be called whenever players are deleted to ensure the turn order is accurate
+    removeDeletePlayersFromPlayerOrder: () => {
+        const allPlayerIds = playerRepository.getAllPlayers().map((p) => p.id);
+        game.playerOrder = game.playerOrder.filter((playerId) =>
+            allPlayerIds.includes(playerId)
+        );
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
@@ -132,26 +153,5 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-    },
-    // Needs to be called whenever players are deleted to ensure the turn order is accurate
-    removeDeletePlayersFromPlayerOrder: () => {
-        const allPlayerIds = playerRepository.getAllPlayers().map((p) => p.id);
-        game.playerOrder = game.playerOrder.filter((playerId) =>
-            allPlayerIds.includes(playerId)
-        );
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-    },
-    getRoundInformation: () => {
-        return {
-            roundNumber: game.round.roundNumber,
-            currentPlayerIndex: game.round.currentPlayerIndex,
-        };
-    },
-    getPlayerOrder: () => {
-        return game.playerOrder;
-    },
-    isInitialized: () => {
-        return game.isInitialized;
     },
 };

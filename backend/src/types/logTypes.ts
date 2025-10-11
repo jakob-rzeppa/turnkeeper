@@ -1,8 +1,8 @@
-type LogSeverity = "info" | "warning" | "error";
-
-export type LogEntry = {
-    timestamp: Date;
-    severity: LogSeverity;
+export interface LogEntry {
+    details?: Record<string, any>;
     message: string;
-    details?: { [key: string]: any };
-};
+    severity: LogSeverity;
+    timestamp: Date;
+}
+
+type LogSeverity = "error" | "info" | "warning";

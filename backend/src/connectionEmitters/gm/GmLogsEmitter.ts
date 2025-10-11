@@ -1,4 +1,5 @@
 import { Socket } from "socket.io";
+
 import { LogEntry } from "../../types/logTypes.js";
 
 export default class GmLogsEmitter {
