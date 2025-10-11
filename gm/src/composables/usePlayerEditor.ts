@@ -1,8 +1,20 @@
+import { useGameStore } from '@/stores/gameStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { reactive, watch } from 'vue'
 
-export const usePlayerEditor = (playerId: string, closeFunction?: () => void) => {
+/**
+ * Composable to edit a player. It provides a local copy of the player, which can be modified and then saved back to the store.
+ *
+ * @param playerId if no playerId is supplied the current player (whose turn is) is used
+ * @param closeFunction the close function will be called, when the editor is done (e.g. a modal should be closed)
+ */
+export const usePlayerEditor = (playerId?: string, closeFunction?: () => void) => {
     const playerStore = usePlayerStore()
+    const gameStore = useGameStore()
+
+    if (!playerId) {
+        playerId = gameStore.currentPlayerId
+    }
 
     const player = playerStore.getPlayerById(playerId) ?? {
         name: '',
@@ -19,7 +31,7 @@ export const usePlayerEditor = (playerId: string, closeFunction?: () => void) =>
 
     // Update Player info, when the player in the backend changes
     watch(
-        () => playerStore.getPlayerById(playerId),
+        () => playerStore.getPlayerById(gameStore.currentPlayerId),
         (updatedPlayer) => {
             // When the player is not found (deleted), close the modal
             if (!updatedPlayer) {
@@ -33,7 +45,7 @@ export const usePlayerEditor = (playerId: string, closeFunction?: () => void) =>
         },
     )
 
-    function updatePlayer(): void {
+    const updatePlayer = (): void => {
         playerStore.updatePlayer(playerId, {
             name: localPlayer.name,
             secret: localPlayer.secret,
