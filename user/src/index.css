@@ -1,2 +1,55 @@
 @import 'tailwindcss';
-@plugin "daisyui";
+@plugin "daisyui" {
+    themes: autumn --default;
+}
+
+/* Mobile optimizations */
+* {
+    -webkit-tap-highlight-color: transparent;
+}
+
+body {
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    overflow-x: hidden;
+    background-color: var(--color-base-200);
+}
+
+/* Ensure touch targets are at least 44px for accessibility */
+.btn,
+.input,
+.textarea,
+.select {
+    min-height: 44px;
+}
+
+/* Prevent zoom on input focus on iOS */
+input,
+textarea,
+select {
+    font-size: 16px;
+}
+
+@media (min-width: 768px) {
+    /* On larger screens, maintain mobile card width but center content */
+    body {
+        display: flex;
+        justify-content: center;
+        align-items: flex-start;
+        min-height: 100vh;
+    }
+
+    #app {
+        width: 100%;
+        max-width: 48rem;
+    }
+}
+
+/* Maintain mobile padding on all screen sizes */
+.card-body {
+    padding: 1.5rem !important;
+}
+
+.p-4 {
+    padding: 1rem !important;
+}

@@ -11,8 +11,8 @@ usePlayerStore()
 </script>
 
 <template>
-    <Login v-if="!isConnected" />
-    <PlayerDisplay v-else />
+    <div>
+        <Login v-if="!isConnected" />
+        <PlayerDisplay v-else />
+    </div>
 </template>
-
-<style scoped></style>
