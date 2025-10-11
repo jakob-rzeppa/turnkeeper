@@ -2,7 +2,8 @@
 import PlayerDisplay from './components/player/PlayerDisplay.vue'
 import ModalController from './components/modal/ModalController.vue'
 import ConnectionController from './components/connection/ConnectionController.vue'
-import TurnDisplay from './components/display/TurnDisplay.vue'
+import TurnDisplay from './components/game/TurnDisplay.vue'
+import CurrentPlayerDisplay from './components/game/CurrentPlayerDisplay.vue'
 import LogDisplay from './components/log/LogDisplay.vue'
 import Drawer from './components/container/DrawerContainer.vue'
 import InitGameButton from './components/game/InitGameButton.vue'
@@ -36,6 +37,9 @@ usePlayerStore()
                 <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                     <div class="lg:col-span-1">
                         <TurnDisplay />
+                    </div>
+                    <div class="lg:col-span-1">
+                        <CurrentPlayerDisplay />
                     </div>
                     <div class="lg:col-span-1">
                         <LogDisplay />

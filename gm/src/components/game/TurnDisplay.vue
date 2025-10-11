@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import PlayerEditor from '../player/PlayerEditor.vue'
 import DisplayContainer from '../container/DisplayContainer.vue'
 import { useGameStore } from '@/stores/gameStore'
 
@@ -60,25 +59,6 @@ function endTurn() {
                 </svg>
                 End Turn
             </button>
-
-            <!-- Current Player Editor -->
-            <div v-if="gameStore.currentPlayerId" class="mt-6">
-                <div class="divider">
-                    <span class="text-sm font-medium">Current Player</span>
-                </div>
-                <PlayerEditor :playerId="gameStore.currentPlayerId" />
-            </div>
-            <div v-else class="alert alert-warning">
-                <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.732-.833-2.5 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z"
-                    ></path>
-                </svg>
-                <span>No current player selected</span>
-            </div>
         </div>
         <div v-else class="text-center py-8">
             <div class="alert alert-info">
