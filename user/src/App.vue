@@ -1,7 +1,9 @@
 <script setup lang="ts">
 import GameDisplay from './components/GameDisplay.vue'
 import LoginForm from './components/LoginForm.vue'
-import PlayerDisplay from './components/PlayerDisplay.vue'
+import MainContainer from './components/MainContainer.vue'
+import PlayerNameDisplay from './components/PlayerNameDisplay.vue'
+import PlayerDisplay from './components/StatsDisplay.vue'
 import useConnection from './composables/connection'
 import { useGameStore } from './stores/gameStore'
 import { usePlayerStore } from './stores/playerStore'
@@ -16,9 +18,10 @@ useGameStore()
 <template>
     <div>
         <LoginForm v-if="!isConnected" />
-        <div v-else>
+        <MainContainer v-else>
+            <PlayerNameDisplay />
             <GameDisplay />
             <PlayerDisplay />
-        </div>
+        </MainContainer>
     </div>
 </template>
