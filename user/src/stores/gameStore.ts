@@ -26,11 +26,6 @@ export const useGameStore = defineStore('game', () => {
             round.value = newRound
             isInitialized.value = newIsInitialized
             playerOrder.value = newPlayerOrder
-            console.log('Received game update:', {
-                round: newRound,
-                isInitialized: newIsInitialized,
-                playerOrder: newPlayerOrder,
-            })
         },
     )
 
