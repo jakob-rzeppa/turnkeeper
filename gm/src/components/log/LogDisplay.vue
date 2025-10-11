@@ -1,17 +1,52 @@
 <script setup lang="ts">
 import { useLogStore } from '@/stores/logStore'
 import DisplayContainer from '../container/DisplayContainer.vue'
+import { nextTick, watch, ref } from 'vue'
 
-const logStore = useLogStore()
+const { logs } = useLogStore()
+const logContainer = ref<HTMLElement>()
+
+const isAtBottom = () => {
+    if (!logContainer.value) return true
+    const { scrollTop, scrollHeight, clientHeight } = logContainer.value
+    return Math.abs(scrollHeight - clientHeight - scrollTop) < 50
+}
+
+const scrollToNewElement = async () => {
+    if (logContainer.value) {
+        if (!isAtBottom()) return
+
+        // Wait for DOM updates to complete
+        await nextTick()
+
+        // Small additional delay to ensure content is fully rendered
+        setTimeout(() => {
+            const lowestLog = document.getElementById('lowestLog')
+            if (logContainer.value) {
+                logContainer.value.scrollTo({
+                    top: logContainer.value.scrollHeight,
+                })
+            }
+        }, 10)
+    }
+}
+
+watch(
+    () => logs.length,
+    () => {
+        scrollToNewElement()
+    },
+)
 </script>
 
 <template>
     <DisplayContainer label="Game Logs">
-        <div class="h-96 overflow-y-auto">
-            <div v-if="logStore.logs.length > 0" class="space-y-2">
+        <div class="h-96 overflow-y-auto" ref="logContainer">
+            <div v-if="logs.length > 0" class="flex flex-col-reverse gap-2">
                 <div
-                    v-for="(log, index) in logStore.logs"
+                    v-for="(log, index) in [...logs].reverse()"
                     :key="index"
+                    :id="index === logs.length - 1 ? 'lowestLog' : ''"
                     class="p-3 rounded-lg border-l-4 transition-all hover:shadow-sm"
                     :class="{
                         'bg-info/10 border-l-info': log.severity === 'info',
@@ -118,7 +153,7 @@ const logStore = useLogStore()
         </div>
 
         <!-- Auto-scroll to bottom indicator -->
-        <div v-if="logStore.logs.length > 5" class="mt-3 text-xs text-center text-base-content/50">
+        <div v-if="logs.length > 5" class="mt-3 text-xs text-center text-base-content/50">
             <kbd class="kbd kbd-xs">Scroll</kbd> to view older logs
         </div>
     </DisplayContainer>
