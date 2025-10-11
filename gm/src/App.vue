@@ -23,7 +23,7 @@ usePlayerStore()
 </script>
 
 <template>
-    <main class="bg-base-300 h-screen p-12">
+    <main class="bg-base-300 min-h-screen">
         <Drawer>
             <ConnectionController />
             <InitGameButton />
@@ -31,15 +31,28 @@ usePlayerStore()
             <CreatePlayerButton />
             <EndGameButton />
         </Drawer>
-        <div v-if="isConnected">
-            <div class="grid grid-cols-2 gap-4">
-                <TurnDisplay />
-                <LogDisplay />
-                <PlayerDisplay />
+        <div class="container mx-auto p-6 lg:p-8">
+            <div v-if="isConnected" class="space-y-6">
+                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
+                    <div class="lg:col-span-1">
+                        <TurnDisplay />
+                    </div>
+                    <div class="lg:col-span-1">
+                        <LogDisplay />
+                    </div>
+                    <div class="lg:col-span-2 xl:col-span-3">
+                        <PlayerDisplay />
+                    </div>
+                </div>
             </div>
-        </div>
-        <div v-else class="flex flex-col items-center justify-center h-full">
-            <span class="loading loading-bars loading-xl"></span>
+            <div v-else class="flex flex-col items-center justify-center min-h-[70vh] space-y-4">
+                <div class="text-center">
+                    <span class="loading loading-spinner loading-lg text-primary"></span>
+                    <h2 class="text-2xl font-semibold text-base-content mt-4">
+                        Not connected to Server
+                    </h2>
+                </div>
+            </div>
         </div>
     </main>
     <ModalController />

@@ -5,8 +5,14 @@ const props = defineProps<{
 </script>
 
 <template>
-    <fieldset class="w-full fieldset bg-base-200 border-base-300 rounded-box border p-4">
-        <legend v-if="props.label" class="fieldset-legend">{{ props.label }}</legend>
-        <slot />
-    </fieldset>
+    <div class="card bg-base-100 shadow-lg border border-base-300 h-full">
+        <div class="card-body p-6">
+            <h2 v-if="props.label" class="card-title text-primary mb-4 flex items-center">
+                {{ props.label }}
+            </h2>
+            <div class="flex-1">
+                <slot />
+            </div>
+        </div>
+    </div>
 </template>

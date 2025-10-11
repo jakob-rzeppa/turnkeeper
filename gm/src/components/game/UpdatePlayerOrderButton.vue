@@ -10,7 +10,15 @@ function openUpdatePlayerOrderModal() {
 </script>
 
 <template>
-    <button class="btn btn-primary btn-sm w-full" @click="openUpdatePlayerOrderModal">
-        Update Player Order
+    <button class="btn btn-accent btn-sm w-full gap-2" @click="openUpdatePlayerOrderModal">
+        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="2"
+                d="M4 6h16M4 10h16M4 14h16M4 18h16"
+            ></path>
+        </svg>
+        Update Order
     </button>
 </template>

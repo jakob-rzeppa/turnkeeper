@@ -21,13 +21,22 @@ onUnmounted(() => document.removeEventListener('keydown', handleEscape))
 </script>
 
 <template>
-    <div :style="{ zIndex: props.zIndex }" class="fixed w-screen h-screen top-0 left-0">
-        <div @click="emit('close')" class="w-full h-full backdrop-blur-sm" />
+    <div
+        :style="{ zIndex: props.zIndex }"
+        class="fixed inset-0 flex items-center justify-center p-4 animate-in fade-in duration-200"
+    >
+        <!-- Backdrop -->
         <div
-            class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 p-4 rounded-sm shadow-lg bg-base-200 min-w-1/2 min-h-1/2 border"
+            @click="emit('close')"
+            class="absolute inset-0 bg-gradient-to-br from-base-200/60 via-base-200/40 to-base-200/60 backdrop-blur-md"
+        />
+        <div
+            class="relative bg-base-100 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-hidden animate-in zoom-in-95 duration-200"
         >
-            <div class="flex flex-col gap-4 justify-center h-full">
-                <slot />
+            <div class="p-6 overflow-y-auto max-h-[90vh]">
+                <div class="space-y-6">
+                    <slot />
+                </div>
             </div>
         </div>
     </div>

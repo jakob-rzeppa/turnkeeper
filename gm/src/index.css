@@ -2,3 +2,78 @@
 @plugin "daisyui" {
     themes: autumn --default;
 }
+
+/* Custom scrollbar styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    @apply bg-base-300 rounded;
+}
+
+::-webkit-scrollbar-thumb {
+    @apply bg-base-content/20 rounded hover:bg-base-content/30;
+}
+
+/* Responsive drawer fixes */
+@media (max-width: 1024px) {
+    .drawer-container {
+        width: 16rem; /* w-64 */
+        transform: translateX(-14rem); /* -translate-x-56 */
+    }
+
+    .drawer-container:hover {
+        transform: translateX(0);
+    }
+}
+
+/* Smooth transitions for all interactive elements */
+.btn,
+.card,
+.input,
+.select,
+.modal-box {
+    transition: all 0.2s ease;
+}
+
+/* Custom animations */
+@keyframes slideInFromLeft {
+    from {
+        transform: translateX(-100%);
+        opacity: 0;
+    }
+    to {
+        transform: translateX(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeInUp {
+    from {
+        transform: translateY(20px);
+        opacity: 0;
+    }
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.animate-slide-in {
+    animation: slideInFromLeft 0.3s ease-out;
+}
+
+.animate-fade-in-up {
+    animation: fadeInUp 0.3s ease-out;
+}
+
+/* Card hover effects */
+.card:hover {
+    transform: translateY(-2px);
+}
+
+/* Loading spinner improvements */
+.loading {
+    animation-duration: 1s;
+}
