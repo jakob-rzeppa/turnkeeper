@@ -1,5 +1,4 @@
 <script setup lang="ts">
-import useConnection from '@/composables/connection'
 import { useGameStore } from '@/stores/gameStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { ref } from 'vue'

@@ -4,8 +4,9 @@ import { useGameStore } from '@/stores/gameStore'
 const gameStore = useGameStore()
 
 function endGame() {
-    confirm('Are you sure you want to end the game? This action cannot be undone.') &&
+    if (confirm('Are you sure you want to end the game? This action cannot be undone.')) {
         gameStore.endGame()
+    }
 }
 </script>
 

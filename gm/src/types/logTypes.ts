@@ -4,5 +4,5 @@ export type LogEntry = {
     timestamp: Date
     severity: LogSeverity
     message: string
-    details?: { [key: string]: any }
+    details?: { [key: string]: string | number | boolean }
 }
