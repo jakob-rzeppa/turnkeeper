@@ -1,4 +1,5 @@
 import GmController from "../connectionControllers/GmController.js";
+import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "./logger.js";
 
@@ -45,6 +46,9 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.forEachInstance((userController) => {
+            userController.userGameEmitter.sendGameInfo();
+        });
     },
     getPlayerOrder: () => {
         return game.playerOrder;
@@ -84,6 +88,9 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.forEachInstance((userController) => {
+            userController.userGameEmitter.sendGameInfo();
+        });
     },
     isInitialized: () => {
         return game.isInitialized;
@@ -119,6 +126,9 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.forEachInstance((userController) => {
+            userController.userGameEmitter.sendGameInfo();
+        });
     },
     // Needs to be called whenever players are deleted to ensure the turn order is accurate
     removeDeletePlayersFromPlayerOrder: () => {
