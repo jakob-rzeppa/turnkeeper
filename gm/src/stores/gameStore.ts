@@ -20,7 +20,7 @@ export const useGameStore = defineStore('game', () => {
 
     // Listener for updates from server
     socket.on(
-        'game:turn',
+        'game',
         ({
             playerOrder: newPlayerOrder,
             round: newRound,

@@ -12,7 +12,7 @@ export default class UserGameEmitter {
     }
 
     public sendGameInfo() {
-        this.socket.emit("game:turn", {
+        this.socket.emit("game", {
             isInitialized: gameloop.isInitialized(),
             round: gameloop.getRoundInformation(),
         });

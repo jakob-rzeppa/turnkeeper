@@ -22,7 +22,7 @@ export default class GmGameEmitter {
                 `Player ${(index + 1).toString()}`,
         }));
 
-        this.socket.emit("game:turn", {
+        this.socket.emit("game", {
             isInitialized: gameloop.isInitialized(),
             playerOrder: playerOrderWithNames,
             round: gameloop.getRoundInformation(),
