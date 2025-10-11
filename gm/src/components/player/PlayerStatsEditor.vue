@@ -1,6 +1,5 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
-import { shallowRef } from 'vue'
 import NewStatModal from './NewStatModal.vue'
 import { usePlayerStore } from '@/stores/playerStore'
 
@@ -14,8 +13,7 @@ const modalStore = useModalStore()
 const playerStore = usePlayerStore()
 
 function openNewStatModal(): void {
-    const newStatModal = shallowRef(NewStatModal)
-    modalStore.openModal(newStatModal, {
+    modalStore.openModal(NewStatModal, {
         playerId: props.playerId,
         playerName: props.playerName,
     })

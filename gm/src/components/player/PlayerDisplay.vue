@@ -1,6 +1,4 @@
 <script lang="ts" setup>
-import { shallowRef } from 'vue'
-
 import { usePlayerStore } from '@/stores/playerStore'
 import { useModalStore } from '@/stores/modalStore'
 import PlayerEditorModal from '../player/PlayerEditorModal.vue'
@@ -10,8 +8,7 @@ const playerStore = usePlayerStore()
 const modalStore = useModalStore()
 
 function openPlayerEditor(playerId: string) {
-    const playerEditorModal = shallowRef(PlayerEditorModal)
-    modalStore.openModal(playerEditorModal, { playerId })
+    modalStore.openModal(PlayerEditorModal, { playerId })
 }
 </script>
 

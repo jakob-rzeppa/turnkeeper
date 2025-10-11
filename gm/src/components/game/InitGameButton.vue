@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
 import InitGameModal from './InitGameModal.vue'
 import { useModalStore } from '@/stores/modalStore'
 
 const modalStore = useModalStore()
 
 function openInitGameModal() {
-    const initGameModal = shallowRef(InitGameModal)
-    modalStore.openModal(initGameModal)
+    modalStore.openModal(InitGameModal)
 }
 </script>
 

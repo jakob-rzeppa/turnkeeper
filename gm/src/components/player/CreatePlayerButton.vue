@@ -1,13 +1,11 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
-import { shallowRef } from 'vue'
 import NewPlayerModal from './NewPlayerModal.vue'
 
 const modalStore = useModalStore()
 
 function openNewPlayerModal() {
-    const newPlayerModal = shallowRef(NewPlayerModal)
-    modalStore.openModal(newPlayerModal)
+    modalStore.openModal(NewPlayerModal)
 }
 </script>
 

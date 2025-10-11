@@ -1,13 +1,11 @@
 <script setup lang="ts">
-import { shallowRef } from 'vue'
 import { useModalStore } from '@/stores/modalStore'
 import UpdatePlayerOrderModal from '../player/UpdatePlayerOrderModal.vue'
 
 const modalStore = useModalStore()
 
 function openUpdatePlayerOrderModal() {
-    const updatePlayerOrderModal = shallowRef(UpdatePlayerOrderModal)
-    modalStore.openModal(updatePlayerOrderModal)
+    modalStore.openModal(UpdatePlayerOrderModal)
 }
 </script>
 

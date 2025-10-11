@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { ShallowRef } from 'vue'
+import type { Component } from 'vue'
 
 /*
  * This Store manages the open Modals in the application.
@@ -8,7 +8,7 @@ import type { ShallowRef } from 'vue'
 
 interface Modal {
     id: number
-    component: ShallowRef<any>
+    component: Component
     props?: Record<string, unknown>
 }
 
@@ -20,7 +20,7 @@ export const useModalStore = defineStore('modal', {
         modals: [] as Modal[],
     }),
     actions: {
-        openModal(component: ShallowRef<any>, props: Modal['props'] = {}): void {
+        openModal(component: Component, props: Modal['props'] = {}): void {
             this.modals.push({ id: ++id, component, props })
         },
         closeTopModal(): void {
