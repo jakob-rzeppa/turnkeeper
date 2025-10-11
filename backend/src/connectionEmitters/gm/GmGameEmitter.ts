@@ -18,7 +18,8 @@ export default class GmGameEmitter {
         const playerOrderWithNames = playerOrder.map((id, index) => ({
             id,
             name:
-                playerRepository.getPlayerNameById(id) || `Player ${index + 1}`,
+                playerRepository.getPlayerNameById(id) ??
+                `Player ${(index + 1).toString()}`,
         }));
 
         this.socket.emit("game:turn", {

@@ -9,13 +9,22 @@ export default class GmPlayersListener {
     public constructor(s: Socket) {
         this.socket = s;
 
-        this.socket.on("players:create", (playerData) => {
+        this.socket.on("players:create", (playerData: { name: string }) => {
             playerHandler.createPlayer(playerData);
         });
 
-        this.socket.on("players:update", ({ playerData, playerId }) => {
-            playerHandler.updatePlayer({ playerData, playerId });
-        });
+        this.socket.on(
+            "players:update",
+            ({
+                playerData,
+                playerId,
+            }: {
+                playerData: { name: string };
+                playerId: string;
+            }) => {
+                playerHandler.updatePlayer({ playerData, playerId });
+            }
+        );
 
         this.socket.on(
             "players:delete",

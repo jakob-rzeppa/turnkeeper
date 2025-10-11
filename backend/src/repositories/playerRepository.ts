@@ -49,11 +49,11 @@ const playerRepository = {
         }
     },
     getAllPlayers: () => players,
-    getPlayerById: (id: string) => players.find((p) => p.id === id) || null,
+    getPlayerById: (id: string) => players.find((p) => p.id === id) ?? null,
     getPlayerIdByName: (name: string) =>
-        players.find((p) => p.name === name)?.id || null,
+        players.find((p) => p.name === name)?.id ?? null,
     getPlayerNameById: (id: string) =>
-        players.find((p) => p.id === id)?.name || null,
+        players.find((p) => p.id === id)?.name ?? null,
     removeStatFromPlayer: (playerId: string, statName: string) => {
         const player = players.find((p) => p.id === playerId);
         if (player) {

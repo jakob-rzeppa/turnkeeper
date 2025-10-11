@@ -6,6 +6,20 @@ import playerRepository from "../repositories/playerRepository.js";
 import logger from "../services/logger.js";
 
 const onUserConnection = (socket: Socket): void => {
+    if (
+        !socket.handshake.auth.playerName ||
+        !socket.handshake.auth.playerSecret ||
+        !(typeof socket.handshake.auth.playerName === "string") ||
+        !(typeof socket.handshake.auth.playerSecret === "string")
+    ) {
+        logger.error({
+            details: { handshakeAuth: socket.handshake.auth },
+            message: "User connection failed: Missing credentials",
+        });
+        socket.disconnect();
+        return;
+    }
+
     const playerId = playerRepository.getPlayerIdByName(
         socket.handshake.auth.playerName
     );

@@ -1,5 +1,5 @@
 export interface LogEntry {
-    details?: Record<string, any>;
+    details?: Record<string, unknown>;
     message: string;
     severity: LogSeverity;
     timestamp: Date;
