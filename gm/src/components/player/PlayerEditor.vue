@@ -1,7 +1,6 @@
 <script setup lang="ts">
-import { usePlayerStore } from '@/stores/playerStore'
-import { reactive, watch } from 'vue'
 import PlayerStatsEditor from './PlayerStatsEditor.vue'
+import { usePlayerEditor } from '@/composables/usePlayerEditor'
 
 const props = defineProps<{
     playerId: string
@@ -9,45 +8,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['done'])
 
-const playerStore = usePlayerStore()
-
-const player = playerStore.getPlayerById(props.playerId) ?? {
-    name: '',
-    secret: '',
-    stats: [],
-}
-
-// The local player needs to be a deep copy, so that changes to stats do not directly modify the store. The store shall only be modified by events from the backend.
-const localPlayer = reactive({
-    name: player.name,
-    secret: player.secret,
-    stats: player.stats.map((s) => ({ ...s })),
-})
-
-// Update Player info, when the player in the backend changes
-watch(
-    () => playerStore.getPlayerById(props.playerId),
-    (updatedPlayer) => {
-        // When the player is not found (deleted), close the modal
-        if (!updatedPlayer) {
-            emit('done')
-            return
-        }
-
-        localPlayer.name = updatedPlayer.name
-        localPlayer.secret = updatedPlayer.secret
-        localPlayer.stats = updatedPlayer.stats.map((s) => ({ ...s }))
-    },
-)
-
-function updatePlayer(): void {
-    playerStore.updatePlayer(props.playerId, {
-        name: localPlayer.name,
-        secret: localPlayer.secret,
-        stats: localPlayer.stats,
-    })
-    emit('done')
-}
+const { localPlayer, updatePlayer } = usePlayerEditor(props.playerId, () => emit('done'))
 </script>
 
 <template>
