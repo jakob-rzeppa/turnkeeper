@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import Login from './components/Login.vue'
+import LoginForm from './components/LoginForm.vue'
 import PlayerDisplay from './components/PlayerDisplay.vue'
 import useConnection from './composables/connection'
 import { usePlayerStore } from './stores/playerStore'
@@ -12,7 +12,7 @@ usePlayerStore()
 
 <template>
     <div>
-        <Login v-if="!isConnected" />
+        <LoginForm v-if="!isConnected" />
         <PlayerDisplay v-else />
     </div>
 </template>

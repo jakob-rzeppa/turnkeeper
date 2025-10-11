@@ -18,7 +18,7 @@ function login() {
             <div class="card-body">
                 <h1 class="card-title text-2xl font-bold text-center mb-6">Turnkeeper Login</h1>
 
-                <div class="form-control w-full">
+                <div class="w-full">
                     <label class="label">
                         <span class="label-text">Player Name</span>
                     </label>
@@ -30,7 +30,7 @@ function login() {
                     />
                 </div>
 
-                <div class="form-control w-full">
+                <div class="w-full">
                     <label class="label">
                         <span class="label-text">Player Secret</span>
                     </label>
