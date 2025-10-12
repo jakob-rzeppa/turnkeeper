@@ -9,8 +9,8 @@ export default class UserController {
 
     public socket: Socket;
 
-    public userGameEmitter: UserGameEmitter;
     // Emitters
+    public userGameEmitter: UserGameEmitter;
     public userPlayersEmitter: UserPlayersEmitter;
 
     private constructor(playerId: string, s: Socket) {
@@ -23,7 +23,9 @@ export default class UserController {
     public static forEachInstance = (
         cb: (userController: UserController) => void
     ) => {
-        this.instances.forEach((userController) => { cb(userController); });
+        this.instances.forEach((userController) => {
+            cb(userController);
+        });
     };
 
     public static getAllInstances = () => {
