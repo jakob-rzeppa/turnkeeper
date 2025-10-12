@@ -21,7 +21,6 @@ const createStat = () => {
         name: statNameRef.value,
         value: statInitialValueRef.value,
     }
-
     playerEmitter.createStatForPlayer(statData, scopeRef.value, props.playerId)
 
     emit('close')
