@@ -1,16 +1,19 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
+import type { BackendToUserPayloads, Player } from 'shared-types'
 import { ref } from 'vue'
-import { type PlayerInterface } from 'shared-types'
 
 export const usePlayerStore = defineStore('player', () => {
-    const player = ref<PlayerInterface | null>(null)
+    const player = ref<Omit<Player, 'secret'> | null>(null)
 
     const connection = useConnection()
 
-    connection.socket.on('player', (newPlayer) => {
-        player.value = newPlayer || null
-    })
+    connection.socket.on(
+        'player:info',
+        ({ player: newPlayer }: BackendToUserPayloads['player:info']) => {
+            player.value = newPlayer || null
+        },
+    )
 
     return { player }
 })

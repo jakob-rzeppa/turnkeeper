@@ -1,5 +1,6 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
+import type { BackendToGmEventPayloads, GameState, GmToBackendEventPayloads } from 'shared-types'
 import { computed, ref } from 'vue'
 
 const { socket } = useConnection()
@@ -7,9 +8,9 @@ const { socket } = useConnection()
 // The game store stores all the information about the current game state.
 export const useGameStore = defineStore('game', () => {
     // The store shall only be modified by events from the backend.
-    const playerOrder = ref<{ id: string; name: string }[]>([])
-    const isInitialized = ref(false)
-    const round = ref({
+    const playerOrder = ref<GameState['playerOrder']>([])
+    const isInitialized = ref<GameState['isInitialized']>(false)
+    const round = ref<GameState['round']>({
         roundNumber: 0,
         currentPlayerIndex: 0,
     })
@@ -20,16 +21,12 @@ export const useGameStore = defineStore('game', () => {
 
     // Listener for updates from server
     socket.on(
-        'game',
+        'game:info',
         ({
             playerOrder: newPlayerOrder,
             round: newRound,
             isInitialized: newIsInitialized,
-        }: {
-            playerOrder: { id: string; name: string }[]
-            round: { roundNumber: number; currentPlayerIndex: number }
-            isInitialized: boolean
-        }) => {
+        }: BackendToGmEventPayloads['game:info']) => {
             playerOrder.value = newPlayerOrder
             round.value = {
                 roundNumber: newRound.roundNumber,
@@ -40,7 +37,11 @@ export const useGameStore = defineStore('game', () => {
     )
 
     function initGame(playerIdsInOrder: string[]) {
-        socket.emit('game:init', { playerIdsInOrder })
+        const payload: GmToBackendEventPayloads['game:init'] = {
+            playerIdsInOrder,
+        }
+
+        socket.emit('game:init', payload)
     }
 
     function endGame() {
@@ -48,9 +49,11 @@ export const useGameStore = defineStore('game', () => {
     }
 
     function updatePlayerOrder(playerIdsInOrder: string[]) {
-        socket.emit('game:playerOrder:update', {
+        const payload: GmToBackendEventPayloads['game:playerOrder:update'] = {
             playerIdsInOrder,
-        })
+        }
+
+        socket.emit('game:playerOrder:update', payload)
     }
 
     function nextTurn() {

@@ -16,7 +16,7 @@ export default class GmPlayersEmitter {
     public sendPlayers() {
         const players = playerRepository.getAllPlayers();
 
-        const payload: BackendToGmEventPayloads["players:info"] = players;
+        const payload: BackendToGmEventPayloads["players:info"] = { players };
 
         this.socket.emit("players:info", payload);
     }

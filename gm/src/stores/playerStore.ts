@@ -1,53 +1,68 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
-import { type PlayerInterface, type StatInterface } from 'shared-types'
+import type {
+    BackendToGmEventPayloads,
+    GmToBackendEventPayloads,
+    Player,
+    PlayerStat,
+} from 'shared-types'
 
 const { socket } = useConnection()
 
 export const usePlayerStore = defineStore('player', () => {
     // The store shall only be modified by events from the backend.
-    const players = ref<PlayerInterface[]>([])
+    const players = ref<Player[]>([])
     const getPlayerById = (id: string) => {
         return players.value.find((p) => p.id === id)
     }
 
-    socket.on('players', (newPlayers) => {
-        players.value = newPlayers
-    })
+    socket.on(
+        'players:info',
+        ({ players: newPlayers }: BackendToGmEventPayloads['players:info']) => {
+            players.value = newPlayers
+        },
+    )
 
     function createPlayer(newPlayerName: string) {
-        if (!newPlayerName.trim()) {
-            return
+        const trimmedNewPlayerName = newPlayerName.trim()
+        if (!trimmedNewPlayerName) return
+
+        const payload: GmToBackendEventPayloads['players:create'] = {
+            name: trimmedNewPlayerName,
         }
-        socket.emit('players:create', { name: newPlayerName.trim() })
+        socket.emit('players:create', payload)
     }
 
-    function updatePlayer(playerId: string, playerData: Partial<PlayerInterface>): void {
-        socket.emit('players:update', {
+    function updatePlayer(playerId: string, playerData: Partial<Player>): void {
+        const payload: GmToBackendEventPayloads['players:update'] = {
             playerId,
             playerData,
-        })
+        }
+        socket.emit('players:update', payload)
     }
 
     function deletePlayer(playerId: string): void {
-        socket.emit('players:delete', { playerId })
+        const payload: GmToBackendEventPayloads['players:delete'] = { playerId }
+        socket.emit('players:delete', payload)
     }
 
     function createStatForPlayer(
-        statData: StatInterface,
+        statData: PlayerStat,
         scope: 'global' | 'player',
         playerId?: string,
     ): void {
-        socket.emit('players:stats:create', {
+        const payload: GmToBackendEventPayloads['players:stats:create'] = {
             scope,
             playerId,
             statData,
-        })
+        }
+        socket.emit('players:stats:create', payload)
     }
 
     function removeStatFromPlayer(playerId: string, statName: string): void {
-        socket.emit('players:stats:remove', { playerId, statName })
+        const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statName }
+        socket.emit('players:stats:remove', payload)
     }
 
     return {

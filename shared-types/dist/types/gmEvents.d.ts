@@ -3,18 +3,20 @@ import type { LogEntry } from "./log";
 import type { Player, PlayerStat } from "./player";
 export interface BackendToGmEventPayloads {
     "game:info": GameState;
-    "log:entry": LogEntry;
-    "players:info": Player[];
+    "log:entry": {
+        entry: LogEntry;
+    };
+    "players:info": {
+        players: Player[];
+    };
 }
 export interface GmToBackendEventPayloads {
     "game:init": {
         playerIdsInOrder: string[];
     };
-    "game:end": {};
     "game:playerOrder:update": {
         playerIdsInOrder: string[];
     };
-    "game:turn:next": {};
     "players:create": {
         name: string;
     };

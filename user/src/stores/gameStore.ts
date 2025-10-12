@@ -1,5 +1,6 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
+import type { BackendToUserPayloads } from 'shared-types'
 import { computed, ref } from 'vue'
 
 export const useGameStore = defineStore('game', () => {
@@ -17,16 +18,12 @@ export const useGameStore = defineStore('game', () => {
     const connection = useConnection()
 
     connection.socket.on(
-        'game',
+        'game:info',
         ({
             round: newRound,
             isInitialized: newIsInitialized,
             playerOrder: newPlayerOrder,
-        }: {
-            round: { currentPlayerIndex: number; roundNumber: number }
-            isInitialized: boolean
-            playerOrder: { id: string; name: string }[]
-        }) => {
+        }: BackendToUserPayloads['game:info']) => {
             round.value = newRound
             isInitialized.value = newIsInitialized
             playerOrder.value = newPlayerOrder

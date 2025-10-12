@@ -9,7 +9,9 @@ export default class GmLogsEmitter {
     }
 
     public sendLog = (logEntry: LogEntry) => {
-        const payload: BackendToGmEventPayloads["log:entry"] = logEntry;
+        const payload: BackendToGmEventPayloads["log:entry"] = {
+            entry: logEntry,
+        };
 
         this.socket.emit("log:entry", payload);
     };
