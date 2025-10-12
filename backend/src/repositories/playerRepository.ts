@@ -1,7 +1,8 @@
-import { Player, Stat } from "../types/playerTypes.js";
+import type { PlayerInterface, StatInterface } from "shared-types";
+
 import makePlayerSecret from "../util/makePlayerSecret.js";
 
-export const players: Player[] = [];
+export const players: PlayerInterface[] = [];
 
 const playerRepository = {
     createPlayer: (playerName: string) => {
@@ -23,7 +24,7 @@ const playerRepository = {
             stats: [],
         });
     },
-    createStatForAllPlayers: (stat: Stat) => {
+    createStatForAllPlayers: (stat: StatInterface) => {
         players.forEach((player) => {
             // Ensure unique stat name
             if (player.stats.some((s) => s.name === stat.name)) {
@@ -32,7 +33,7 @@ const playerRepository = {
             player.stats.push(stat);
         });
     },
-    createStatForPlayer: (playerId: string, stat: Stat) => {
+    createStatForPlayer: (playerId: string, stat: StatInterface) => {
         const player = players.find((p) => p.id === playerId);
         if (player) {
             // Ensure unique stat name
@@ -60,7 +61,10 @@ const playerRepository = {
             player.stats = player.stats.filter((s) => s.name !== statName);
         }
     },
-    updatePlayer: (id: string, updatedFields: Partial<Omit<Player, "id">>) => {
+    updatePlayer: (
+        id: string,
+        updatedFields: Partial<Omit<PlayerInterface, "id">>
+    ) => {
         const player = players.find((p) => p.id === id);
         if (player) {
             Object.assign(player, updatedFields);

@@ -1,7 +1,7 @@
 import { Socket } from "socket.io";
 
-import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
 import UserGameEmitter from "../connectionEmitters/user/UserGameEmitter.js";
+import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
 
 export default class UserController {
     // Multiple instances / register one user controller per playerId
@@ -9,9 +9,9 @@ export default class UserController {
 
     public socket: Socket;
 
+    public userGameEmitter: UserGameEmitter;
     // Emitters
     public userPlayersEmitter: UserPlayersEmitter;
-    public userGameEmitter: UserGameEmitter;
 
     private constructor(playerId: string, s: Socket) {
         this.socket = s;
@@ -20,18 +20,18 @@ export default class UserController {
         this.userGameEmitter = new UserGameEmitter(this.socket);
     }
 
+    public static forEachInstance = (
+        cb: (userController: UserController) => void
+    ) => {
+        this.instances.forEach((userController) => { cb(userController); });
+    };
+
     public static getAllInstances = () => {
         return Array.from(this.instances.values());
     };
 
     public static getInstance = (playerId: string) => {
         return this.instances.get(playerId);
-    };
-
-    public static forEachInstance = (
-        cb: (userController: UserController) => void
-    ) => {
-        this.instances.forEach((userController) => cb(userController));
     };
 
     public static isConnected = (playerId: string): boolean => {

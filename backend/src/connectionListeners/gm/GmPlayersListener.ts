@@ -1,7 +1,8 @@
+import type { StatInterface } from "shared-types";
+
 import { Socket } from "socket.io";
 
 import playerHandler from "../../services/playersHandler.js";
-import { Stat } from "../../types/playerTypes.js";
 
 export default class GmPlayersListener {
     private socket: Socket;
@@ -42,7 +43,7 @@ export default class GmPlayersListener {
             }: {
                 playerId?: string;
                 scope: "global" | "player";
-                statData: Stat;
+                statData: StatInterface;
             }) => {
                 if (scope === "player" && playerId) {
                     playerHandler.createStatForPlayer({ playerId, statData });

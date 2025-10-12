@@ -1,10 +1,10 @@
 import useConnection from '@/composables/connection'
-import type { Player } from '@/types/player'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { type PlayerInterface } from 'shared-types'
 
 export const usePlayerStore = defineStore('player', () => {
-    const player = ref<Player | null>(null)
+    const player = ref<PlayerInterface | null>(null)
 
     const connection = useConnection()
 

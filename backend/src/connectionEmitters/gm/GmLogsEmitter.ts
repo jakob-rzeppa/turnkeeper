@@ -1,6 +1,5 @@
+import { type LogEntryInterface } from "shared-types";
 import { Socket } from "socket.io";
-
-import { LogEntry } from "../../types/logTypes.js";
 
 export default class GmLogsEmitter {
     private socket: Socket;
@@ -9,7 +8,7 @@ export default class GmLogsEmitter {
         this.socket = s;
     }
 
-    public sendLog = (logEntry: LogEntry) => {
+    public sendLog = (logEntry: LogEntryInterface) => {
         this.socket.emit("log", logEntry);
     };
 }

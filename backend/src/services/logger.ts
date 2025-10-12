@@ -1,7 +1,8 @@
-import GmController from "../connectionControllers/GmController.js";
-import { LogEntry } from "../types/logTypes.js";
+import { LogEntryInterface } from "shared-types";
 
-function formatLogEntry(logEntry: LogEntry): string {
+import GmController from "../connectionControllers/GmController.js";
+
+function formatLogEntry(logEntry: LogEntryInterface): string {
     const { details, message, severity, timestamp } = logEntry;
     let formattedEntry = `[${timestamp.toISOString()}] [${severity.toUpperCase()}] ${message}`;
 
@@ -16,15 +17,15 @@ function formatLogEntry(logEntry: LogEntry): string {
 }
 
 const logger = {
-    error: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
+    error: (logEntry: Omit<LogEntryInterface, "severity" | "timestamp">) => {
         logger.log({ ...logEntry, severity: "error" });
     },
-    info: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
+    info: (logEntry: Omit<LogEntryInterface, "severity" | "timestamp">) => {
         logger.log({ ...logEntry, severity: "info" });
     },
     // Log is a separate function to handle sending logs to different outputs in the future
-    log: (logEntry: Omit<LogEntry, "timestamp">) => {
-        const completeLogEntry: LogEntry = {
+    log: (logEntry: Omit<LogEntryInterface, "timestamp">) => {
+        const completeLogEntry: LogEntryInterface = {
             ...logEntry,
             timestamp: new Date(),
         };
@@ -47,7 +48,7 @@ const logger = {
         // Send logs to the GM if connected
         GmController.getInstance()?.gmLogsEmitter.sendLog(completeLogEntry);
     },
-    warn: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
+    warn: (logEntry: Omit<LogEntryInterface, "severity" | "timestamp">) => {
         logger.log({ ...logEntry, severity: "warning" });
     },
 };

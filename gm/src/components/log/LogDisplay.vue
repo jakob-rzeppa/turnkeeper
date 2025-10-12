@@ -21,7 +21,6 @@ const scrollToNewElement = async () => {
 
         // Small additional delay to ensure content is fully rendered
         setTimeout(() => {
-            const lowestLog = document.getElementById('lowestLog')
             if (logContainer.value) {
                 logContainer.value.scrollTo({
                     top: logContainer.value.scrollHeight,
@@ -46,7 +45,6 @@ watch(
                 <div
                     v-for="(log, index) in [...logs].reverse()"
                     :key="index"
-                    :id="index === logs.length - 1 ? 'lowestLog' : ''"
                     class="p-3 rounded-lg border-l-4 transition-all hover:shadow-sm"
                     :class="{
                         'bg-info/10 border-l-info': log.severity === 'info',

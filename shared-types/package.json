@@ -1,0 +1,33 @@
+{
+    "name": "shared-types",
+    "version": "1.0.0",
+    "description": "Shared TypeScript type definitions for the turnkeeper project",
+    "type": "module",
+    "main": "dist/index.js",
+    "module": "dist/index.js",
+    "types": "dist/index.d.ts",
+    "exports": {
+        ".": {
+            "import": "./dist/index.js",
+            "types": "./dist/index.d.ts"
+        }
+    },
+    "files": [
+        "dist/"
+    ],
+    "scripts": {
+        "build": "tsc",
+        "clean": "rm -rf dist",
+        "build:clean": "npm run clean && npm run build"
+    },
+    "keywords": [
+        "typescript",
+        "types",
+        "turnkeeper"
+    ],
+    "author": "",
+    "license": "ISC",
+    "devDependencies": {
+        "typescript": "^5.9.3"
+    }
+}

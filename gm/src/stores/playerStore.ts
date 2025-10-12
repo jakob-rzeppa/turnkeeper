@@ -1,13 +1,13 @@
 import useConnection from '@/composables/connection'
-import type { Player, PlayerStat } from '@/types/player'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import { type PlayerInterface, type StatInterface } from 'shared-types'
 
 const { socket } = useConnection()
 
 export const usePlayerStore = defineStore('player', () => {
     // The store shall only be modified by events from the backend.
-    const players = ref<Player[]>([])
+    const players = ref<PlayerInterface[]>([])
     const getPlayerById = (id: string) => {
         return players.value.find((p) => p.id === id)
     }
@@ -23,7 +23,7 @@ export const usePlayerStore = defineStore('player', () => {
         socket.emit('players:create', { name: newPlayerName.trim() })
     }
 
-    function updatePlayer(playerId: string, playerData: Partial<Player>): void {
+    function updatePlayer(playerId: string, playerData: Partial<PlayerInterface>): void {
         socket.emit('players:update', {
             playerId,
             playerData,
@@ -35,7 +35,7 @@ export const usePlayerStore = defineStore('player', () => {
     }
 
     function createStatForPlayer(
-        statData: PlayerStat,
+        statData: StatInterface,
         scope: 'global' | 'player',
         playerId?: string,
     ): void {

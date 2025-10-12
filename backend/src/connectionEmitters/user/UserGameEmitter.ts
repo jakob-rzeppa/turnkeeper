@@ -1,6 +1,7 @@
 import { Socket } from "socket.io";
-import { gameloop } from "../../services/gameloop.js";
+
 import playerRepository from "../../repositories/playerRepository.js";
+import { gameloop } from "../../services/gameloop.js";
 
 export default class UserGameEmitter {
     private socket: Socket;
