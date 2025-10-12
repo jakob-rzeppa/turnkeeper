@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/gameStore'
+import { useGameEmitter } from '@/emitters/gameEmitter'
 import { usePlayerStore } from '@/stores/playerStore'
 import { ref } from 'vue'
 import draggable from 'vuedraggable'
@@ -7,7 +7,7 @@ import draggable from 'vuedraggable'
 const emit = defineEmits(['close'])
 
 const playerStore = usePlayerStore()
-const gameStore = useGameStore()
+const gameEmitter = useGameEmitter()
 
 const playerOrderRef = ref<{ id: string; name: string }[]>([])
 
@@ -17,7 +17,7 @@ playerOrderRef.value = playerStore.players.map((player) => ({
 }))
 
 function startGame() {
-    gameStore.initGame(playerOrderRef.value.map((p) => p.id))
+    gameEmitter.initGame(playerOrderRef.value.map((p) => p.id))
     emit('close')
 }
 </script>

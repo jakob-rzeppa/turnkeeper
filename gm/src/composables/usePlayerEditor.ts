@@ -1,3 +1,4 @@
+import { usePlayerEmitter } from '@/emitters/playerEmitter'
 import { useGameStore } from '@/stores/gameStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { reactive, watch } from 'vue'
@@ -11,6 +12,7 @@ import { reactive, watch } from 'vue'
 export const usePlayerEditor = (playerId?: string, closeFunction?: () => void) => {
     const playerStore = usePlayerStore()
     const gameStore = useGameStore()
+    const playerEmitter = usePlayerEmitter()
 
     if (!playerId) {
         playerId = gameStore.currentPlayerId
@@ -46,7 +48,7 @@ export const usePlayerEditor = (playerId?: string, closeFunction?: () => void) =
     )
 
     const updatePlayer = (): void => {
-        playerStore.updatePlayer(playerId, {
+        playerEmitter.updatePlayer(playerId, {
             name: localPlayer.name,
             secret: localPlayer.secret,
             stats: localPlayer.stats,

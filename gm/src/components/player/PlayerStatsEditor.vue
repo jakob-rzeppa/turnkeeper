@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
 import NewStatModal from './NewStatModal.vue'
-import { usePlayerStore } from '@/stores/playerStore'
+import { usePlayerEmitter } from '@/emitters/playerEmitter'
 
 const props = defineProps<{
     playerId: string
@@ -10,7 +10,7 @@ const props = defineProps<{
 }>()
 
 const modalStore = useModalStore()
-const playerStore = usePlayerStore()
+const playerEmitter = usePlayerEmitter()
 
 function openNewStatModal(): void {
     modalStore.openModal(NewStatModal, {
@@ -20,7 +20,7 @@ function openNewStatModal(): void {
 }
 
 function removeStatFromPlayer(statName: string): void {
-    playerStore.removeStatFromPlayer(props.playerId, statName)
+    playerEmitter.removeStatFromPlayer(props.playerId, statName)
 }
 </script>
 

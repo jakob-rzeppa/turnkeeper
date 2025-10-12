@@ -1,6 +1,6 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
-import type { BackendToGmEventPayloads, GameState, GmToBackendEventPayloads } from 'shared-types'
+import type { BackendToGmEventPayloads, GameState } from 'shared-types'
 import { computed, ref } from 'vue'
 
 const { socket } = useConnection()
@@ -36,38 +36,10 @@ export const useGameStore = defineStore('game', () => {
         },
     )
 
-    function initGame(playerIdsInOrder: string[]) {
-        const payload: GmToBackendEventPayloads['game:init'] = {
-            playerIdsInOrder,
-        }
-
-        socket.emit('game:init', payload)
-    }
-
-    function endGame() {
-        socket.emit('game:end')
-    }
-
-    function updatePlayerOrder(playerIdsInOrder: string[]) {
-        const payload: GmToBackendEventPayloads['game:playerOrder:update'] = {
-            playerIdsInOrder,
-        }
-
-        socket.emit('game:playerOrder:update', payload)
-    }
-
-    function nextTurn() {
-        socket.emit('game:turn:next')
-    }
-
     return {
         playerOrder,
         isInitialized,
         round,
         currentPlayerId,
-        nextTurn,
-        initGame,
-        updatePlayerOrder,
-        endGame,
     }
 })

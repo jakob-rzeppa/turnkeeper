@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/gameStore'
+import { useGameEmitter } from '@/emitters/gameEmitter'
 
-const gameStore = useGameStore()
+const gameEmitter = useGameEmitter()
 
 function endGame() {
     if (confirm('Are you sure you want to end the game? This action cannot be undone.')) {
-        gameStore.endGame()
+        gameEmitter.endGame()
     }
 }
 </script>

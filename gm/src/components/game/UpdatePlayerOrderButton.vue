@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useModalStore } from '@/stores/modalStore'
-import UpdatePlayerOrderModal from '../player/UpdatePlayerOrderModal.vue'
+import UpdatePlayerOrderModal from './UpdatePlayerOrderModal.vue'
 
 const modalStore = useModalStore()
 

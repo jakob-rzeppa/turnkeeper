@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePlayerStore } from '@/stores/playerStore'
-import type { PlayerStat } from '@/types/player'
+import { usePlayerEmitter } from '@/emitters/playerEmitter'
+import type { PlayerStat } from 'shared-types'
 import { ref } from 'vue'
 
 const props = defineProps<{
@@ -10,7 +10,7 @@ const props = defineProps<{
 
 const emit = defineEmits(['close'])
 
-const playerStore = usePlayerStore()
+const playerEmitter = usePlayerEmitter()
 
 const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global')
 const statNameRef = ref('')
@@ -22,7 +22,7 @@ const createStat = () => {
         value: statInitialValueRef.value,
     }
 
-    playerStore.createStatForPlayer(statData, scopeRef.value, props.playerId)
+    playerEmitter.createStatForPlayer(statData, scopeRef.value, props.playerId)
 
     emit('close')
 }
