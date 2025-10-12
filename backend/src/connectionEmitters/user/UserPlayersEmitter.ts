@@ -1,3 +1,4 @@
+import { BackendToUserPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
 import playerRepository from "../../repositories/playerRepository.js";
@@ -16,6 +17,13 @@ export default class UserPlayersEmitter {
 
     public sendOwnPlayer() {
         const player = playerRepository.getPlayerById(this.playerId);
-        this.socket.emit("player", player);
+
+        const payload: BackendToUserPayloads["player:info"] = {
+            id: player.id,
+            name: player.name,
+            stats: player.stats,
+        };
+
+        this.socket.emit("player:info", payload);
     }
 }

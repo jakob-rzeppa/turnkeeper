@@ -1,10 +1,12 @@
-import type { PlayerInterface } from "./player";
-export interface GameStateInterface {
+import type { Player } from "./player";
+export interface RoundInformation {
+    currentPlayerIndex: number;
+    roundNumber: number;
+}
+export type PlayerOrderWithNames = Pick<Player, "id" | "name">[];
+export interface GameState {
     isInitialized: boolean;
-    round: {
-        roundNumber: number;
-    };
-    currentPlayerId: string | null;
-    playerOrder: PlayerInterface[];
+    round: RoundInformation;
+    playerOrder: PlayerOrderWithNames;
 }
 //# sourceMappingURL=game.d.ts.map

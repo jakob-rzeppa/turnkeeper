@@ -1,4 +1,4 @@
-import { type LogEntryInterface } from "shared-types";
+import { BackendToGmEventPayloads, LogEntry } from "shared-types";
 import { Socket } from "socket.io";
 
 export default class GmLogsEmitter {
@@ -8,7 +8,9 @@ export default class GmLogsEmitter {
         this.socket = s;
     }
 
-    public sendLog = (logEntry: LogEntryInterface) => {
-        this.socket.emit("log", logEntry);
+    public sendLog = (logEntry: LogEntry) => {
+        const payload: BackendToGmEventPayloads["log:entry"] = logEntry;
+
+        this.socket.emit("log:entry", payload);
     };
 }

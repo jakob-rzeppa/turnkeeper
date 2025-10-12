@@ -1,3 +1,4 @@
+import { BackendToUserPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
 import playerRepository from "../../repositories/playerRepository.js";
@@ -22,10 +23,12 @@ export default class UserGameEmitter {
                 `Player ${(index + 1).toString()}`,
         }));
 
-        this.socket.emit("game", {
+        const payload: BackendToUserPayloads["game:info"] = {
             isInitialized: gameloop.isInitialized(),
             playerOrder: playerOrderWithNames,
             round: gameloop.getRoundInformation(),
-        });
+        };
+
+        this.socket.emit("game:info", payload);
     }
 }

@@ -1,7 +1,7 @@
-export type LogSeverityType = "info" | "warning" | "error";
-export interface LogEntryInterface {
+export type LogSeverity = "info" | "warning" | "error";
+export interface LogEntry {
     timestamp: Date;
-    severity: LogSeverityType;
+    severity: LogSeverity;
     message: string;
     details?: object;
 }

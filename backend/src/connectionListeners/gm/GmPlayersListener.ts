@@ -1,5 +1,4 @@
-import type { StatInterface } from "shared-types";
-
+import { GmToBackendEventPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
 import playerHandler from "../../services/playersHandler.js";
@@ -10,26 +9,26 @@ export default class GmPlayersListener {
     public constructor(s: Socket) {
         this.socket = s;
 
-        this.socket.on("players:create", (playerData: { name: string }) => {
-            playerHandler.createPlayer(playerData);
-        });
+        this.socket.on(
+            "players:create",
+            (playerData: GmToBackendEventPayloads["players:create"]) => {
+                playerHandler.createPlayer(playerData);
+            }
+        );
 
         this.socket.on(
             "players:update",
             ({
                 playerData,
                 playerId,
-            }: {
-                playerData: { name: string };
-                playerId: string;
-            }) => {
+            }: GmToBackendEventPayloads["players:update"]) => {
                 playerHandler.updatePlayer({ playerData, playerId });
             }
         );
 
         this.socket.on(
             "players:delete",
-            ({ playerId }: { playerId: string }) => {
+            ({ playerId }: GmToBackendEventPayloads["players:delete"]) => {
                 playerHandler.deletePlayer(playerId);
             }
         );
@@ -40,11 +39,7 @@ export default class GmPlayersListener {
                 playerId,
                 scope,
                 statData,
-            }: {
-                playerId?: string;
-                scope: "global" | "player";
-                statData: StatInterface;
-            }) => {
+            }: GmToBackendEventPayloads["players:stats:create"]) => {
                 if (scope === "player" && playerId) {
                     playerHandler.createStatForPlayer({ playerId, statData });
                 } else {
@@ -58,10 +53,7 @@ export default class GmPlayersListener {
             ({
                 playerId,
                 statName,
-            }: {
-                playerId: string;
-                statName: string;
-            }) => {
+            }: GmToBackendEventPayloads["players:stats:remove"]) => {
                 playerHandler.removeStatFromPlayer({ playerId, statName });
             }
         );

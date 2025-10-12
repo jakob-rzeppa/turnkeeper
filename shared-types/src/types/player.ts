@@ -1,11 +1,11 @@
-export interface PlayerInterface {
+export interface Player {
     id: string;
     name: string;
     secret: string;
-    stats: StatInterface[];
+    stats: PlayerStat[];
 }
 
-export interface StatInterface {
+export interface PlayerStat {
     name: string;
     value: boolean | number | string | string[];
 }

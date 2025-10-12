@@ -1,3 +1,4 @@
+import { GmToBackendEventPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
 import { gameloop } from "../../services/gameloop.js";
@@ -12,16 +13,16 @@ export default class GmGameListener {
     public constructor(s: Socket) {
         this.socket = s;
 
-        this.socket.on("game:turn:next", () => {
-            this.nextTurn();
-        });
-
         this.socket.on(
             "game:init",
-            ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
+            ({ playerIdsInOrder }: GmToBackendEventPayloads["game:init"]) => {
                 this.initGameloop(playerIdsInOrder);
             }
         );
+
+        this.socket.on("game:turn:next", () => {
+            this.nextTurn();
+        });
 
         this.socket.on("game:end", () => {
             this.endGame();
@@ -29,7 +30,9 @@ export default class GmGameListener {
 
         this.socket.on(
             "game:playerOrder:update",
-            ({ playerIdsInOrder }: { playerIdsInOrder: string[] }) => {
+            ({
+                playerIdsInOrder,
+            }: GmToBackendEventPayloads["game:playerOrder:update"]) => {
                 this.updatePlayerOrder(playerIdsInOrder);
             }
         );
