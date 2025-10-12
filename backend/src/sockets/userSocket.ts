@@ -14,8 +14,14 @@ const onUserConnection = (socket: Socket): void => {
     ) {
         logger.error({
             details: { handshakeAuth: socket.handshake.auth },
-            message: "User connection failed: Missing credentials",
+            message: "A user tried to connect without proper credentials",
         });
+
+        socket.emit("connection_error", {
+            code: "MISSING_CREDENTIALS",
+            message: "Connection refused: Missing player name or secret",
+        });
+
         socket.disconnect();
         return;
     }
@@ -27,8 +33,14 @@ const onUserConnection = (socket: Socket): void => {
     if (!playerId) {
         logger.error({
             details: { playerId },
-            message: "User connection failed: Player not found",
+            message: "A user tried to connect but player was not found",
         });
+
+        socket.emit("connection_error", {
+            code: "PLAYER_NOT_FOUND",
+            message: "Connection refused: Player not found",
+        });
+
         socket.disconnect();
         return;
     }
@@ -36,8 +48,14 @@ const onUserConnection = (socket: Socket): void => {
     if (!isUserSecretValid(playerId, socket.handshake.auth.playerSecret)) {
         logger.error({
             details: { playerId },
-            message: "User connection failed: Invalid secret",
+            message: "A user tried to connect but provided an invalid secret",
         });
+
+        socket.emit("connection_error", {
+            code: "INVALID_SECRET",
+            message: "Connection refused: Invalid player secret",
+        });
+
         socket.disconnect();
         return;
     }
@@ -46,8 +64,14 @@ const onUserConnection = (socket: Socket): void => {
         logger.error({
             details: { playerId },
             message:
-                "User connection failed: User for Player already connected",
+                "A user tried to connect but another user is already connected for this player",
         });
+
+        socket.emit("connection_error", {
+            code: "PLAYER_ALREADY_CONNECTED",
+            message: "Connection refused: This player is already connected",
+        });
+
         socket.disconnect();
         return;
     }

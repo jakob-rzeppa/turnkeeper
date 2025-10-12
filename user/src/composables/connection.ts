@@ -13,8 +13,15 @@ socket.on('disconnect', () => {
 })
 
 socket.on('connect_error', (err) => {
-    console.error(err.message)
+    console.error('Connection error:', err.message)
     isConnected.value = false
+})
+
+socket.on('connection_error', (error) => {
+    console.error('Connection refused:', error.message)
+    alert(`Connection refused: ${error.message}`)
+    isConnected.value = false
+    socket.disconnect()
 })
 
 socket.onAny((event, ...args) => {

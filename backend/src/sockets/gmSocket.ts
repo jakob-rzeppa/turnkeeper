@@ -10,10 +10,18 @@ const onGmConnection = (socket: Socket) => {
     });
 
     if (GmController.isConnected()) {
-        logger.error({
+        logger.warn({
             details: { socketId: socket.id },
-            message: "GM connection failed: GM already connected",
+            message:
+                "A GM tried to connect, but another GM is already connected",
         });
+
+        // Send error to client before disconnecting
+        socket.emit("connection_error", {
+            code: "GM_ALREADY_CONNECTED",
+            message: "GM connection refused: Another GM is already connected",
+        });
+
         socket.disconnect();
         return;
     }
