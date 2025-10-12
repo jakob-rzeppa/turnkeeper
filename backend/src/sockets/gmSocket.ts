@@ -3,12 +3,15 @@ import { Server, Socket } from "socket.io";
 import GmController from "../connectionControllers/GmController.js";
 import logger from "../services/logger.js";
 
-const onGmConnection = (socket: Socket) => {
+export const handleDisconnect = (socket: Socket) => {
+    GmController.unregisterSocket();
     logger.info({
         details: { socketId: socket.id },
-        message: "GM connected",
+        message: "GM disconnected",
     });
+};
 
+export const onGmConnection = (socket: Socket) => {
     if (GmController.isConnected()) {
         logger.warn({
             details: { socketId: socket.id },
@@ -28,13 +31,12 @@ const onGmConnection = (socket: Socket) => {
 
     GmController.registerSocket(socket);
 
-    socket.on("disconnect", () => {
-        GmController.unregisterSocket();
-        logger.info({
-            details: { socketId: socket.id },
-            message: "GM disconnected",
-        });
+    logger.info({
+        details: { socketId: socket.id },
+        message: "GM connected",
     });
+
+    socket.on("disconnect", () => handleDisconnect(socket));
 };
 
 export const createGmSocket = (io: Server) => {
