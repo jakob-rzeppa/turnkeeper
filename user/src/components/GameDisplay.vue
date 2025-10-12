@@ -8,21 +8,22 @@ const playerStore = usePlayerStore()
 
 <template>
     <div class="divider">Game Status</div>
-    <div
-        v-if="
-            gameStore.playerOrder[gameStore.round.currentPlayerIndex].id === playerStore.player?.id
-        "
-        class="p-4 mb-4 bg-info text-info-content rounded-lg text-center font-semibold"
-    >
-        It's your turn!
-    </div>
-    <div v-if="gameStore.isInitialized">
+
+    <div v-if="gameStore.isInitialized && gameStore.playerOrder.length > 0">
+        <div
+            v-if="
+                gameStore.currentPlayer &&
+                playerStore.player &&
+                gameStore.currentPlayer.id === playerStore.player.id
+            "
+            class="p-4 mb-4 bg-info text-info-content rounded-lg text-center font-semibold"
+        >
+            It's your turn!
+        </div>
         <p class="mb-2"><strong>Current Round:</strong> {{ gameStore.round.roundNumber }}</p>
         <p>
             <strong>Current Player:</strong>
-            {{
-                gameStore.playerOrder[gameStore.round.currentPlayerIndex]?.name || 'Unknown Player'
-            }}
+            {{ gameStore.currentPlayer?.name ?? 'Unknown Player' }}
         </p>
     </div>
     <div v-else class="p-6 bg-base-200 rounded-lg shadow-md text-center">

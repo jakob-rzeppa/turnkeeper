@@ -1,6 +1,6 @@
 import useConnection from '@/composables/connection'
 import { defineStore } from 'pinia'
-import { ref } from 'vue'
+import { computed, ref } from 'vue'
 
 export const useGameStore = defineStore('game', () => {
     const playerOrder = ref<{ id: string; name: string }[]>([])
@@ -9,6 +9,10 @@ export const useGameStore = defineStore('game', () => {
         roundNumber: 0,
     })
     const isInitialized = ref<boolean>(false)
+
+    const currentPlayer = computed<{ id: string; name: string } | null>(
+        () => playerOrder.value[round.value.currentPlayerIndex] ?? null,
+    )
 
     const connection = useConnection()
 
@@ -29,5 +33,5 @@ export const useGameStore = defineStore('game', () => {
         },
     )
 
-    return { round, isInitialized, playerOrder }
+    return { round, isInitialized, playerOrder, currentPlayer }
 })
