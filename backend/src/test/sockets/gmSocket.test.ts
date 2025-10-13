@@ -2,7 +2,6 @@ import {
     afterAll,
     afterEach,
     beforeAll,
-    beforeEach,
     describe,
     expect,
     it,
@@ -23,7 +22,6 @@ vi.mock("../../services/logger", () => ({
         info: vi.fn(),
         warn: vi.fn(),
         error: vi.fn(),
-        debug: vi.fn(),
     },
 }));
 
