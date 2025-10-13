@@ -36,7 +36,7 @@ export const onGmConnection = (socket: Socket) => {
         message: "GM connected",
     });
 
-    socket.on("disconnect", () => handleDisconnect(socket));
+    socket.on("disconnect", () => { handleDisconnect(socket); });
 };
 
 export const createGmSocket = (io: Server) => {

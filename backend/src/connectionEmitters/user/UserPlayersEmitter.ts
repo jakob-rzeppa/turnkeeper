@@ -21,8 +21,8 @@ export default class UserPlayersEmitter {
 
         if (!player) {
             logger.error({
-                message: `Tried to emit player info for non-existing player`,
                 details: { playerId: this.playerId },
+                message: `Tried to emit player info for non-existing player`,
             });
             return;
         }

@@ -1,28 +1,29 @@
 import { Server, Socket } from "socket.io";
 import { afterEach, beforeAll, describe, expect, it, Mock, vi } from "vitest";
+
+import { authenticateUser } from "../../auth/userAuth";
+import UserController from "../../connectionControllers/UserController";
+import logger from "../../services/logger";
 import {
     createUserSocket,
     handleDisconnect,
     onUserConnection,
 } from "../../sockets/userSocket";
 import { extractUserCredentials } from "../../util/extractUserCredentials";
-import { authenticateUser } from "../../auth/userAuth";
-import UserController from "../../connectionControllers/UserController";
-import logger from "../../services/logger";
 
 vi.mock("../../services/logger", () => ({
     default: {
+        error: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
-        error: vi.fn(),
     },
 }));
 
 vi.mock("../../connectionControllers/UserController", () => ({
     default: {
+        getPlayerById: vi.fn(),
         registerSocket: vi.fn(),
         unregisterSocket: vi.fn(),
-        getPlayerById: vi.fn(),
     },
 }));
 
@@ -58,9 +59,9 @@ describe("User Socket", () => {
 
         beforeAll(() => {
             mockSocket = {
-                id: "mock-socket-id",
-                emit: vi.fn(),
                 disconnect: vi.fn(),
+                emit: vi.fn(),
+                id: "mock-socket-id",
                 on: vi.fn(),
             } as unknown as Socket;
         });
@@ -82,8 +83,8 @@ describe("User Socket", () => {
 
             expect(logger.error).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    message: "A user tried to connect but player was not found",
                     details: { credentials: null },
+                    message: "A user tried to connect but player was not found",
                 })
             );
             expect(mockSocket.emit).toHaveBeenCalledWith("connection_error", {

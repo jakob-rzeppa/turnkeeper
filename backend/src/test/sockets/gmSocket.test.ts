@@ -1,3 +1,4 @@
+import { Server, Socket } from "socket.io";
 import {
     afterAll,
     afterEach,
@@ -8,20 +9,20 @@ import {
     Mock,
     vi,
 } from "vitest";
-import { Server, Socket } from "socket.io";
+
+import GmController from "../../connectionControllers/GmController";
+import logger from "../../services/logger";
 import {
     createGmSocket,
     handleDisconnect,
     onGmConnection,
 } from "../../sockets/gmSocket";
-import GmController from "../../connectionControllers/GmController";
-import logger from "../../services/logger";
 
 vi.mock("../../services/logger", () => ({
     default: {
+        error: vi.fn(),
         info: vi.fn(),
         warn: vi.fn(),
-        error: vi.fn(),
     },
 }));
 
@@ -65,9 +66,9 @@ describe("GM Socket", () => {
 
         beforeAll(() => {
             mockSocket = {
-                id: "mock-socket-id",
-                emit: vi.fn(),
                 disconnect: vi.fn(),
+                emit: vi.fn(),
+                id: "mock-socket-id",
                 on: vi.fn(),
             } as unknown as Socket;
         });

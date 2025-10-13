@@ -47,7 +47,7 @@ export const onUserConnection = (socket: Socket): void => {
 
     UserController.registerSocket(credentials.playerId, socket);
 
-    socket.on("disconnect", () => handleDisconnect(credentials.playerId));
+    socket.on("disconnect", () => { handleDisconnect(credentials.playerId); });
 };
 
 export const createUserSocket = (io: Server): void => {

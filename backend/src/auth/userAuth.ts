@@ -1,7 +1,8 @@
 import { Socket } from "socket.io";
+
+import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import logger from "../services/logger.js";
-import UserController from "../connectionControllers/UserController.js";
 /**
  * The secret is a simple string that is generated when the player is created.
  * It is not meant to be secure, just to prevent accidental impersonation.

@@ -1,11 +1,12 @@
 import { Socket } from "socket.io";
+
 import playerRepository from "../repositories/playerRepository";
 
 export const extractUserCredentials = (
     socket: Socket
-): { playerId: string; playerSecret: string } | null => {
-    const playerName = socket.handshake.auth.playerName;
-    const playerSecret = socket.handshake.auth.playerSecret;
+): null | { playerId: string; playerSecret: string } => {
+    const playerName: unknown = socket.handshake.auth.playerName;
+    const playerSecret: unknown = socket.handshake.auth.playerSecret;
 
     if (!playerName || !playerSecret) return null;
     if (typeof playerName !== "string" || typeof playerSecret !== "string")
