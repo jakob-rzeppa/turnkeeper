@@ -1,4 +1,4 @@
-import { PlayerInterface } from "shared-types";
+import { Player } from "shared-types";
 
 import GmController from "../connectionControllers/GmController.js";
 import UserController from "../connectionControllers/UserController.js";
@@ -73,7 +73,7 @@ const playerHandler = {
         playerData,
         playerId,
     }: {
-        playerData: Partial<Omit<PlayerInterface, "id">>;
+        playerData: Partial<Omit<Player, "id">>;
         playerId: string;
     }) {
         playerRepository.updatePlayer(playerId, playerData);
