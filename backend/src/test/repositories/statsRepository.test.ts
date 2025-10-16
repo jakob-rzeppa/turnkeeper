@@ -157,6 +157,66 @@ describe("Stats Repository", () => {
         });
     });
 
+    describe("updateStatForPlayer", () => {
+        it("should update a stat for a specific player", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
+            );
+
+            statsRepository.updateStatForPlayer(1, {
+                name: "level",
+                value: "10",
+            });
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                player_id: number;
+                name: string;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                player_id: 1,
+                name: "level",
+                value: "10",
+            });
+        });
+
+        it("should do nothing if the stat does not exist", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
+            );
+
+            statsRepository.updateStatForPlayer(999, {
+                name: "level",
+                value: "10",
+            });
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                player_id: number;
+                name: string;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                player_id: 1,
+                name: "level",
+                value: "5",
+            });
+        });
+    });
+
     describe("removeStatFromPlayer", () => {
         it("should remove a stat from a specific player", () => {
             db.exec(

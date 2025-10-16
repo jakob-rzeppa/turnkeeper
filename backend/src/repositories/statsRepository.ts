@@ -1,29 +1,3 @@
-// createStatForAllPlayers: (stat: PlayerStat): void => {
-//     players.forEach((player) => {
-//         // Ensure unique stat name
-//         if (player.stats.some((s) => s.name === stat.name)) {
-//             return;
-//         }
-//         player.stats.push(stat);
-//     });
-// },
-// createStatForPlayer: (playerId: string, stat: PlayerStat): void => {
-//     const player = players.find((p) => p.id === playerId);
-//     if (player) {
-//         // Ensure unique stat name
-//         if (player.stats.some((s) => s.name === stat.name)) {
-//             return;
-//         }
-//         player.stats.push(stat);
-//     }
-// },
-// removeStatFromPlayer: (playerId: string, statName: string): void => {
-//     const player = players.find((p) => p.id === playerId);
-//     if (player) {
-//         player.stats = player.stats.filter((s) => s.name !== statName);
-//     }
-// },
-
 import { PlayerStat } from "shared-types";
 import { SqliteDatabase } from "../database/SqliteDatabase";
 import playerRepository from "./playerRepository";
@@ -67,6 +41,14 @@ export const statsRepository = {
         db.prepare(
             "INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)"
         ).run(playerId, stat.name, stat.value);
+    },
+    updateStatForPlayer: (
+        statId: number,
+        updatedFields: Partial<Omit<PlayerStat, "id" | "playerId">>
+    ): void => {
+        db.prepare(
+            "UPDATE player_stats SET name = ?, value = ? WHERE id = ?"
+        ).run(updatedFields.name, updatedFields.value, statId);
     },
     removeStatFromPlayer: (playerId: number, statId: number): void => {
         db.prepare(
