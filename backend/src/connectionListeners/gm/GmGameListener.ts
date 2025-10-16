@@ -42,7 +42,7 @@ export default class GmGameListener {
         gameloop.end();
     }
 
-    private initGameloop(playerIdsInOrder: string[]) {
+    private initGameloop(playerIdsInOrder: number[]) {
         gameloop.init(playerIdsInOrder);
     }
 
@@ -50,7 +50,7 @@ export default class GmGameListener {
         gameloop.nextTurn();
     }
 
-    private updatePlayerOrder(playerIdsInOrder: string[]) {
+    private updatePlayerOrder(playerIdsInOrder: number[]) {
         gameloop.setPlayerOrder(playerIdsInOrder);
     }
 }

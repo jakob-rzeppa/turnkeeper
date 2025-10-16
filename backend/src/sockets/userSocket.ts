@@ -5,7 +5,7 @@ import UserController from "../connectionControllers/UserController.js";
 import logger from "../services/logger.js";
 import { extractUserCredentials } from "../util/extractUserCredentials.js";
 
-export const handleDisconnect = (playerId: string): void => {
+export const handleDisconnect = (playerId: number): void => {
     UserController.unregisterSocket(playerId);
     logger.info({
         details: { playerId },
@@ -47,7 +47,9 @@ export const onUserConnection = (socket: Socket): void => {
 
     UserController.registerSocket(credentials.playerId, socket);
 
-    socket.on("disconnect", () => { handleDisconnect(credentials.playerId); });
+    socket.on("disconnect", () => {
+        handleDisconnect(credentials.playerId);
+    });
 };
 
 export const createUserSocket = (io: Server): void => {

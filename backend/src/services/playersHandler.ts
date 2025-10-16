@@ -3,6 +3,7 @@ import { Player } from "shared-types";
 import GmController from "../connectionControllers/GmController.js";
 import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
+import { statsRepository } from "../repositories/statsRepository.js";
 import { gameloop } from "./gameloop.js";
 
 const playerHandler = {
@@ -26,7 +27,7 @@ const playerHandler = {
         name: string;
         value: boolean | number | string | string[];
     }) {
-        playerRepository.createStatForAllPlayers(statData);
+        statsRepository.createStatForAllPlayers(statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getAllInstances().forEach((instance) => {
@@ -37,17 +38,17 @@ const playerHandler = {
         playerId,
         statData,
     }: {
-        playerId: string;
+        playerId: number;
         statData: { name: string; value: boolean | number | string | string[] };
     }) {
-        playerRepository.createStatForPlayer(playerId, statData);
+        statsRepository.createStatForPlayer(playerId, statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(
             playerId
         )?.userPlayersEmitter.sendOwnPlayer();
     },
-    deletePlayer(playerId: string) {
+    deletePlayer(playerId: number) {
         playerRepository.deletePlayer(playerId);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
@@ -57,12 +58,12 @@ const playerHandler = {
     },
     removeStatFromPlayer({
         playerId,
-        statName,
+        statId,
     }: {
-        playerId: string;
-        statName: string;
+        playerId: number;
+        statId: number;
     }) {
-        playerRepository.removeStatFromPlayer(playerId, statName);
+        statsRepository.removeStatFromPlayer(playerId, statId);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(
@@ -74,7 +75,7 @@ const playerHandler = {
         playerId,
     }: {
         playerData: Partial<Omit<Player, "id">>;
-        playerId: string;
+        playerId: number;
     }) {
         playerRepository.updatePlayer(playerId, playerData);
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();

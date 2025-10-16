@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SqliteDatabase } from "../../database/SqliteDatabase";
 import playerRepository from "../../repositories/playerRepository";
 
@@ -152,7 +153,11 @@ describe("Player Repository", () => {
 
             const player = db
                 .prepare("SELECT * FROM players WHERE name = ?")
-                .get("Charlie") as any;
+                .get("Charlie") as {
+                id: number;
+                name: string;
+                secret: string;
+            };
 
             expect(player.name).toBe("Charlie");
             expect(player.secret).toHaveLength(4); // The secret length is 4
@@ -166,7 +171,7 @@ describe("Player Repository", () => {
 
             const players = db
                 .prepare("SELECT * FROM players WHERE name = ?")
-                .all("Charlie") as any[];
+                .all("Charlie") as object[];
 
             expect(players).toHaveLength(1); // Only one player with the name "Charlie" should exist
         });
@@ -181,7 +186,7 @@ describe("Player Repository", () => {
 
             const player = db
                 .prepare("SELECT * FROM players WHERE id = ?")
-                .get(1) as any;
+                .get(1) as { id: number; name: string; secret: string };
 
             expect(player.name).toBe("AliceUpdated");
         });
@@ -191,7 +196,9 @@ describe("Player Repository", () => {
 
             const player = db
                 .prepare("SELECT * FROM players WHERE id = ?")
-                .get(999) as any;
+                .get(999) as
+                | undefined
+                | { id: number; name: string; secret: string };
 
             expect(player).toBeUndefined();
         });
@@ -206,13 +213,17 @@ describe("Player Repository", () => {
 
             const player = db
                 .prepare("SELECT * FROM players WHERE id = ?")
-                .get(1) as any;
+                .get(1) as
+                | undefined
+                | { id: number; name: string; secret: string };
 
             expect(player).toBeUndefined();
         });
 
         it("should not fail when trying to delete a non-existent player", () => {
-            expect(() => playerRepository.deletePlayer(999)).not.toThrow();
+            expect(() => {
+                playerRepository.deletePlayer(999);
+            }).not.toThrow();
         });
     });
 });

@@ -3,7 +3,7 @@ import PlayerStatsEditor from './PlayerStatsEditor.vue'
 import { usePlayerEditor } from '@/composables/usePlayerEditor'
 
 const props = defineProps<{
-    playerId: string
+    playerId: number
 }>()
 
 const emit = defineEmits(['done'])

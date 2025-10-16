@@ -4,14 +4,14 @@ import type { BackendToUserPayloads } from 'shared-types'
 import { computed, ref } from 'vue'
 
 export const useGameStore = defineStore('game', () => {
-    const playerOrder = ref<{ id: string; name: string }[]>([])
+    const playerOrder = ref<{ id: number; name: string }[]>([])
     const round = ref<{ currentPlayerIndex: number; roundNumber: number }>({
         currentPlayerIndex: 0,
         roundNumber: 0,
     })
     const isInitialized = ref<boolean>(false)
 
-    const currentPlayer = computed<{ id: string; name: string } | null>(
+    const currentPlayer = computed<{ id: number; name: string } | null>(
         () => playerOrder.value[round.value.currentPlayerIndex] ?? null,
     )
 

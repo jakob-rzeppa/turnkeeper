@@ -5,10 +5,10 @@ import playerRepository from "../../repositories/playerRepository.js";
 import logger from "../../services/logger.js";
 
 export default class UserPlayersEmitter {
-    private playerId: string;
+    private playerId: number;
     private socket: Socket;
 
-    public constructor(playerId: string, s: Socket) {
+    public constructor(playerId: number, s: Socket) {
         this.playerId = playerId;
         this.socket = s;
 

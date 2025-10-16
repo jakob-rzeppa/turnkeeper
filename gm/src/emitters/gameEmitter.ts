@@ -4,7 +4,7 @@ import type { GmToBackendEventPayloads } from 'shared-types'
 export const useGameEmitter = () => {
     const connection = useConnection()
 
-    function initGame(playerIdsInOrder: string[]) {
+    function initGame(playerIdsInOrder: number[]) {
         const payload: GmToBackendEventPayloads['game:init'] = {
             playerIdsInOrder,
         }
@@ -16,7 +16,7 @@ export const useGameEmitter = () => {
         connection.socket.emit('game:end')
     }
 
-    function updatePlayerOrder(playerIdsInOrder: string[]) {
+    function updatePlayerOrder(playerIdsInOrder: number[]) {
         const payload: GmToBackendEventPayloads['game:playerOrder:update'] = {
             playerIdsInOrder,
         }

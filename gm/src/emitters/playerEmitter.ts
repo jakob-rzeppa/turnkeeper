@@ -14,7 +14,10 @@ export const usePlayerEmitter = () => {
         connection.socket.emit('players:create', payload)
     }
 
-    function updatePlayer(playerId: string, playerData: Partial<Player>): void {
+    function updatePlayer(
+        playerId: number,
+        playerData: Partial<Omit<Player, 'id' | 'stats'>>,
+    ): void {
         const payload: GmToBackendEventPayloads['players:update'] = {
             playerId,
             playerData,
@@ -22,15 +25,15 @@ export const usePlayerEmitter = () => {
         connection.socket.emit('players:update', payload)
     }
 
-    function deletePlayer(playerId: string): void {
+    function deletePlayer(playerId: number): void {
         const payload: GmToBackendEventPayloads['players:delete'] = { playerId }
         connection.socket.emit('players:delete', payload)
     }
 
     function createStatForPlayer(
-        statData: PlayerStat,
+        statData: Omit<PlayerStat, 'id'>,
         scope: 'global' | 'player',
-        playerId?: string,
+        playerId?: number,
     ): void {
         const payload: GmToBackendEventPayloads['players:stats:create'] = {
             scope,
@@ -40,8 +43,8 @@ export const usePlayerEmitter = () => {
         connection.socket.emit('players:stats:create', payload)
     }
 
-    function removeStatFromPlayer(playerId: string, statName: string): void {
-        const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statName }
+    function removeStatFromPlayer(playerId: number, statId: number): void {
+        const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statId }
         connection.socket.emit('players:stats:remove', payload)
     }
 

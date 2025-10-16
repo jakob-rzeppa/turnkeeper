@@ -52,9 +52,9 @@ export default class GmPlayersListener {
             "players:stats:remove",
             ({
                 playerId,
-                statName,
+                statId,
             }: GmToBackendEventPayloads["players:stats:remove"]) => {
-                playerHandler.removeStatFromPlayer({ playerId, statName });
+                playerHandler.removeStatFromPlayer({ playerId, statId });
             }
         );
     }

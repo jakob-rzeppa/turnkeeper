@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+
 import makePlayerSecret from "../../util/makePlayerSecret";
 
 describe("makePlayerSecret", () => {

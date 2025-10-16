@@ -4,7 +4,7 @@ import playerRepository from "../repositories/playerRepository";
 
 export const extractUserCredentials = (
     socket: Socket
-): null | { playerId: string; playerSecret: string } => {
+): null | { playerId: number; playerSecret: string } => {
     const playerName: unknown = socket.handshake.auth.playerName;
     const playerSecret: unknown = socket.handshake.auth.playerSecret;
 

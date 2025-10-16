@@ -2,11 +2,12 @@
 import { useModalStore } from '@/stores/modalStore'
 import NewStatModal from './NewStatModal.vue'
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
+import type { PlayerStat } from 'shared-types'
 
 const props = defineProps<{
-    playerId: string
+    playerId: number
     playerName: string
-    playerStats: { name: string; value: boolean | number | string | string[] }[]
+    playerStats: PlayerStat[]
 }>()
 
 const modalStore = useModalStore()
@@ -19,8 +20,8 @@ function openNewStatModal(): void {
     })
 }
 
-function removeStatFromPlayer(statName: string): void {
-    playerEmitter.removeStatFromPlayer(props.playerId, statName)
+function removeStatFromPlayer(statId: number): void {
+    playerEmitter.removeStatFromPlayer(props.playerId, statId)
 }
 </script>
 
@@ -55,7 +56,7 @@ function removeStatFromPlayer(statName: string): void {
                     </div>
                     <button
                         class="btn btn-error btn-sm btn-circle"
-                        @click="removeStatFromPlayer(stat.name)"
+                        @click="removeStatFromPlayer(stat.id)"
                         :title="`Remove ${stat.name}`"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">

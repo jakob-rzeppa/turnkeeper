@@ -4,7 +4,7 @@ import { usePlayerEmitter } from '@/emitters/playerEmitter'
 
 // The Player prop needs to be a deep clone
 const props = defineProps<{
-    playerId: string
+    playerId: number
 }>()
 
 const emit = defineEmits(['close'])

@@ -1,11 +1,31 @@
-import type { Player, PlayerStat } from "shared-types";
+import type { Player } from "shared-types";
 
-import makePlayerSecret from "../util/makePlayerSecret.js";
 import { SqliteDatabase } from "../database/SqliteDatabase.js";
+import makePlayerSecret from "../util/makePlayerSecret.js";
 
 const db = SqliteDatabase.getInstance();
 
 const playerRepository = {
+    createPlayer: (playerName: string): void => {
+        const secret = makePlayerSecret({ length: 4 });
+        try {
+            db.prepare("INSERT INTO players (name, secret) VALUES (?, ?)").run(
+                playerName,
+                secret
+            );
+        } catch (error: unknown) {
+            // Handle error silently
+
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
+            return;
+        }
+    },
+    deletePlayer: (id: number): void => {
+        db.prepare("DELETE FROM players WHERE id = ?").run(id);
+    },
     getAllPlayers: (): Player[] => {
         /**
          * Get all players from the database, including their stats.
@@ -50,7 +70,7 @@ const playerRepository = {
 
         return players;
     },
-    getPlayerById: (id: number): Player | null => {
+    getPlayerById: (id: number): null | Player => {
         /**
          * Get a player by id from the database, including the stats.
          * For each stat of the player there is a row in the result set (duplicate player id).
@@ -92,26 +112,17 @@ const playerRepository = {
 
         return player;
     },
-    getPlayerIdByName: (name: string): number | null => {
+    getPlayerIdByName: (name: string): null | number => {
         const dbRes = db
             .prepare("SELECT id FROM players WHERE name = ?")
-            .get(name) as { id: number } | undefined;
+            .get(name) as undefined | { id: number };
         return dbRes ? dbRes.id : null;
     },
-    getPlayerNameById: (id: number): string | null => {
+    getPlayerNameById: (id: number): null | string => {
         const dbRes = db
             .prepare("SELECT name FROM players WHERE id = ?")
-            .get(id) as { name: string } | undefined;
+            .get(id) as undefined | { name: string };
         return dbRes ? dbRes.name : null;
-    },
-    createPlayer: (playerName: string): void => {
-        const secret = makePlayerSecret({ length: 4 });
-        try {
-            db.prepare("INSERT INTO players (name, secret) VALUES (?, ?)").run(
-                playerName,
-                secret
-            );
-        } catch (_: unknown) {}
     },
     // The update player function is not for updating stats. For updating stats see the statsRepository
     updatePlayer: (
@@ -119,14 +130,14 @@ const playerRepository = {
         updatedFields: Partial<Omit<Player, "id" | "stats">>
     ): void => {
         const fieldsToUpdate: string[] = [];
-        const values: (string | number)[] = [];
+        const values: (number | string)[] = [];
 
         // Build the SET clause dynamically based on provided fields
         Object.keys(updatedFields).forEach((key) => {
             const typedKey = key as keyof typeof updatedFields;
             if (updatedFields[typedKey] === undefined) return;
             fieldsToUpdate.push(key + " = ?");
-            values.push(updatedFields[typedKey]!);
+            values.push(updatedFields[typedKey]);
         });
 
         if (fieldsToUpdate.length === 0) {
@@ -142,12 +153,15 @@ const playerRepository = {
 
         try {
             db.prepare(query).run(...values);
-        } catch (_: unknown) {
+        } catch (error: unknown) {
             // Handle error silently
+
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
+            return;
         }
-    },
-    deletePlayer: (id: number): void => {
-        db.prepare("DELETE FROM players WHERE id = ?").run(id);
     },
 };
 

@@ -4,7 +4,7 @@ import type { PlayerStat } from 'shared-types'
 import { ref } from 'vue'
 
 const props = defineProps<{
-    playerId?: string
+    playerId?: number
     playerName?: string
 }>()
 
@@ -17,7 +17,7 @@ const statNameRef = ref('')
 const statInitialValueRef = ref('')
 
 const createStat = () => {
-    const statData: PlayerStat = {
+    const statData: Omit<PlayerStat, 'id'> = {
         name: statNameRef.value,
         value: statInitialValueRef.value,
     }

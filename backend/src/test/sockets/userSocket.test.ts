@@ -97,7 +97,7 @@ describe("User Socket", () => {
 
         describe("when credentials are valid", () => {
             const mockCredentials = {
-                playerId: "player-123",
+                playerId: 2,
                 playerSecret: "secret-abc",
             };
 
@@ -170,7 +170,7 @@ describe("User Socket", () => {
 
     describe("handleDisconnect", () => {
         it("should unregister the user socket and log disconnection", () => {
-            const playerId = "player-123";
+            const playerId = 2;
 
             handleDisconnect(playerId);
 

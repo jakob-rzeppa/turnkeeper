@@ -11,7 +11,7 @@ import logger from "../services/logger.js";
  */
 export const authenticateUser = (
     socket: Socket,
-    playerId: string,
+    playerId: number,
     playerSecret: string
 ): boolean => {
     const player = playerRepository.getPlayerById(playerId);

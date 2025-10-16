@@ -9,7 +9,7 @@ import { reactive, watch } from 'vue'
  * @param playerId if no playerId is supplied the current player (whose turn is) is used
  * @param closeFunction the close function will be called, when the editor is done (e.g. a modal should be closed)
  */
-export const usePlayerEditor = (playerId?: string, closeFunction?: () => void) => {
+export const usePlayerEditor = (playerId?: number, closeFunction?: () => void) => {
     const playerStore = usePlayerStore()
     const gameStore = useGameStore()
     const playerEmitter = usePlayerEmitter()

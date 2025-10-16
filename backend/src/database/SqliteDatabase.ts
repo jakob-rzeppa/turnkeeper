@@ -1,15 +1,10 @@
 import Database from "better-sqlite3";
+
 import config from "../config/config";
 
 export class SqliteDatabase extends Database {
-    private static instance: SqliteDatabase;
+    private static instance: null | SqliteDatabase = null;
 
-    public static getInstance(): SqliteDatabase {
-        if (!SqliteDatabase.instance) {
-            SqliteDatabase.instance = new SqliteDatabase();
-        }
-        return SqliteDatabase.instance;
-    }
     private constructor() {
         if (!config.dbPath) {
             throw new Error(
@@ -21,6 +16,16 @@ export class SqliteDatabase extends Database {
 
         this.initializeTables();
     }
+    public static getInstance(): SqliteDatabase {
+        SqliteDatabase.instance ??= new SqliteDatabase();
+
+        return SqliteDatabase.instance;
+    }
+
+    public dropTables() {
+        this.exec("DROP TABLE IF EXISTS stats");
+        this.exec("DROP TABLE IF EXISTS players");
+    }
 
     public initializeTables() {
         this.exec(
@@ -30,10 +35,5 @@ export class SqliteDatabase extends Database {
         this.exec(
             "CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL, secret TEXT NOT NULL)"
         );
-    }
-
-    public dropTables() {
-        this.exec("DROP TABLE IF EXISTS stats");
-        this.exec("DROP TABLE IF EXISTS players");
     }
 }

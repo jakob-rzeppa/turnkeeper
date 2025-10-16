@@ -7,7 +7,7 @@ import DisplayContainer from '../container/DisplayContainer.vue'
 const playerStore = usePlayerStore()
 const modalStore = useModalStore()
 
-function openPlayerEditor(playerId: string) {
+function openPlayerEditor(playerId: number) {
     modalStore.openModal(PlayerEditorModal, { playerId })
 }
 </script>

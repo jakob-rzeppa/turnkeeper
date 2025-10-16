@@ -5,7 +5,7 @@ import logger from "./logger.js";
 
 const game = {
     isInitialized: false,
-    playerOrder: [] as string[], // array of player IDs in turn order
+    playerOrder: [] as number[], // array of player IDs in turn order
     round: {
         currentPlayerIndex: 0,
         roundNumber: 0,
@@ -13,10 +13,10 @@ const game = {
 };
 
 export const gameloop = {
-    addPlayerToTurnOrder: (playerId: string) => {
+    addPlayerToTurnOrder: (playerId: number) => {
         if (game.playerOrder.includes(playerId)) {
             logger.warn({
-                message: `Player ${playerId} is already in the turn order. Skipping addition.`,
+                message: `Player ${playerId.toString()} is already in the turn order. Skipping addition.`,
             });
             return;
         }
@@ -59,7 +59,7 @@ export const gameloop = {
             roundNumber: game.round.roundNumber,
         };
     },
-    init: (newPlayerOrder: string[]) => {
+    init: (newPlayerOrder: number[]) => {
         if (game.isInitialized) {
             logger.error({
                 message:
@@ -139,7 +139,7 @@ export const gameloop = {
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
     },
-    setPlayerOrder: (newPlayerOrder: string[]) => {
+    setPlayerOrder: (newPlayerOrder: number[]) => {
         if (newPlayerOrder.length === 0) {
             logger.error({
                 message:

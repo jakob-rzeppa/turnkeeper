@@ -5,7 +5,7 @@ import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js
 
 export default class UserController {
     // Multiple instances / register one user controller per playerId
-    private static instances = new Map<string, UserController>();
+    private static instances = new Map<number, UserController>();
 
     public socket: Socket;
 
@@ -13,7 +13,7 @@ export default class UserController {
     public userGameEmitter: UserGameEmitter;
     public userPlayersEmitter: UserPlayersEmitter;
 
-    private constructor(playerId: string, s: Socket) {
+    private constructor(playerId: number, s: Socket) {
         this.socket = s;
 
         this.userPlayersEmitter = new UserPlayersEmitter(playerId, this.socket);
@@ -32,21 +32,21 @@ export default class UserController {
         return Array.from(this.instances.values());
     };
 
-    public static getInstance = (playerId: string) => {
+    public static getInstance = (playerId: number) => {
         return this.instances.get(playerId);
     };
 
-    public static isConnected = (playerId: string): boolean => {
+    public static isConnected = (playerId: number): boolean => {
         return this.instances.has(playerId);
     };
 
-    public static registerSocket = (playerId: string, s: Socket) => {
+    public static registerSocket = (playerId: number, s: Socket) => {
         if (!this.instances.has(playerId)) {
             this.instances.set(playerId, new UserController(playerId, s));
         }
     };
 
-    public static unregisterSocket = (playerId: string) => {
+    public static unregisterSocket = (playerId: number) => {
         this.instances.delete(playerId);
     };
 

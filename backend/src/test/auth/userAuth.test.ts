@@ -1,18 +1,10 @@
 import { Socket } from "socket.io";
-import {
-    afterAll,
-    afterEach,
-    beforeAll,
-    describe,
-    expect,
-    it,
-    Mock,
-    vi,
-} from "vitest";
+import { afterEach, beforeAll, describe, expect, it, Mock, vi } from "vitest";
+
 import { authenticateUser } from "../../auth/userAuth";
-import logger from "../../services/logger";
-import playerRepository from "../../repositories/playerRepository";
 import UserController from "../../connectionControllers/UserController";
+import playerRepository from "../../repositories/playerRepository";
+import logger from "../../services/logger";
 
 vi.mock("../../connectionControllers/UserController", () => ({
     default: {
@@ -44,8 +36,8 @@ describe("userAuth", () => {
 
         beforeAll(() => {
             mockSocket = {
-                emit: vi.fn(),
                 disconnect: vi.fn(),
+                emit: vi.fn(),
             } as unknown as Socket;
         });
 
@@ -55,21 +47,15 @@ describe("userAuth", () => {
                     null
                 );
 
-                expect(
-                    authenticateUser(
-                        mockSocket,
-                        "nonExistentPlayer",
-                        "anySecret"
-                    )
-                ).toBe(false);
-
-                expect(playerRepository.getPlayerById).toHaveBeenCalledWith(
-                    "nonExistentPlayer"
+                expect(authenticateUser(mockSocket, 2, "anySecret")).toBe(
+                    false
                 );
+
+                expect(playerRepository.getPlayerById).toHaveBeenCalledWith(2);
                 expect(logger.error).toHaveBeenCalledWith({
+                    details: { playerId: 2 },
                     message:
                         "A user tried to connect but provided an invalid secret",
-                    details: { playerId: "nonExistentPlayer" },
                 });
                 expect(mockSocket.emit).toHaveBeenCalledWith(
                     "connection_error",
@@ -89,17 +75,15 @@ describe("userAuth", () => {
                     secret: "actualSecret",
                 });
 
-                expect(
-                    authenticateUser(mockSocket, "player1", "wrongSecret")
-                ).toBe(false);
-
-                expect(playerRepository.getPlayerById).toHaveBeenCalledWith(
-                    "player1"
+                expect(authenticateUser(mockSocket, 1, "wrongSecret")).toBe(
+                    false
                 );
+
+                expect(playerRepository.getPlayerById).toHaveBeenCalledWith(1);
                 expect(logger.error).toHaveBeenCalledWith({
+                    details: { playerId: 1 },
                     message:
                         "A user tried to connect but provided an invalid secret",
-                    details: { playerId: "player1" },
                 });
                 expect(mockSocket.emit).toHaveBeenCalledWith(
                     "connection_error",
@@ -120,17 +104,15 @@ describe("userAuth", () => {
                     secret: "actualSecret",
                 });
 
-                expect(
-                    authenticateUser(mockSocket, "player1", "actualSecret")
-                ).toBe(false);
-
-                expect(UserController.isConnected).toHaveBeenCalledWith(
-                    "player1"
+                expect(authenticateUser(mockSocket, 1, "actualSecret")).toBe(
+                    false
                 );
+
+                expect(UserController.isConnected).toHaveBeenCalledWith(1);
                 expect(logger.error).toHaveBeenCalledWith({
+                    details: { playerId: 1 },
                     message:
                         "A user tried to connect but another user is already connected for this player",
-                    details: { playerId: "player1" },
                 });
                 expect(mockSocket.emit).toHaveBeenCalledWith(
                     "connection_error",
@@ -152,13 +134,11 @@ describe("userAuth", () => {
                     secret: "actualSecret",
                 });
 
-                expect(
-                    authenticateUser(mockSocket, "player1", "actualSecret")
-                ).toBe(true);
-
-                expect(UserController.isConnected).toHaveBeenCalledWith(
-                    "player1"
+                expect(authenticateUser(mockSocket, 1, "actualSecret")).toBe(
+                    true
                 );
+
+                expect(UserController.isConnected).toHaveBeenCalledWith(1);
                 expect(logger.error).not.toHaveBeenCalled();
                 expect(mockSocket.emit).not.toHaveBeenCalled();
                 expect(mockSocket.disconnect).not.toHaveBeenCalled();

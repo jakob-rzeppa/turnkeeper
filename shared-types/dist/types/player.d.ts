@@ -1,10 +1,11 @@
 export interface Player {
-    id: string;
+    id: number;
     name: string;
     secret: string;
     stats: PlayerStat[];
 }
 export interface PlayerStat {
+    id: number;
     name: string;
     value: boolean | number | string | string[];
 }

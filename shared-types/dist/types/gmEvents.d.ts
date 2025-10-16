@@ -12,29 +12,29 @@ export interface BackendToGmEventPayloads {
 }
 export interface GmToBackendEventPayloads {
     "game:init": {
-        playerIdsInOrder: string[];
+        playerIdsInOrder: number[];
     };
     "game:playerOrder:update": {
-        playerIdsInOrder: string[];
+        playerIdsInOrder: number[];
     };
     "players:create": {
         name: string;
     };
     "players:update": {
-        playerId: string;
+        playerId: number;
         playerData: Partial<Omit<Player, "id">>;
     };
     "players:delete": {
-        playerId: string;
+        playerId: number;
     };
     "players:stats:create": {
         scope: "global" | "player";
-        playerId?: string;
-        statData: PlayerStat;
+        playerId?: number;
+        statData: Omit<PlayerStat, "id">;
     };
     "players:stats:remove": {
-        playerId: string;
-        statName: string;
+        playerId: number;
+        statId: number;
     };
 }
 //# sourceMappingURL=gmEvents.d.ts.map

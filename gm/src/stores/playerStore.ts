@@ -8,7 +8,7 @@ const { socket } = useConnection()
 export const usePlayerStore = defineStore('player', () => {
     // The store shall only be modified by events from the backend.
     const players = ref<Player[]>([])
-    const getPlayerById = (id: string) => {
+    const getPlayerById = (id: number) => {
         return players.value.find((p) => p.id === id)
     }
 

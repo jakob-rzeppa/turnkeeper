@@ -1,7 +1,8 @@
 import { Socket } from "socket.io";
 import { beforeEach, describe, expect, it, Mock, vi } from "vitest";
-import { extractUserCredentials } from "../../util/extractUserCredentials";
+
 import playerRepository from "../../repositories/playerRepository";
+import { extractUserCredentials } from "../../util/extractUserCredentials";
 
 vi.mock("../../repositories/playerRepository", () => ({
     default: {
