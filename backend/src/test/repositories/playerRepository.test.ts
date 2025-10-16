@@ -202,6 +202,32 @@ describe("Player Repository", () => {
 
             expect(player).toBeUndefined();
         });
+
+        it("should not update a player's name to a duplicate name", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')"
+            );
+
+            playerRepository.updatePlayer(1, { name: "Bob" });
+            const player = db
+                .prepare("SELECT * FROM players WHERE id = ?")
+                .get(1) as { id: number; name: string; secret: string };
+
+            expect(player.name).toBe("Alice"); // Name should remain unchanged
+        });
+
+        it("should not update if there are no fields to update supplied", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+
+            playerRepository.updatePlayer(1, {});
+            const player = db
+                .prepare("SELECT * FROM players WHERE id = ?")
+                .get(1) as { id: number; name: string; secret: string };
+
+            expect(player.name).toBe("Alice"); // Name should remain unchanged
+        });
     });
     describe("deletePlayer", () => {
         it("should delete an existing player from the database", () => {

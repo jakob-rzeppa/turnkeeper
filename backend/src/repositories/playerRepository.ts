@@ -20,7 +20,6 @@ const playerRepository = {
             if (error instanceof Error) {
                 return;
             }
-            return;
         }
     },
     getAllPlayers: (): Player[] => {
@@ -157,7 +156,6 @@ const playerRepository = {
             if (error instanceof Error) {
                 return;
             }
-            return;
         }
     },
     deletePlayer: (id: number): void => {
