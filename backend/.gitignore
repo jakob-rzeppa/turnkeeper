@@ -12,3 +12,6 @@
 
 # Test coverage
 /coverage
+
+# Runtime data
+/var
