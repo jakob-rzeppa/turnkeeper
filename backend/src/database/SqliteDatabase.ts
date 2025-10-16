@@ -23,13 +23,13 @@ export class SqliteDatabase extends Database {
     }
 
     public dropTables() {
-        this.exec("DROP TABLE IF EXISTS stats");
+        this.exec("DROP TABLE IF EXISTS player_stats");
         this.exec("DROP TABLE IF EXISTS players");
     }
 
     public initializeTables() {
         this.exec(
-            "CREATE TABLE IF NOT EXISTS stats (id INTEGER PRIMARY KEY, playerId INT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL, FOREIGN KEY (playerId) REFERENCES players (id))"
+            "CREATE TABLE IF NOT EXISTS player_stats (id INTEGER PRIMARY KEY, player_id INT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL, FOREIGN KEY (player_id) REFERENCES players (id))"
         );
 
         this.exec(

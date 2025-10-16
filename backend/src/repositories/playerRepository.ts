@@ -23,9 +23,6 @@ const playerRepository = {
             return;
         }
     },
-    deletePlayer: (id: number): void => {
-        db.prepare("DELETE FROM players WHERE id = ?").run(id);
-    },
     getAllPlayers: (): Player[] => {
         /**
          * Get all players from the database, including their stats.
@@ -34,7 +31,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN stats s ON p.id = s.playerId ORDER BY p.id"
+                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id"
             )
             .all() as {
             id: number;
@@ -77,7 +74,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN stats s ON p.id = s.playerId WHERE p.id = ?"
+                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?"
             )
             .all(id) as {
             id: number;
@@ -162,6 +159,9 @@ const playerRepository = {
             }
             return;
         }
+    },
+    deletePlayer: (id: number): void => {
+        db.prepare("DELETE FROM players WHERE id = ?").run(id);
     },
 };
 

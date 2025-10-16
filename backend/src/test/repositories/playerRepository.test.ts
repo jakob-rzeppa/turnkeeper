@@ -44,7 +44,7 @@ describe("Player Repository", () => {
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
             );
             db.exec(
-                "INSERT INTO stats (playerId, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')"
+                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')"
             );
 
             const players = playerRepository.getAllPlayers();
@@ -88,7 +88,7 @@ describe("Player Repository", () => {
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
             );
             db.exec(
-                "INSERT INTO stats (playerId, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')"
+                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')"
             );
 
             const player = playerRepository.getPlayerById(1);
