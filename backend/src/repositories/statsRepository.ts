@@ -42,7 +42,7 @@ export const statsRepository = {
             "INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)"
         ).run(playerId, stat.name, stat.value);
     },
-    updateStatForPlayer: (
+    updateStat: (
         statId: number,
         updatedFields: Partial<Omit<PlayerStat, "id" | "playerId">>
     ): void => {

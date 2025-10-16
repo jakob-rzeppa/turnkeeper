@@ -70,14 +70,15 @@ const playerHandler = {
             playerId
         )?.userPlayersEmitter.sendOwnPlayer();
     },
-    updatePlayer({
+    updatePlayerInfo({
         playerData,
         playerId,
     }: {
-        playerData: Partial<Omit<Player, "id">>;
+        playerData: Partial<Omit<Player, "id" | "stats">>;
         playerId: number;
     }) {
         playerRepository.updatePlayer(playerId, playerData);
+
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(
             playerId
