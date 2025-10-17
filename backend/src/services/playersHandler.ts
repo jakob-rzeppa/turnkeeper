@@ -36,7 +36,7 @@ const playerHandler = {
         )?.userPlayersEmitter.sendOwnPlayer();
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.forEachInstance((userController) => {
+        UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
     },

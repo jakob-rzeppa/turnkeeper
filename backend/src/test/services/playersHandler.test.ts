@@ -31,7 +31,11 @@ vi.mock("../../connectionControllers/UserController", () => ({
             userGameEmitter: { sendGameInfo: vi.fn() },
             disconnect: vi.fn(),
         } as unknown as UserController),
-        forEachInstance: vi.fn(),
+        getAllInstances: vi.fn().mockReturnValue([
+            {
+                userGameEmitter: { sendGameInfo: vi.fn() },
+            },
+        ]),
     },
 }));
 vi.mock("../../services/gameloop", () => ({
@@ -124,9 +128,12 @@ describe("playersHandler", () => {
             expect(
                 GmController.getInstance()?.gmGameEmitter.sendGameInfo
             ).toHaveBeenCalled();
-            expect(UserController.forEachInstance).toHaveBeenCalledWith(
-                expect.any(Function)
-            );
+            expect(UserController.getInstance).toHaveBeenCalledWith(playerId);
+            UserController.getAllInstances().forEach((instance) => {
+                expect(
+                    instance.userGameEmitter.sendGameInfo
+                ).toHaveBeenCalled();
+            });
         });
     });
 

@@ -20,14 +20,6 @@ export default class UserController {
         this.userGameEmitter = new UserGameEmitter(this.socket);
     }
 
-    public static forEachInstance = (
-        cb: (userController: UserController) => void
-    ) => {
-        this.instances.forEach((userController) => {
-            cb(userController);
-        });
-    };
-
     public static getAllInstances = () => {
         return Array.from(this.instances.values());
     };
