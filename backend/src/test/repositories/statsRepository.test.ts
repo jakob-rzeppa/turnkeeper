@@ -166,7 +166,7 @@ describe("Stats Repository", () => {
                 "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
             );
 
-            statsRepository.updateStat(1, {
+            statsRepository.updateStatForPlayer(1, 1, {
                 name: "level",
                 value: "10",
             });
@@ -195,7 +195,7 @@ describe("Stats Repository", () => {
                 "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
             );
 
-            statsRepository.updateStat(999, {
+            statsRepository.updateStatForPlayer(999, 999, {
                 name: "level",
                 value: "10",
             });

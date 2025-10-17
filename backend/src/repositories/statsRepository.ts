@@ -42,13 +42,14 @@ export const statsRepository = {
             "INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)"
         ).run(playerId, stat.name, stat.value);
     },
-    updateStat: (
+    updateStatForPlayer: (
+        playerId: number,
         statId: number,
         updatedFields: Partial<Omit<PlayerStat, "id" | "playerId">>
     ): void => {
         db.prepare(
-            "UPDATE player_stats SET name = ?, value = ? WHERE id = ?"
-        ).run(updatedFields.name, updatedFields.value, statId);
+            "UPDATE player_stats SET name = ?, value = ? WHERE id = ? AND player_id = ?"
+        ).run(updatedFields.name, updatedFields.value, statId, playerId);
     },
     removeStatFromPlayer: (playerId: number, statId: number): void => {
         db.prepare(
