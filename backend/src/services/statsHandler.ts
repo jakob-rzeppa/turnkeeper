@@ -1,12 +1,10 @@
+import { PlayerStat } from "shared-types";
 import GmController from "../connectionControllers/GmController";
 import UserController from "../connectionControllers/UserController";
 import { statsRepository } from "../repositories/statsRepository";
 
 export const statsHandler = {
-    createStatForAllPlayers(statData: {
-        name: string;
-        value: boolean | number | string | string[];
-    }) {
+    createStatForAllPlayers(statData: Omit<PlayerStat, "id">) {
         statsRepository.createStatForAllPlayers(statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
@@ -19,7 +17,7 @@ export const statsHandler = {
         statData,
     }: {
         playerId: number;
-        statData: { name: string; value: boolean | number | string | string[] };
+        statData: Omit<PlayerStat, "id">;
     }) {
         statsRepository.createStatForPlayer(playerId, statData);
 
@@ -28,8 +26,26 @@ export const statsHandler = {
             playerId
         )?.userPlayersEmitter.sendOwnPlayer();
     },
-    removeStatFromPlayer({
-        playerId,
+    updateStatValue({
+        playerId, // The playerId is used to update the correct user's view and to have a extra check that the changed stat belongs to the right player
+        statId,
+        newValue,
+    }: {
+        playerId: number;
+        statId: number;
+        newValue: PlayerStat["value"];
+    }) {
+        statsRepository.updateStatForPlayer(playerId, statId, {
+            value: newValue,
+        });
+
+        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(
+            playerId
+        )?.userPlayersEmitter.sendOwnPlayer();
+    },
+    removeStat({
+        playerId, // The playerId is used to update the correct user's view and to have a extra check that the changed stat belongs to the right player
         statId,
     }: {
         playerId: number;
