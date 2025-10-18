@@ -32,17 +32,17 @@ export default class GmController {
         this.gmLogsEmitter = new GmLogsEmitter(s);
     }
 
-    public static getInstance = () => {
+    public static getInstance = (): GmController | null => {
         return this.instance;
     };
     public static isConnected = (): boolean => {
         return this.instance !== null;
     };
-    public static registerSocket = (s: Socket) => {
+    public static registerSocket = (s: Socket): void => {
         GmController.instance = new GmController(s);
     };
 
-    public static unregisterSocket = () => {
+    public static unregisterSocket = (): void => {
         GmController.instance = null;
     };
 }
