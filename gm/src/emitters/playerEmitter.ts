@@ -43,6 +43,19 @@ export const usePlayerEmitter = () => {
         connection.socket.emit('players:stats:create', payload)
     }
 
+    function updateStatValueForPlayer(
+        playerId: number,
+        statId: number,
+        value: PlayerStat['value'],
+    ): void {
+        const payload: GmToBackendEventPayloads['players:stats:update'] = {
+            playerId,
+            statId,
+            value,
+        }
+        connection.socket.emit('players:stats:update', payload)
+    }
+
     function removeStatFromPlayer(playerId: number, statId: number): void {
         const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statId }
         connection.socket.emit('players:stats:remove', payload)
@@ -53,6 +66,7 @@ export const usePlayerEmitter = () => {
         updatePlayer,
         deletePlayer,
         createStatForPlayer,
+        updateStatValueForPlayer,
         removeStatFromPlayer,
     }
 }

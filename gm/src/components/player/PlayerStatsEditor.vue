@@ -3,7 +3,7 @@ import { useModalStore } from '@/stores/modalStore'
 import NewStatModal from './NewStatModal.vue'
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
 import type { PlayerStat } from 'shared-types'
-import { ref } from 'vue'
+import { onUnmounted, ref } from 'vue'
 
 const props = defineProps<{
     playerId: number
@@ -29,9 +29,23 @@ function openNewStatModal(): void {
     })
 }
 
+function saveStatChanges(): void {
+    localStats.value.forEach((value, statId) => {
+        if (isLocalStatsChanged.value.get(statId)) {
+            playerEmitter.updateStatValueForPlayer(props.playerId, statId, value)
+        }
+    })
+}
+
 function removeStatFromPlayer(statId: number): void {
     playerEmitter.removeStatFromPlayer(props.playerId, statId)
 }
+
+onUnmounted(() => {
+    if (Array.from(isLocalStatsChanged.value.values()).some((changed) => changed)) {
+        saveStatChanges()
+    }
+})
 </script>
 
 <template>
@@ -51,6 +65,7 @@ function removeStatFromPlayer(statId: number): void {
                     class="flex gap-3 items-center p-3 bg-base-200 rounded-lg"
                 >
                     <label
+                        @focusout="saveStatChanges"
                         :class="`input input-bordered input-sm w-full ${isLocalStatsChanged.get(stat.id) ? 'input-primary' : ''}`"
                     >
                         <span class="label">{{
