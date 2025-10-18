@@ -1,7 +1,8 @@
+import { LogEntry } from "shared-types";
 import { Socket } from "socket.io";
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import GmLogsEmitter from "../../../connectionEmitters/gm/GmLogsEmitter";
-import { LogEntry } from "shared-types";
 
 describe("GmLogsEmitter", () => {
     let mockSocket: Socket;
@@ -19,10 +20,10 @@ describe("GmLogsEmitter", () => {
     describe("sendLogs", () => {
         it("should emit logs:info with the correct payload", () => {
             const log: LogEntry = {
-                timestamp: new Date(),
-                severity: "info",
-                message: "Log message",
                 details: { key: "value" },
+                message: "Log message",
+                severity: "info",
+                timestamp: new Date(),
             };
 
             emitter = new GmLogsEmitter(mockSocket);
