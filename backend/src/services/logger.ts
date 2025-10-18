@@ -1,20 +1,7 @@
 import { LogEntry } from "shared-types";
 
 import GmController from "../connectionControllers/GmController.js";
-
-function formatLogEntry(logEntry: LogEntry): string {
-    const { details, message, severity, timestamp } = logEntry;
-    let formattedEntry = `[${timestamp.toISOString()}] [${severity.toUpperCase()}] ${message}`;
-
-    if (details) {
-        const detailsStr = Object.entries(details)
-            .map(([key, value]) => `${key}: ${JSON.stringify(value)}`)
-            .join(", ");
-        formattedEntry += ` | ${detailsStr}`;
-    }
-
-    return formattedEntry;
-}
+import { formatLogEntry } from "../util/formatLogEntry.js";
 
 const logger = {
     error: (logEntry: Omit<LogEntry, "severity" | "timestamp">) => {
@@ -41,8 +28,6 @@ const logger = {
             case "warning":
                 console.warn(formattedLogEntry);
                 break;
-            default:
-                console.log(formattedLogEntry);
         }
 
         // Send logs to the GM if connected
