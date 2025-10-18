@@ -2,6 +2,7 @@ import { GmToBackendEventPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
 import playerHandler from "../../services/playersHandler.js";
+import { statsHandler } from "../../services/statsHandler.js";
 
 export default class GmPlayersListener {
     private socket: Socket;
@@ -22,7 +23,7 @@ export default class GmPlayersListener {
                 playerData,
                 playerId,
             }: GmToBackendEventPayloads["players:update"]) => {
-                playerHandler.updatePlayer({ playerData, playerId });
+                playerHandler.updatePlayerInfo({ playerData, playerId });
             }
         );
 
@@ -41,9 +42,9 @@ export default class GmPlayersListener {
                 statData,
             }: GmToBackendEventPayloads["players:stats:create"]) => {
                 if (scope === "player" && playerId) {
-                    playerHandler.createStatForPlayer({ playerId, statData });
+                    statsHandler.createStatForPlayer({ playerId, statData });
                 } else {
-                    playerHandler.createStatForAllPlayers(statData);
+                    statsHandler.createStatForAllPlayers(statData);
                 }
             }
         );
@@ -54,7 +55,7 @@ export default class GmPlayersListener {
                 playerId,
                 statId,
             }: GmToBackendEventPayloads["players:stats:remove"]) => {
-                playerHandler.removeStatFromPlayer({ playerId, statId });
+                statsHandler.removeStat({ playerId, statId });
             }
         );
     }
