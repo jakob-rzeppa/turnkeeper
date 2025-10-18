@@ -35,6 +35,10 @@ describe("GmGameListener", () => {
     });
 
     describe("constructor", () => {
+        it("should create an instance", () => {
+            expect(listener).toBeInstanceOf(GmGameListener);
+        });
+
         it("should register all game event listeners", () => {
             expect(mockSocket.on).toHaveBeenCalledWith(
                 "game:init",

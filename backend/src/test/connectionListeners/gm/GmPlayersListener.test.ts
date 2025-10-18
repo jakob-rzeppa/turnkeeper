@@ -19,6 +19,7 @@ vi.mock("../../../services/statsHandler", () => ({
         createStatForAllPlayers: vi.fn(),
         createStatForPlayer: vi.fn(),
         removeStat: vi.fn(),
+        updateStatValue: vi.fn(),
     },
 }));
 
@@ -43,6 +44,10 @@ describe("GmPlayersListener", () => {
     });
 
     describe("constructor", () => {
+        it("should create an instance", () => {
+            expect(listener).toBeInstanceOf(GmPlayersListener);
+        });
+
         it("should register all player event listeners", () => {
             expect(mockSocket.on).toHaveBeenCalledWith(
                 "players:create",
@@ -58,6 +63,10 @@ describe("GmPlayersListener", () => {
             );
             expect(mockSocket.on).toHaveBeenCalledWith(
                 "players:stats:create",
+                expect.any(Function)
+            );
+            expect(mockSocket.on).toHaveBeenCalledWith(
+                "players:stats:update",
                 expect.any(Function)
             );
             expect(mockSocket.on).toHaveBeenCalledWith(
@@ -83,8 +92,8 @@ describe("GmPlayersListener", () => {
     describe("players:update event", () => {
         it("should update a player with the provided data and ID", () => {
             const payload = {
-                playerId: 1,
                 playerData: { name: "Updated Player" },
+                playerId: 1,
             };
 
             eventHandlers["players:update"](payload);
@@ -143,6 +152,21 @@ describe("GmPlayersListener", () => {
                 ).toHaveBeenCalledWith(payload.statData);
                 expect(statsHandler.createStatForPlayer).not.toHaveBeenCalled();
             });
+        });
+    });
+
+    describe("players:stats:update event", () => {
+        it("should update a stat value for a specific player and stat ID", () => {
+            const payload = { playerId: 1, statId: 3, value: 15 };
+
+            eventHandlers["players:stats:update"](payload);
+
+            expect(statsHandler.updateStatValue).toHaveBeenCalledWith({
+                newValue: payload.value,
+                playerId: payload.playerId,
+                statId: payload.statId,
+            });
+            expect(statsHandler.updateStatValue).toHaveBeenCalledTimes(1);
         });
     });
 

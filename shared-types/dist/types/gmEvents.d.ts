@@ -32,6 +32,11 @@ export interface GmToBackendEventPayloads {
         playerId?: number;
         statData: Omit<PlayerStat, "id">;
     };
+    "players:stats:update": {
+        playerId: number;
+        statId: number;
+        value: number;
+    };
     "players:stats:remove": {
         playerId: number;
         statId: number;

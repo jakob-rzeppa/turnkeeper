@@ -50,6 +50,21 @@ export default class GmPlayersListener {
         );
 
         this.socket.on(
+            "players:stats:update",
+            ({
+                playerId,
+                statId,
+                value,
+            }: GmToBackendEventPayloads["players:stats:update"]) => {
+                statsHandler.updateStatValue({
+                    newValue: value,
+                    playerId,
+                    statId,
+                });
+            }
+        );
+
+        this.socket.on(
             "players:stats:remove",
             ({
                 playerId,
