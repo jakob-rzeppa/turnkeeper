@@ -3,8 +3,8 @@ import { Player } from "shared-types";
 import GmController from "../connectionControllers/GmController.js";
 import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
-import { gameloop } from "./gameloop.js";
 import { statsRepository } from "../repositories/statsRepository.js";
+import { gameloop } from "./gameloop.js";
 
 const playerHandler = {
     createPlayer(playerData: { name: string }) {
@@ -21,6 +21,15 @@ const playerHandler = {
             return;
         }
         gameloop.addPlayerToTurnOrder(playerId);
+    },
+    deletePlayer(playerId: number) {
+        statsRepository.removeAllStatsFromPlayer(playerId);
+        playerRepository.deletePlayer(playerId);
+
+        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(playerId)?.disconnect();
+
+        gameloop.removeDeletePlayersFromPlayerOrder();
     },
     updatePlayerInfo({
         playerData,
@@ -40,15 +49,6 @@ const playerHandler = {
         UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
-    },
-    deletePlayer(playerId: number) {
-        statsRepository.removeAllStatsFromPlayer(playerId);
-        playerRepository.deletePlayer(playerId);
-
-        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(playerId)?.disconnect();
-
-        gameloop.removeDeletePlayersFromPlayerOrder();
     },
 };
 

@@ -43,6 +43,16 @@ export const statsRepository = {
             "INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)"
         ).run(playerId, stat.name, stat.value);
     },
+    removeAllStatsFromPlayer: (playerId: number): void => {
+        db.prepare("DELETE FROM player_stats WHERE player_id = ?").run(
+            playerId
+        );
+    },
+    removeStatFromPlayer: (playerId: number, statId: number): void => {
+        db.prepare(
+            "DELETE FROM player_stats WHERE id = ? AND player_id = ?"
+        ).run(statId, playerId);
+    },
     updateStatForPlayer: (
         playerId: number,
         statId: number,
@@ -72,15 +82,5 @@ export const statsRepository = {
                 fieldsToUpdate.join(", ") +
                 " WHERE id = ? AND player_id = ?"
         ).run(values);
-    },
-    removeStatFromPlayer: (playerId: number, statId: number): void => {
-        db.prepare(
-            "DELETE FROM player_stats WHERE id = ? AND player_id = ?"
-        ).run(statId, playerId);
-    },
-    removeAllStatsFromPlayer: (playerId: number): void => {
-        db.prepare("DELETE FROM player_stats WHERE player_id = ?").run(
-            playerId
-        );
     },
 };

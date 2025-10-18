@@ -3,9 +3,9 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import GmController from "../../connectionControllers/GmController.js";
 import UserController from "../../connectionControllers/UserController.js";
 import playerRepository from "../../repositories/playerRepository.js";
+import { statsRepository } from "../../repositories/statsRepository.js";
 import { gameloop } from "../../services/gameloop.js";
 import playersHandler from "../../services/playersHandler.js";
-import { statsRepository } from "../../repositories/statsRepository.js";
 
 // Mock the dependencies
 vi.mock("../../repositories/playerRepository", () => ({
