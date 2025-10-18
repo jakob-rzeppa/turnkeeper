@@ -7,6 +7,7 @@ export default class UserController {
     // Multiple instances / register one user controller per playerId
     private static instances = new Map<number, UserController>();
 
+    public playerId: number;
     public socket: Socket;
 
     // Emitters
@@ -14,17 +15,23 @@ export default class UserController {
     public userPlayersEmitter: UserPlayersEmitter;
 
     private constructor(playerId: number, s: Socket) {
+        this.playerId = playerId;
         this.socket = s;
 
-        this.userPlayersEmitter = new UserPlayersEmitter(playerId, this.socket);
+        this.userPlayersEmitter = new UserPlayersEmitter(
+            this.playerId,
+            this.socket
+        );
         this.userGameEmitter = new UserGameEmitter(this.socket);
     }
 
-    public static getAllInstances = () => {
+    public static getAllInstances = (): UserController[] => {
         return Array.from(this.instances.values());
     };
 
-    public static getInstance = (playerId: number) => {
+    public static getInstance = (
+        playerId: number
+    ): undefined | UserController => {
         return this.instances.get(playerId);
     };
 
@@ -32,17 +39,17 @@ export default class UserController {
         return this.instances.has(playerId);
     };
 
-    public static registerSocket = (playerId: number, s: Socket) => {
+    public static registerSocket = (playerId: number, s: Socket): void => {
         if (!this.instances.has(playerId)) {
             this.instances.set(playerId, new UserController(playerId, s));
         }
     };
 
-    public static unregisterSocket = (playerId: number) => {
+    public static unregisterSocket = (playerId: number): void => {
         this.instances.delete(playerId);
     };
 
-    public disconnect() {
+    public disconnect(): void {
         this.socket.disconnect();
     }
 }
