@@ -22,7 +22,7 @@ export interface GmToBackendEventPayloads {
     };
     "players:update": {
         playerId: number;
-        playerData: Partial<Omit<Player, "id">>;
+        playerData: Partial<Omit<Player, "id" | "stats">>;
     };
     "players:delete": {
         playerId: number;
