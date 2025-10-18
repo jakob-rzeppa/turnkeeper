@@ -3,6 +3,7 @@ import { useModalStore } from '@/stores/modalStore'
 import NewStatModal from './NewStatModal.vue'
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
 import type { PlayerStat } from 'shared-types'
+import { ref } from 'vue'
 
 const props = defineProps<{
     playerId: number
@@ -12,6 +13,14 @@ const props = defineProps<{
 
 const modalStore = useModalStore()
 const playerEmitter = usePlayerEmitter()
+
+// Map to track changes to stats
+const localStats = ref(new Map<number, string>())
+const isLocalStatsChanged = ref(new Map<number, boolean>())
+props.playerStats.forEach((stat) => {
+    localStats.value.set(stat.id, stat.value)
+    isLocalStatsChanged.value.set(stat.id, false)
+})
 
 function openNewStatModal(): void {
     modalStore.openModal(NewStatModal, {
@@ -38,22 +47,27 @@ function removeStatFromPlayer(statId: number): void {
             <div v-if="props.playerStats.length > 0" class="space-y-3">
                 <div
                     v-for="stat in props.playerStats"
-                    :key="stat.name"
+                    :key="stat.id"
                     class="flex gap-3 items-center p-3 bg-base-200 rounded-lg"
                 >
-                    <div class="flex-1">
-                        <label class="form-control w-full">
-                            <div class="label">
-                                <span class="label-text font-medium">{{ stat.name }}</span>
-                            </div>
-                            <input
-                                type="text"
-                                v-model="stat.value"
-                                class="input input-bordered input-sm w-full"
-                                :placeholder="`Enter ${stat.name}...`"
-                            />
-                        </label>
-                    </div>
+                    <label
+                        :class="`input input-bordered input-sm w-full ${isLocalStatsChanged.get(stat.id) ? 'input-primary' : ''}`"
+                    >
+                        <span class="label">{{
+                            stat.name + (isLocalStatsChanged.get(stat.id) ? '*' : '')
+                        }}</span>
+                        <input
+                            type="text"
+                            :value="localStats.get(stat.id)"
+                            @input="
+                                (e: Event) => {
+                                    localStats.set(stat.id, (e.target as HTMLInputElement).value)
+                                    isLocalStatsChanged.set(stat.id, true)
+                                }
+                            "
+                            :placeholder="`Enter ${stat.name}...`"
+                        />
+                    </label>
                     <button
                         class="btn btn-error btn-sm btn-circle"
                         @click="removeStatFromPlayer(stat.id)"
@@ -75,7 +89,7 @@ function removeStatFromPlayer(statId: number): void {
                 <p class="text-sm text-base-content/60">No stats added yet</p>
             </div>
 
-            <div class="card-actions mt-4">
+            <div class="card-actions">
                 <button class="btn btn-secondary btn-outline w-full" @click="openNewStatModal">
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
@@ -87,6 +101,17 @@ function removeStatFromPlayer(statId: number): void {
                     </svg>
                     Add New Stat
                 </button>
+            </div>
+
+            <div
+                :class="
+                    'text-xs font-light opacity-0' +
+                    (Array.from(isLocalStatsChanged.values()).some((changed) => changed)
+                        ? ' opacity-100'
+                        : '')
+                "
+            >
+                * indicates unsaved changes
             </div>
         </div>
     </div>
