@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import type { Component } from 'vue'
+import { markRaw, type Component } from 'vue'
 
 /*
  * This Store manages the open Modals in the application.
@@ -21,7 +21,7 @@ export const useModalStore = defineStore('modal', {
     }),
     actions: {
         openModal(component: Component, props: Modal['props'] = {}): void {
-            this.modals.push({ id: ++id, component, props })
+            this.modals.push({ id: ++id, component: markRaw(component), props })
         },
         closeTopModal(): void {
             if (this.modals.length > 0) {
