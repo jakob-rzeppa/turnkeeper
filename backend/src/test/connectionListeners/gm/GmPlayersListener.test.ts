@@ -26,7 +26,7 @@ vi.mock("../../../services/statsHandler", () => ({
 describe("GmPlayersListener", () => {
     let mockSocket: Socket;
     let listener: GmPlayersListener;
-    let eventHandlers: Record<string, Function>;
+    let eventHandlers: Record<string, (...args: unknown[]) => void>;
 
     beforeEach(() => {
         vi.clearAllMocks();
@@ -35,9 +35,11 @@ describe("GmPlayersListener", () => {
         // Create a mock socket that captures event handlers
         mockSocket = {
             id: "mock-socket-id",
-            on: vi.fn((event: string, handler: Function) => {
-                eventHandlers[event] = handler;
-            }),
+            on: vi.fn(
+                (event: string, handler: (...args: unknown[]) => void) => {
+                    eventHandlers[event] = handler;
+                }
+            ),
         } as unknown as Socket;
 
         listener = new GmPlayersListener(mockSocket);
