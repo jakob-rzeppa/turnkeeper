@@ -46,7 +46,7 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.forEachInstance((userController) => {
+        UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
     },
@@ -88,7 +88,7 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.forEachInstance((userController) => {
+        UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
     },
@@ -126,7 +126,7 @@ export const gameloop = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.forEachInstance((userController) => {
+        UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
     },
