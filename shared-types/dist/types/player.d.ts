@@ -7,6 +7,6 @@ export interface Player {
 export interface PlayerStat {
     id: number;
     name: string;
-    value: boolean | number | string | string[];
+    value: string;
 }
 //# sourceMappingURL=player.d.ts.map

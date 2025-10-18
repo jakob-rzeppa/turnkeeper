@@ -53,8 +53,29 @@ export const statsRepository = {
         statId: number,
         updatedFields: Partial<Omit<PlayerStat, "id" | "playerId">>
     ): void => {
+        const fieldsToUpdate: string[] = [];
+        const values: string[] = [];
+
+        // Build the SET clause dynamically based on provided fields
+        Object.keys(updatedFields).forEach((key) => {
+            const typedKey = key as keyof typeof updatedFields;
+            if (updatedFields[typedKey] === undefined) return;
+            fieldsToUpdate.push(key + " = ?");
+            values.push(updatedFields[typedKey]);
+        });
+
+        if (fieldsToUpdate.length === 0) {
+            return;
+        }
+
+        // Add the statId and playerId as the last parameter for the WHERE clause
+        values.push(statId.toString());
+        values.push(playerId.toString());
+
         db.prepare(
-            "UPDATE player_stats SET name = ?, value = ? WHERE id = ? AND player_id = ?"
-        ).run(updatedFields.name, updatedFields.value, statId, playerId);
+            "UPDATE player_stats SET " +
+                fieldsToUpdate.join(", ") +
+                " WHERE id = ? AND player_id = ?"
+        ).run(values);
     },
 };

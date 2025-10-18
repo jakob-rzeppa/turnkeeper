@@ -35,7 +35,7 @@ export interface GmToBackendEventPayloads {
     "players:stats:update": {
         playerId: number;
         statId: number;
-        value: number;
+        value: PlayerStat["value"];
     };
     "players:stats:remove": {
         playerId: number;
