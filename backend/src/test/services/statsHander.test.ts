@@ -1,15 +1,16 @@
 import { describe, expect, it, vi } from "vitest";
-import { statsHandler } from "../../services/statsHandler";
-import { statsRepository } from "../../repositories/statsRepository";
+
 import GmController from "../../connectionControllers/GmController";
 import UserController from "../../connectionControllers/UserController";
+import { statsRepository } from "../../repositories/statsRepository";
+import { statsHandler } from "../../services/statsHandler";
 
 vi.mock("../../repositories/statsRepository.ts", () => ({
     statsRepository: {
         createStatForAllPlayers: vi.fn(),
         createStatForPlayer: vi.fn(),
-        updateStatForPlayer: vi.fn(),
         removeStatFromPlayer: vi.fn(),
+        updateStatForPlayer: vi.fn(),
     },
 }));
 
@@ -25,11 +26,6 @@ vi.mock("../../connectionControllers/GmController.ts", () => ({
 
 vi.mock("../../connectionControllers/UserController.ts", () => ({
     default: {
-        getInstance: vi.fn().mockReturnValue({
-            userPlayersEmitter: {
-                sendOwnPlayer: vi.fn(),
-            },
-        }),
         getAllInstances: vi.fn().mockReturnValue([
             {
                 userPlayersEmitter: {
@@ -37,13 +33,18 @@ vi.mock("../../connectionControllers/UserController.ts", () => ({
                 },
             },
         ]),
+        getInstance: vi.fn().mockReturnValue({
+            userPlayersEmitter: {
+                sendOwnPlayer: vi.fn(),
+            },
+        }),
     },
 }));
 
 describe("statsHandler", () => {
     describe("createStatForAllPlayers", () => {
         it("should create a stat for all players", () => {
-            const statData = { name: "health", value: "100", playerId: 0 };
+            const statData = { name: "health", playerId: 0, value: "100" };
 
             statsHandler.createStatForAllPlayers(statData);
 
@@ -53,7 +54,7 @@ describe("statsHandler", () => {
         });
 
         it("should notify GM and all users after creating stat", () => {
-            const statData = { name: "health", value: "100", playerId: 0 };
+            const statData = { name: "health", playerId: 0, value: "100" };
 
             statsHandler.createStatForAllPlayers(statData);
 
@@ -72,7 +73,7 @@ describe("statsHandler", () => {
     describe("createStatForPlayer", () => {
         it("should create a stat for a specific player", () => {
             const playerId = 1;
-            const statData = { name: "mana", value: "50", playerId: 0 };
+            const statData = { name: "mana", playerId: 0, value: "50" };
 
             statsHandler.createStatForPlayer({ playerId, statData });
 
@@ -84,7 +85,7 @@ describe("statsHandler", () => {
 
         it("should notify GM and the specific user after creating stat", () => {
             const playerId = 1;
-            const statData = { name: "mana", value: "50", playerId: 0 };
+            const statData = { name: "mana", playerId: 0, value: "50" };
 
             statsHandler.createStatForPlayer({ playerId, statData });
 
@@ -104,7 +105,7 @@ describe("statsHandler", () => {
             const statId = 2;
             const newValue = "75";
 
-            statsHandler.updateStatValue({ playerId, statId, newValue });
+            statsHandler.updateStatValue({ newValue, playerId, statId });
 
             expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
                 playerId,
@@ -118,7 +119,7 @@ describe("statsHandler", () => {
             const statId = 2;
             const newValue = "75";
 
-            statsHandler.updateStatValue({ playerId, statId, newValue });
+            statsHandler.updateStatValue({ newValue, playerId, statId });
 
             expect(
                 GmController.getInstance()?.gmPlayersEmitter.sendPlayers

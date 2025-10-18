@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SqliteDatabase } from "../../database/SqliteDatabase";
 import { statsRepository } from "../../repositories/statsRepository";
 import logger from "../../services/logger";
@@ -37,22 +38,22 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(2);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "score",
+                player_id: 1,
                 value: "100",
             });
             expect(stats).toContainEqual({
                 id: 2,
-                player_id: 2,
                 name: "score",
+                player_id: 2,
                 value: "100",
             });
         });
@@ -71,16 +72,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "score",
+                player_id: 1,
                 value: "100",
             });
         });
@@ -99,16 +100,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "level",
+                player_id: 1,
                 value: "5",
             });
         });
@@ -127,16 +128,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "level",
+                player_id: 1,
                 value: "5",
             });
         });
@@ -173,16 +174,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "level",
+                player_id: 1,
                 value: "10",
             });
         });
@@ -202,16 +203,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "level",
+                player_id: 1,
                 value: "5",
             });
         });
@@ -230,16 +231,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 2,
-                player_id: 1,
                 name: "score",
+                player_id: 1,
                 value: "100",
             });
         });
@@ -255,16 +256,16 @@ describe("Stats Repository", () => {
 
             const stats = db.prepare("SELECT * FROM player_stats").all() as {
                 id: number;
-                player_id: number;
                 name: string;
+                player_id: number;
                 value: string;
             }[];
 
             expect(stats).toHaveLength(1);
             expect(stats).toContainEqual({
                 id: 1,
-                player_id: 1,
                 name: "level",
+                player_id: 1,
                 value: "5",
             });
         });

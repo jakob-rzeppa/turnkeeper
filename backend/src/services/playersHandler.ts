@@ -21,6 +21,14 @@ const playerHandler = {
         }
         gameloop.addPlayerToTurnOrder(playerId);
     },
+    deletePlayer(playerId: number) {
+        playerRepository.deletePlayer(playerId);
+
+        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
+        UserController.getInstance(playerId)?.disconnect();
+
+        gameloop.removeDeletePlayersFromPlayerOrder();
+    },
     updatePlayerInfo({
         playerData,
         playerId,
@@ -39,14 +47,6 @@ const playerHandler = {
         UserController.getAllInstances().forEach((userController) => {
             userController.userGameEmitter.sendGameInfo();
         });
-    },
-    deletePlayer(playerId: number) {
-        playerRepository.deletePlayer(playerId);
-
-        GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(playerId)?.disconnect();
-
-        gameloop.removeDeletePlayersFromPlayerOrder();
     },
 };
 

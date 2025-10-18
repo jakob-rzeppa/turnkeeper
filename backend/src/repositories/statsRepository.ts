@@ -1,7 +1,8 @@
 import { PlayerStat } from "shared-types";
+
 import { SqliteDatabase } from "../database/SqliteDatabase";
-import playerRepository from "./playerRepository";
 import logger from "../services/logger";
+import playerRepository from "./playerRepository";
 
 const db = SqliteDatabase.getInstance();
 
@@ -28,7 +29,7 @@ export const statsRepository = {
 
         if (!player) {
             logger.error({
-                message: `Player with id ${playerId} not found`,
+                message: `Player with id ${String(playerId)} not found`,
             });
             return;
         }
@@ -42,6 +43,11 @@ export const statsRepository = {
             "INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)"
         ).run(playerId, stat.name, stat.value);
     },
+    removeStatFromPlayer: (playerId: number, statId: number): void => {
+        db.prepare(
+            "DELETE FROM player_stats WHERE id = ? AND player_id = ?"
+        ).run(statId, playerId);
+    },
     updateStatForPlayer: (
         playerId: number,
         statId: number,
@@ -50,10 +56,5 @@ export const statsRepository = {
         db.prepare(
             "UPDATE player_stats SET name = ?, value = ? WHERE id = ? AND player_id = ?"
         ).run(updatedFields.name, updatedFields.value, statId, playerId);
-    },
-    removeStatFromPlayer: (playerId: number, statId: number): void => {
-        db.prepare(
-            "DELETE FROM player_stats WHERE id = ? AND player_id = ?"
-        ).run(statId, playerId);
     },
 };

@@ -22,6 +22,9 @@ const playerRepository = {
             }
         }
     },
+    deletePlayer: (id: number): void => {
+        db.prepare("DELETE FROM players WHERE id = ?").run(id);
+    },
     getAllPlayers: (): Player[] => {
         /**
          * Get all players from the database, including their stats.
@@ -157,9 +160,6 @@ const playerRepository = {
                 return;
             }
         }
-    },
-    deletePlayer: (id: number): void => {
-        db.prepare("DELETE FROM players WHERE id = ?").run(id);
     },
 };
 

@@ -5,43 +5,42 @@ import UserController from "../../connectionControllers/UserController.js";
 import playerRepository from "../../repositories/playerRepository.js";
 import { gameloop } from "../../services/gameloop.js";
 import playersHandler from "../../services/playersHandler.js";
-import { disconnect } from "process";
 
 // Mock the dependencies
 vi.mock("../../repositories/playerRepository", () => ({
     default: {
         createPlayer: vi.fn(),
+        deletePlayer: vi.fn(),
         getPlayerIdByName: vi.fn(),
         updatePlayer: vi.fn(),
-        deletePlayer: vi.fn(),
     },
 }));
 vi.mock("../../connectionControllers/GmController", () => ({
     default: {
         getInstance: vi.fn().mockReturnValue({
-            gmPlayersEmitter: { sendPlayers: vi.fn() },
             gmGameEmitter: { sendGameInfo: vi.fn() },
+            gmPlayersEmitter: { sendPlayers: vi.fn() },
         } as unknown as GmController),
     },
 }));
 vi.mock("../../connectionControllers/UserController", () => ({
     default: {
-        getInstance: vi.fn().mockReturnValue({
-            userPlayersEmitter: { sendOwnPlayer: vi.fn() },
-            userGameEmitter: { sendGameInfo: vi.fn() },
-            disconnect: vi.fn(),
-        } as unknown as UserController),
         getAllInstances: vi.fn().mockReturnValue([
             {
                 userGameEmitter: { sendGameInfo: vi.fn() },
             },
         ]),
+        getInstance: vi.fn().mockReturnValue({
+            disconnect: vi.fn(),
+            userGameEmitter: { sendGameInfo: vi.fn() },
+            userPlayersEmitter: { sendOwnPlayer: vi.fn() },
+        } as unknown as UserController),
     },
 }));
 vi.mock("../../services/gameloop", () => ({
     gameloop: {
-        isInitialized: vi.fn().mockReturnValue(true),
         addPlayerToTurnOrder: vi.fn(),
+        isInitialized: vi.fn().mockReturnValue(true),
         removeDeletePlayersFromPlayerOrder: vi.fn(),
     },
 }));
@@ -104,7 +103,7 @@ describe("playersHandler", () => {
             const playerId = 1;
             const playerData = { name: "Updated Name" };
 
-            playersHandler.updatePlayerInfo({ playerId, playerData });
+            playersHandler.updatePlayerInfo({ playerData, playerId });
 
             expect(playerRepository.updatePlayer).toHaveBeenCalledWith(
                 playerId,
@@ -116,7 +115,7 @@ describe("playersHandler", () => {
             const playerId = 1;
             const playerData = { name: "Updated Name" };
 
-            playersHandler.updatePlayerInfo({ playerId, playerData });
+            playersHandler.updatePlayerInfo({ playerData, playerId });
 
             expect(
                 GmController.getInstance()?.gmPlayersEmitter.sendPlayers
