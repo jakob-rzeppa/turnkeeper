@@ -1,18 +1,19 @@
 import { describe, expect, it } from "vitest";
+
 import { formatLogEntry } from "../../util/formatLogEntry";
 
 describe("formatLogEntry", () => {
     it("should format log entries correctly", () => {
         const result = formatLogEntry({
-            details: { userId: 123, action: "login" },
+            details: { action: "login", userId: 123 },
             message: "User logged in",
             severity: "info",
             timestamp: new Date("2024-01-01T12:00:00Z"),
         });
 
-        const expected = `[2024-01-01T12:00:00.000Z] [INFO] User logged in | userId: 123, action: "login"`;
+        const expected = `[2024-01-01T12:00:00.000Z] [INFO] User logged in | action: "login", userId: 123`;
 
-        expect(result).toBe(expected);
+        expect(result).toEqual(expected);
     });
 
     it("should format log entries without details correctly", () => {
