@@ -270,4 +270,43 @@ describe("Stats Repository", () => {
             });
         });
     });
+
+    describe("removeAllStatsFromPlayer", () => {
+        it("should remove all stats from a specific player", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5'), (2, 1, 'score', '100')"
+            );
+
+            statsRepository.removeAllStatsFromPlayer(1);
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(0);
+        });
+
+        it("should do nothing if the player has no stats", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+
+            statsRepository.removeAllStatsFromPlayer(1);
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(0);
+        });
+    });
 });

@@ -5,6 +5,7 @@ import UserController from "../../connectionControllers/UserController.js";
 import playerRepository from "../../repositories/playerRepository.js";
 import { gameloop } from "../../services/gameloop.js";
 import playersHandler from "../../services/playersHandler.js";
+import { statsRepository } from "../../repositories/statsRepository.js";
 
 // Mock the dependencies
 vi.mock("../../repositories/playerRepository", () => ({
@@ -13,6 +14,11 @@ vi.mock("../../repositories/playerRepository", () => ({
         deletePlayer: vi.fn(),
         getPlayerIdByName: vi.fn(),
         updatePlayer: vi.fn(),
+    },
+}));
+vi.mock("../../repositories/statsRepository", () => ({
+    statsRepository: {
+        removeAllStatsFromPlayer: vi.fn(),
     },
 }));
 vi.mock("../../connectionControllers/GmController", () => ({
@@ -145,6 +151,16 @@ describe("playersHandler", () => {
             expect(playerRepository.deletePlayer).toHaveBeenCalledWith(
                 playerId
             );
+        });
+
+        it("should remove all stats from the player before deletion", () => {
+            const playerId = 1;
+
+            playersHandler.deletePlayer(playerId);
+
+            expect(
+                statsRepository.removeAllStatsFromPlayer
+            ).toHaveBeenCalledWith(playerId);
         });
 
         it("should notify GM controller and disconnect user after deleting player", () => {
