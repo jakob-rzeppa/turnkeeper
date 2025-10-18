@@ -9,14 +9,9 @@ import { reactive, watch } from 'vue'
  * @param playerId if no playerId is supplied the current player (whose turn is) is used
  * @param closeFunction the close function will be called, when the editor is done (e.g. a modal should be closed)
  */
-export const usePlayerEditor = (playerId?: number, closeFunction?: () => void) => {
+export const usePlayerEditor = (playerId: number, closeFunction?: () => void) => {
     const playerStore = usePlayerStore()
-    const gameStore = useGameStore()
     const playerEmitter = usePlayerEmitter()
-
-    if (!playerId) {
-        playerId = gameStore.currentPlayerId
-    }
 
     const player = playerStore.getPlayerById(playerId) ?? {
         name: '',
@@ -33,7 +28,7 @@ export const usePlayerEditor = (playerId?: number, closeFunction?: () => void) =
 
     // Update Player info, when the player in the backend changes
     watch(
-        () => playerStore.getPlayerById(gameStore.currentPlayerId),
+        () => playerStore.getPlayerById(playerId),
         (updatedPlayer) => {
             // When the player is not found (deleted), close the modal
             if (!updatedPlayer) {
@@ -55,8 +50,20 @@ export const usePlayerEditor = (playerId?: number, closeFunction?: () => void) =
         if (closeFunction) closeFunction()
     }
 
+    const deletePlayer = (): void => {
+        if (
+            confirm(
+                `Are you sure you want to delete player with id ${playerId}? This action cannot be undone.`,
+            )
+        ) {
+            playerEmitter.deletePlayer(playerId)
+            if (closeFunction) closeFunction()
+        }
+    }
+
     return {
         localPlayer,
         updatePlayer,
+        deletePlayer,
     }
 }

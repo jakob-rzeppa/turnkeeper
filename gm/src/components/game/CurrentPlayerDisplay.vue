@@ -1,17 +1,23 @@
 <script setup lang="ts">
 import DisplayContainer from '../container/DisplayContainer.vue'
 import { useGameStore } from '@/stores/gameStore'
-import { usePlayerEditor } from '@/composables/usePlayerEditor'
 import PlayerStatsEditor from '../player/PlayerStatsEditor.vue'
+import { usePlayerStore } from '@/stores/playerStore'
+import { computed } from 'vue'
 
 const gameStore = useGameStore()
+const playerStore = usePlayerStore()
 
-const { localPlayer, updatePlayer } = usePlayerEditor()
+const localPlayer = computed(() => {
+    if (gameStore.currentPlayerId) {
+        return playerStore.getPlayerById(gameStore.currentPlayerId)!
+    }
+})
 </script>
 
 <template>
     <DisplayContainer label="Current Player">
-        <div v-if="gameStore.isInitialized">
+        <div v-if="gameStore.isInitialized && localPlayer">
             <div v-if="gameStore.currentPlayerId" class="flex flex-col gap-4">
                 <h1 class="text-3xl font-bold text-primary">{{ localPlayer.name }}</h1>
 
@@ -20,18 +26,6 @@ const { localPlayer, updatePlayer } = usePlayerEditor()
                     :player-name="localPlayer.name"
                     :player-stats="localPlayer.stats"
                 />
-
-                <button class="btn btn-primary btn-lg w-full" @click="updatePlayer">
-                    <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2"
-                            d="M5 13l4 4L19 7"
-                        ></path>
-                    </svg>
-                    Update Player
-                </button>
             </div>
             <div v-else class="alert alert-warning">
                 <svg class="stroke-current shrink-0 h-6 w-6" fill="none" viewBox="0 0 24 24">
