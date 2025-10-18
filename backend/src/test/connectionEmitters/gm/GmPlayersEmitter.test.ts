@@ -14,7 +14,7 @@ vi.mock("../../../repositories/playerRepository", () => ({
 
 describe("GmPlayersEmitter", () => {
     let mockSocket: Socket;
-    let emitter: GmPlayersEmitter;
+    let emitter: GmPlayersEmitter; // Only register one emitter at a time
 
     beforeEach(() => {
         vi.clearAllMocks();
