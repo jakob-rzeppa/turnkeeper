@@ -51,7 +51,6 @@ export const usePlayerEditor = (playerId?: number, closeFunction?: () => void) =
         playerEmitter.updatePlayer(playerId, {
             name: localPlayer.name,
             secret: localPlayer.secret,
-            stats: localPlayer.stats,
         })
         if (closeFunction) closeFunction()
     }
