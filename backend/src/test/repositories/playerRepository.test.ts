@@ -64,7 +64,47 @@ describe("Player Repository", () => {
                 value: "5",
             });
         });
+
+        it("should return players with empty stats array if they have no stats", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(1);
+            expect(players[0].name).toBe("Alice");
+            expect(players[0].stats).toBeDefined();
+            expect(players[0].stats).toHaveLength(0);
+        });
+
+        it("should return players with stats, that have empty values", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', ''), (1, 'level', '5')"
+            );
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(1);
+            expect(players[0].name).toBe("Alice");
+            expect(players[0].stats).toBeDefined();
+            expect(players[0].stats).toHaveLength(2);
+            expect(players[0].stats).toContainEqual({
+                id: 1,
+                name: "score",
+                value: "",
+            });
+            expect(players[0].stats).toContainEqual({
+                id: 2,
+                name: "level",
+                value: "5",
+            });
+        });
     });
+
     describe("getPlayerById", () => {
         it("should return a player by id from the database", () => {
             db.exec(
@@ -107,7 +147,47 @@ describe("Player Repository", () => {
                 value: "5",
             });
         });
+
+        it("should return players with empty stats array if they have no stats", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+
+            const player = playerRepository.getPlayerById(1);
+
+            expect(player).toBeDefined();
+            expect(player?.name).toBe("Alice");
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(0);
+        });
+
+        it("should return players with stats, that have empty values", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', ''), (1, 'level', '5')"
+            );
+
+            const player = playerRepository.getPlayerById(1);
+
+            expect(player).toBeDefined();
+            expect(player?.name).toBe("Alice");
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(2);
+            expect(player?.stats).toContainEqual({
+                id: 1,
+                name: "score",
+                value: "",
+            });
+            expect(player?.stats).toContainEqual({
+                id: 2,
+                name: "level",
+                value: "5",
+            });
+        });
     });
+
     describe("getPlayerIdByName", () => {
         it("should return a player id by name from the database", () => {
             db.exec(

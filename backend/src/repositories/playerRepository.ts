@@ -58,7 +58,11 @@ const playerRepository = {
             }
 
             // Add the stat if it exists
-            if (row.statId && row.statName && row.statValue) {
+            if (
+                row.statId &&
+                row.statName &&
+                typeof row.statValue === "string"
+            ) {
                 players[players.length - 1].stats.push({
                     id: row.statId,
                     name: row.statName,
@@ -100,7 +104,11 @@ const playerRepository = {
 
         for (const row of dbRes) {
             // Add the stat if it exists
-            if (row.statId && row.statName && row.statValue) {
+            if (
+                row.statId &&
+                row.statName &&
+                typeof row.statValue === "string"
+            ) {
                 player.stats.push({
                     id: row.statId,
                     name: row.statName,
