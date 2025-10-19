@@ -1,4 +1,4 @@
-import useConnection from '@/composables/connection'
+import useConnection from '@/composables/useConnection'
 import type { BackendToGmEventPayloads, LogEntry } from 'shared-types'
 import { defineStore } from 'pinia'
 import { ref } from 'vue'

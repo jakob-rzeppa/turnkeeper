@@ -1,4 +1,4 @@
-import useConnection from '@/composables/connection'
+import useConnection from '@/composables/useConnection'
 import type { GmToBackendEventPayloads } from 'shared-types'
 
 export const useGameEmitter = () => {
