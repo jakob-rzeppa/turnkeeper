@@ -35,11 +35,12 @@ export const usePlayerEditor = (playerId: number, closeFunction?: () => void) =>
                 if (closeFunction) closeFunction()
                 return
             }
-
+            console.log('Player updated from backend:', updatedPlayer)
             localPlayer.name = updatedPlayer.name
             localPlayer.secret = updatedPlayer.secret
             localPlayer.stats = updatedPlayer.stats.map((s) => ({ ...s }))
         },
+        { deep: true },
     )
 
     const updatePlayer = (): void => {

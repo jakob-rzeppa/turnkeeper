@@ -3,7 +3,7 @@ import { useModalStore } from '@/stores/modalStore'
 import NewStatModal from './NewStatModal.vue'
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
 import type { PlayerStat } from 'shared-types'
-import { onUnmounted, ref } from 'vue'
+import { onUnmounted, ref, watch } from 'vue'
 
 const props = defineProps<{
     playerId: number
@@ -17,10 +17,20 @@ const playerEmitter = usePlayerEmitter()
 // Map to track changes to stats
 const localStats = ref(new Map<number, string>())
 const isLocalStatsChanged = ref(new Map<number, boolean>())
-props.playerStats.forEach((stat) => {
-    localStats.value.set(stat.id, stat.value)
-    isLocalStatsChanged.value.set(stat.id, false)
-})
+
+watch(
+    () => props.playerStats,
+    () => {
+        // Initialize local stats and change tracking
+        localStats.value.clear()
+        isLocalStatsChanged.value.clear()
+        props.playerStats.forEach((stat) => {
+            localStats.value.set(stat.id, stat.value)
+            isLocalStatsChanged.value.set(stat.id, false)
+        })
+    },
+    { immediate: true },
+)
 
 function openNewStatModal(): void {
     modalStore.openModal(NewStatModal, {
