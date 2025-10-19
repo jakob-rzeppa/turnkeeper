@@ -1,5 +1,4 @@
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
-import { useGameStore } from '@/stores/gameStore'
 import { usePlayerStore } from '@/stores/playerStore'
 import { reactive, watch } from 'vue'
 
