@@ -52,9 +52,7 @@ function removeStatFromPlayer(statId: number): void {
 }
 
 onUnmounted(() => {
-    if (Array.from(isLocalStatsChanged.value.values()).some((changed) => changed)) {
-        saveStatChanges()
-    }
+    saveStatChanges()
 })
 </script>
 
@@ -76,6 +74,7 @@ onUnmounted(() => {
                 >
                     <label
                         @focusout="saveStatChanges"
+                        @keypress="(e) => (e.key === 'Enter' ? saveStatChanges() : null)"
                         :class="`input input-bordered input-sm w-full ${isLocalStatsChanged.get(stat.id) ? 'input-primary' : ''}`"
                     >
                         <span class="label">{{
