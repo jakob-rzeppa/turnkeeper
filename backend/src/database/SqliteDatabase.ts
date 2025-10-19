@@ -29,7 +29,7 @@ export class SqliteDatabase extends Database {
 
     public initializeTables() {
         this.exec(
-            "CREATE TABLE IF NOT EXISTS player_stats (id INTEGER PRIMARY KEY, player_id INT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL, FOREIGN KEY (player_id) REFERENCES players (id))"
+            "CREATE TABLE IF NOT EXISTS player_stats (id INTEGER PRIMARY KEY, player_id INT NOT NULL, name TEXT NOT NULL, value TEXT, FOREIGN KEY (player_id) REFERENCES players (id))"
         );
 
         this.exec(

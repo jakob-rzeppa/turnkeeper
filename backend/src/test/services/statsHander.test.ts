@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GmController from "../../connectionControllers/GmController";
 import UserController from "../../connectionControllers/UserController";
@@ -42,6 +42,10 @@ vi.mock("../../connectionControllers/UserController.ts", () => ({
 }));
 
 describe("statsHandler", () => {
+    beforeEach(() => {
+        vi.clearAllMocks();
+    });
+
     describe("createStatForAllPlayers", () => {
         it("should create a stat for all players", () => {
             const statData = { name: "health", playerId: 0, value: "100" };
@@ -67,6 +71,16 @@ describe("statsHandler", () => {
                     instance.userPlayersEmitter.sendOwnPlayer
                 ).toHaveBeenCalled();
             });
+        });
+
+        it("should allow statData with empty value", () => {
+            const statData = { name: "stamina", playerId: 0, value: "" };
+
+            statsHandler.createStatForAllPlayers(statData);
+
+            expect(
+                statsRepository.createStatForAllPlayers
+            ).toHaveBeenCalledWith(statData);
         });
     });
 
@@ -96,6 +110,17 @@ describe("statsHandler", () => {
                 UserController.getInstance(playerId)?.userPlayersEmitter
                     .sendOwnPlayer
             ).toHaveBeenCalled();
+        });
+
+        it("should allow statData with empty value", () => {
+            const statData = { name: "stamina", playerId: 0, value: "" };
+
+            statsHandler.createStatForPlayer({ playerId: 0, statData });
+
+            expect(statsRepository.createStatForPlayer).toHaveBeenCalledWith(
+                0,
+                statData
+            );
         });
     });
 
@@ -128,6 +153,20 @@ describe("statsHandler", () => {
                 UserController.getInstance(playerId)?.userPlayersEmitter
                     .sendOwnPlayer
             ).toHaveBeenCalled();
+        });
+
+        it("should allow updating stat to an empty value", () => {
+            const playerId = 1;
+            const statId = 2;
+            const newValue = "";
+
+            statsHandler.updateStatValue({ newValue, playerId, statId });
+
+            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
+                playerId,
+                statId,
+                { value: newValue }
+            );
         });
     });
 

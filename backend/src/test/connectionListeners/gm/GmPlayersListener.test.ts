@@ -138,6 +138,21 @@ describe("GmPlayersListener", () => {
                     statsHandler.createStatForAllPlayers
                 ).not.toHaveBeenCalled();
             });
+
+            it("should allow statData with empty value", () => {
+                const payload = {
+                    playerId: 1,
+                    scope: "player" as const,
+                    statData: { name: "Agility", value: "" },
+                };
+
+                eventHandlers["players:stats:create"](payload);
+
+                expect(statsHandler.createStatForPlayer).toHaveBeenCalledWith({
+                    playerId: payload.playerId,
+                    statData: payload.statData,
+                });
+            });
         });
 
         describe("when scope is 'global'", () => {
@@ -154,6 +169,19 @@ describe("GmPlayersListener", () => {
                 ).toHaveBeenCalledWith(payload.statData);
                 expect(statsHandler.createStatForPlayer).not.toHaveBeenCalled();
             });
+
+            it("should allow statData with empty value", () => {
+                const payload = {
+                    scope: "global" as const,
+                    statData: { name: "Stamina", value: "" },
+                };
+
+                eventHandlers["players:stats:create"](payload);
+
+                expect(
+                    statsHandler.createStatForAllPlayers
+                ).toHaveBeenCalledWith(payload.statData);
+            });
         });
     });
 
@@ -169,6 +197,18 @@ describe("GmPlayersListener", () => {
                 statId: payload.statId,
             });
             expect(statsHandler.updateStatValue).toHaveBeenCalledTimes(1);
+        });
+
+        it("should allow updating stat value to empty", () => {
+            const payload = { playerId: 1, statId: 3, value: "" };
+
+            eventHandlers["players:stats:update"](payload);
+
+            expect(statsHandler.updateStatValue).toHaveBeenCalledWith({
+                newValue: payload.value,
+                playerId: payload.playerId,
+                statId: payload.statId,
+            });
         });
     });
 

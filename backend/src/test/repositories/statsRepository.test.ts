@@ -85,6 +85,32 @@ describe("Stats Repository", () => {
                 value: "100",
             });
         });
+
+        it("should allow creating stats with no value", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+
+            statsRepository.createStatForAllPlayers({
+                name: "level",
+                value: "",
+            });
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: "level",
+                player_id: 1,
+                value: "",
+            });
+        });
     });
 
     describe("createStatForPlayer", () => {
@@ -214,6 +240,64 @@ describe("Stats Repository", () => {
                 name: "level",
                 player_id: 1,
                 value: "5",
+            });
+        });
+
+        it("should do nothing if the stat exists but for a different player", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
+            );
+
+            statsRepository.updateStatForPlayer(2, 1, {
+                name: "level",
+                value: "10",
+            });
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: "level",
+                player_id: 1,
+                value: "5",
+            });
+        });
+
+        it("should allow updating the stat to have no value", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')"
+            );
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')"
+            );
+
+            statsRepository.updateStatForPlayer(1, 1, {
+                name: "level",
+                value: "",
+            });
+
+            const stats = db.prepare("SELECT * FROM player_stats").all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: "level",
+                player_id: 1,
+                value: "",
             });
         });
     });
