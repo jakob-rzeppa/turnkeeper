@@ -1,9 +1,7 @@
 <script setup lang="ts">
-import { useModalStore } from '@/stores/modalStore'
-import NewStatModal from './NewStatModal.vue'
-import { usePlayerEmitter } from '@/emitters/playerEmitter'
 import type { PlayerStat } from 'shared-types'
-import { onUnmounted, ref, watch } from 'vue'
+import { onUnmounted } from 'vue'
+import { useStatsEditor } from '@/composables/useStatsEditor'
 
 const props = defineProps<{
     playerId: number
@@ -11,45 +9,14 @@ const props = defineProps<{
     playerStats: PlayerStat[]
 }>()
 
-const modalStore = useModalStore()
-const playerEmitter = usePlayerEmitter()
-
-// Map to track changes to stats
-const localStats = ref(new Map<number, string>())
-const isLocalStatsChanged = ref(new Map<number, boolean>())
-
-watch(
-    () => props.playerStats,
-    () => {
-        // Initialize local stats and change tracking
-        localStats.value.clear()
-        isLocalStatsChanged.value.clear()
-        props.playerStats.forEach((stat) => {
-            localStats.value.set(stat.id, stat.value)
-            isLocalStatsChanged.value.set(stat.id, false)
-        })
-    },
-    { immediate: true },
-)
-
-function openNewStatModal(): void {
-    modalStore.openModal(NewStatModal, {
-        playerId: props.playerId,
-        playerName: props.playerName,
-    })
-}
-
-function saveStatChanges(): void {
-    localStats.value.forEach((value, statId) => {
-        if (isLocalStatsChanged.value.get(statId)) {
-            playerEmitter.updateStatValueForPlayer(props.playerId, statId, value)
-        }
-    })
-}
-
-function removeStatFromPlayer(statId: number): void {
-    playerEmitter.removeStatFromPlayer(props.playerId, statId)
-}
+const {
+    localStats,
+    isLocalStatsChanged,
+    handeStatValueChange,
+    openNewStatModal,
+    saveStatChanges,
+    removeStatFromPlayer,
+} = useStatsEditor(props)
 
 onUnmounted(() => {
     saveStatChanges()
@@ -84,10 +51,11 @@ onUnmounted(() => {
                             type="text"
                             :value="localStats.get(stat.id)"
                             @input="
-                                (e: Event) => {
-                                    localStats.set(stat.id, (e.target as HTMLInputElement).value)
-                                    isLocalStatsChanged.set(stat.id, true)
-                                }
+                                (e: Event) =>
+                                    handeStatValueChange(
+                                        stat.id,
+                                        (e.target as HTMLInputElement).value,
+                                    )
                             "
                             :placeholder="`Enter ${stat.name}...`"
                         />
