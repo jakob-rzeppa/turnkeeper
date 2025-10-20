@@ -20,10 +20,8 @@ const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.player
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Player Name</span>
-                </label>
+            <div>
+                <label class="label">Player Name</label>
                 <input
                     type="text"
                     v-model="localPlayer.name"
@@ -32,10 +30,8 @@ const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.player
                 />
             </div>
 
-            <div class="form-control">
-                <label class="label">
-                    <span class="label-text font-medium">Secret Code</span>
-                </label>
+            <div>
+                <label class="label">Secret Code</label>
                 <input
                     type="text"
                     v-model="localPlayer.secret"
