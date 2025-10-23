@@ -9,9 +9,7 @@ const gameStore = useGameStore()
 const playerStore = usePlayerStore()
 
 const localPlayer = computed(() => {
-    if (gameStore.currentPlayerId) {
-        return playerStore.getPlayerById(gameStore.currentPlayerId)!
-    }
+    return playerStore.getPlayerById(gameStore.currentPlayerId)
 })
 </script>
 
