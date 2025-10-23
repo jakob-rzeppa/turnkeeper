@@ -1,4 +1,4 @@
-import { ref, unref, watch, type Ref } from 'vue'
+import { ref, watch } from 'vue'
 
 /**
  * A composable to manage an editable object with autosave functionality.
