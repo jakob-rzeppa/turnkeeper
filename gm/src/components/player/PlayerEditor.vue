@@ -33,14 +33,16 @@ const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveCh
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="label">Player Name</label>
+                <label class="label"
+                    >Player Name{{ areEditableObjectFieldsChanged.name ? '*' : '' }}</label
+                >
                 <input
                     type="text"
                     placeholder="Enter player name..."
                     :value="editableObject.name"
                     :class="
-                        'input input-bordered input-primary w-full ' +
-                        (areEditableObjectFieldsChanged.name ? 'bg-accent' : '')
+                        'input w-full ' +
+                        (areEditableObjectFieldsChanged.name ? 'input-accent' : '')
                     "
                     @input="handleFieldInput('name', $event)"
                     @focusout="saveChanges"
@@ -48,14 +50,16 @@ const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveCh
             </div>
 
             <div>
-                <label class="label">Secret Code</label>
+                <label class="label"
+                    >Secret Code{{ areEditableObjectFieldsChanged.secret ? '*' : '' }}</label
+                >
                 <input
                     type="text"
                     placeholder="Enter secret code..."
                     :value="editableObject.secret"
                     :class="
-                        'input input-bordered input-primary w-full ' +
-                        (areEditableObjectFieldsChanged.secret ? 'bg-accent' : '')
+                        'input w-full ' +
+                        (areEditableObjectFieldsChanged.secret ? 'input-accent' : '')
                     "
                     @input="handleFieldInput('secret', $event)"
                     @focusout="saveChanges"
