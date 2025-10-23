@@ -15,7 +15,13 @@ const playerEmitter = usePlayerEmitter()
 
 const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
     useAutosaveObjectEditor<{ name: string; secret: string }>(
-        () => playerStore.getPlayerById(props.playerId) ?? { name: '', secret: '' },
+        () => {
+            const player = playerStore.getPlayerById(props.playerId)
+            return {
+                name: player?.name ?? '',
+                secret: player?.secret ?? '',
+            }
+        },
         (newObject) => {
             playerEmitter.updatePlayer(props.playerId, {
                 name: newObject.name,
