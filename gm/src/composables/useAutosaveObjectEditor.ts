@@ -4,7 +4,7 @@ import { ref, unref, watch, type Ref } from 'vue'
  *
  * @param baseObjectCallback the callback function should return the baseObject to be edited (used by the watcher to track changes)
  */
-export const useAutosaveObjectEditor = <T extends { [key: string]: string }>(
+export const useAutosaveObjectEditor = <T extends object>(
     baseObjectCallback: () => T,
     saveCallback: (newObject: T) => void,
 ) => {
@@ -26,7 +26,7 @@ export const useAutosaveObjectEditor = <T extends { [key: string]: string }>(
             baseObject.value = newBaseObject
 
             // Recheck change tracking
-            Object.keys(editableObject.value).forEach((key: keyof T) => {
+            Object.keys(editableObject.value).forEach((key: string | number) => {
                 areEditableObjectFieldsChanged.value![key] =
                     baseObject.value[key] !== editableObject.value[key]
             })
