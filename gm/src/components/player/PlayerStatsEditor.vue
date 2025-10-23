@@ -1,68 +1,92 @@
 <script setup lang="ts">
-import type { PlayerStat } from 'shared-types'
-import { onUnmounted } from 'vue'
-import { useStatsEditor } from '@/composables/useStatsEditor'
+import { onUnmounted, ref, watch } from 'vue'
+import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor'
+import { usePlayerStore } from '@/stores/playerStore'
+import type { Player } from 'shared-types'
+import { usePlayerEmitter } from '@/emitters/playerEmitter'
+import { useModalStore } from '@/stores/modalStore'
+import NewStatModal from './NewStatModal.vue'
 
 const props = defineProps<{
     playerId: number
-    playerName: string
-    playerStats: PlayerStat[]
 }>()
 
-const {
-    localStats,
-    isLocalStatsChanged,
-    handeStatValueChange,
-    openNewStatModal,
-    saveStatChanges,
-    removeStatFromPlayer,
-} = useStatsEditor(props)
+const playerStore = usePlayerStore()
+const modalStore = useModalStore()
+const playerEmitter = usePlayerEmitter()
+
+const player = ref<Player | undefined>(undefined)
+
+watch(
+    () => playerStore.getPlayerById(props.playerId),
+    (newPlayer) => {
+        if (newPlayer) {
+            player.value = newPlayer
+        }
+    },
+    { immediate: true, deep: true },
+)
+
+const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
+    useAutosaveObjectEditor<{ [keyof: string]: string }>(
+        () => {
+            const statsRecord: { [keyof: string]: string } = {}
+            player.value?.stats.forEach((stat) => {
+                statsRecord[stat.id.toString()] = stat.value
+            })
+            return statsRecord
+        },
+        (newStats) => {
+            Object.keys(newStats).forEach((statId: string) => {
+                playerEmitter.updateStatValueForPlayer(
+                    props.playerId,
+                    parseInt(statId),
+                    newStats[statId],
+                )
+            })
+        },
+    )
 
 onUnmounted(() => {
-    saveStatChanges()
+    saveChanges()
 })
 </script>
 
 <template>
-    <div class="card bg-base-100 border border-secondary/20">
+    <div v-if="!player">Player with Id {{ props.playerId }} not found</div>
+    <div v-else class="card bg-base-100 border border-secondary/20">
         <div class="card-body">
             <div class="card-title text-secondary mb-4 flex items-center justify-between">
                 <span>Player Stats</span>
                 <div class="badge badge-secondary badge-outline">
-                    {{ props.playerStats.length }}
+                    {{ player.stats.length }}
                 </div>
             </div>
 
-            <div v-if="props.playerStats.length > 0" class="space-y-3">
+            <div v-if="player.stats.length > 0" class="space-y-3">
                 <div
-                    v-for="stat in props.playerStats"
+                    v-for="stat in player.stats"
                     :key="stat.id"
                     class="flex gap-3 items-center p-3 bg-base-200 rounded-lg"
                 >
                     <label
-                        @focusout="saveStatChanges"
-                        @keypress="(e) => (e.key === 'Enter' ? saveStatChanges() : null)"
-                        :class="`input input-bordered input-sm w-full ${isLocalStatsChanged.get(stat.id) ? 'input-primary' : ''}`"
+                        @focusout="saveChanges"
+                        @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
+                        :class="`input input-bordered input-sm w-full ${areEditableObjectFieldsChanged[stat.id] ? 'input-primary' : ''}`"
                     >
                         <span class="label">{{
-                            stat.name + (isLocalStatsChanged.get(stat.id) ? '*' : '')
+                            stat.name + (areEditableObjectFieldsChanged[stat.id] ? '*' : '')
                         }}</span>
                         <input
                             type="text"
-                            :value="localStats.get(stat.id)"
-                            @input="
-                                (e: Event) =>
-                                    handeStatValueChange(
-                                        stat.id,
-                                        (e.target as HTMLInputElement).value,
-                                    )
-                            "
+                            :value="editableObject[stat.id]"
+                            @input="(e: Event) => handleFieldInput(stat.id, e)"
                             :placeholder="`Enter ${stat.name}...`"
                         />
                     </label>
                     <button
                         class="btn btn-error btn-sm btn-circle"
-                        @click="removeStatFromPlayer(stat.id)"
+                        @click="playerEmitter.removeStatFromPlayer(props.playerId, stat.id)"
                         :title="`Remove ${stat.name}`"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -82,7 +106,16 @@ onUnmounted(() => {
             </div>
 
             <div class="card-actions">
-                <button class="btn btn-secondary btn-outline w-full" @click="openNewStatModal">
+                <button
+                    class="btn btn-secondary btn-outline w-full"
+                    @click="
+                        () =>
+                            modalStore.openModal(NewStatModal, {
+                                playerId: props.playerId,
+                                playerName: player?.name,
+                            })
+                    "
+                >
                     <svg class="w-4 h-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
@@ -93,17 +126,6 @@ onUnmounted(() => {
                     </svg>
                     Add New Stat
                 </button>
-            </div>
-
-            <div
-                :class="
-                    'text-xs font-light opacity-0' +
-                    (Array.from(isLocalStatsChanged.values()).some((changed) => changed)
-                        ? ' opacity-100'
-                        : '')
-                "
-            >
-                * indicates unsaved changes
             </div>
         </div>
     </div>

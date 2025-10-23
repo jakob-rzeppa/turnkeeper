@@ -25,6 +25,13 @@ export const useAutosaveObjectEditor = <T extends { [key: string]: string }>(
         (newBaseObject) => {
             baseObject.value = newBaseObject
 
+            // If new records arrive from backend, update editableObject accordingly
+            Object.keys(newBaseObject).forEach((key: keyof T) => {
+                if (!(key in editableObject.value)) {
+                    editableObject.value[key] = newBaseObject[key]
+                }
+            })
+
             // Recheck change tracking
             Object.keys(editableObject.value).forEach((key: keyof T) => {
                 areEditableObjectFieldsChanged.value![key] =

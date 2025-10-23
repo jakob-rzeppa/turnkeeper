@@ -57,6 +57,7 @@ onUnmounted(() => {
                     "
                     @input="handleFieldInput('name', $event)"
                     @focusout="saveChanges"
+                    @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
             </div>
 
@@ -74,6 +75,7 @@ onUnmounted(() => {
                     "
                     @input="handleFieldInput('secret', $event)"
                     @focusout="saveChanges"
+                    @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
             </div>
         </div>
