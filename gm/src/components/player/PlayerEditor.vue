@@ -1,6 +1,8 @@
 <script setup lang="ts">
+import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor'
 import PlayerStatsEditor from './PlayerStatsEditor.vue'
-import { usePlayerEditor } from '@/composables/usePlayerEditor'
+import { usePlayerStore } from '@/stores/playerStore'
+import { usePlayerEmitter } from '@/emitters/playerEmitter'
 
 const props = defineProps<{
     playerId: number
@@ -8,9 +10,19 @@ const props = defineProps<{
 
 const emit = defineEmits(['done'])
 
-const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.playerId, () =>
-    emit('done'),
-)
+const playerStore = usePlayerStore()
+const playerEmitter = usePlayerEmitter()
+
+const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
+    useAutosaveObjectEditor<{ name: string; secret: string }>(
+        () => playerStore.getPlayerById(props.playerId) ?? { name: '', secret: '' },
+        (newObject) => {
+            playerEmitter.updatePlayer(props.playerId, {
+                name: newObject.name,
+                secret: newObject.secret,
+            })
+        },
+    )
 </script>
 
 <template>
@@ -24,9 +36,14 @@ const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.player
                 <label class="label">Player Name</label>
                 <input
                     type="text"
-                    v-model="localPlayer.name"
-                    class="input input-bordered input-primary w-full"
                     placeholder="Enter player name..."
+                    :value="editableObject.name"
+                    :class="
+                        'input input-bordered input-primary w-full ' +
+                        (areEditableObjectFieldsChanged.name ? 'bg-accent' : '')
+                    "
+                    @input="handleFieldInput('name', $event)"
+                    @focusout="saveChanges"
                 />
             </div>
 
@@ -34,30 +51,24 @@ const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.player
                 <label class="label">Secret Code</label>
                 <input
                     type="text"
-                    v-model="localPlayer.secret"
-                    class="input input-bordered input-secondary w-full"
                     placeholder="Enter secret code..."
+                    :value="editableObject.secret"
+                    :class="
+                        'input input-bordered input-primary w-full ' +
+                        (areEditableObjectFieldsChanged.secret ? 'bg-accent' : '')
+                    "
+                    @input="handleFieldInput('secret', $event)"
+                    @focusout="saveChanges"
                 />
             </div>
         </div>
 
         <PlayerStatsEditor
             :player-id="props.playerId"
-            :player-name="localPlayer.name"
-            :player-stats="localPlayer.stats"
+            :player-name="playerStore.getPlayerById(props.playerId)!.name"
+            :player-stats="playerStore.getPlayerById(props.playerId)!.stats"
         />
 
-        <button class="btn btn-primary btn-lg w-full" @click="updatePlayer">
-            <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path
-                    stroke-linecap="round"
-                    stroke-linejoin="round"
-                    stroke-width="2"
-                    d="M5 13l4 4L19 7"
-                ></path>
-            </svg>
-            Update Player
-        </button>
         <div class="divider"></div>
 
         <div class="card bg-error/5 border border-error/20">
@@ -66,7 +77,10 @@ const { localPlayer, updatePlayer, deletePlayer } = usePlayerEditor(props.player
                     This action cannot be undone and will permanently remove the player from the
                     game.
                 </p>
-                <button class="btn btn-error btn-sm gap-2" @click="deletePlayer">
+                <button
+                    class="btn btn-error btn-sm gap-2"
+                    @click="playerEmitter.deletePlayer(props.playerId)"
+                >
                     <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path
                             stroke-linecap="round"
