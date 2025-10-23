@@ -1,6 +1,8 @@
 import { ref, unref, watch, type Ref } from 'vue'
 
 /**
+ * A composable to manage an editable object with autosave functionality.
+ * It tracks changes to the fields of the object and provides methods to handle input and save changes.
  *
  * @param baseObjectCallback the callback function should return the baseObject to be edited (used by the watcher to track changes)
  */
@@ -41,6 +43,7 @@ export const useAutosaveObjectEditor = <T extends { [key: string]: string }>(
         { deep: true, immediate: false },
     )
 
+    // This function handles input events for fields of the editable object
     const handleFieldInput = (field: keyof T, e: Event): void => {
         const target = e.target as HTMLInputElement
         const newValue = target.value
