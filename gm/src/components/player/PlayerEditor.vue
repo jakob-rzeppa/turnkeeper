@@ -3,6 +3,7 @@ import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor'
 import PlayerStatsEditor from './PlayerStatsEditor.vue'
 import { usePlayerStore } from '@/stores/playerStore'
 import { usePlayerEmitter } from '@/emitters/playerEmitter'
+import { onUnmounted } from 'vue'
 
 const props = defineProps<{
     playerId: number
@@ -29,6 +30,10 @@ const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveCh
             })
         },
     )
+
+onUnmounted(() => {
+    saveChanges()
+})
 </script>
 
 <template>
