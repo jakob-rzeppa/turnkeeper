@@ -25,6 +25,7 @@ export class SqliteDatabase extends Database {
     public dropTables() {
         this.exec("DROP TABLE IF EXISTS player_stats");
         this.exec("DROP TABLE IF EXISTS players");
+        this.exec("DROP TABLE IF EXISTS game_state");
     }
 
     public initializeTables() {
@@ -34,6 +35,10 @@ export class SqliteDatabase extends Database {
 
         this.exec(
             "CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL, secret TEXT NOT NULL)"
+        );
+
+        this.exec(
+            "CREATE TABLE IF NOT EXISTS game_state (id INTEGER PRIMARY KEY, round_number INT NOT NULL, current_player_index INT NOT NULL, player_order TEXT NOT NULL)"
         );
     }
 }
