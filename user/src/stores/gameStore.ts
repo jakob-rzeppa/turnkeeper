@@ -17,18 +17,19 @@ export const useGameStore = defineStore('game', () => {
 
     const connection = useConnection()
 
-    connection.socket.on(
-        'game:info',
-        ({
-            round: newRound,
-            isInitialized: newIsInitialized,
-            playerOrder: newPlayerOrder,
-        }: BackendToUserPayloads['game:info']) => {
-            round.value = newRound
-            isInitialized.value = newIsInitialized
-            playerOrder.value = newPlayerOrder
-        },
-    )
+    connection.socket.on('game:info', ({ gameState }: BackendToUserPayloads['game:info']) => {
+        if (!gameState) {
+            isInitialized.value = false
+            return
+        }
+
+        round.value = {
+            currentPlayerIndex: gameState.currentPlayerIndex,
+            roundNumber: gameState.roundNumber,
+        }
+        isInitialized.value = true
+        playerOrder.value = gameState.playerOrder
+    })
 
     return { round, isInitialized, playerOrder, currentPlayer }
 })
