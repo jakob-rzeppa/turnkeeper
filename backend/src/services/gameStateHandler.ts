@@ -47,17 +47,17 @@ const gameStateHandler = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
     deleteGameState: (): void => {
         gameStateRepository.deleteGameState(GAME_STATE_ID);
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
     getGameState: (): GameState | null => {
         const gameState = gameStateRepository.getGameStateById(GAME_STATE_ID);
@@ -89,9 +89,9 @@ const gameStateHandler = {
         gameStateRepository.createGameState(newGameState);
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
     nextTurn: (): void => {
         const gameState = gameStateHandler.getGameState();
@@ -119,9 +119,9 @@ const gameStateHandler = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
     removeDeletedPlayersFromPlayerOrder: (): void => {
         const gameState = gameStateHandler.getGameState();
@@ -150,9 +150,9 @@ const gameStateHandler = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
     updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
         const playerNames = newPlayerIdOrder.map((id) =>
@@ -177,9 +177,9 @@ const gameStateHandler = {
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) =>
-            { instance.userGameEmitter.sendGameInfo(); }
-        );
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
     },
 };
 

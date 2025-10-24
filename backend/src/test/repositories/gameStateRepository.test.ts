@@ -2,11 +2,20 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { SqliteDatabase } from "../../database/SqliteDatabase";
 import gameStateRepository from "../../repositories/gameStateRepository";
+import logger from "../../services/logger";
 
 // Mock the config to use an in-memory database for testing
 vi.mock("../../config/config.ts", () => ({
     default: {
         dbPath: ":memory:",
+    },
+}));
+
+vi.mock("../../services/logger.ts", () => ({
+    default: {
+        error: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
     },
 }));
 
@@ -79,6 +88,44 @@ describe("gameStateRepository", () => {
                 id: 3,
                 playerOrder: [{ id: 4, name: "Dave" }],
                 roundNumber: 1,
+            });
+        });
+
+        it("should return null for inconsistent game state", () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (5, 1, 0, '10,11')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(5);
+
+            expect(gamestate).toBeNull();
+            expect(logger.error).toHaveBeenCalledWith({
+                message:
+                    "Inconsistent game state: some player IDs in the game state do not exist in the players table.",
+            });
+        });
+
+        it("should have the correct order of players", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (5, 'Eve', 'secret5'), (6, 'Frank', 'secret6'), (7, 'Grace', 'secret7')"
+            );
+            db.exec(`
+                INSERT INTO game_state (round_number, current_player_index, player_order)
+                VALUES (3, 1, '7,5,6')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(1);
+
+            expect(gamestate).toEqual({
+                currentPlayerIndex: 1,
+                id: 1,
+                playerOrder: [
+                    { id: 7, name: "Grace" },
+                    { id: 5, name: "Eve" },
+                    { id: 6, name: "Frank" },
+                ],
+                roundNumber: 3,
             });
         });
     });

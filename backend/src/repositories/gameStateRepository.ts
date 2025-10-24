@@ -1,6 +1,7 @@
 import { GameState } from "shared-types";
 
 import { SqliteDatabase } from "../database/SqliteDatabase";
+import logger from "../services/logger";
 
 const db = SqliteDatabase.getInstance();
 
@@ -49,6 +50,15 @@ const gameStateRepository = {
 
         if (!row) return null;
 
+        if (row.player_order.length === 0) {
+            return {
+                currentPlayerIndex: row.current_player_index,
+                id: row.id,
+                playerOrder: [],
+                roundNumber: row.round_number,
+            };
+        }
+
         const playerOrder = row.player_order.split(",").map(Number);
 
         const playerRows = db
@@ -62,10 +72,27 @@ const gameStateRepository = {
             name: string;
         }[];
 
+        if (playerRows.length !== playerOrder.length) {
+            logger.error({
+                message:
+                    "Inconsistent game state: some player IDs in the game state do not exist in the players table.",
+            });
+            return null;
+        }
+
+        const orderedPlayerRows = playerOrder.map(
+            // Since we queried only existing IDs, the non-null assertion (as {id, name}) is safe here
+            (id) =>
+                playerRows.find((p) => p.id === id) as {
+                    id: number;
+                    name: string;
+                }
+        );
+
         return {
             currentPlayerIndex: row.current_player_index,
             id: row.id,
-            playerOrder: playerRows,
+            playerOrder: orderedPlayerRows,
             roundNumber: row.round_number,
         };
     },
