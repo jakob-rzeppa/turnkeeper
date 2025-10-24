@@ -1,8 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
-import gameStateHandler from "../../services/gameStateHandler";
+
 import gameStateRepository from "../../repositories/gameStateRepository";
-import logger from "../../services/logger";
 import playerRepository from "../../repositories/playerRepository";
+import gameStateHandler from "../../services/gameStateHandler";
+import logger from "../../services/logger";
 
 // Using a constant ID since for now there is only one game state at a time
 const GAME_STATE_ID = 1;
@@ -10,9 +11,9 @@ const GAME_STATE_ID = 1;
 vi.mock("../../repositories/gameStateRepository", () => {
     return {
         default: {
-            getGameStateById: vi.fn(),
             createGameState: vi.fn(),
             deleteGameState: vi.fn(),
+            getGameStateById: vi.fn(),
             updateGameState: vi.fn(),
         },
     };
@@ -21,8 +22,8 @@ vi.mock("../../repositories/gameStateRepository", () => {
 vi.mock("../../repositories/playerRepository", () => {
     return {
         default: {
-            getPlayerNameById: vi.fn(),
             getAllPlayers: vi.fn(),
+            getPlayerNameById: vi.fn(),
         },
     };
 });
@@ -43,14 +44,14 @@ describe("gameStateHandler", () => {
     describe("getGameState", () => {
         it("should return the current game state", () => {
             const expectedGameState = {
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                     { id: 3, name: "Charlie" },
                 ],
+                roundNumber: 1,
             };
 
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(
@@ -82,13 +83,13 @@ describe("gameStateHandler", () => {
 
             expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    roundNumber: 1,
                     currentPlayerIndex: 0,
                     playerOrder: [
                         { id: 1, name: "Alice" },
                         { id: 2, name: "Bob" },
                         { id: 3, name: "Charlie" },
                     ],
+                    roundNumber: 1,
                 })
             );
         });
@@ -101,9 +102,9 @@ describe("gameStateHandler", () => {
             expect(playerRepository.getPlayerNameById).not.toHaveBeenCalled();
             expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    roundNumber: 1,
                     currentPlayerIndex: 0,
                     playerOrder: [],
+                    roundNumber: 1,
                 })
             );
         });
@@ -144,13 +145,13 @@ describe("gameStateHandler", () => {
     describe("nextTurn", () => {
         it("should update the currentPlayerIndex to the next player", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
 
             gameStateHandler.nextTurn();
@@ -165,13 +166,13 @@ describe("gameStateHandler", () => {
 
         it("should increment roundNumber and reset currentPlayerIndex when at end of player order", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 1,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
 
             gameStateHandler.nextTurn();
@@ -179,18 +180,18 @@ describe("gameStateHandler", () => {
             expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
                 GAME_STATE_ID,
                 expect.objectContaining({
-                    roundNumber: 2,
                     currentPlayerIndex: 0,
+                    roundNumber: 2,
                 })
             );
         });
 
         it("should handle empty player order", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [],
+                roundNumber: 1,
             });
 
             gameStateHandler.nextTurn();
@@ -253,13 +254,13 @@ describe("gameStateHandler", () => {
                 "Alice"
             );
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
 
             gameStateHandler.addPlayerToTurnOrder(1);
@@ -275,13 +276,13 @@ describe("gameStateHandler", () => {
                 "Charlie"
             );
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
 
             gameStateHandler.addPlayerToTurnOrder(3);
@@ -315,14 +316,14 @@ describe("gameStateHandler", () => {
 
         it("should remove deleted players from the turn order", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                     { id: 3, name: "Charlie" },
                 ],
+                roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
                 { id: 1, name: "Alice", secret: "secret1", stats: [] },
@@ -344,13 +345,13 @@ describe("gameStateHandler", () => {
 
         it("should handle case where all players are deleted", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([]);
 
@@ -366,13 +367,13 @@ describe("gameStateHandler", () => {
 
         it("should not update if no players were deleted", () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                id: 1,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
+                roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
                 { id: 1, name: "Alice", secret: "secret1", stats: [] },

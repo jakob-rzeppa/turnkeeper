@@ -2,7 +2,7 @@ import type { GameState } from "./game";
 import type { Player } from "./player";
 
 export interface BackendToUserPayloads {
-    "game:info": GameState;
+    "game:info": { gameState: GameState | null };
     "player:info": { player: Omit<Player, "secret"> };
 }
 

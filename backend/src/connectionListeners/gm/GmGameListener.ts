@@ -1,7 +1,7 @@
 import { GmToBackendEventPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
-import { gameloop } from "../../services/gameloop.js";
+import gameStateHandler from "../../services/gameStateHandler";
 
 /**
  * Listener for GM actions to control the game loop (turns, rounds, player order)
@@ -39,18 +39,18 @@ export default class GmGameListener {
     }
 
     private endGame() {
-        gameloop.end();
+        gameStateHandler.deleteGameState();
     }
 
     private initGameloop(playerIdsInOrder: number[]) {
-        gameloop.init(playerIdsInOrder);
+        gameStateHandler.initGameState(playerIdsInOrder);
     }
 
     private nextTurn() {
-        gameloop.nextTurn();
+        gameStateHandler.nextTurn();
     }
 
     private updatePlayerOrder(playerIdsInOrder: number[]) {
-        gameloop.setPlayerOrder(playerIdsInOrder);
+        gameStateHandler.updatePlayerOrder(playerIdsInOrder);
     }
 }

@@ -2,15 +2,16 @@ import { Socket } from "socket.io";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GmGameListener from "../../../connectionListeners/gm/GmGameListener.js";
-import { gameloop } from "../../../services/gameloop.js";
+import gameStateHandler from "../../../services/gameStateHandler.js";
 
-// Mock the gameloop service
-vi.mock("../../../services/gameloop", () => ({
-    gameloop: {
-        end: vi.fn(),
-        init: vi.fn(),
+vi.mock("../../../services/gameStateHandler.js", () => ({
+    default: {
+        deleteGameState: vi.fn(),
+        getGameState: vi.fn(),
+        initGameState: vi.fn(),
         nextTurn: vi.fn(),
-        setPlayerOrder: vi.fn(),
+        updateGameState: vi.fn(),
+        updatePlayerOrder: vi.fn(),
     },
 }));
 
@@ -67,8 +68,10 @@ describe("GmGameListener", () => {
 
             eventHandlers["game:init"]({ playerIdsInOrder });
 
-            expect(gameloop.init).toHaveBeenCalledWith(playerIdsInOrder);
-            expect(gameloop.init).toHaveBeenCalledTimes(1);
+            expect(gameStateHandler.initGameState).toHaveBeenCalledWith(
+                playerIdsInOrder
+            );
+            expect(gameStateHandler.initGameState).toHaveBeenCalledTimes(1);
         });
     });
 
@@ -76,13 +79,13 @@ describe("GmGameListener", () => {
         it("should call nextTurn on the gameloop", () => {
             eventHandlers["game:turn:next"]();
 
-            expect(gameloop.nextTurn).toHaveBeenCalledTimes(1);
+            expect(gameStateHandler.nextTurn).toHaveBeenCalledTimes(1);
         });
 
         it("should not pass any arguments to nextTurn", () => {
             eventHandlers["game:turn:next"]();
 
-            expect(gameloop.nextTurn).toHaveBeenCalledWith();
+            expect(gameStateHandler.nextTurn).toHaveBeenCalledWith();
         });
     });
 
@@ -90,13 +93,13 @@ describe("GmGameListener", () => {
         it("should call end on the gameloop", () => {
             eventHandlers["game:end"]();
 
-            expect(gameloop.end).toHaveBeenCalledTimes(1);
+            expect(gameStateHandler.deleteGameState).toHaveBeenCalledTimes(1);
         });
 
         it("should not pass any arguments to end", () => {
             eventHandlers["game:end"]();
 
-            expect(gameloop.end).toHaveBeenCalledWith();
+            expect(gameStateHandler.deleteGameState).toHaveBeenCalledWith();
         });
     });
 
@@ -106,10 +109,10 @@ describe("GmGameListener", () => {
 
             eventHandlers["game:playerOrder:update"]({ playerIdsInOrder });
 
-            expect(gameloop.setPlayerOrder).toHaveBeenCalledWith(
+            expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledWith(
                 playerIdsInOrder
             );
-            expect(gameloop.setPlayerOrder).toHaveBeenCalledTimes(1);
+            expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledTimes(1);
         });
     });
 });

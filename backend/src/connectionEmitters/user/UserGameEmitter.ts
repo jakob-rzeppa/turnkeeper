@@ -1,8 +1,7 @@
 import { BackendToUserPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
-import playerRepository from "../../repositories/playerRepository.js";
-import { gameloop } from "../../services/gameloop.js";
+import gameStateHandler from "../../services/gameStateHandler.js";
 
 export default class UserGameEmitter {
     private socket: Socket;
@@ -15,19 +14,9 @@ export default class UserGameEmitter {
     }
 
     public sendGameInfo() {
-        const playerOrder = gameloop.getPlayerOrder();
-        const playerOrderWithNames = playerOrder.map((id, index) => ({
-            id,
-            name:
-                playerRepository.getPlayerNameById(id) ??
-                `Player ${(index + 1).toString()}`,
-        }));
+        const gameState = gameStateHandler.getGameState();
 
-        const payload: BackendToUserPayloads["game:info"] = {
-            isInitialized: gameloop.isInitialized(),
-            playerOrder: playerOrderWithNames,
-            round: gameloop.getRoundInformation(),
-        };
+        const payload: BackendToUserPayloads["game:info"] = { gameState };
 
         this.socket.emit("game:info", payload);
     }

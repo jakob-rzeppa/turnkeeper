@@ -4,7 +4,7 @@ import GmController from "../connectionControllers/GmController.js";
 import UserController from "../connectionControllers/UserController.js";
 import playerRepository from "../repositories/playerRepository.js";
 import { statsRepository } from "../repositories/statsRepository.js";
-import { gameloop } from "./gameloop.js";
+import gameStateHandler from "./gameStateHandler.js";
 
 const playerHandler = {
     createPlayer(playerData: { name: string }) {
@@ -13,14 +13,14 @@ const playerHandler = {
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
 
         // If the game loop is already initialized, add the new player to the turn order
-        if (!gameloop.isInitialized()) {
+        if (!gameStateHandler.getGameState()) {
             return;
         }
         const playerId = playerRepository.getPlayerIdByName(playerData.name);
         if (!playerId) {
             return;
         }
-        gameloop.addPlayerToTurnOrder(playerId);
+        gameStateHandler.addPlayerToTurnOrder(playerId);
     },
     deletePlayer(playerId: number) {
         statsRepository.removeAllStatsFromPlayer(playerId);
@@ -29,7 +29,7 @@ const playerHandler = {
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.disconnect();
 
-        gameloop.removeDeletePlayersFromPlayerOrder();
+        gameStateHandler.removeDeletedPlayersFromPlayerOrder();
     },
     updatePlayerInfo({
         playerData,

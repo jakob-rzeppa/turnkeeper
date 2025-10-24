@@ -1,10 +1,11 @@
+import { GameState } from "shared-types";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import GmController from "../../connectionControllers/GmController.js";
 import UserController from "../../connectionControllers/UserController.js";
 import playerRepository from "../../repositories/playerRepository.js";
 import { statsRepository } from "../../repositories/statsRepository.js";
-import { gameloop } from "../../services/gameloop.js";
+import gameStateHandler from "../../services/gameStateHandler.js";
 import playersHandler from "../../services/playersHandler.js";
 
 // Mock the dependencies
@@ -43,11 +44,11 @@ vi.mock("../../connectionControllers/UserController", () => ({
         } as unknown as UserController),
     },
 }));
-vi.mock("../../services/gameloop", () => ({
-    gameloop: {
+vi.mock("../../services/gameStateHandler", () => ({
+    default: {
         addPlayerToTurnOrder: vi.fn(),
-        isInitialized: vi.fn().mockReturnValue(true),
-        removeDeletePlayersFromPlayerOrder: vi.fn(),
+        getGameState: vi.fn(),
+        removeDeletedPlayersFromPlayerOrder: vi.fn(),
     },
 }));
 
@@ -67,28 +68,32 @@ describe("playersHandler", () => {
             );
         });
 
-        it("should add the new player to the gameloop turn order if initialized", () => {
+        it("should add the new player to the game state turn order if initialized", () => {
             const playerData = { name: "Test Player" };
             const mockPlayerId = 1;
             vi.mocked(playerRepository.getPlayerIdByName).mockReturnValueOnce(
                 mockPlayerId
             );
-            vi.mocked(gameloop.isInitialized).mockReturnValueOnce(true);
+            vi.mocked(gameStateHandler.getGameState).mockReturnValueOnce(
+                {} as GameState
+            );
 
             playersHandler.createPlayer(playerData);
 
-            expect(gameloop.addPlayerToTurnOrder).toHaveBeenCalledWith(
+            expect(gameStateHandler.addPlayerToTurnOrder).toHaveBeenCalledWith(
                 mockPlayerId
             );
         });
 
-        it("should not add the new player to the gameloop turn order if not initialized", () => {
+        it("should not add the new player to the game state turn order if not initialized", () => {
             const playerData = { name: "Test Player" };
-            vi.mocked(gameloop.isInitialized).mockReturnValueOnce(false);
+            vi.mocked(gameStateHandler.getGameState).mockReturnValueOnce(null);
 
             playersHandler.createPlayer(playerData);
 
-            expect(gameloop.addPlayerToTurnOrder).not.toHaveBeenCalled();
+            expect(
+                gameStateHandler.addPlayerToTurnOrder
+            ).not.toHaveBeenCalled();
         });
 
         it("should not add the new player to the gameloop turn order if player ID not found", () => {
@@ -96,11 +101,15 @@ describe("playersHandler", () => {
             vi.mocked(playerRepository.getPlayerIdByName).mockReturnValueOnce(
                 null
             );
-            vi.mocked(gameloop.isInitialized).mockReturnValueOnce(true);
+            vi.mocked(gameStateHandler.getGameState).mockReturnValueOnce(
+                {} as GameState
+            );
 
             playersHandler.createPlayer(playerData);
 
-            expect(gameloop.addPlayerToTurnOrder).not.toHaveBeenCalled();
+            expect(
+                gameStateHandler.addPlayerToTurnOrder
+            ).not.toHaveBeenCalled();
         });
     });
 
@@ -182,7 +191,7 @@ describe("playersHandler", () => {
             playersHandler.deletePlayer(playerId);
 
             expect(
-                gameloop.removeDeletePlayersFromPlayerOrder
+                gameStateHandler.removeDeletedPlayersFromPlayerOrder
             ).toHaveBeenCalled();
         });
     });

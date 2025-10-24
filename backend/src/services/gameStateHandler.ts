@@ -1,7 +1,8 @@
 import { GameState } from "shared-types";
+
 import gameStateRepository from "../repositories/gameStateRepository";
-import logger from "./logger";
 import playerRepository from "../repositories/playerRepository";
+import logger from "./logger";
 
 // Using a constant ID since for now there is only one game state at a time
 const GAME_STATE_ID = 1;
@@ -9,6 +10,43 @@ const GAME_STATE_ID = 1;
 // In that case we would need to save the current game state Id in-memory
 
 const gameStateHandler = {
+    addPlayerToTurnOrder: (playerId: number): void => {
+        const playerName = playerRepository.getPlayerNameById(playerId);
+        if (!playerName) {
+            logger.warn({
+                message: `Player with ID ${String(playerId)} not found.`,
+            });
+            return;
+        }
+
+        const gameState = gameStateHandler.getGameState();
+        if (!gameState) {
+            logger.warn({
+                message:
+                    "No game state found when attempting to add player to turn order.",
+            });
+            return;
+        }
+
+        if (gameState.playerOrder.find((p) => p.id === playerId)) {
+            logger.warn({
+                message: `Player with ID ${String(
+                    playerId
+                )} is already in the turn order.`,
+            });
+            return;
+        }
+
+        gameStateRepository.updateGameState(GAME_STATE_ID, {
+            playerOrder: [
+                ...gameState.playerOrder,
+                { id: playerId, name: playerName },
+            ],
+        });
+    },
+    deleteGameState: (): void => {
+        gameStateRepository.deleteGameState(GAME_STATE_ID);
+    },
     getGameState: (): GameState | null => {
         const gameState = gameStateRepository.getGameStateById(GAME_STATE_ID);
 
@@ -28,18 +66,15 @@ const gameStateHandler = {
         }
 
         const newGameState: Omit<GameState, "id"> = {
-            roundNumber: 1,
             currentPlayerIndex: 0,
             playerOrder: newPlayerIdOrder.map((id, index) => ({
                 id,
                 name: playerNames[index],
             })),
+            roundNumber: 1,
         };
 
         gameStateRepository.createGameState(newGameState);
-    },
-    deleteGameState: (): void => {
-        gameStateRepository.deleteGameState(GAME_STATE_ID);
     },
     nextTurn: (): void => {
         const gameState = gameStateHandler.getGameState();
@@ -61,41 +96,9 @@ const gameStateHandler = {
         }
 
         gameStateRepository.updateGameState(GAME_STATE_ID, {
-            roundNumber: newRoundNumber,
             currentPlayerIndex: updatedCurrentPlayerIndex,
             playerOrder: gameState.playerOrder,
-        });
-    },
-    addPlayerToTurnOrder: (playerId: number): void => {
-        const playerName = playerRepository.getPlayerNameById(playerId);
-        if (!playerName) {
-            logger.warn({
-                message: `Player with ID ${playerId} not found.`,
-            });
-            return;
-        }
-
-        const gameState = gameStateHandler.getGameState();
-        if (!gameState) {
-            logger.warn({
-                message:
-                    "No game state found when attempting to add player to turn order.",
-            });
-            return;
-        }
-
-        if (gameState.playerOrder.find((p) => p.id === playerId)) {
-            logger.warn({
-                message: `Player with ID ${playerId} is already in the turn order.`,
-            });
-            return;
-        }
-
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            playerOrder: [
-                ...gameState.playerOrder,
-                { id: playerId, name: playerName },
-            ],
+            roundNumber: newRoundNumber,
         });
     },
     removeDeletedPlayersFromPlayerOrder: (): void => {

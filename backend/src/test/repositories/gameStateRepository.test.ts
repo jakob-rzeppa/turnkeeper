@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+
 import { SqliteDatabase } from "../../database/SqliteDatabase";
 import gameStateRepository from "../../repositories/gameStateRepository";
 
@@ -30,14 +31,14 @@ describe("gameStateRepository", () => {
             const gamestate = gameStateRepository.getGameStateById(1);
 
             expect(gamestate).toEqual({
-                id: 1,
-                roundNumber: 2,
                 currentPlayerIndex: 0,
+                id: 1,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                     { id: 3, name: "Charlie" },
                 ],
+                roundNumber: 2,
             });
         });
 
@@ -55,10 +56,10 @@ describe("gameStateRepository", () => {
             const gamestate = gameStateRepository.getGameStateById(2);
 
             expect(gamestate).toEqual({
-                id: 2,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 2,
                 playerOrder: [],
+                roundNumber: 1,
             });
         });
 
@@ -74,10 +75,10 @@ describe("gameStateRepository", () => {
             const gamestate = gameStateRepository.getGameStateById(3);
 
             expect(gamestate).toEqual({
-                id: 3,
-                roundNumber: 1,
                 currentPlayerIndex: 0,
+                id: 3,
                 playerOrder: [{ id: 4, name: "Dave" }],
+                roundNumber: 1,
             });
         });
     });
@@ -85,11 +86,11 @@ describe("gameStateRepository", () => {
     describe("createGameState", () => {
         it("should create a new game state", () => {
             const newGameState = {
+                currentPlayerIndex: 0,
                 playerOrder: [
                     { id: 1, name: "Alice" },
                     { id: 2, name: "Bob" },
                 ],
-                currentPlayerIndex: 0,
                 roundNumber: 0,
             };
 
@@ -98,10 +99,10 @@ describe("gameStateRepository", () => {
             const row = db
                 .prepare("SELECT * FROM game_state WHERE id = 1")
                 .get() as {
-                id: number;
-                round_number: number;
                 current_player_index: number;
+                id: number;
                 player_order: string;
+                round_number: number;
             };
 
             expect(row).toBeDefined();
@@ -120,17 +121,17 @@ describe("gameStateRepository", () => {
                 `);
 
                 gameStateRepository.updateGameState(1, {
-                    roundNumber: 2,
                     currentPlayerIndex: 1,
+                    roundNumber: 2,
                 });
 
                 const row = db
                     .prepare("SELECT * FROM game_state WHERE id = 1")
                     .get() as {
-                    id: number;
-                    round_number: number;
                     current_player_index: number;
+                    id: number;
                     player_order: string;
+                    round_number: number;
                 };
 
                 expect(row.round_number).toBe(2);
@@ -150,10 +151,10 @@ describe("gameStateRepository", () => {
                 const row = db
                     .prepare("SELECT * FROM game_state WHERE id = 1")
                     .get() as {
-                    id: number;
-                    round_number: number;
                     current_player_index: number;
+                    id: number;
                     player_order: string;
+                    round_number: number;
                 };
 
                 expect(row.round_number).toBe(3);
@@ -176,10 +177,10 @@ describe("gameStateRepository", () => {
                 const row = db
                     .prepare("SELECT * FROM game_state WHERE id = 1")
                     .get() as {
-                    id: number;
-                    round_number: number;
                     current_player_index: number;
+                    id: number;
                     player_order: string;
+                    round_number: number;
                 };
 
                 expect(row.player_order).toBe("2,1");

@@ -1,18 +1,51 @@
 import { GameState } from "shared-types";
+
 import { SqliteDatabase } from "../database/SqliteDatabase";
 
 const db = SqliteDatabase.getInstance();
 
 const gameStateRepository = {
+    createGameState: (gamestate: Omit<GameState, "id">) => {
+        try {
+            db.prepare(
+                "INSERT INTO game_state (round_number, current_player_index, player_order) VALUES (?, ?, ?)"
+            ).run(
+                gamestate.roundNumber,
+                gamestate.currentPlayerIndex,
+                gamestate.playerOrder.map((p) => p.id).join(",")
+            );
+        } catch (error: unknown) {
+            // Handle error silently
+
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
+        }
+    },
+    deleteGameState: (id: number) => {
+        try {
+            db.prepare("DELETE FROM game_state WHERE id = ?").run(id);
+        } catch (error: unknown) {
+            // Handle error silently
+
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
+        }
+    },
     getGameStateById: (id: number): GameState | null => {
         const row = db
             .prepare("SELECT * FROM game_state WHERE id = ?")
-            .get(id) as {
-            id: number;
-            round_number: number;
-            current_player_index: number;
-            player_order: string;
-        };
+            .get(id) as
+            | undefined
+            | {
+                  current_player_index: number;
+                  id: number;
+                  player_order: string;
+                  round_number: number;
+              };
 
         if (!row) return null;
 
@@ -32,29 +65,11 @@ const gameStateRepository = {
         console.log(playerRows);
 
         return {
-            id: row.id,
-            roundNumber: row.round_number,
             currentPlayerIndex: row.current_player_index,
+            id: row.id,
             playerOrder: playerRows,
+            roundNumber: row.round_number,
         };
-    },
-    createGameState: (gamestate: Omit<GameState, "id">) => {
-        try {
-            db.prepare(
-                "INSERT INTO game_state (round_number, current_player_index, player_order) VALUES (?, ?, ?)"
-            ).run(
-                gamestate.roundNumber,
-                gamestate.currentPlayerIndex,
-                gamestate.playerOrder.map((p) => p.id).join(",")
-            );
-        } catch (error: unknown) {
-            // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
-        }
     },
     updateGameState: (
         id: number,
@@ -90,18 +105,6 @@ const gameStateRepository = {
 
         try {
             db.prepare(query).run(...values);
-        } catch (error: unknown) {
-            // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
-        }
-    },
-    deleteGameState: (id: number) => {
-        try {
-            db.prepare("DELETE FROM game_state WHERE id = ?").run(id);
         } catch (error: unknown) {
             // Handle error silently
 

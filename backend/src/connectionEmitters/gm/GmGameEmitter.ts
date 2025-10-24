@@ -1,8 +1,8 @@
 import { BackendToGmEventPayloads } from "shared-types";
 import { Socket } from "socket.io";
 
-import playerRepository from "../../repositories/playerRepository.js";
-import { gameloop } from "../../services/gameloop.js";
+import gameStateHandler from "../../services/gameStateHandler.js";
+import logger from "../../services/logger.js";
 
 export default class GmGameEmitter {
     private socket: Socket;
@@ -15,19 +15,17 @@ export default class GmGameEmitter {
     }
 
     public sendGameInfo() {
-        const playerOrder = gameloop.getPlayerOrder();
-        const playerOrderWithNames = playerOrder.map((id, index) => ({
-            id,
-            name:
-                playerRepository.getPlayerNameById(id) ??
-                `Player ${(index + 1).toString()}`,
-        }));
+        const gameState = gameStateHandler.getGameState();
 
-        const payload: BackendToGmEventPayloads["game:info"] = {
-            isInitialized: gameloop.isInitialized(),
-            playerOrder: playerOrderWithNames,
-            round: gameloop.getRoundInformation(),
-        };
+        if (!gameState) {
+            logger.warn({
+                message:
+                    "No game state found when attempting to emit game info to GM.",
+            });
+            return;
+        }
+
+        const payload: BackendToGmEventPayloads["game:info"] = { gameState };
 
         this.socket.emit("game:info", payload);
     }

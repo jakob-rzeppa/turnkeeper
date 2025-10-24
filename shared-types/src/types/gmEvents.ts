@@ -3,7 +3,7 @@ import type { LogEntry } from "./log";
 import type { Player, PlayerStat } from "./player";
 
 export interface BackendToGmEventPayloads {
-    "game:info": GameState;
+    "game:info": { gameState: GameState | null };
     "log:entry": { entry: LogEntry };
     "players:info": { players: Player[] };
 }
