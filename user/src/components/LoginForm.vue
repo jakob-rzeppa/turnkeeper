@@ -1,14 +1,14 @@
 <script setup lang="ts">
-import useConnection from '@/composables/connection'
-import { ref } from 'vue'
+import useConnection from '@/composables/connection';
+import { ref } from 'vue';
 
-const connection = useConnection()
+const connection = useConnection();
 
-const name = ref('')
-const secret = ref('')
+const name = ref('');
+const secret = ref('');
 
 function login() {
-    connection.connect({ playerName: name.value, playerSecret: secret.value })
+    connection.connect({ playerName: name.value, playerSecret: secret.value });
 }
 </script>
 

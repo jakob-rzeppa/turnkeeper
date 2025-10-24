@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { useGameStateStore } from '@/stores/gameStateStore'
-import { usePlayerStore } from '@/stores/playerStore'
+import { useGameStateStore } from '@/stores/gameStateStore';
+import { usePlayerStore } from '@/stores/playerStore';
 
-const gameStore = useGameStateStore()
-const playerStore = usePlayerStore()
+const gameStore = useGameStateStore();
+const playerStore = usePlayerStore();
 </script>
 
 <template>
