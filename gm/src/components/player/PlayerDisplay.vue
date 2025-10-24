@@ -1,14 +1,14 @@
 <script lang="ts" setup>
-import { usePlayerStore } from '@/stores/playerStore'
-import { useModalStore } from '@/stores/modalStore'
-import PlayerEditorModal from '../player/PlayerEditorModal.vue'
-import DisplayContainer from '../container/DisplayContainer.vue'
+import { usePlayerStore } from '@/stores/playerStore';
+import { useModalStore } from '@/stores/modalStore';
+import PlayerEditorModal from '../player/PlayerEditorModal.vue';
+import DisplayContainer from '../container/DisplayContainer.vue';
 
-const playerStore = usePlayerStore()
-const modalStore = useModalStore()
+const playerStore = usePlayerStore();
+const modalStore = useModalStore();
 
 function openPlayerEditor(playerId: number) {
-    modalStore.openModal(PlayerEditorModal, { playerId })
+    modalStore.openModal(PlayerEditorModal, { playerId });
 }
 </script>
 

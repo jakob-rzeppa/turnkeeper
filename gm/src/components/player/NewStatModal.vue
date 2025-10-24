@@ -1,30 +1,30 @@
 <script setup lang="ts">
-import { usePlayerEmitter } from '@/emitters/playerEmitter'
-import type { PlayerStat } from 'shared-types'
-import { ref } from 'vue'
+import { usePlayerEmitter } from '@/emitters/playerEmitter';
+import type { PlayerStat } from 'shared-types';
+import { ref } from 'vue';
 
 const props = defineProps<{
-    playerId?: number
-    playerName?: string
-}>()
+    playerId?: number;
+    playerName?: string;
+}>();
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
-const playerEmitter = usePlayerEmitter()
+const playerEmitter = usePlayerEmitter();
 
-const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global')
-const statNameRef = ref('')
-const statInitialValueRef = ref('')
+const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global');
+const statNameRef = ref('');
+const statInitialValueRef = ref('');
 
 const createStat = () => {
     const statData: Omit<PlayerStat, 'id'> = {
         name: statNameRef.value,
         value: statInitialValueRef.value,
-    }
-    playerEmitter.createStatForPlayer(statData, scopeRef.value, props.playerId)
+    };
+    playerEmitter.createStatForPlayer(statData, scopeRef.value, props.playerId);
 
-    emit('close')
-}
+    emit('close');
+};
 </script>
 
 <template>

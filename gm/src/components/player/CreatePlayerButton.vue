@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import { useModalStore } from '@/stores/modalStore'
-import NewPlayerModal from './NewPlayerModal.vue'
+import { useModalStore } from '@/stores/modalStore';
+import NewPlayerModal from './NewPlayerModal.vue';
 
-const modalStore = useModalStore()
+const modalStore = useModalStore();
 
 function openNewPlayerModal() {
-    modalStore.openModal(NewPlayerModal)
+    modalStore.openModal(NewPlayerModal);
 }
 </script>
 

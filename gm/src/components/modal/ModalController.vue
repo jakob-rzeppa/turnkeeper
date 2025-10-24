@@ -1,12 +1,12 @@
 <script setup lang="ts">
-import { useModalStore } from '@/stores/modalStore'
-import BaseModal from '@/components/modal/BaseModal.vue'
+import { useModalStore } from '@/stores/modalStore';
+import BaseModal from '@/components/modal/BaseModal.vue';
 
 /*
  * This component is responsible for rendering the topmost modal from the modal store.
  */
 
-const modalStore = useModalStore()
+const modalStore = useModalStore();
 </script>
 
 <template>

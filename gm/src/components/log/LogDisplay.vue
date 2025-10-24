@@ -1,41 +1,41 @@
 <script setup lang="ts">
-import { useLogStore } from '@/stores/logStore'
-import DisplayContainer from '../container/DisplayContainer.vue'
-import { nextTick, watch, ref } from 'vue'
+import { useLogStore } from '@/stores/logStore';
+import DisplayContainer from '../container/DisplayContainer.vue';
+import { nextTick, watch, ref } from 'vue';
 
-const { logs } = useLogStore()
-const logContainer = ref<HTMLElement>()
+const { logs } = useLogStore();
+const logContainer = ref<HTMLElement>();
 
 const isAtBottom = () => {
-    if (!logContainer.value) return true
-    const { scrollTop, scrollHeight, clientHeight } = logContainer.value
-    return Math.abs(scrollHeight - clientHeight - scrollTop) < 50
-}
+    if (!logContainer.value) return true;
+    const { scrollTop, scrollHeight, clientHeight } = logContainer.value;
+    return Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
+};
 
 const scrollToNewElement = async () => {
     if (logContainer.value) {
-        if (!isAtBottom()) return
+        if (!isAtBottom()) return;
 
         // Wait for DOM updates to complete
-        await nextTick()
+        await nextTick();
 
         // Small additional delay to ensure content is fully rendered
         setTimeout(() => {
             if (logContainer.value) {
                 logContainer.value.scrollTo({
                     top: logContainer.value.scrollHeight,
-                })
+                });
             }
-        }, 10)
+        }, 10);
     }
-}
+};
 
 watch(
     () => logs.length,
     () => {
-        scrollToNewElement()
+        scrollToNewElement();
     },
-)
+);
 </script>
 
 <template>

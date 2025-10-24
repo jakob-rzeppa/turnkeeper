@@ -1,44 +1,44 @@
 <script setup lang="ts">
-import { usePlayerStore } from '@/stores/playerStore'
-import { usePlayerEmitter } from '@/emitters/playerEmitter'
-import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor'
-import { onUnmounted } from 'vue'
-import PlayerStatsEditor from './PlayerStatsEditor.vue'
+import { usePlayerStore } from '@/stores/playerStore';
+import { usePlayerEmitter } from '@/emitters/playerEmitter';
+import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor';
+import { onUnmounted } from 'vue';
+import PlayerStatsEditor from './PlayerStatsEditor.vue';
 
 // The Player prop needs to be a deep clone
 const props = defineProps<{
-    playerId: number
-}>()
+    playerId: number;
+}>();
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
-const playerStore = usePlayerStore()
-const playerEmitter = usePlayerEmitter()
+const playerStore = usePlayerStore();
+const playerEmitter = usePlayerEmitter();
 
 const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
     useAutosaveObjectEditor<{ name: string; secret: string }>(
         () => {
-            const player = playerStore.getPlayerById(props.playerId)
+            const player = playerStore.getPlayerById(props.playerId);
 
             // If no player is found, close the editor (e.g. player was deleted)
-            if (!player) emit('close')
+            if (!player) emit('close');
 
             return {
                 name: player?.name ?? '',
                 secret: player?.secret ?? '',
-            }
+            };
         },
         (newObject) => {
             playerEmitter.updatePlayer(props.playerId, {
                 name: newObject.name,
                 secret: newObject.secret,
-            })
+            });
         },
-    )
+    );
 
 onUnmounted(() => {
-    saveChanges()
-})
+    saveChanges();
+});
 </script>
 
 <template>

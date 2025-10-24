@@ -1,40 +1,40 @@
 <script setup lang="ts">
-import { onUnmounted, ref, watch } from 'vue'
-import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor'
-import { usePlayerStore } from '@/stores/playerStore'
-import type { Player } from 'shared-types'
-import { usePlayerEmitter } from '@/emitters/playerEmitter'
-import { useModalStore } from '@/stores/modalStore'
-import NewStatModal from './NewStatModal.vue'
+import { onUnmounted, ref, watch } from 'vue';
+import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor';
+import { usePlayerStore } from '@/stores/playerStore';
+import type { Player } from 'shared-types';
+import { usePlayerEmitter } from '@/emitters/playerEmitter';
+import { useModalStore } from '@/stores/modalStore';
+import NewStatModal from './NewStatModal.vue';
 
 const props = defineProps<{
-    playerId: number
-}>()
+    playerId: number;
+}>();
 
-const playerStore = usePlayerStore()
-const modalStore = useModalStore()
-const playerEmitter = usePlayerEmitter()
+const playerStore = usePlayerStore();
+const modalStore = useModalStore();
+const playerEmitter = usePlayerEmitter();
 
-const player = ref<Player | undefined>(undefined)
+const player = ref<Player | undefined>(undefined);
 
 watch(
     () => playerStore.getPlayerById(props.playerId),
     (newPlayer) => {
         if (newPlayer) {
-            player.value = newPlayer
+            player.value = newPlayer;
         }
     },
     { immediate: true, deep: true },
-)
+);
 
 const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
     useAutosaveObjectEditor<{ [keyof: string]: string }>(
         () => {
-            const statsRecord: { [keyof: string]: string } = {}
+            const statsRecord: { [keyof: string]: string } = {};
             player.value?.stats.forEach((stat) => {
-                statsRecord[stat.id.toString()] = stat.value
-            })
-            return statsRecord
+                statsRecord[stat.id.toString()] = stat.value;
+            });
+            return statsRecord;
         },
         (newStats) => {
             Object.keys(newStats).forEach((statId: string) => {
@@ -42,14 +42,14 @@ const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveCh
                     props.playerId,
                     parseInt(statId),
                     newStats[statId],
-                )
-            })
+                );
+            });
         },
-    )
+    );
 
 onUnmounted(() => {
-    saveChanges()
-})
+    saveChanges();
+});
 </script>
 
 <template>

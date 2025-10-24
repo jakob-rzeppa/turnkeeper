@@ -1,26 +1,26 @@
 <script setup lang="ts">
-import PlayerDisplay from './components/player/PlayerDisplay.vue'
-import ModalController from './components/modal/ModalController.vue'
-import ConnectionController from './components/connection/ConnectionController.vue'
-import TurnDisplay from './components/game/TurnDisplay.vue'
-import CurrentPlayerDisplay from './components/game/CurrentPlayerDisplay.vue'
-import LogDisplay from './components/log/LogDisplay.vue'
-import Drawer from './components/container/DrawerContainer.vue'
-import InitGameButton from './components/game/InitGameButton.vue'
-import connection from './composables/useConnection'
-import CreatePlayerButton from './components/player/CreatePlayerButton.vue'
-import UpdatePlayerOrderButton from './components/game/UpdatePlayerOrderButton.vue'
-import EndGameButton from './components/game/EndGameButton.vue'
-import { useGameStore } from './stores/gameStore'
-import { useLogStore } from './stores/logStore'
-import { usePlayerStore } from './stores/playerStore'
+import PlayerDisplay from './components/player/PlayerDisplay.vue';
+import ModalController from './components/modal/ModalController.vue';
+import ConnectionController from './components/connection/ConnectionController.vue';
+import TurnDisplay from './components/game/TurnDisplay.vue';
+import CurrentPlayerDisplay from './components/game/CurrentPlayerDisplay.vue';
+import LogDisplay from './components/log/LogDisplay.vue';
+import Drawer from './components/container/DrawerContainer.vue';
+import InitGameButton from './components/game/InitGameButton.vue';
+import connection from './composables/useConnection';
+import CreatePlayerButton from './components/player/CreatePlayerButton.vue';
+import UpdatePlayerOrderButton from './components/game/UpdatePlayerOrderButton.vue';
+import EndGameButton from './components/game/EndGameButton.vue';
+import { useGameStore } from './stores/gameStore';
+import { useLogStore } from './stores/logStore';
+import { usePlayerStore } from './stores/playerStore';
 
-const { isConnected } = connection()
+const { isConnected } = connection();
 
 // Initialize all stores, that define listeners for backend updates, so that they are ready when the gm connects to the backend
-useGameStore()
-useLogStore()
-usePlayerStore()
+useGameStore();
+useLogStore();
+usePlayerStore();
 </script>
 
 <template>

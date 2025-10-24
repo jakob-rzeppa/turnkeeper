@@ -1,11 +1,11 @@
 <script setup lang="ts">
-import InitGameModal from './InitGameModal.vue'
-import { useModalStore } from '@/stores/modalStore'
+import InitGameModal from './InitGameModal.vue';
+import { useModalStore } from '@/stores/modalStore';
 
-const modalStore = useModalStore()
+const modalStore = useModalStore();
 
 function openInitGameModal() {
-    modalStore.openModal(InitGameModal)
+    modalStore.openModal(InitGameModal);
 }
 </script>
 

@@ -1,13 +1,13 @@
 <script setup lang="ts">
-import { useGameEmitter } from '@/emitters/gameEmitter'
-import DisplayContainer from '../container/DisplayContainer.vue'
-import { useGameStore } from '@/stores/gameStore'
+import { useGameEmitter } from '@/emitters/gameEmitter';
+import DisplayContainer from '../container/DisplayContainer.vue';
+import { useGameStore } from '@/stores/gameStore';
 
-const gameStore = useGameStore()
-const gameEmitter = useGameEmitter()
+const gameStore = useGameStore();
+const gameEmitter = useGameEmitter();
 
 function endTurn() {
-    gameEmitter.nextTurn()
+    gameEmitter.nextTurn();
 }
 </script>
 

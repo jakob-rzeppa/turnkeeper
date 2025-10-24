@@ -1,9 +1,9 @@
 <script setup lang="ts">
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted } from 'vue';
 
-const props = defineProps<{ zIndex: number }>()
+const props = defineProps<{ zIndex: number }>();
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
 /*
  * A base modal component that provides a backdrop and centers its content.
@@ -12,12 +12,12 @@ const emit = defineEmits(['close'])
 
 function handleEscape(event: KeyboardEvent) {
     if (event.key === 'Escape' || event.key === 'Esc') {
-        event.preventDefault()
-        emit('close')
+        event.preventDefault();
+        emit('close');
     }
 }
-onMounted(() => document.addEventListener('keydown', handleEscape))
-onUnmounted(() => document.removeEventListener('keydown', handleEscape))
+onMounted(() => document.addEventListener('keydown', handleEscape));
+onUnmounted(() => document.removeEventListener('keydown', handleEscape));
 </script>
 
 <template>

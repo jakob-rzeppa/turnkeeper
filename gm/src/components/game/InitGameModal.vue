@@ -1,24 +1,24 @@
 <script setup lang="ts">
-import { useGameEmitter } from '@/emitters/gameEmitter'
-import { usePlayerStore } from '@/stores/playerStore'
-import { ref } from 'vue'
-import draggable from 'vuedraggable'
+import { useGameEmitter } from '@/emitters/gameEmitter';
+import { usePlayerStore } from '@/stores/playerStore';
+import { ref } from 'vue';
+import draggable from 'vuedraggable';
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
-const playerStore = usePlayerStore()
-const gameEmitter = useGameEmitter()
+const playerStore = usePlayerStore();
+const gameEmitter = useGameEmitter();
 
-const playerOrderRef = ref<{ id: number; name: string }[]>([])
+const playerOrderRef = ref<{ id: number; name: string }[]>([]);
 
 playerOrderRef.value = playerStore.players.map((player) => ({
     id: player.id,
     name: player.name,
-}))
+}));
 
 function startGame() {
-    gameEmitter.initGame(playerOrderRef.value.map((p) => p.id))
-    emit('close')
+    gameEmitter.initGame(playerOrderRef.value.map((p) => p.id));
+    emit('close');
 }
 </script>
 

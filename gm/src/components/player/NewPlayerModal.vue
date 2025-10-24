@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import { usePlayerEmitter } from '@/emitters/playerEmitter'
-import { ref } from 'vue'
+import { usePlayerEmitter } from '@/emitters/playerEmitter';
+import { ref } from 'vue';
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
-const playerEmitter = usePlayerEmitter()
+const playerEmitter = usePlayerEmitter();
 
-const newPlayerNameRef = ref('')
+const newPlayerNameRef = ref('');
 
 function createPlayer() {
-    playerEmitter.createPlayer(newPlayerNameRef.value)
-    emit('close')
+    playerEmitter.createPlayer(newPlayerNameRef.value);
+    emit('close');
 }
 </script>
 

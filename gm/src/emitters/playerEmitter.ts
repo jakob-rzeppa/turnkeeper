@@ -1,17 +1,17 @@
-import useConnection from '@/composables/useConnection'
-import type { GmToBackendEventPayloads, Player, PlayerStat } from 'shared-types'
+import useConnection from '@/composables/useConnection';
+import type { GmToBackendEventPayloads, Player, PlayerStat } from 'shared-types';
 
 export const usePlayerEmitter = () => {
-    const connection = useConnection()
+    const connection = useConnection();
 
     function createPlayer(newPlayerName: string) {
-        const trimmedNewPlayerName = newPlayerName.trim()
-        if (!trimmedNewPlayerName) return
+        const trimmedNewPlayerName = newPlayerName.trim();
+        if (!trimmedNewPlayerName) return;
 
         const payload: GmToBackendEventPayloads['players:create'] = {
             name: trimmedNewPlayerName,
-        }
-        connection.socket.emit('players:create', payload)
+        };
+        connection.socket.emit('players:create', payload);
     }
 
     function updatePlayer(
@@ -21,13 +21,13 @@ export const usePlayerEmitter = () => {
         const payload: GmToBackendEventPayloads['players:update'] = {
             playerId,
             playerData,
-        }
-        connection.socket.emit('players:update', payload)
+        };
+        connection.socket.emit('players:update', payload);
     }
 
     function deletePlayer(playerId: number): void {
-        const payload: GmToBackendEventPayloads['players:delete'] = { playerId }
-        connection.socket.emit('players:delete', payload)
+        const payload: GmToBackendEventPayloads['players:delete'] = { playerId };
+        connection.socket.emit('players:delete', payload);
     }
 
     function createStatForPlayer(
@@ -39,8 +39,8 @@ export const usePlayerEmitter = () => {
             scope,
             playerId,
             statData,
-        }
-        connection.socket.emit('players:stats:create', payload)
+        };
+        connection.socket.emit('players:stats:create', payload);
     }
 
     function updateStatValueForPlayer(
@@ -52,13 +52,13 @@ export const usePlayerEmitter = () => {
             playerId,
             statId,
             value,
-        }
-        connection.socket.emit('players:stats:update', payload)
+        };
+        connection.socket.emit('players:stats:update', payload);
     }
 
     function removeStatFromPlayer(playerId: number, statId: number): void {
-        const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statId }
-        connection.socket.emit('players:stats:remove', payload)
+        const payload: GmToBackendEventPayloads['players:stats:remove'] = { playerId, statId };
+        connection.socket.emit('players:stats:remove', payload);
     }
 
     return {
@@ -68,5 +68,5 @@ export const usePlayerEmitter = () => {
         createStatForPlayer,
         updateStatValueForPlayer,
         removeStatFromPlayer,
-    }
-}
+    };
+};

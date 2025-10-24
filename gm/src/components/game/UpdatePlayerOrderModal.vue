@@ -1,21 +1,21 @@
 <script setup lang="ts">
-import { useGameEmitter } from '@/emitters/gameEmitter'
-import { useGameStore } from '@/stores/gameStore'
-import { ref } from 'vue'
-import draggable from 'vuedraggable'
+import { useGameEmitter } from '@/emitters/gameEmitter';
+import { useGameStore } from '@/stores/gameStore';
+import { ref } from 'vue';
+import draggable from 'vuedraggable';
 
-const emit = defineEmits(['close'])
+const emit = defineEmits(['close']);
 
-const gameStore = useGameStore()
-const gameEmitter = useGameEmitter()
+const gameStore = useGameStore();
+const gameEmitter = useGameEmitter();
 
-const playerOrderRef = ref<{ id: string; name: string }[]>([])
+const playerOrderRef = ref<{ id: string; name: string }[]>([]);
 
-playerOrderRef.value = [...gameStore.playerOrder]
+playerOrderRef.value = [...gameStore.playerOrder];
 
 function updatePlayerOrder() {
-    gameEmitter.updatePlayerOrder(playerOrderRef.value.map((p) => p.id))
-    emit('close')
+    gameEmitter.updatePlayerOrder(playerOrderRef.value.map((p) => p.id));
+    emit('close');
 }
 </script>
 

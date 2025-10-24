@@ -1,16 +1,16 @@
 <script setup lang="ts">
-import DisplayContainer from '../container/DisplayContainer.vue'
-import { useGameStore } from '@/stores/gameStore'
-import PlayerStatsEditor from '../player/PlayerStatsEditor.vue'
-import { usePlayerStore } from '@/stores/playerStore'
-import { computed } from 'vue'
+import DisplayContainer from '../container/DisplayContainer.vue';
+import { useGameStore } from '@/stores/gameStore';
+import PlayerStatsEditor from '../player/PlayerStatsEditor.vue';
+import { usePlayerStore } from '@/stores/playerStore';
+import { computed } from 'vue';
 
-const gameStore = useGameStore()
-const playerStore = usePlayerStore()
+const gameStore = useGameStore();
+const playerStore = usePlayerStore();
 
 const localPlayer = computed(() => {
-    return playerStore.getPlayerById(gameStore.currentPlayerId)
-})
+    return playerStore.getPlayerById(gameStore.currentPlayerId);
+});
 </script>
 
 <template>
