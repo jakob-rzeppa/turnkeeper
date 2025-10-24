@@ -1,15 +1,15 @@
 <script setup lang="ts">
-import { useGameStore } from '@/stores/gameStore'
+import { useGameStateStore } from '@/stores/gameStateStore'
 import { usePlayerStore } from '@/stores/playerStore'
 
-const gameStore = useGameStore()
+const gameStore = useGameStateStore()
 const playerStore = usePlayerStore()
 </script>
 
 <template>
     <div class="divider">Game Status</div>
 
-    <div v-if="gameStore.isInitialized && gameStore.playerOrder.length > 0">
+    <div v-if="gameStore.gameState">
         <div
             v-if="
                 gameStore.currentPlayer &&
@@ -20,7 +20,7 @@ const playerStore = usePlayerStore()
         >
             It's your turn!
         </div>
-        <p class="mb-2"><strong>Current Round:</strong> {{ gameStore.round.roundNumber }}</p>
+        <p class="mb-2"><strong>Current Round:</strong> {{ gameStore.gameState.roundNumber }}</p>
         <p>
             <strong>Current Player:</strong>
             {{ gameStore.currentPlayer?.name ?? 'Unknown Player' }}
