@@ -1,7 +1,7 @@
-import type { Player } from "shared-types";
+import type { Player } from 'shared-types';
 
-import { SqliteDatabase } from "../database/SqliteDatabase.js";
-import makePlayerSecret from "../util/makePlayerSecret.js";
+import { SqliteDatabase } from '../database/SqliteDatabase.js';
+import makePlayerSecret from '../util/makePlayerSecret.js';
 
 const db = SqliteDatabase.getInstance();
 
@@ -9,10 +9,7 @@ const playerRepository = {
     createPlayer: (playerName: string): void => {
         const secret = makePlayerSecret({ length: 4 });
         try {
-            db.prepare("INSERT INTO players (name, secret) VALUES (?, ?)").run(
-                playerName,
-                secret
-            );
+            db.prepare('INSERT INTO players (name, secret) VALUES (?, ?)').run(playerName, secret);
         } catch (error: unknown) {
             // Handle error silently
 
@@ -23,7 +20,7 @@ const playerRepository = {
         }
     },
     deletePlayer: (id: number): void => {
-        db.prepare("DELETE FROM players WHERE id = ?").run(id);
+        db.prepare('DELETE FROM players WHERE id = ?').run(id);
     },
     getAllPlayers: (): Player[] => {
         /**
@@ -33,7 +30,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id"
+                'SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
             )
             .all() as {
             id: number;
@@ -58,11 +55,7 @@ const playerRepository = {
             }
 
             // Add the stat if it exists
-            if (
-                row.statId &&
-                row.statName &&
-                typeof row.statValue === "string"
-            ) {
+            if (row.statId && row.statName && typeof row.statValue === 'string') {
                 players[players.length - 1].stats.push({
                     id: row.statId,
                     name: row.statName,
@@ -80,7 +73,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                "SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?"
+                'SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
             )
             .all(id) as {
             id: number;
@@ -104,11 +97,7 @@ const playerRepository = {
 
         for (const row of dbRes) {
             // Add the stat if it exists
-            if (
-                row.statId &&
-                row.statName &&
-                typeof row.statValue === "string"
-            ) {
+            if (row.statId && row.statName && typeof row.statValue === 'string') {
                 player.stats.push({
                     id: row.statId,
                     name: row.statName,
@@ -120,22 +109,19 @@ const playerRepository = {
         return player;
     },
     getPlayerIdByName: (name: string): null | number => {
-        const dbRes = db
-            .prepare("SELECT id FROM players WHERE name = ?")
-            .get(name) as undefined | { id: number };
+        const dbRes = db.prepare('SELECT id FROM players WHERE name = ?').get(name) as
+            | undefined
+            | { id: number };
         return dbRes ? dbRes.id : null;
     },
     getPlayerNameById: (id: number): null | string => {
-        const dbRes = db
-            .prepare("SELECT name FROM players WHERE id = ?")
-            .get(id) as undefined | { name: string };
+        const dbRes = db.prepare('SELECT name FROM players WHERE id = ?').get(id) as
+            | undefined
+            | { name: string };
         return dbRes ? dbRes.name : null;
     },
     // The update player function is not for updating stats. For updating stats see the statsRepository
-    updatePlayer: (
-        id: number,
-        updatedFields: Partial<Omit<Player, "id" | "stats">>
-    ): void => {
+    updatePlayer: (id: number, updatedFields: Partial<Omit<Player, 'id' | 'stats'>>): void => {
         const fieldsToUpdate: string[] = [];
         const values: (number | string)[] = [];
 
@@ -143,7 +129,7 @@ const playerRepository = {
         Object.keys(updatedFields).forEach((key) => {
             const typedKey = key as keyof typeof updatedFields;
             if (updatedFields[typedKey] === undefined) return;
-            fieldsToUpdate.push(key + " = ?");
+            fieldsToUpdate.push(key + ' = ?');
             values.push(updatedFields[typedKey]);
         });
 
@@ -154,9 +140,7 @@ const playerRepository = {
         // Add the id as the last parameter for the WHERE clause
         values.push(id);
 
-        const query = `UPDATE players SET ${fieldsToUpdate.join(
-            ", "
-        )} WHERE id = ?`;
+        const query = `UPDATE players SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
 
         try {
             db.prepare(query).run(...values);

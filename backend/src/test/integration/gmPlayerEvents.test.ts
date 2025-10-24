@@ -1,28 +1,28 @@
-import { GmToBackendEventPayloads } from "shared-types";
-import { Socket } from "socket.io";
-import { beforeAll, beforeEach, describe, expect, it, vi } from "vitest";
+import { GmToBackendEventPayloads } from 'shared-types';
+import { Socket } from 'socket.io';
+import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from "../../connectionControllers/GmController";
+import GmController from '../../connectionControllers/GmController';
 
 // Mock the config to use an in-memory database for testing
-vi.mock("../../config/config.ts", () => ({
+vi.mock('../../config/config.ts', () => ({
     default: {
-        dbPath: ":memory:",
+        dbPath: ':memory:',
     },
 }));
 
-describe("Gm Player Integration Tests", () => {
+describe('Gm Player Integration Tests', () => {
     let mockSocket: Socket;
     let eventHandlers: Record<string, (...args: unknown[]) => void>;
 
     // Event names extracted from GmPlayersListener
     const PLAYER_EVENTS = {
-        CREATE: "players:create",
-        DELETE: "players:delete",
-        STATS_CREATE: "players:stats:create",
-        STATS_REMOVE: "players:stats:remove",
-        STATS_UPDATE: "players:stats:update",
-        UPDATE: "players:update",
+        CREATE: 'players:create',
+        DELETE: 'players:delete',
+        STATS_CREATE: 'players:stats:create',
+        STATS_REMOVE: 'players:stats:remove',
+        STATS_UPDATE: 'players:stats:update',
+        UPDATE: 'players:update',
     } as const;
 
     beforeAll(() => {
@@ -31,12 +31,10 @@ describe("Gm Player Integration Tests", () => {
         // Create a mock socket that captures event handlers
         mockSocket = {
             emit: vi.fn(),
-            id: "mock-socket-id",
-            on: vi.fn(
-                (event: string, handler: (...args: unknown[]) => void) => {
-                    eventHandlers[event] = handler;
-                }
-            ),
+            id: 'mock-socket-id',
+            on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+                eventHandlers[event] = handler;
+            }),
         } as unknown as Socket;
 
         GmController.registerSocket(mockSocket);
@@ -47,7 +45,7 @@ describe("Gm Player Integration Tests", () => {
         vi.clearAllMocks();
     });
 
-    it("should register all player event handlers", () => {
+    it('should register all player event handlers', () => {
         // Verify that each event has a registered handler
         Object.values(PLAYER_EVENTS).forEach((event) => {
             expect(eventHandlers[event]).toBeDefined();
@@ -55,11 +53,11 @@ describe("Gm Player Integration Tests", () => {
     });
 
     it("should create a player on 'players:create' event", () => {
-        const payload: GmToBackendEventPayloads["players:create"] = {
-            name: "First Player",
+        const payload: GmToBackendEventPayloads['players:create'] = {
+            name: 'First Player',
         };
         const createHandler = eventHandlers[PLAYER_EVENTS.CREATE] as (
-            arg: GmToBackendEventPayloads["players:create"]
+            arg: GmToBackendEventPayloads['players:create'],
         ) => void;
 
         expect(createHandler).toBeDefined();
@@ -67,24 +65,24 @@ describe("Gm Player Integration Tests", () => {
         createHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
                         id: 1,
-                        name: "First Player",
+                        name: 'First Player',
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should create a second player on 'players:create' event", () => {
-        const payload: GmToBackendEventPayloads["players:create"] = {
-            name: "Second Player",
+        const payload: GmToBackendEventPayloads['players:create'] = {
+            name: 'Second Player',
         };
         const createHandler = eventHandlers[PLAYER_EVENTS.CREATE] as (
-            arg: GmToBackendEventPayloads["players:create"]
+            arg: GmToBackendEventPayloads['players:create'],
         ) => void;
 
         expect(createHandler).toBeDefined();
@@ -92,22 +90,22 @@ describe("Gm Player Integration Tests", () => {
         createHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
-                    expect.objectContaining({ id: 2, name: "Second Player" }),
+                    expect.objectContaining({ id: 2, name: 'Second Player' }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should update a player on 'players:update' event", () => {
-        const payload: GmToBackendEventPayloads["players:update"] = {
-            playerData: { name: "Updated First Player" },
+        const payload: GmToBackendEventPayloads['players:update'] = {
+            playerData: { name: 'Updated First Player' },
             playerId: 1,
         };
         const updateHandler = eventHandlers[PLAYER_EVENTS.UPDATE] as (
-            arg: GmToBackendEventPayloads["players:update"]
+            arg: GmToBackendEventPayloads['players:update'],
         ) => void;
 
         expect(updateHandler).toBeDefined();
@@ -115,41 +113,41 @@ describe("Gm Player Integration Tests", () => {
         updateHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
                         id: 1,
-                        name: "Updated First Player",
+                        name: 'Updated First Player',
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should create a stat for all players on 'players:stats:create' event", () => {
-        const payload: GmToBackendEventPayloads["players:stats:create"] = {
-            scope: "global",
-            statData: { name: "Score", value: "0" },
+        const payload: GmToBackendEventPayloads['players:stats:create'] = {
+            scope: 'global',
+            statData: { name: 'Score', value: '0' },
         };
-        const statsCreateHandler = eventHandlers[
-            PLAYER_EVENTS.STATS_CREATE
-        ] as (arg: GmToBackendEventPayloads["players:stats:create"]) => void;
+        const statsCreateHandler = eventHandlers[PLAYER_EVENTS.STATS_CREATE] as (
+            arg: GmToBackendEventPayloads['players:stats:create'],
+        ) => void;
 
         expect(statsCreateHandler).toBeDefined();
 
         statsCreateHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
                         id: 1,
                         stats: expect.arrayContaining([
                             expect.objectContaining({
-                                name: "Score",
-                                value: "0",
+                                name: 'Score',
+                                value: '0',
                             }),
                         ]) as unknown[],
                     }),
@@ -157,64 +155,64 @@ describe("Gm Player Integration Tests", () => {
                         id: 2,
                         stats: expect.arrayContaining([
                             expect.objectContaining({
-                                name: "Score",
-                                value: "0",
+                                name: 'Score',
+                                value: '0',
                             }),
                         ]) as unknown[],
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should create a stat for a player on 'players:stats:create' event", () => {
-        const payload: GmToBackendEventPayloads["players:stats:create"] = {
+        const payload: GmToBackendEventPayloads['players:stats:create'] = {
             playerId: 1,
-            scope: "player",
-            statData: { name: "Health", value: "100" },
+            scope: 'player',
+            statData: { name: 'Health', value: '100' },
         };
-        const statsCreateHandler = eventHandlers[
-            PLAYER_EVENTS.STATS_CREATE
-        ] as (arg: GmToBackendEventPayloads["players:stats:create"]) => void;
+        const statsCreateHandler = eventHandlers[PLAYER_EVENTS.STATS_CREATE] as (
+            arg: GmToBackendEventPayloads['players:stats:create'],
+        ) => void;
 
         expect(statsCreateHandler).toBeDefined();
 
         statsCreateHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
                         id: 1,
                         stats: expect.arrayContaining([
                             expect.objectContaining({
-                                name: "Health",
-                                value: "100",
+                                name: 'Health',
+                                value: '100',
                             }),
                         ]) as unknown[],
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should update a player's stat on 'players:stats:update' event", () => {
-        const payload: GmToBackendEventPayloads["players:stats:update"] = {
+        const payload: GmToBackendEventPayloads['players:stats:update'] = {
             playerId: 1,
             statId: 1,
-            value: "1",
+            value: '1',
         };
-        const statsUpdateHandler = eventHandlers[
-            PLAYER_EVENTS.STATS_UPDATE
-        ] as (arg: GmToBackendEventPayloads["players:stats:update"]) => void;
+        const statsUpdateHandler = eventHandlers[PLAYER_EVENTS.STATS_UPDATE] as (
+            arg: GmToBackendEventPayloads['players:stats:update'],
+        ) => void;
 
         expect(statsUpdateHandler).toBeDefined();
 
         statsUpdateHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
@@ -222,31 +220,31 @@ describe("Gm Player Integration Tests", () => {
                         stats: expect.arrayContaining([
                             expect.objectContaining({
                                 id: 1,
-                                name: "Score",
-                                value: "1",
+                                name: 'Score',
+                                value: '1',
                             }),
                         ]) as unknown[],
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should delete a player's stat on 'players:stats:remove' event", () => {
-        const payload: GmToBackendEventPayloads["players:stats:remove"] = {
+        const payload: GmToBackendEventPayloads['players:stats:remove'] = {
             playerId: 1,
             statId: 2,
         };
-        const statsRemoveHandler = eventHandlers[
-            PLAYER_EVENTS.STATS_REMOVE
-        ] as (arg: GmToBackendEventPayloads["players:stats:remove"]) => void;
+        const statsRemoveHandler = eventHandlers[PLAYER_EVENTS.STATS_REMOVE] as (
+            arg: GmToBackendEventPayloads['players:stats:remove'],
+        ) => void;
 
         expect(statsRemoveHandler).toBeDefined();
 
         statsRemoveHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.arrayContaining([
                     expect.objectContaining({
@@ -256,16 +254,16 @@ describe("Gm Player Integration Tests", () => {
                         ]) as unknown[],
                     }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 
     it("should delete a player on 'players:delete' event", () => {
-        const payload: GmToBackendEventPayloads["players:delete"] = {
+        const payload: GmToBackendEventPayloads['players:delete'] = {
             playerId: 2,
         };
         const deleteHandler = eventHandlers[PLAYER_EVENTS.DELETE] as (
-            arg: GmToBackendEventPayloads["players:delete"]
+            arg: GmToBackendEventPayloads['players:delete'],
         ) => void;
 
         expect(deleteHandler).toBeDefined();
@@ -273,12 +271,12 @@ describe("Gm Player Integration Tests", () => {
         deleteHandler(payload);
 
         expect(mockSocket.emit).toHaveBeenCalledWith(
-            "players:info",
+            'players:info',
             expect.objectContaining({
                 players: expect.not.arrayContaining([
                     expect.objectContaining({ id: 2 }),
                 ]) as unknown[],
-            })
+            }),
         );
     });
 });

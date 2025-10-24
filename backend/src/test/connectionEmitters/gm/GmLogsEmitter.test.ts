@@ -1,10 +1,10 @@
-import { LogEntry } from "shared-types";
-import { Socket } from "socket.io";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { LogEntry } from 'shared-types';
+import { Socket } from 'socket.io';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmLogsEmitter from "../../../connectionEmitters/gm/GmLogsEmitter";
+import GmLogsEmitter from '../../../connectionEmitters/gm/GmLogsEmitter';
 
-describe("GmLogsEmitter", () => {
+describe('GmLogsEmitter', () => {
     let mockSocket: Socket;
     let emitter: GmLogsEmitter; // Only register one emitter at a time
 
@@ -13,23 +13,23 @@ describe("GmLogsEmitter", () => {
 
         mockSocket = {
             emit: vi.fn(),
-            id: "mock-socket-id",
+            id: 'mock-socket-id',
         } as unknown as Socket;
     });
 
-    describe("sendLogs", () => {
-        it("should emit logs:info with the correct payload", () => {
+    describe('sendLogs', () => {
+        it('should emit logs:info with the correct payload', () => {
             const log: LogEntry = {
-                details: { key: "value" },
-                message: "Log message",
-                severity: "info",
+                details: { key: 'value' },
+                message: 'Log message',
+                severity: 'info',
                 timestamp: new Date(),
             };
 
             emitter = new GmLogsEmitter(mockSocket);
             emitter.sendLog(log);
 
-            expect(mockSocket.emit).toHaveBeenCalledWith("log:entry", {
+            expect(mockSocket.emit).toHaveBeenCalledWith('log:entry', {
                 entry: log,
             });
         });

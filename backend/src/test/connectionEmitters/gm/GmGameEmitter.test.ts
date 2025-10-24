@@ -1,16 +1,16 @@
-import { Socket } from "socket.io";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Socket } from 'socket.io';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmGameEmitter from "../../../connectionEmitters/gm/GmGameEmitter";
-import gameStateHandler from "../../../services/gameStateHandler";
+import GmGameEmitter from '../../../connectionEmitters/gm/GmGameEmitter';
+import gameStateHandler from '../../../services/gameStateHandler';
 
-vi.mock("../../../services/gameStateHandler", () => ({
+vi.mock('../../../services/gameStateHandler', () => ({
     default: {
         getGameState: vi.fn(),
     },
 }));
 
-describe("GmGameEmitter", () => {
+describe('GmGameEmitter', () => {
     let mockSocket: Socket;
     let emitter: GmGameEmitter; // Only register one emitter at a time
 
@@ -19,15 +19,13 @@ describe("GmGameEmitter", () => {
 
         mockSocket = {
             emit: vi.fn(),
-            id: "mock-socket-id",
+            id: 'mock-socket-id',
         } as unknown as Socket;
     });
 
-    describe("constructor", () => {
-        it("should call sendGameInfo on initialization", () => {
-            const spy = vi
-                .spyOn(GmGameEmitter.prototype, "sendGameInfo")
-                .mockReturnValue();
+    describe('constructor', () => {
+        it('should call sendGameInfo on initialization', () => {
+            const spy = vi.spyOn(GmGameEmitter.prototype, 'sendGameInfo').mockReturnValue();
 
             emitter = new GmGameEmitter(mockSocket);
 
@@ -36,14 +34,14 @@ describe("GmGameEmitter", () => {
         });
     });
 
-    describe("sendGameInfo", () => {
-        it("should emit game:info with the correct payload", () => {
+    describe('sendGameInfo', () => {
+        it('should emit game:info with the correct payload', () => {
             vi.mocked(gameStateHandler.getGameState).mockReturnValue({
                 currentPlayerIndex: 0,
                 id: 1,
                 playerOrder: [
-                    { id: 1, name: "Player 1" },
-                    { id: 2, name: "Player 2" },
+                    { id: 1, name: 'Player 1' },
+                    { id: 2, name: 'Player 2' },
                 ],
                 roundNumber: 3,
             });
@@ -55,13 +53,13 @@ describe("GmGameEmitter", () => {
             emitter.sendGameInfo();
 
             expect(mockSocket.emit).toHaveBeenCalledTimes(1);
-            expect(mockSocket.emit).toHaveBeenCalledWith("game:info", {
+            expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
                 gameState: {
                     currentPlayerIndex: 0,
                     id: 1,
                     playerOrder: [
-                        { id: 1, name: "Player 1" },
-                        { id: 2, name: "Player 2" },
+                        { id: 1, name: 'Player 1' },
+                        { id: 2, name: 'Player 2' },
                     ],
                     roundNumber: 3,
                 },

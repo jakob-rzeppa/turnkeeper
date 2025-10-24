@@ -1,7 +1,7 @@
-import { Socket } from "socket.io";
+import { Socket } from 'socket.io';
 
-import UserGameEmitter from "../connectionEmitters/user/UserGameEmitter.js";
-import UserPlayersEmitter from "../connectionEmitters/user/UserPlayersEmitter.js";
+import UserGameEmitter from '../connectionEmitters/user/UserGameEmitter.js';
+import UserPlayersEmitter from '../connectionEmitters/user/UserPlayersEmitter.js';
 
 export default class UserController {
     // Multiple instances / register one user controller per playerId
@@ -18,10 +18,7 @@ export default class UserController {
         this.playerId = playerId;
         this.socket = s;
 
-        this.userPlayersEmitter = new UserPlayersEmitter(
-            this.playerId,
-            this.socket
-        );
+        this.userPlayersEmitter = new UserPlayersEmitter(this.playerId, this.socket);
         this.userGameEmitter = new UserGameEmitter(this.socket);
     }
 
@@ -29,9 +26,7 @@ export default class UserController {
         return Array.from(this.instances.values());
     };
 
-    public static getInstance = (
-        playerId: number
-    ): undefined | UserController => {
+    public static getInstance = (playerId: number): undefined | UserController => {
         return this.instances.get(playerId);
     };
 

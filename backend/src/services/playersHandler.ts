@@ -1,10 +1,10 @@
-import { Player } from "shared-types";
+import { Player } from 'shared-types';
 
-import GmController from "../connectionControllers/GmController.js";
-import UserController from "../connectionControllers/UserController.js";
-import playerRepository from "../repositories/playerRepository.js";
-import { statsRepository } from "../repositories/statsRepository.js";
-import gameStateHandler from "./gameStateHandler.js";
+import GmController from '../connectionControllers/GmController.js';
+import UserController from '../connectionControllers/UserController.js';
+import playerRepository from '../repositories/playerRepository.js';
+import { statsRepository } from '../repositories/statsRepository.js';
+import gameStateHandler from './gameStateHandler.js';
 
 const playerHandler = {
     createPlayer(playerData: { name: string }) {
@@ -35,15 +35,13 @@ const playerHandler = {
         playerData,
         playerId,
     }: {
-        playerData: Partial<Omit<Player, "id" | "stats">>;
+        playerData: Partial<Omit<Player, 'id' | 'stats'>>;
         playerId: number;
     }) {
         playerRepository.updatePlayer(playerId, playerData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(
-            playerId
-        )?.userPlayersEmitter.sendOwnPlayer();
+        UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
         UserController.getAllInstances().forEach((userController) => {

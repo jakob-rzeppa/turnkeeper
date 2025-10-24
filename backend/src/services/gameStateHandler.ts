@@ -1,10 +1,10 @@
-import { GameState } from "shared-types";
+import { GameState } from 'shared-types';
 
-import GmController from "../connectionControllers/GmController";
-import UserController from "../connectionControllers/UserController";
-import gameStateRepository from "../repositories/gameStateRepository";
-import playerRepository from "../repositories/playerRepository";
-import logger from "./logger";
+import GmController from '../connectionControllers/GmController';
+import UserController from '../connectionControllers/UserController';
+import gameStateRepository from '../repositories/gameStateRepository';
+import playerRepository from '../repositories/playerRepository';
+import logger from './logger';
 
 // Using a constant ID since for now there is only one game state at a time
 const GAME_STATE_ID = 1;
@@ -24,26 +24,20 @@ const gameStateHandler = {
         const gameState = gameStateHandler.getGameState();
         if (!gameState) {
             logger.warn({
-                message:
-                    "No game state found when attempting to add player to turn order.",
+                message: 'No game state found when attempting to add player to turn order.',
             });
             return;
         }
 
         if (gameState.playerOrder.find((p) => p.id === playerId)) {
             logger.warn({
-                message: `Player with ID ${String(
-                    playerId
-                )} is already in the turn order.`,
+                message: `Player with ID ${String(playerId)} is already in the turn order.`,
             });
             return;
         }
 
         gameStateRepository.updateGameState(GAME_STATE_ID, {
-            playerOrder: [
-                ...gameState.playerOrder,
-                { id: playerId, name: playerName },
-            ],
+            playerOrder: [...gameState.playerOrder, { id: playerId, name: playerName }],
         });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
@@ -65,19 +59,16 @@ const gameStateHandler = {
         return gameState;
     },
     initGameState: (newPlayerIdOrder: number[]): void => {
-        const playerNames = newPlayerIdOrder.map((id) =>
-            playerRepository.getPlayerNameById(id)
-        );
+        const playerNames = newPlayerIdOrder.map((id) => playerRepository.getPlayerNameById(id));
 
         if (!playerNames.every((name) => name !== null)) {
             logger.warn({
-                message:
-                    "Attempted to initialize game state with non-existing player IDs.",
+                message: 'Attempted to initialize game state with non-existing player IDs.',
             });
             return;
         }
 
-        const newGameState: Omit<GameState, "id"> = {
+        const newGameState: Omit<GameState, 'id'> = {
             currentPlayerIndex: 0,
             playerOrder: newPlayerIdOrder.map((id, index) => ({
                 id,
@@ -98,8 +89,7 @@ const gameStateHandler = {
 
         if (!gameState) {
             logger.warn({
-                message:
-                    "No game state found when attempting to advance to next turn.",
+                message: 'No game state found when attempting to advance to next turn.',
             });
             return;
         }
@@ -129,7 +119,7 @@ const gameStateHandler = {
         if (!gameState) {
             logger.warn({
                 message:
-                    "No game state found when attempting to remove deleted players from turn order.",
+                    'No game state found when attempting to remove deleted players from turn order.',
             });
             return;
         }
@@ -137,7 +127,7 @@ const gameStateHandler = {
         const allPlayerIds = playerRepository.getAllPlayers().map((p) => p.id);
 
         const updatedPlayerOrder = gameState.playerOrder.filter((player) =>
-            allPlayerIds.includes(player.id)
+            allPlayerIds.includes(player.id),
         );
 
         if (updatedPlayerOrder.length === gameState.playerOrder.length) {
@@ -155,14 +145,11 @@ const gameStateHandler = {
         });
     },
     updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
-        const playerNames = newPlayerIdOrder.map((id) =>
-            playerRepository.getPlayerNameById(id)
-        );
+        const playerNames = newPlayerIdOrder.map((id) => playerRepository.getPlayerNameById(id));
 
         if (!playerNames.every((name) => name !== null)) {
             logger.warn({
-                message:
-                    "Attempted to update player order with non-existing player IDs.",
+                message: 'Attempted to update player order with non-existing player IDs.',
             });
             return;
         }

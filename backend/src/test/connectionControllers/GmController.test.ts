@@ -1,16 +1,16 @@
-import { Socket } from "socket.io";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Socket } from 'socket.io';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from "../../connectionControllers/GmController";
+import GmController from '../../connectionControllers/GmController';
 
 // Mock all emitters and listeners
-vi.mock("../../connectionEmitters/gm/GmGameEmitter");
-vi.mock("../../connectionEmitters/gm/GmLogsEmitter");
-vi.mock("../../connectionEmitters/gm/GmPlayersEmitter");
-vi.mock("../../connectionListeners/gm/GmGameListener");
-vi.mock("../../connectionListeners/gm/GmPlayersListener");
+vi.mock('../../connectionEmitters/gm/GmGameEmitter');
+vi.mock('../../connectionEmitters/gm/GmLogsEmitter');
+vi.mock('../../connectionEmitters/gm/GmPlayersEmitter');
+vi.mock('../../connectionListeners/gm/GmGameListener');
+vi.mock('../../connectionListeners/gm/GmPlayersListener');
 
-describe("GmController", () => {
+describe('GmController', () => {
     let mockSocket: Socket;
 
     beforeEach(() => {
@@ -23,19 +23,19 @@ describe("GmController", () => {
         // Create a mock socket
         mockSocket = {
             emit: vi.fn(),
-            id: "mock-socket-id",
+            id: 'mock-socket-id',
             on: vi.fn(),
         } as unknown as Socket;
     });
 
-    describe("Singleton Pattern", () => {
-        it("should create only one instance", () => {
+    describe('Singleton Pattern', () => {
+        it('should create only one instance', () => {
             GmController.registerSocket(mockSocket);
             const instance1 = GmController.getInstance();
 
             const mockSocket2 = {
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -46,11 +46,11 @@ describe("GmController", () => {
             expect(instance1).not.toBe(instance2);
         });
 
-        it("should return null when no socket is registered", () => {
+        it('should return null when no socket is registered', () => {
             expect(GmController.getInstance()).toBeNull();
         });
 
-        it("should return the instance after registration", () => {
+        it('should return the instance after registration', () => {
             GmController.registerSocket(mockSocket);
             const instance = GmController.getInstance();
 
@@ -59,8 +59,8 @@ describe("GmController", () => {
         });
     });
 
-    describe("registerSocket", () => {
-        it("should create emitter instances accessible via the controller", () => {
+    describe('registerSocket', () => {
+        it('should create emitter instances accessible via the controller', () => {
             GmController.registerSocket(mockSocket);
             const instance = GmController.getInstance();
 
@@ -70,7 +70,7 @@ describe("GmController", () => {
             expect(instance?.gmPlayersEmitter).toBeDefined();
         });
 
-        it("should create listener instances accessible via the controller", () => {
+        it('should create listener instances accessible via the controller', () => {
             GmController.registerSocket(mockSocket);
             const instance = GmController.getInstance();
 
@@ -80,8 +80,8 @@ describe("GmController", () => {
         });
     });
 
-    describe("unregisterSocket", () => {
-        it("should set the instance to null", () => {
+    describe('unregisterSocket', () => {
+        it('should set the instance to null', () => {
             GmController.registerSocket(mockSocket);
             expect(GmController.getInstance()).not.toBeNull();
 
@@ -89,7 +89,7 @@ describe("GmController", () => {
             expect(GmController.getInstance()).toBeNull();
         });
 
-        it("should allow re-registration after unregistering", () => {
+        it('should allow re-registration after unregistering', () => {
             GmController.registerSocket(mockSocket);
             const instance1 = GmController.getInstance();
 
@@ -97,7 +97,7 @@ describe("GmController", () => {
 
             const mockSocket2 = {
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -109,17 +109,17 @@ describe("GmController", () => {
         });
     });
 
-    describe("isConnected", () => {
-        it("should return false when no socket is registered", () => {
+    describe('isConnected', () => {
+        it('should return false when no socket is registered', () => {
             expect(GmController.isConnected()).toBe(false);
         });
 
-        it("should return true when a socket is registered", () => {
+        it('should return true when a socket is registered', () => {
             GmController.registerSocket(mockSocket);
             expect(GmController.isConnected()).toBe(true);
         });
 
-        it("should return false after unregistering", () => {
+        it('should return false after unregistering', () => {
             GmController.registerSocket(mockSocket);
             expect(GmController.isConnected()).toBe(true);
 

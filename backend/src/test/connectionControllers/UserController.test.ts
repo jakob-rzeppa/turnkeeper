@@ -1,13 +1,13 @@
-import { Socket } from "socket.io";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Socket } from 'socket.io';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import UserController from "../../connectionControllers/UserController";
+import UserController from '../../connectionControllers/UserController';
 
 // Mock all emitters
-vi.mock("../../connectionEmitters/user/UserGameEmitter");
-vi.mock("../../connectionEmitters/user/UserPlayersEmitter");
+vi.mock('../../connectionEmitters/user/UserGameEmitter');
+vi.mock('../../connectionEmitters/user/UserPlayersEmitter');
 
-describe("UserController", () => {
+describe('UserController', () => {
     let mockSocket: Socket;
     const playerId = 1;
 
@@ -25,20 +25,20 @@ describe("UserController", () => {
         mockSocket = {
             disconnect: vi.fn(),
             emit: vi.fn(),
-            id: "mock-socket-id",
+            id: 'mock-socket-id',
             on: vi.fn(),
         } as unknown as Socket;
     });
 
-    describe("Multi-instance Pattern", () => {
-        it("should create separate instances for different player IDs", () => {
+    describe('Multi-instance Pattern', () => {
+        it('should create separate instances for different player IDs', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance1 = UserController.getInstance(playerId);
 
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -52,14 +52,14 @@ describe("UserController", () => {
             expect(instance2).toBeInstanceOf(UserController);
         });
 
-        it("should not create duplicate instances for the same player ID", () => {
+        it('should not create duplicate instances for the same player ID', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance1 = UserController.getInstance(playerId);
 
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -70,11 +70,11 @@ describe("UserController", () => {
             expect(instance1).toBe(instance2);
         });
 
-        it("should return undefined when no socket is registered for a player ID", () => {
+        it('should return undefined when no socket is registered for a player ID', () => {
             expect(UserController.getInstance(playerId)).toBeUndefined();
         });
 
-        it("should return the instance after registration", () => {
+        it('should return the instance after registration', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance = UserController.getInstance(playerId);
 
@@ -83,24 +83,24 @@ describe("UserController", () => {
         });
     });
 
-    describe("getAllInstances", () => {
-        it("should return an empty array when no instances exist", () => {
+    describe('getAllInstances', () => {
+        it('should return an empty array when no instances exist', () => {
             const instances = UserController.getAllInstances();
             expect(instances).toEqual([]);
         });
 
-        it("should return all registered instances", () => {
+        it('should return all registered instances', () => {
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
             const mockSocket3 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-3",
+                id: 'mock-socket-id-3',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -110,16 +110,12 @@ describe("UserController", () => {
 
             const instances = UserController.getAllInstances();
             expect(instances).toHaveLength(3);
-            expect(
-                instances.every(
-                    (instance) => instance instanceof UserController
-                )
-            ).toBe(true);
+            expect(instances.every((instance) => instance instanceof UserController)).toBe(true);
         });
     });
 
-    describe("registerSocket", () => {
-        it("should create emitter instances accessible via the controller", () => {
+    describe('registerSocket', () => {
+        it('should create emitter instances accessible via the controller', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance = UserController.getInstance(playerId);
 
@@ -128,7 +124,7 @@ describe("UserController", () => {
             expect(instance?.userPlayersEmitter).toBeDefined();
         });
 
-        it("should store the socket and playerId in the instance", () => {
+        it('should store the socket and playerId in the instance', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance = UserController.getInstance(playerId);
 
@@ -137,8 +133,8 @@ describe("UserController", () => {
         });
     });
 
-    describe("unregisterSocket", () => {
-        it("should remove the instance for the given player ID", () => {
+    describe('unregisterSocket', () => {
+        it('should remove the instance for the given player ID', () => {
             UserController.registerSocket(playerId, mockSocket);
             expect(UserController.getInstance(playerId)).toBeDefined();
 
@@ -146,7 +142,7 @@ describe("UserController", () => {
             expect(UserController.getInstance(playerId)).toBeUndefined();
         });
 
-        it("should allow re-registration after unregistering", () => {
+        it('should allow re-registration after unregistering', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance1 = UserController.getInstance(playerId);
 
@@ -155,7 +151,7 @@ describe("UserController", () => {
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -170,7 +166,7 @@ describe("UserController", () => {
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -184,17 +180,17 @@ describe("UserController", () => {
         });
     });
 
-    describe("isConnected", () => {
-        it("should return false when no socket is registered for a player ID", () => {
+    describe('isConnected', () => {
+        it('should return false when no socket is registered for a player ID', () => {
             expect(UserController.isConnected(playerId)).toBe(false);
         });
 
-        it("should return true when a socket is registered for a player ID", () => {
+        it('should return true when a socket is registered for a player ID', () => {
             UserController.registerSocket(playerId, mockSocket);
             expect(UserController.isConnected(playerId)).toBe(true);
         });
 
-        it("should return false after unregistering a player ID", () => {
+        it('should return false after unregistering a player ID', () => {
             UserController.registerSocket(playerId, mockSocket);
             expect(UserController.isConnected(playerId)).toBe(true);
 
@@ -202,11 +198,11 @@ describe("UserController", () => {
             expect(UserController.isConnected(playerId)).toBe(false);
         });
 
-        it("should return correct status for multiple player IDs", () => {
+        it('should return correct status for multiple player IDs', () => {
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 
@@ -219,8 +215,8 @@ describe("UserController", () => {
         });
     });
 
-    describe("disconnect", () => {
-        it("should call socket.disconnect() on the instance", () => {
+    describe('disconnect', () => {
+        it('should call socket.disconnect() on the instance', () => {
             UserController.registerSocket(playerId, mockSocket);
             const instance = UserController.getInstance(playerId);
 
@@ -229,11 +225,11 @@ describe("UserController", () => {
             expect(mockSocket.disconnect).toHaveBeenCalledOnce();
         });
 
-        it("should disconnect the correct socket for each instance", () => {
+        it('should disconnect the correct socket for each instance', () => {
             const mockSocket2 = {
                 disconnect: vi.fn(),
                 emit: vi.fn(),
-                id: "mock-socket-id-2",
+                id: 'mock-socket-id-2',
                 on: vi.fn(),
             } as unknown as Socket;
 

@@ -1,10 +1,10 @@
-import { Socket } from "socket.io";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { Socket } from 'socket.io';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmGameListener from "../../../connectionListeners/gm/GmGameListener.js";
-import gameStateHandler from "../../../services/gameStateHandler.js";
+import GmGameListener from '../../../connectionListeners/gm/GmGameListener.js';
+import gameStateHandler from '../../../services/gameStateHandler.js';
 
-vi.mock("../../../services/gameStateHandler.js", () => ({
+vi.mock('../../../services/gameStateHandler.js', () => ({
     default: {
         deleteGameState: vi.fn(),
         getGameState: vi.fn(),
@@ -15,7 +15,7 @@ vi.mock("../../../services/gameStateHandler.js", () => ({
     },
 }));
 
-describe("GmGameListener", () => {
+describe('GmGameListener', () => {
     let mockSocket: Socket;
     let listener: GmGameListener;
     let eventHandlers: Record<string, (...args: unknown[]) => void>;
@@ -26,92 +26,77 @@ describe("GmGameListener", () => {
 
         // Create a mock socket that captures event handlers
         mockSocket = {
-            id: "mock-socket-id",
-            on: vi.fn(
-                (event: string, handler: (...args: unknown[]) => void) => {
-                    eventHandlers[event] = handler;
-                }
-            ),
+            id: 'mock-socket-id',
+            on: vi.fn((event: string, handler: (...args: unknown[]) => void) => {
+                eventHandlers[event] = handler;
+            }),
         } as unknown as Socket;
 
         listener = new GmGameListener(mockSocket);
     });
 
-    describe("constructor", () => {
-        it("should create an instance", () => {
+    describe('constructor', () => {
+        it('should create an instance', () => {
             expect(listener).toBeInstanceOf(GmGameListener);
         });
 
-        it("should register all game event listeners", () => {
+        it('should register all game event listeners', () => {
+            expect(mockSocket.on).toHaveBeenCalledWith('game:init', expect.any(Function));
+            expect(mockSocket.on).toHaveBeenCalledWith('game:turn:next', expect.any(Function));
+            expect(mockSocket.on).toHaveBeenCalledWith('game:end', expect.any(Function));
             expect(mockSocket.on).toHaveBeenCalledWith(
-                "game:init",
-                expect.any(Function)
-            );
-            expect(mockSocket.on).toHaveBeenCalledWith(
-                "game:turn:next",
-                expect.any(Function)
-            );
-            expect(mockSocket.on).toHaveBeenCalledWith(
-                "game:end",
-                expect.any(Function)
-            );
-            expect(mockSocket.on).toHaveBeenCalledWith(
-                "game:playerOrder:update",
-                expect.any(Function)
+                'game:playerOrder:update',
+                expect.any(Function),
             );
         });
     });
 
-    describe("game:init event", () => {
-        it("should initialize the gameloop with player IDs in order", () => {
+    describe('game:init event', () => {
+        it('should initialize the gameloop with player IDs in order', () => {
             const playerIdsInOrder = [1, 3, 2, 5];
 
-            eventHandlers["game:init"]({ playerIdsInOrder });
+            eventHandlers['game:init']({ playerIdsInOrder });
 
-            expect(gameStateHandler.initGameState).toHaveBeenCalledWith(
-                playerIdsInOrder
-            );
+            expect(gameStateHandler.initGameState).toHaveBeenCalledWith(playerIdsInOrder);
             expect(gameStateHandler.initGameState).toHaveBeenCalledTimes(1);
         });
     });
 
-    describe("game:turn:next event", () => {
-        it("should call nextTurn on the gameloop", () => {
-            eventHandlers["game:turn:next"]();
+    describe('game:turn:next event', () => {
+        it('should call nextTurn on the gameloop', () => {
+            eventHandlers['game:turn:next']();
 
             expect(gameStateHandler.nextTurn).toHaveBeenCalledTimes(1);
         });
 
-        it("should not pass any arguments to nextTurn", () => {
-            eventHandlers["game:turn:next"]();
+        it('should not pass any arguments to nextTurn', () => {
+            eventHandlers['game:turn:next']();
 
             expect(gameStateHandler.nextTurn).toHaveBeenCalledWith();
         });
     });
 
-    describe("game:end event", () => {
-        it("should call end on the gameloop", () => {
-            eventHandlers["game:end"]();
+    describe('game:end event', () => {
+        it('should call end on the gameloop', () => {
+            eventHandlers['game:end']();
 
             expect(gameStateHandler.deleteGameState).toHaveBeenCalledTimes(1);
         });
 
-        it("should not pass any arguments to end", () => {
-            eventHandlers["game:end"]();
+        it('should not pass any arguments to end', () => {
+            eventHandlers['game:end']();
 
             expect(gameStateHandler.deleteGameState).toHaveBeenCalledWith();
         });
     });
 
-    describe("game:playerOrder:update event", () => {
-        it("should update the player order in the gameloop", () => {
+    describe('game:playerOrder:update event', () => {
+        it('should update the player order in the gameloop', () => {
             const playerIdsInOrder = [5, 1, 3, 2];
 
-            eventHandlers["game:playerOrder:update"]({ playerIdsInOrder });
+            eventHandlers['game:playerOrder:update']({ playerIdsInOrder });
 
-            expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledWith(
-                playerIdsInOrder
-            );
+            expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledWith(playerIdsInOrder);
             expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledTimes(1);
         });
     });

@@ -1,6 +1,6 @@
-import dotenv from "dotenv";
+import dotenv from 'dotenv';
 
-dotenv.config({ path: [".env.local", ".env"] });
+dotenv.config({ path: ['.env.local', '.env'] });
 
 interface Config {
     dbPath: null | string;

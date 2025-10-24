@@ -1,10 +1,10 @@
-import { Socket } from "socket.io";
+import { Socket } from 'socket.io';
 
-import GmGameEmitter from "../connectionEmitters/gm/GmGameEmitter.js";
-import GmLogsEmitter from "../connectionEmitters/gm/GmLogsEmitter.js";
-import GmPlayersEmitter from "../connectionEmitters/gm/GmPlayersEmitter.js";
-import GmGameListener from "../connectionListeners/gm/GmGameListener.js";
-import GmPlayersListener from "../connectionListeners/gm/GmPlayersListener.js";
+import GmGameEmitter from '../connectionEmitters/gm/GmGameEmitter.js';
+import GmLogsEmitter from '../connectionEmitters/gm/GmLogsEmitter.js';
+import GmPlayersEmitter from '../connectionEmitters/gm/GmPlayersEmitter.js';
+import GmGameListener from '../connectionListeners/gm/GmGameListener.js';
+import GmPlayersListener from '../connectionListeners/gm/GmPlayersListener.js';
 
 export default class GmController {
     // Singleton instance / register only one GM players listener at a time

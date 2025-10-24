@@ -1,11 +1,11 @@
-import { PlayerStat } from "shared-types";
+import { PlayerStat } from 'shared-types';
 
-import GmController from "../connectionControllers/GmController";
-import UserController from "../connectionControllers/UserController";
-import { statsRepository } from "../repositories/statsRepository";
+import GmController from '../connectionControllers/GmController';
+import UserController from '../connectionControllers/UserController';
+import { statsRepository } from '../repositories/statsRepository';
 
 export const statsHandler = {
-    createStatForAllPlayers(statData: Omit<PlayerStat, "id">) {
+    createStatForAllPlayers(statData: Omit<PlayerStat, 'id'>) {
         statsRepository.createStatForAllPlayers(statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
@@ -18,14 +18,12 @@ export const statsHandler = {
         statData,
     }: {
         playerId: number;
-        statData: Omit<PlayerStat, "id">;
+        statData: Omit<PlayerStat, 'id'>;
     }) {
         statsRepository.createStatForPlayer(playerId, statData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(
-            playerId
-        )?.userPlayersEmitter.sendOwnPlayer();
+        UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
     },
     removeStat({
         playerId, // The playerId is used to update the correct user's view and to have a extra check that the changed stat belongs to the right player
@@ -37,16 +35,14 @@ export const statsHandler = {
         statsRepository.removeStatFromPlayer(playerId, statId);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(
-            playerId
-        )?.userPlayersEmitter.sendOwnPlayer();
+        UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
     },
     updateStatValue({
         newValue,
         playerId, // The playerId is used to update the correct user's view and to have a extra check that the changed stat belongs to the right player
         statId,
     }: {
-        newValue: PlayerStat["value"];
+        newValue: PlayerStat['value'];
         playerId: number;
         statId: number;
     }) {
@@ -55,8 +51,6 @@ export const statsHandler = {
         });
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
-        UserController.getInstance(
-            playerId
-        )?.userPlayersEmitter.sendOwnPlayer();
+        UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
     },
 };

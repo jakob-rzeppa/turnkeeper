@@ -1,19 +1,19 @@
-import { GameState } from "shared-types";
+import { GameState } from 'shared-types';
 
-import { SqliteDatabase } from "../database/SqliteDatabase";
-import logger from "../services/logger";
+import { SqliteDatabase } from '../database/SqliteDatabase';
+import logger from '../services/logger';
 
 const db = SqliteDatabase.getInstance();
 
 const gameStateRepository = {
-    createGameState: (gamestate: Omit<GameState, "id">) => {
+    createGameState: (gamestate: Omit<GameState, 'id'>) => {
         try {
             db.prepare(
-                "INSERT INTO game_state (round_number, current_player_index, player_order) VALUES (?, ?, ?)"
+                'INSERT INTO game_state (round_number, current_player_index, player_order) VALUES (?, ?, ?)',
             ).run(
                 gamestate.roundNumber,
                 gamestate.currentPlayerIndex,
-                gamestate.playerOrder.map((p) => p.id).join(",")
+                gamestate.playerOrder.map((p) => p.id).join(','),
             );
         } catch (error: unknown) {
             // Handle error silently
@@ -26,7 +26,7 @@ const gameStateRepository = {
     },
     deleteGameState: (id: number) => {
         try {
-            db.prepare("DELETE FROM game_state WHERE id = ?").run(id);
+            db.prepare('DELETE FROM game_state WHERE id = ?').run(id);
         } catch (error: unknown) {
             // Handle error silently
 
@@ -37,9 +37,7 @@ const gameStateRepository = {
         }
     },
     getGameStateById: (id: number): GameState | null => {
-        const row = db
-            .prepare("SELECT * FROM game_state WHERE id = ?")
-            .get(id) as
+        const row = db.prepare('SELECT * FROM game_state WHERE id = ?').get(id) as
             | undefined
             | {
                   current_player_index: number;
@@ -59,13 +57,13 @@ const gameStateRepository = {
             };
         }
 
-        const playerOrder = row.player_order.split(",").map(Number);
+        const playerOrder = row.player_order.split(',').map(Number);
 
         const playerRows = db
             .prepare(
-                `SELECT id, name FROM players WHERE id IN (?${",?".repeat(
-                    playerOrder.length - 1
-                )})`
+                `SELECT id, name FROM players WHERE id IN (?${',?'.repeat(
+                    playerOrder.length - 1,
+                )})`,
             )
             .all(playerOrder) as {
             id: number;
@@ -75,7 +73,7 @@ const gameStateRepository = {
         if (playerRows.length !== playerOrder.length) {
             logger.error({
                 message:
-                    "Inconsistent game state: some player IDs in the game state do not exist in the players table.",
+                    'Inconsistent game state: some player IDs in the game state do not exist in the players table.',
             });
             return null;
         }
@@ -86,7 +84,7 @@ const gameStateRepository = {
                 playerRows.find((p) => p.id === id) as {
                     id: number;
                     name: string;
-                }
+                },
         );
 
         return {
@@ -96,26 +94,23 @@ const gameStateRepository = {
             roundNumber: row.round_number,
         };
     },
-    updateGameState: (
-        id: number,
-        updatedFields: Partial<Omit<GameState, "id">>
-    ) => {
+    updateGameState: (id: number, updatedFields: Partial<Omit<GameState, 'id'>>) => {
         const fieldsToUpdate: string[] = [];
         const values: (number | string)[] = [];
 
         if (updatedFields.roundNumber !== undefined) {
-            fieldsToUpdate.push("round_number = ?");
+            fieldsToUpdate.push('round_number = ?');
             values.push(updatedFields.roundNumber);
         }
 
         if (updatedFields.currentPlayerIndex !== undefined) {
-            fieldsToUpdate.push("current_player_index = ?");
+            fieldsToUpdate.push('current_player_index = ?');
             values.push(updatedFields.currentPlayerIndex);
         }
 
         if (updatedFields.playerOrder !== undefined) {
-            fieldsToUpdate.push("player_order = ?");
-            values.push(updatedFields.playerOrder.map((p) => p.id).join(","));
+            fieldsToUpdate.push('player_order = ?');
+            values.push(updatedFields.playerOrder.map((p) => p.id).join(','));
         }
 
         if (fieldsToUpdate.length === 0) {
@@ -124,9 +119,7 @@ const gameStateRepository = {
 
         values.push(id);
 
-        const query = `UPDATE game_state SET ${fieldsToUpdate.join(
-            ", "
-        )} WHERE id = ?`;
+        const query = `UPDATE game_state SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
 
         try {
             db.prepare(query).run(...values);

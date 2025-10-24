@@ -1,7 +1,7 @@
-import { BackendToGmEventPayloads } from "shared-types";
-import { Socket } from "socket.io";
+import { BackendToGmEventPayloads } from 'shared-types';
+import { Socket } from 'socket.io';
 
-import gameStateHandler from "../../services/gameStateHandler.js";
+import gameStateHandler from '../../services/gameStateHandler.js';
 
 export default class GmGameEmitter {
     private socket: Socket;
@@ -16,8 +16,8 @@ export default class GmGameEmitter {
     public sendGameInfo() {
         const gameState = gameStateHandler.getGameState();
 
-        const payload: BackendToGmEventPayloads["game:info"] = { gameState };
+        const payload: BackendToGmEventPayloads['game:info'] = { gameState };
 
-        this.socket.emit("game:info", payload);
+        this.socket.emit('game:info', payload);
     }
 }

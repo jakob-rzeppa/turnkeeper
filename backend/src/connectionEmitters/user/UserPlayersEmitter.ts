@@ -1,8 +1,8 @@
-import { BackendToUserPayloads } from "shared-types";
-import { Socket } from "socket.io";
+import { BackendToUserPayloads } from 'shared-types';
+import { Socket } from 'socket.io';
 
-import playerRepository from "../../repositories/playerRepository.js";
-import logger from "../../services/logger.js";
+import playerRepository from '../../repositories/playerRepository.js';
+import logger from '../../services/logger.js';
 
 export default class UserPlayersEmitter {
     private playerId: number;
@@ -27,7 +27,7 @@ export default class UserPlayersEmitter {
             return;
         }
 
-        const payload: BackendToUserPayloads["player:info"] = {
+        const payload: BackendToUserPayloads['player:info'] = {
             player: {
                 id: player.id,
                 name: player.name,
@@ -35,6 +35,6 @@ export default class UserPlayersEmitter {
             },
         };
 
-        this.socket.emit("player:info", payload);
+        this.socket.emit('player:info', payload);
     }
 }

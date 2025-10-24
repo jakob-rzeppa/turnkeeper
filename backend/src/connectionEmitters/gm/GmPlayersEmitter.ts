@@ -1,7 +1,7 @@
-import { BackendToGmEventPayloads } from "shared-types";
-import { Socket } from "socket.io";
+import { BackendToGmEventPayloads } from 'shared-types';
+import { Socket } from 'socket.io';
 
-import playerRepository from "../../repositories/playerRepository.js";
+import playerRepository from '../../repositories/playerRepository.js';
 
 export default class GmPlayersEmitter {
     private socket: Socket;
@@ -16,8 +16,8 @@ export default class GmPlayersEmitter {
     public sendPlayers() {
         const players = playerRepository.getAllPlayers();
 
-        const payload: BackendToGmEventPayloads["players:info"] = { players };
+        const payload: BackendToGmEventPayloads['players:info'] = { players };
 
-        this.socket.emit("players:info", payload);
+        this.socket.emit('players:info', payload);
     }
 }
