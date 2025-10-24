@@ -4,7 +4,7 @@ import { SqliteDatabase } from "../database/SqliteDatabase";
 const db = SqliteDatabase.getInstance();
 
 const gameStateRepository = {
-    getGameStateById: (id: number): GameState | undefined => {
+    getGameStateById: (id: number): GameState | null => {
         const row = db
             .prepare("SELECT * FROM game_state WHERE id = ?")
             .get(id) as {
@@ -14,7 +14,7 @@ const gameStateRepository = {
             player_order: string;
         };
 
-        if (!row) return undefined;
+        if (!row) return null;
 
         const playerOrder = row.player_order.split(",").map(Number);
 

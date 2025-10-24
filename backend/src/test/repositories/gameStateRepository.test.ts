@@ -43,7 +43,7 @@ describe("gameStateRepository", () => {
 
         it("should return undefined for non-existing game state", () => {
             const gamestate = gameStateRepository.getGameStateById(999);
-            expect(gamestate).toBeUndefined();
+            expect(gamestate).toBeNull();
         });
 
         it("should handle empty player order", () => {
