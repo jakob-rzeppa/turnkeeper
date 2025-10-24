@@ -1,6 +1,6 @@
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
-import { useGameStateStore } from '@/stores/gameStateStore';
+import { useGameStateStore } from '../../stores/gameStateStore';
 
 const mockSocketOn = vi.fn();
 vi.mock('@/composables/connection', () => ({
@@ -44,7 +44,7 @@ describe('useGameStateStore', () => {
 
             const gameInfoHandler = mockSocketOn.mock.calls.find(
                 (call) => call[0] === 'game:info',
-            )[1];
+            )?.[1];
 
             gameInfoHandler({ gameState: mockGameState });
 
