@@ -1,5 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
+import GmController from "../../connectionControllers/GmController";
+import UserController from "../../connectionControllers/UserController";
 import gameStateRepository from "../../repositories/gameStateRepository";
 import playerRepository from "../../repositories/playerRepository";
 import gameStateHandler from "../../services/gameStateHandler";
@@ -32,6 +34,32 @@ vi.mock("../../services/logger", () => {
     return {
         default: {
             warn: vi.fn(),
+        },
+    };
+});
+
+vi.mock("../../connectionControllers/GmController", () => {
+    return {
+        default: {
+            getInstance: vi.fn().mockReturnValue({
+                gmGameEmitter: {
+                    sendGameInfo: vi.fn(),
+                },
+            }),
+        },
+    };
+});
+
+vi.mock("../../connectionControllers/UserController", () => {
+    return {
+        default: {
+            getAllInstances: vi.fn().mockReturnValue([
+                {
+                    userGameEmitter: {
+                        sendGameInfo: vi.fn(),
+                    },
+                },
+            ]),
         },
     };
 });
@@ -94,6 +122,29 @@ describe("gameStateHandler", () => {
             );
         });
 
+        it("should handle single player initialization", () => {
+            vi.mocked(playerRepository.getPlayerNameById).mockImplementation(
+                (id) => {
+                    const names: Record<number, string> = {
+                        1: "Alice",
+                    };
+                    return names[id] || null;
+                }
+            );
+
+            const newPlayerIdOrder = [1];
+
+            gameStateHandler.initGameState(newPlayerIdOrder);
+
+            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    currentPlayerIndex: 0,
+                    playerOrder: [{ id: 1, name: "Alice" }],
+                    roundNumber: 1,
+                })
+            );
+        });
+
         it("should handle empty player order", () => {
             const newPlayerIdOrder: number[] = [];
 
@@ -130,6 +181,30 @@ describe("gameStateHandler", () => {
             });
             expect(gameStateRepository.createGameState).not.toHaveBeenCalled();
         });
+
+        it("should send game info to gm and users when everything worked", () => {
+            vi.mocked(playerRepository.getPlayerNameById).mockImplementation(
+                (id) => {
+                    const names: Record<number, string> = {
+                        1: "Alice",
+                        2: "Bob",
+                        3: "Charlie",
+                    };
+                    return names[id] || null;
+                }
+            );
+
+            const newPlayerIdOrder = [1, 2, 3];
+
+            gameStateHandler.initGameState(newPlayerIdOrder);
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+        });
     });
 
     describe("deleteGameState", () => {
@@ -139,6 +214,17 @@ describe("gameStateHandler", () => {
             expect(gameStateRepository.deleteGameState).toHaveBeenCalledWith(
                 GAME_STATE_ID
             );
+        });
+
+        it("should send game info to gm and users when everything worked", () => {
+            gameStateHandler.deleteGameState();
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
         });
     });
 
@@ -217,6 +303,27 @@ describe("gameStateHandler", () => {
                     "No game state found when attempting to advance to next turn.",
             });
             expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
+        });
+
+        it("should send game info to gm and users when everything worked", () => {
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
+                currentPlayerIndex: 0,
+                id: 1,
+                playerOrder: [
+                    { id: 1, name: "Alice" },
+                    { id: 2, name: "Bob" },
+                ],
+                roundNumber: 1,
+            });
+
+            gameStateHandler.nextTurn();
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
         });
     });
 
@@ -297,6 +404,30 @@ describe("gameStateHandler", () => {
                     ],
                 })
             );
+        });
+
+        it("should send game info to gm and users when everything worked", () => {
+            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue(
+                "Charlie"
+            );
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
+                currentPlayerIndex: 0,
+                id: 1,
+                playerOrder: [
+                    { id: 1, name: "Alice" },
+                    { id: 2, name: "Bob" },
+                ],
+                roundNumber: 1,
+            });
+
+            gameStateHandler.addPlayerToTurnOrder(3);
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
         });
     });
 
@@ -384,6 +515,32 @@ describe("gameStateHandler", () => {
 
             expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
         });
+
+        it("should send game info to gm and users when everything worked", () => {
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
+                currentPlayerIndex: 0,
+                id: 1,
+                playerOrder: [
+                    { id: 1, name: "Alice" },
+                    { id: 2, name: "Bob" },
+                    { id: 3, name: "Charlie" },
+                ],
+                roundNumber: 1,
+            });
+            vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
+                { id: 1, name: "Alice", secret: "secret1", stats: [] },
+                { id: 2, name: "Bob", secret: "secret2", stats: [] },
+            ]);
+
+            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+        });
     });
 
     describe("updatePlayerOrder", () => {
@@ -433,6 +590,29 @@ describe("gameStateHandler", () => {
                     "Attempted to update player order with non-existing player IDs.",
             });
             expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
+        });
+
+        it("should send game info to gm and users when everything worked", () => {
+            vi.mocked(playerRepository.getPlayerNameById).mockImplementation(
+                (id) => {
+                    const names: Record<number, string> = {
+                        1: "Alice",
+                        2: "Bob",
+                        3: "Charlie",
+                    };
+                    return names[id] || null;
+                }
+            );
+            const newPlayerOrder = [3, 2, 1];
+
+            gameStateHandler.updatePlayerOrder(newPlayerOrder);
+
+            expect(
+                GmController.getInstance()?.gmGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo
+            ).toHaveBeenCalled();
         });
     });
 });

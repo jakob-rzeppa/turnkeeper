@@ -1,5 +1,7 @@
 import { GameState } from "shared-types";
 
+import GmController from "../connectionControllers/GmController";
+import UserController from "../connectionControllers/UserController";
 import gameStateRepository from "../repositories/gameStateRepository";
 import playerRepository from "../repositories/playerRepository";
 import logger from "./logger";
@@ -43,9 +45,19 @@ const gameStateHandler = {
                 { id: playerId, name: playerName },
             ],
         });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
     deleteGameState: (): void => {
         gameStateRepository.deleteGameState(GAME_STATE_ID);
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
     getGameState: (): GameState | null => {
         const gameState = gameStateRepository.getGameStateById(GAME_STATE_ID);
@@ -75,6 +87,11 @@ const gameStateHandler = {
         };
 
         gameStateRepository.createGameState(newGameState);
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
     nextTurn: (): void => {
         const gameState = gameStateHandler.getGameState();
@@ -100,6 +117,11 @@ const gameStateHandler = {
             playerOrder: gameState.playerOrder,
             roundNumber: newRoundNumber,
         });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
     removeDeletedPlayersFromPlayerOrder: (): void => {
         const gameState = gameStateHandler.getGameState();
@@ -126,6 +148,11 @@ const gameStateHandler = {
         gameStateRepository.updateGameState(GAME_STATE_ID, {
             playerOrder: updatedPlayerOrder,
         });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
     updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
         const playerNames = newPlayerIdOrder.map((id) =>
@@ -148,6 +175,11 @@ const gameStateHandler = {
         gameStateRepository.updateGameState(GAME_STATE_ID, {
             playerOrder: newPlayerOrder,
         });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) =>
+            { instance.userGameEmitter.sendGameInfo(); }
+        );
     },
 };
 

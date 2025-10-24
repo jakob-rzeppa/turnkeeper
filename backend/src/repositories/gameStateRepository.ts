@@ -62,8 +62,6 @@ const gameStateRepository = {
             name: string;
         }[];
 
-        console.log(playerRows);
-
         return {
             currentPlayerIndex: row.current_player_index,
             id: row.id,
