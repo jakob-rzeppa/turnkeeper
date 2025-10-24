@@ -9,8 +9,8 @@ const { socket } = useConnection()
 export const useGameStore = defineStore('game', () => {
     // The store shall only be modified by events from the backend.
     const playerOrder = ref<GameState['playerOrder']>([])
-    const isInitialized = ref<GameState['isInitialized']>(false)
-    const round = ref<GameState['round']>({
+    const isInitialized = ref<boolean>(false)
+    const round = ref<Pick<GameState, 'roundNumber' | 'currentPlayerIndex'>>({
         roundNumber: 0,
         currentPlayerIndex: 0,
     })
@@ -20,21 +20,19 @@ export const useGameStore = defineStore('game', () => {
     })
 
     // Listener for updates from server
-    socket.on(
-        'game:info',
-        ({
-            playerOrder: newPlayerOrder,
-            round: newRound,
-            isInitialized: newIsInitialized,
-        }: BackendToGmEventPayloads['game:info']) => {
-            playerOrder.value = newPlayerOrder
-            round.value = {
-                roundNumber: newRound.roundNumber,
-                currentPlayerIndex: newRound.currentPlayerIndex,
-            }
-            isInitialized.value = newIsInitialized
-        },
-    )
+    socket.on('game:info', ({ gameState }: BackendToGmEventPayloads['game:info']) => {
+        if (!gameState) {
+            isInitialized.value = false
+            return
+        }
+
+        round.value = {
+            currentPlayerIndex: gameState.currentPlayerIndex,
+            roundNumber: gameState.roundNumber,
+        }
+        isInitialized.value = true
+        playerOrder.value = gameState.playerOrder
+    })
 
     return {
         playerOrder,
