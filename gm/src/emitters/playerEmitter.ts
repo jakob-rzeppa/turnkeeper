@@ -46,12 +46,14 @@ export const usePlayerEmitter = () => {
     function updateStatValueForPlayer(
         playerId: number,
         statId: number,
-        value: PlayerStat['value'],
+        value?: PlayerStat['value'],
+        name?: PlayerStat['name'],
     ): void {
         const payload: GmToBackendEventPayloads['players:stats:update'] = {
             playerId,
             statId,
             value,
+            name,
         };
         connection.socket.emit('players:stats:update', payload);
     }

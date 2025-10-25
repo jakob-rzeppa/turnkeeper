@@ -44,9 +44,14 @@ export default class GmPlayersListener {
 
         this.socket.on(
             'players:stats:update',
-            ({ playerId, statId, value }: GmToBackendEventPayloads['players:stats:update']) => {
+            ({
+                playerId,
+                statId,
+                name,
+                value,
+            }: GmToBackendEventPayloads['players:stats:update']) => {
                 statsHandler.updateStat({
-                    newData: { value },
+                    newData: { name, value },
                     playerId,
                     statId,
                 });
