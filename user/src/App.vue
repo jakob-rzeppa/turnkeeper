@@ -3,6 +3,7 @@ import GameDisplay from './components/GameDisplay.vue';
 import LoginForm from './components/LoginForm.vue';
 import MainContainer from './components/MainContainer.vue';
 import PlayerNameDisplay from './components/PlayerNameDisplay.vue';
+import PlayerNotesDisplay from './components/PlayerNotesDisplay.vue';
 import PlayerDisplay from './components/StatsDisplay.vue';
 import useConnection from './composables/useConnection';
 import { useGameStateStore } from './stores/gameStateStore';
@@ -21,6 +22,7 @@ useGameStateStore();
         <MainContainer v-else>
             <PlayerNameDisplay />
             <GameDisplay />
+            <PlayerNotesDisplay />
             <PlayerDisplay />
         </MainContainer>
     </div>
