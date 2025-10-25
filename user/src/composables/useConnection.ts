@@ -41,6 +41,14 @@ socket.on('connection_error', (error) => {
     socket.disconnect();
 });
 
+socket.onAnyOutgoing((event, ...args) => {
+    console.log(`Socket event emitted: ${event}`, args);
+});
+
+socket.onAny((event, ...args) => {
+    console.log(`Socket event received: ${event}`, args);
+});
+
 export default function useConnection() {
     function connect({ playerName, playerSecret }: { playerName: string; playerSecret: string }) {
         if (!socket.connected) {
