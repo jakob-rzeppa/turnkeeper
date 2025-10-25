@@ -30,7 +30,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, p.notes, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
+                'SELECT p.id, p.name, p.secret, p.notes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
             )
             .all() as {
             id: number;
@@ -39,6 +39,7 @@ const playerRepository = {
             secret: string;
             statId?: number;
             statName?: string;
+            statType?: 'boolean' | 'number' | 'string';
             statValue?: string;
         }[];
 
@@ -57,11 +58,26 @@ const playerRepository = {
             }
 
             // Add the stat if it exists
-            if (row.statId && row.statName && typeof row.statValue === 'string') {
+            if (row.statId && row.statName && row.statType && typeof row.statValue === 'string') {
+                let statValue: boolean | number | string;
+
+                switch (row.statType) {
+                    case 'boolean':
+                        statValue = row.statValue === 'true';
+                        break;
+                    case 'number':
+                        statValue = Number(row.statValue);
+                        break;
+                    case 'string':
+                    default:
+                        statValue = row.statValue;
+                        break;
+                }
+
                 players[players.length - 1].stats.push({
                     id: row.statId,
                     name: row.statName,
-                    value: row.statValue,
+                    value: statValue,
                 });
             }
         }
@@ -75,7 +91,7 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, s.id AS statId, p.notes, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
+                'SELECT p.id, p.name, p.secret, s.id AS statId, p.notes, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
             )
             .all(id) as {
             id: number;
@@ -84,6 +100,7 @@ const playerRepository = {
             secret: string;
             statId?: number;
             statName?: string;
+            statType?: 'boolean' | 'number' | 'string';
             statValue?: string;
         }[];
 
@@ -101,11 +118,26 @@ const playerRepository = {
 
         for (const row of dbRes) {
             // Add the stat if it exists
-            if (row.statId && row.statName && typeof row.statValue === 'string') {
+            if (row.statId && row.statName && row.statType && typeof row.statValue === 'string') {
+                let statValue: boolean | number | string;
+
+                switch (row.statType) {
+                    case 'boolean':
+                        statValue = row.statValue === 'true';
+                        break;
+                    case 'number':
+                        statValue = Number(row.statValue);
+                        break;
+                    case 'string':
+                    default:
+                        statValue = row.statValue;
+                        break;
+                }
+
                 player.stats.push({
                     id: row.statId,
                     name: row.statName,
-                    value: row.statValue,
+                    value: statValue,
                 });
             }
         }

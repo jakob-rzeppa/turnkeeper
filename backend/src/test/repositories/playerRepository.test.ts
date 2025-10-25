@@ -46,7 +46,7 @@ describe('Player Repository', () => {
                 "INSERT INTO players (id, name, secret, notes) VALUES (1, 'Alice', 'secret1', 'notes1')",
             );
             db.exec(
-                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')",
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', 'high'), (1, 'level', 'string', 'low')",
             );
 
             const players = playerRepository.getAllPlayers();
@@ -58,12 +58,12 @@ describe('Player Repository', () => {
             expect(players[0].stats).toContainEqual({
                 id: 1,
                 name: 'score',
-                value: '100',
+                value: 'high',
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
                 name: 'level',
-                value: '5',
+                value: 'low',
             });
         });
 
@@ -81,7 +81,7 @@ describe('Player Repository', () => {
         it('should return players with stats, that have empty values', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', ''), (1, 'level', '5')",
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', ''), (1, 'level', 'string', 'high')",
             );
 
             const players = playerRepository.getAllPlayers();
@@ -98,7 +98,7 @@ describe('Player Repository', () => {
             expect(players[0].stats).toContainEqual({
                 id: 2,
                 name: 'level',
-                value: '5',
+                value: 'high',
             });
         });
 
@@ -107,7 +107,7 @@ describe('Player Repository', () => {
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
             );
             db.exec(
-                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (2, 'level', '5')",
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', 'high'), (2, 'level', 'string', 'low')",
             );
 
             const players = playerRepository.getAllPlayers();
@@ -122,7 +122,7 @@ describe('Player Repository', () => {
             expect(alice?.stats).toContainEqual({
                 id: 1,
                 name: 'score',
-                value: '100',
+                value: 'high',
             });
 
             expect(bob).toBeDefined();
@@ -130,7 +130,36 @@ describe('Player Repository', () => {
             expect(bob?.stats).toContainEqual({
                 id: 2,
                 name: 'level',
-                value: '5',
+                value: 'low',
+            });
+        });
+
+        it('should return player stats with different types and values', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'isActive', 'boolean', 'true'), (1, 'score', 'number', '42'), (1, 'rank', 'string', 'gold')",
+            );
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(1);
+            expect(players[0].name).toBe('Alice');
+            expect(players[0].stats).toBeDefined();
+            expect(players[0].stats).toHaveLength(3);
+            expect(players[0].stats).toContainEqual({
+                id: 1,
+                name: 'isActive',
+                value: true,
+            });
+            expect(players[0].stats).toContainEqual({
+                id: 2,
+                name: 'score',
+                value: 42,
+            });
+            expect(players[0].stats).toContainEqual({
+                id: 3,
+                name: 'rank',
+                value: 'gold',
             });
         });
 
@@ -166,7 +195,7 @@ describe('Player Repository', () => {
         it('should return players with their stats', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')",
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', 'high'), (1, 'level', 'string', 'low')",
             );
 
             const player = playerRepository.getPlayerById(1);
@@ -177,12 +206,12 @@ describe('Player Repository', () => {
             expect(player?.stats).toContainEqual({
                 id: 1,
                 name: 'score',
-                value: '100',
+                value: 'high',
             });
             expect(player?.stats).toContainEqual({
                 id: 2,
                 name: 'level',
-                value: '5',
+                value: 'low',
             });
         });
 
@@ -200,7 +229,7 @@ describe('Player Repository', () => {
         it('should return players with stats, that have empty values', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', ''), (1, 'level', '5')",
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', ''), (1, 'level', 'string', 'high')",
             );
 
             const player = playerRepository.getPlayerById(1);
@@ -217,7 +246,36 @@ describe('Player Repository', () => {
             expect(player?.stats).toContainEqual({
                 id: 2,
                 name: 'level',
-                value: '5',
+                value: 'high',
+            });
+        });
+
+        it('should return player stats with different types and values', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'isActive', 'boolean', 'true'), (1, 'score', 'number', '42'), (1, 'rank', 'string', 'gold')",
+            );
+
+            const player = playerRepository.getPlayerById(1);
+
+            expect(player).toBeDefined();
+            expect(player?.name).toBe('Alice');
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(3);
+            expect(player?.stats).toContainEqual({
+                id: 1,
+                name: 'isActive',
+                value: true,
+            });
+            expect(player?.stats).toContainEqual({
+                id: 2,
+                name: 'score',
+                value: 42,
+            });
+            expect(player?.stats).toContainEqual({
+                id: 3,
+                name: 'rank',
+                value: 'gold',
             });
         });
 
