@@ -129,7 +129,7 @@ describe('Gm Player Integration Tests', () => {
     it("should create a stat for all players on 'players:stats:create' event", () => {
         const payload: GmToBackendEventPayloads['players:stats:create'] = {
             scope: 'global',
-            statData: { name: 'Score', value: '0' },
+            statData: { name: 'Score', value: 0 },
         };
         const statsCreateHandler = eventHandlers[PLAYER_EVENTS.STATS_CREATE] as (
             arg: GmToBackendEventPayloads['players:stats:create'],
@@ -148,7 +148,7 @@ describe('Gm Player Integration Tests', () => {
                         stats: expect.arrayContaining([
                             expect.objectContaining({
                                 name: 'Score',
-                                value: '0',
+                                value: 0,
                             }),
                         ]) as unknown[],
                     }),
@@ -157,7 +157,7 @@ describe('Gm Player Integration Tests', () => {
                         stats: expect.arrayContaining([
                             expect.objectContaining({
                                 name: 'Score',
-                                value: '0',
+                                value: 0,
                             }),
                         ]) as unknown[],
                     }),
@@ -170,7 +170,7 @@ describe('Gm Player Integration Tests', () => {
         const payload: GmToBackendEventPayloads['players:stats:create'] = {
             playerId: 1,
             scope: 'player',
-            statData: { name: 'Health', value: '100' },
+            statData: { name: 'isDead', value: false },
         };
         const statsCreateHandler = eventHandlers[PLAYER_EVENTS.STATS_CREATE] as (
             arg: GmToBackendEventPayloads['players:stats:create'],
@@ -188,8 +188,8 @@ describe('Gm Player Integration Tests', () => {
                         id: 1,
                         stats: expect.arrayContaining([
                             expect.objectContaining({
-                                name: 'Health',
-                                value: '100',
+                                name: 'isDead',
+                                value: false,
                             }),
                         ]) as unknown[],
                     }),
@@ -202,7 +202,7 @@ describe('Gm Player Integration Tests', () => {
         const payload: GmToBackendEventPayloads['players:stats:update'] = {
             playerId: 1,
             statId: 1,
-            value: '1',
+            value: true,
         };
         const statsUpdateHandler = eventHandlers[PLAYER_EVENTS.STATS_UPDATE] as (
             arg: GmToBackendEventPayloads['players:stats:update'],
@@ -222,7 +222,7 @@ describe('Gm Player Integration Tests', () => {
                             expect.objectContaining({
                                 id: 1,
                                 name: 'Score',
-                                value: '1',
+                                value: true,
                             }),
                         ]) as unknown[],
                     }),
