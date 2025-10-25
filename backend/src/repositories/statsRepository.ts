@@ -16,11 +16,22 @@ export const statsRepository = {
                 return;
             }
 
-            db.prepare('INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)').run(
-                player.id,
-                stat.name,
-                stat.value,
-            );
+            let value: string;
+            switch (typeof stat.value) {
+                case 'boolean':
+                    value = stat.value ? 'true' : 'false';
+                    break;
+                case 'number':
+                    value = stat.value.toString();
+                    break;
+                case 'string':
+                    value = stat.value;
+                    break;
+            }
+
+            db.prepare(
+                'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
+            ).run(player.id, stat.name, typeof stat.value, value);
         });
     },
     createStatForPlayer: (playerId: number, stat: Omit<PlayerStat, 'id'>): void => {
@@ -38,11 +49,22 @@ export const statsRepository = {
             return;
         }
 
-        db.prepare('INSERT INTO player_stats (player_id, name, value) VALUES (?, ?, ?)').run(
-            playerId,
-            stat.name,
-            stat.value,
-        );
+        let value: string;
+        switch (typeof stat.value) {
+            case 'boolean':
+                value = stat.value ? 'true' : 'false';
+                break;
+            case 'number':
+                value = stat.value.toString();
+                break;
+            case 'string':
+                value = stat.value;
+                break;
+        }
+
+        db.prepare(
+            'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
+        ).run(playerId, stat.name, typeof stat.value, value);
     },
     removeAllStatsFromPlayer: (playerId: number): void => {
         db.prepare('DELETE FROM player_stats WHERE player_id = ?').run(playerId);
@@ -64,8 +86,21 @@ export const statsRepository = {
             values.push(updatedFields.name);
         }
         if (updatedFields.value !== undefined) {
+            fieldsToUpdate.push('type = ?');
+            values.push(typeof updatedFields.value);
+
             fieldsToUpdate.push('value = ?');
-            values.push(updatedFields.value);
+            switch (typeof updatedFields.value) {
+                case 'boolean':
+                    values.push(updatedFields.value ? 'true' : 'false');
+                    break;
+                case 'number':
+                    values.push(updatedFields.value.toString());
+                    break;
+                case 'string':
+                    values.push(updatedFields.value);
+                    break;
+            }
         }
 
         if (fieldsToUpdate.length === 0) {

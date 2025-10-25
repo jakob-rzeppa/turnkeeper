@@ -33,13 +33,14 @@ describe('Stats Repository', () => {
 
             statsRepository.createStatForAllPlayers({
                 name: 'score',
-                value: '100',
+                value: 'test',
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -48,28 +49,33 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'score',
                 player_id: 1,
-                value: '100',
+                type: 'string',
+                value: 'test',
             });
             expect(stats).toContainEqual({
                 id: 2,
                 name: 'score',
                 player_id: 2,
-                value: '100',
+                type: 'string',
+                value: 'test',
             });
         });
         it('should not create duplicate stats for players', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100')");
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'score', 'string', 'test')",
+            );
 
             statsRepository.createStatForAllPlayers({
                 name: 'score',
-                value: '200',
+                value: 'test2',
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -78,7 +84,8 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'score',
                 player_id: 1,
-                value: '100',
+                type: 'string',
+                value: 'test',
             });
         });
 
@@ -94,6 +101,7 @@ describe('Stats Repository', () => {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -102,7 +110,60 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'string',
                 value: '',
+            });
+        });
+
+        it('should be able to create numeric stats', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            statsRepository.createStatForAllPlayers({
+                name: 'level',
+                value: 5,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                type: 'number',
+                value: '5',
+            });
+        });
+
+        it('should be able to create boolean stats', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            statsRepository.createStatForAllPlayers({
+                name: 'isActive',
+                value: true,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'isActive',
+                player_id: 1,
+                type: 'boolean',
+                value: 'true',
             });
         });
     });
@@ -115,13 +176,14 @@ describe('Stats Repository', () => {
 
             statsRepository.createStatForPlayer(1, {
                 name: 'level',
-                value: '5',
+                value: 'test',
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -130,22 +192,26 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
-                value: '5',
+                type: 'string',
+                value: 'test',
             });
         });
         it('should not create duplicate stats for the player', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO player_stats (player_id, name, value) VALUES (1, 'level', '5')");
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, type, value) VALUES (1, 'level', 'number', '5')",
+            );
 
             statsRepository.createStatForPlayer(1, {
                 name: 'level',
-                value: '10',
+                value: 10,
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -154,6 +220,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '5',
             });
         });
@@ -163,11 +230,89 @@ describe('Stats Repository', () => {
 
             statsRepository.createStatForPlayer(999, {
                 name: 'level',
-                value: '5',
+                value: 5,
             });
 
             expect(logger.error).toHaveBeenCalledWith({
                 message: 'Player with id 999 not found',
+            });
+        });
+
+        it('should allow creating stats with no value', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            statsRepository.createStatForPlayer(1, {
+                name: 'level',
+                value: '',
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                type: 'string',
+                value: '',
+            });
+        });
+
+        it('should be able to create numeric stats', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            statsRepository.createStatForPlayer(1, {
+                name: 'level',
+                value: 5,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                type: 'number',
+                value: '5',
+            });
+        });
+
+        it('should be able to create boolean stats', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            statsRepository.createStatForPlayer(1, {
+                name: 'isActive',
+                value: false,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'isActive',
+                player_id: 1,
+                type: 'boolean',
+                value: 'false',
             });
         });
     });
@@ -176,12 +321,12 @@ describe('Stats Repository', () => {
         it('should update a stat for a specific player', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
             );
 
             statsRepository.updateStatForPlayer(1, 1, {
                 name: 'level',
-                value: '10',
+                value: 10,
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
@@ -196,6 +341,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '10',
             });
         });
@@ -203,18 +349,19 @@ describe('Stats Repository', () => {
         it('should do nothing if the stat does not exist', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
             );
 
             statsRepository.updateStatForPlayer(999, 999, {
                 name: 'level',
-                value: '10',
+                value: 10,
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -223,6 +370,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '5',
             });
         });
@@ -232,12 +380,12 @@ describe('Stats Repository', () => {
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
             );
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
             );
 
             statsRepository.updateStatForPlayer(2, 1, {
                 name: 'level',
-                value: '10',
+                value: 10,
             });
 
             const stats = db.prepare('SELECT * FROM player_stats').all() as {
@@ -252,6 +400,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '5',
             });
         });
@@ -259,7 +408,7 @@ describe('Stats Repository', () => {
         it('should allow updating the stat to have no value', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'string', 'test')",
             );
 
             statsRepository.updateStatForPlayer(1, 1, {
@@ -271,6 +420,7 @@ describe('Stats Repository', () => {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -279,6 +429,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'string',
                 value: '',
             });
         });
@@ -286,7 +437,7 @@ describe('Stats Repository', () => {
         it('should do nothing if no fields are provided to update', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
             );
 
             statsRepository.updateStatForPlayer(1, 1, {});
@@ -295,6 +446,7 @@ describe('Stats Repository', () => {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -303,7 +455,92 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '5',
+            });
+        });
+
+        it('should update stats to a number value', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'string', 'test')",
+            );
+
+            statsRepository.updateStatForPlayer(1, 1, {
+                value: 42,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                type: 'number',
+                value: '42',
+            });
+        });
+
+        it('should update stats to a boolean value', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'isActive', 'string', 'test')",
+            );
+
+            statsRepository.updateStatForPlayer(1, 1, {
+                value: true,
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'isActive',
+                player_id: 1,
+                type: 'boolean',
+                value: 'true',
+            });
+        });
+
+        it('should update stats to a string value', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
+            );
+
+            statsRepository.updateStatForPlayer(1, 1, {
+                value: 'expert',
+            });
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                type: 'boolean' | 'number' | 'string';
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                type: 'string',
+                value: 'expert',
             });
         });
     });
@@ -312,7 +549,7 @@ describe('Stats Repository', () => {
         it('should remove a stat from a specific player', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5'), (2, 1, 'score', '100')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5'), (2, 1, 'score', 'number', '100')",
             );
 
             statsRepository.removeStatFromPlayer(1, 1);
@@ -329,13 +566,14 @@ describe('Stats Repository', () => {
                 id: 2,
                 name: 'score',
                 player_id: 1,
+                type: 'number',
                 value: '100',
             });
         });
         it('should do nothing if the stat does not exist for the player', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5')",
             );
 
             statsRepository.removeStatFromPlayer(1, 999);
@@ -344,6 +582,7 @@ describe('Stats Repository', () => {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
@@ -352,6 +591,7 @@ describe('Stats Repository', () => {
                 id: 1,
                 name: 'level',
                 player_id: 1,
+                type: 'number',
                 value: '5',
             });
         });
@@ -361,7 +601,7 @@ describe('Stats Repository', () => {
         it('should remove all stats from a specific player', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5'), (2, 1, 'score', '100')",
+                "INSERT INTO player_stats (id, player_id, name, type, value) VALUES (1, 1, 'level', 'number', '5'), (2, 1, 'score', 'number', '100')",
             );
 
             statsRepository.removeAllStatsFromPlayer(1);
@@ -370,6 +610,7 @@ describe('Stats Repository', () => {
                 id: number;
                 name: string;
                 player_id: number;
+                type: 'boolean' | 'number' | 'string';
                 value: string;
             }[];
 
