@@ -311,6 +311,7 @@ describe('gameStateRepository', () => {
             };
 
             expect(row.player_order).toBe('1');
+            expect(row.round_number).toBe(2);
             expect(row.current_player_index).toBe(0);
         });
     });

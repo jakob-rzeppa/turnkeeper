@@ -168,9 +168,9 @@ const gameStateRepository = {
 
         if (gameStateRow.current_player_index >= newPlayerOrderIds.length) {
             // If the current player index is out of bounds after removal, set it to 0
-            db.prepare('UPDATE game_state SET current_player_index = 0 WHERE id = ?').run(
-                GAME_STATE_ID,
-            );
+            db.prepare(
+                'UPDATE game_state SET current_player_index = 0, round_number = round_number + 1 WHERE id = ?',
+            ).run(GAME_STATE_ID);
         }
 
         db.prepare('UPDATE game_state SET player_order = ? WHERE id = ?').run(
