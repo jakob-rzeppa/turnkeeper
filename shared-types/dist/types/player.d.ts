@@ -2,6 +2,7 @@ export interface Player {
     id: number;
     name: string;
     secret: string;
+    notes: string;
     stats: PlayerStat[];
 }
 export interface PlayerStat {
