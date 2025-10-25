@@ -5,12 +5,18 @@ import logger from '../services/logger';
 
 const db = SqliteDatabase.getInstance();
 
+// Using a constant ID since for now there is only one game state at a time
+const GAME_STATE_ID = 1;
+// Later we might want to support multiple game states (e.g., for multiple concurrent games)
+// In that case we would need to save the current game state Id in-memory
+
 const gameStateRepository = {
     createGameState: (gamestate: Omit<GameState, 'id'>) => {
         try {
             db.prepare(
-                'INSERT INTO game_state (round_number, current_player_index, player_order) VALUES (?, ?, ?)',
+                'INSERT INTO game_state (id, round_number, current_player_index, player_order) VALUES (?, ?, ?, ?)',
             ).run(
+                GAME_STATE_ID,
                 gamestate.roundNumber,
                 gamestate.currentPlayerIndex,
                 gamestate.playerOrder.map((p) => p.id).join(','),
