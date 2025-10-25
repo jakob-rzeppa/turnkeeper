@@ -22,7 +22,7 @@ describe('Player Repository', () => {
     describe('getAllPlayers', () => {
         it('should return all players from the database', () => {
             db.prepare(
-                "INSERT INTO players (name, secret) VALUES ('Alice', 'secret1'), ('Bob', 'secret2')",
+                "INSERT INTO players (name, secret, notes) VALUES ('Alice', 'secret1', 'notes1'), ('Bob', 'secret2', 'notes2')",
             ).run();
 
             const players = playerRepository.getAllPlayers();
@@ -30,8 +30,10 @@ describe('Player Repository', () => {
             expect(players).toHaveLength(2);
             expect(players[0].name).toBe('Alice');
             expect(players[0].secret).toBe('secret1');
+            expect(players[0].notes).toBe('notes1');
             expect(players[1].name).toBe('Bob');
             expect(players[1].secret).toBe('secret2');
+            expect(players[1].notes).toBe('notes2');
         });
 
         it('should return an empty array if no players exist', () => {
@@ -40,7 +42,9 @@ describe('Player Repository', () => {
         });
 
         it('should return players with their stats', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO players (id, name, secret, notes) VALUES (1, 'Alice', 'secret1', 'notes1')",
+            );
             db.exec(
                 "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (1, 'level', '5')",
             );
@@ -96,6 +100,48 @@ describe('Player Repository', () => {
                 name: 'level',
                 value: '5',
             });
+        });
+
+        it('should return multiple players with their stats', () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+            );
+            db.exec(
+                "INSERT INTO player_stats (player_id, name, value) VALUES (1, 'score', '100'), (2, 'level', '5')",
+            );
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(2);
+
+            const alice = players.find((p) => p.name === 'Alice');
+            const bob = players.find((p) => p.name === 'Bob');
+
+            expect(alice).toBeDefined();
+            expect(alice?.stats).toHaveLength(1);
+            expect(alice?.stats).toContainEqual({
+                id: 1,
+                name: 'score',
+                value: '100',
+            });
+
+            expect(bob).toBeDefined();
+            expect(bob?.stats).toHaveLength(1);
+            expect(bob?.stats).toContainEqual({
+                id: 2,
+                name: 'level',
+                value: '5',
+            });
+        });
+
+        it('should return players with empty notes', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(1);
+            expect(players[0].name).toBe('Alice');
+            expect(players[0].notes).toBe(''); // Default value for notes should be an empty string
         });
     });
 
@@ -174,6 +220,19 @@ describe('Player Repository', () => {
                 value: '5',
             });
         });
+
+        it('should return players with empty notes', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            const player = playerRepository.getPlayerById(1);
+
+            expect(player).not.toBeNull();
+
+            if (!player) return;
+
+            expect(player.name).toBe('Alice');
+            expect(player.notes).toBe(''); // Default value for notes should be an empty string
+        });
     });
 
     describe('getPlayerIdByName', () => {
@@ -221,11 +280,13 @@ describe('Player Repository', () => {
             const player = db.prepare('SELECT * FROM players WHERE name = ?').get('Charlie') as {
                 id: number;
                 name: string;
+                notes?: string;
                 secret: string;
             };
 
             expect(player.name).toBe('Charlie');
             expect(player.secret).toHaveLength(4); // The secret length is 4
+            expect(player.notes).toBe(''); // Default value for notes should be an empty string
         });
         it('should not create a player with a duplicate name', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Charlie', 'secret1')");
@@ -252,6 +313,37 @@ describe('Player Repository', () => {
             };
 
             expect(player.name).toBe('AliceUpdated');
+        });
+
+        it("should update an existing player's secret in the database", () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            playerRepository.updatePlayer(1, { secret: 'newSecret' });
+
+            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(1) as {
+                id: number;
+                name: string;
+                secret: string;
+            };
+
+            expect(player.secret).toBe('newSecret');
+        });
+
+        it("should update an existing player's notes in the database", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret, notes) VALUES (1, 'Alice', 'secret1', '')",
+            );
+
+            playerRepository.updatePlayer(1, { notes: 'Updated notes' });
+
+            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(1) as {
+                id: number;
+                name: string;
+                notes?: string;
+                secret: string;
+            };
+
+            expect(player.notes).toBe('Updated notes');
         });
 
         it('should not update a non-existent player', () => {

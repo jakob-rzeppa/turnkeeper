@@ -28,11 +28,11 @@ export class SqliteDatabase extends Database {
 
     public initializeTables() {
         this.exec(
-            'CREATE TABLE IF NOT EXISTS player_stats (id INTEGER PRIMARY KEY, player_id INT NOT NULL, name TEXT NOT NULL, value TEXT, FOREIGN KEY (player_id) REFERENCES players (id))',
+            'CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL, secret TEXT NOT NULL, notes TEXT NOT NULL DEFAULT "")',
         );
 
         this.exec(
-            'CREATE TABLE IF NOT EXISTS players (id INTEGER PRIMARY KEY, name TEXT UNIQUE NOT NULL, secret TEXT NOT NULL)',
+            'CREATE TABLE IF NOT EXISTS player_stats (id INTEGER PRIMARY KEY, player_id INT NOT NULL, name TEXT NOT NULL, value TEXT NOT NULL DEFAULT "", FOREIGN KEY (player_id) REFERENCES players (id))',
         );
 
         this.exec(

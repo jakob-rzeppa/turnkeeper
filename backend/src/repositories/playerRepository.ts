@@ -30,11 +30,12 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
+                'SELECT p.id, p.name, p.secret, p.notes, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
             )
             .all() as {
             id: number;
             name: string;
+            notes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -49,6 +50,7 @@ const playerRepository = {
                 players.push({
                     id: row.id,
                     name: row.name,
+                    notes: row.notes,
                     secret: row.secret,
                     stats: [],
                 });
@@ -73,11 +75,12 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, s.id AS statId, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
+                'SELECT p.id, p.name, p.secret, s.id AS statId, p.notes, s.name AS statName, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
             )
             .all(id) as {
             id: number;
             name: string;
+            notes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -91,6 +94,7 @@ const playerRepository = {
         const player: Player = {
             id: dbRes[0].id,
             name: dbRes[0].name,
+            notes: dbRes[0].notes,
             secret: dbRes[0].secret,
             stats: [],
         };
@@ -125,13 +129,19 @@ const playerRepository = {
         const fieldsToUpdate: string[] = [];
         const values: (number | string)[] = [];
 
-        // Build the SET clause dynamically based on provided fields
-        Object.keys(updatedFields).forEach((key) => {
-            const typedKey = key as keyof typeof updatedFields;
-            if (updatedFields[typedKey] === undefined) return;
-            fieldsToUpdate.push(key + ' = ?');
-            values.push(updatedFields[typedKey]);
-        });
+        // Build the SET clause based on provided fields
+        if (updatedFields.name !== undefined) {
+            fieldsToUpdate.push('name = ?');
+            values.push(updatedFields.name);
+        }
+        if (updatedFields.secret !== undefined) {
+            fieldsToUpdate.push('secret = ?');
+            values.push(updatedFields.secret);
+        }
+        if (updatedFields.notes !== undefined) {
+            fieldsToUpdate.push('notes = ?');
+            values.push(updatedFields.notes);
+        }
 
         if (fieldsToUpdate.length === 0) {
             return;
