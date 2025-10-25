@@ -9,5 +9,5 @@ export interface Player {
 export interface PlayerStat {
     id: number;
     name: string;
-    value: string;
+    value: string | number | boolean;
 }
