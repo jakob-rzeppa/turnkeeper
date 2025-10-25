@@ -101,7 +101,7 @@ describe('Gm Player Integration Tests', () => {
 
     it("should update a player on 'players:update' event", () => {
         const payload: GmToBackendEventPayloads['players:update'] = {
-            playerData: { name: 'Updated First Player' },
+            playerData: { name: 'Updated First Player', notes: 'Some notes' },
             playerId: 1,
         };
         const updateHandler = eventHandlers[PLAYER_EVENTS.UPDATE] as (
@@ -119,6 +119,7 @@ describe('Gm Player Integration Tests', () => {
                     expect.objectContaining({
                         id: 1,
                         name: 'Updated First Player',
+                        notes: 'Some notes',
                     }),
                 ]) as unknown[],
             }),
