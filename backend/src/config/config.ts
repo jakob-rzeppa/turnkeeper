@@ -7,9 +7,9 @@ interface Config {
     port: number;
 }
 
-const config: Config = {
+const config: Config = Object.freeze({
     dbPath: process.env.DB_PATH ?? null,
     port: Number(process.env.PORT ?? 3000),
-};
+});
 
 export default config;
