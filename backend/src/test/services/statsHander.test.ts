@@ -111,21 +111,23 @@ describe('statsHandler', () => {
         it('should update the value of a specific stat for a player', () => {
             const playerId = 1;
             const statId = 2;
-            const newValue = '75';
+            const newData = { value: '75' };
 
-            statsHandler.updateStatValue({ newValue, playerId, statId });
+            statsHandler.updateStat({ newData, playerId, statId });
 
-            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(playerId, statId, {
-                value: newValue,
-            });
+            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
+                playerId,
+                statId,
+                newData,
+            );
         });
 
         it('should notify GM and the specific user after updating stat', () => {
             const playerId = 1;
             const statId = 2;
-            const newValue = '75';
+            const newData = { value: '75' };
 
-            statsHandler.updateStatValue({ newValue, playerId, statId });
+            statsHandler.updateStat({ newData, playerId, statId });
 
             expect(GmController.getInstance()?.gmPlayersEmitter.sendPlayers).toHaveBeenCalled();
             expect(
@@ -136,13 +138,29 @@ describe('statsHandler', () => {
         it('should allow updating stat to an empty value', () => {
             const playerId = 1;
             const statId = 2;
-            const newValue = '';
+            const newData = { value: '' };
 
-            statsHandler.updateStatValue({ newValue, playerId, statId });
+            statsHandler.updateStat({ newData, playerId, statId });
 
-            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(playerId, statId, {
-                value: newValue,
-            });
+            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
+                playerId,
+                statId,
+                newData,
+            );
+        });
+
+        it('should allow updating name and value of a stat simultaneously', () => {
+            const playerId = 1;
+            const statId = 2;
+            const newData = { name: 'energy', value: '90' };
+
+            statsHandler.updateStat({ newData, playerId, statId });
+
+            expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
+                playerId,
+                statId,
+                newData,
+            );
         });
     });
 

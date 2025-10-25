@@ -19,7 +19,7 @@ vi.mock('../../../services/statsHandler', () => ({
         createStatForAllPlayers: vi.fn(),
         createStatForPlayer: vi.fn(),
         removeStat: vi.fn(),
-        updateStatValue: vi.fn(),
+        updateStat: vi.fn(),
     },
 }));
 
@@ -172,12 +172,12 @@ describe('GmPlayersListener', () => {
 
             eventHandlers['players:stats:update'](payload);
 
-            expect(statsHandler.updateStatValue).toHaveBeenCalledWith({
-                newValue: payload.value,
+            expect(statsHandler.updateStat).toHaveBeenCalledWith({
+                newData: { value: payload.value },
                 playerId: payload.playerId,
                 statId: payload.statId,
             });
-            expect(statsHandler.updateStatValue).toHaveBeenCalledTimes(1);
+            expect(statsHandler.updateStat).toHaveBeenCalledTimes(1);
         });
 
         it('should allow updating stat value to empty', () => {
@@ -185,8 +185,8 @@ describe('GmPlayersListener', () => {
 
             eventHandlers['players:stats:update'](payload);
 
-            expect(statsHandler.updateStatValue).toHaveBeenCalledWith({
-                newValue: payload.value,
+            expect(statsHandler.updateStat).toHaveBeenCalledWith({
+                newData: { value: payload.value },
                 playerId: payload.playerId,
                 statId: payload.statId,
             });

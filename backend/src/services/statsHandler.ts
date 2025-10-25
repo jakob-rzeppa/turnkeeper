@@ -37,18 +37,16 @@ export const statsHandler = {
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
     },
-    updateStatValue({
-        newValue,
+    updateStat({
+        newData,
         playerId, // The playerId is used to update the correct user's view and to have a extra check that the changed stat belongs to the right player
         statId,
     }: {
-        newValue: PlayerStat['value'];
+        newData: Partial<Omit<PlayerStat, 'id' | 'playerId'>>;
         playerId: number;
         statId: number;
     }) {
-        statsRepository.updateStatForPlayer(playerId, statId, {
-            value: newValue,
-        });
+        statsRepository.updateStatForPlayer(playerId, statId, newData);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
