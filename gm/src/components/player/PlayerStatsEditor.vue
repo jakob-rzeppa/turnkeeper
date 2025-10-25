@@ -28,21 +28,72 @@ watch(
 );
 
 const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
-    [keyof: string]: string;
+    [keyof: string]: {
+        name: string;
+        type: 'string' | 'number' | 'boolean';
+        value: string | boolean;
+    };
 }>(
     () => {
-        const statsRecord: { [keyof: string]: string } = {};
+        const statsRecord: {
+            [keyof: string]: {
+                name: string;
+                type: 'string' | 'number' | 'boolean';
+                value: string | boolean;
+            };
+        } = {};
         player.value?.stats.forEach((stat) => {
-            statsRecord[stat.id.toString()] = stat.value.toString();
+            let valueAsStringOrBoolean: string | boolean;
+
+            if (typeof stat.value === 'boolean') {
+                valueAsStringOrBoolean = stat.value;
+            } else if (typeof stat.value === 'number') {
+                valueAsStringOrBoolean = stat.value.toString();
+            } else {
+                valueAsStringOrBoolean = String(stat.value);
+            }
+
+            statsRecord[stat.id.toString()] = {
+                name: stat.name,
+                type: typeof stat.value as 'string' | 'number' | 'boolean',
+                value: valueAsStringOrBoolean,
+            };
         });
         return statsRecord;
     },
     (newStats) => {
         Object.keys(newStats).forEach((statId: string) => {
+            let value: string | number | boolean;
+
+            switch (newStats[statId].type) {
+                case 'number':
+                    value = Number(newStats[statId].value);
+                    break;
+                case 'boolean':
+                    if (typeof newStats[statId].value === 'boolean') {
+                        value = newStats[statId].value;
+                    } else {
+                        value = newStats[statId].value === 'false';
+                    }
+                    break;
+                case 'string':
+                default:
+                    value = String(newStats[statId].value);
+            }
+
+            console.log(
+                'Saving stat change for statId:',
+                statId,
+                'with value:',
+                value,
+                typeof value,
+            );
+
             playerEmitter.updateStatValueForPlayer(
                 props.playerId,
                 parseInt(statId),
-                newStats[statId],
+                value,
+                newStats[statId].name,
             );
         });
     },
@@ -58,7 +109,7 @@ onUnmounted(() => {
     <div v-else class="card bg-base-100 border border-secondary/20">
         <div class="card-body">
             <div class="card-title text-secondary mb-4 flex items-center justify-between">
-                <span>Player Stats</span>
+                <span>Player Stats{{ areEditableObjectFieldsChanged ? '*' : '' }}</span>
                 <div class="badge badge-secondary badge-outline">
                     {{ player.stats.length }}
                 </div>
@@ -68,24 +119,62 @@ onUnmounted(() => {
                 <div
                     v-for="stat in player.stats"
                     :key="stat.id"
-                    class="flex gap-3 items-center p-3 bg-base-200 rounded-lg"
+                    class="flex items-center p-1 bg-base-200 rounded-xl gap-2 overflow-scroll"
+                    @keypress="
+                        (e) => {
+                            if (e.key === 'Enter') {
+                                saveChanges();
+                            }
+                        }
+                    "
                 >
-                    <label
-                        @focusout="saveChanges"
-                        @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
-                        :class="`input input-bordered input-sm w-full ${areEditableObjectFieldsChanged ? 'input-primary' : ''}`"
-                    >
-                        <span class="label">{{
-                            stat.name + (areEditableObjectFieldsChanged ? '*' : '')
-                        }}</span>
+                    <div class="flex-1 flex items-center join">
                         <input
                             type="text"
-                            v-model="editableObject[stat.id]"
-                            :placeholder="`Enter ${stat.name}...`"
+                            class="input input-sm w-auto min-w-[50px] join-item"
+                            v-model="editableObject[stat.id].name"
+                            :placeholder="`Stat Name`"
+                            :size="
+                                Math.max(
+                                    editableObject[stat.id].name.length * 0.8 || 5,
+                                    5,
+                                ) /* Math.max ensures the input is at least 5 characters wide */
+                            "
                         />
-                    </label>
+                        <select
+                            class="select select-sm w-28 flex-shrink-0 join-item"
+                            v-model="editableObject[stat.id].type"
+                        >
+                            <option value="string">String</option>
+                            <option value="number">Number</option>
+                            <option
+                                value="boolean"
+                                @select="() => (editableObject[stat.id].value = '')"
+                            >
+                                Boolean
+                            </option>
+                        </select>
+                        <input
+                            v-if="editableObject[stat.id].type === 'number'"
+                            class="input input-sm flex-1 join-item"
+                            type="number"
+                            v-model="editableObject[stat.id].value"
+                        />
+                        <input
+                            v-if="editableObject[stat.id].type === 'string'"
+                            class="input input-sm flex-1 join-item"
+                            type="text"
+                            v-model="editableObject[stat.id].value"
+                        />
+                    </div>
+                    <input
+                        v-if="editableObject[stat.id].type === 'boolean'"
+                        class="checkbox checkbox-secondary flex-shrink-0"
+                        type="checkbox"
+                        v-model="editableObject[stat.id].value"
+                    />
                     <button
-                        class="btn btn-error btn-sm btn-circle"
+                        class="btn btn-error btn-sm btn-circle join-item"
                         @click="playerEmitter.removeStatFromPlayer(props.playerId, stat.id)"
                         :title="`Remove ${stat.name}`"
                     >
