@@ -282,6 +282,30 @@ describe('Stats Repository', () => {
                 value: '',
             });
         });
+
+        it('should do nothing if no fields are provided to update', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO player_stats (id, player_id, name, value) VALUES (1, 1, 'level', '5')",
+            );
+
+            statsRepository.updateStatForPlayer(1, 1, {});
+
+            const stats = db.prepare('SELECT * FROM player_stats').all() as {
+                id: number;
+                name: string;
+                player_id: number;
+                value: string;
+            }[];
+
+            expect(stats).toHaveLength(1);
+            expect(stats).toContainEqual({
+                id: 1,
+                name: 'level',
+                player_id: 1,
+                value: '5',
+            });
+        });
     });
 
     describe('removeStatFromPlayer', () => {
