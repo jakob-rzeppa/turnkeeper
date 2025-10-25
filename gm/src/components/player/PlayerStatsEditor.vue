@@ -27,7 +27,7 @@ watch(
     { immediate: true, deep: true },
 );
 
-const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
+const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
     [keyof: string]: {
         name: string;
         type: 'string' | 'number' | 'boolean';
@@ -109,7 +109,7 @@ onUnmounted(() => {
     <div v-else class="card bg-base-100 border border-secondary/20">
         <div class="card-body">
             <div class="card-title text-secondary mb-4 flex items-center justify-between">
-                <span>Player Stats{{ areEditableObjectFieldsChanged ? '*' : '' }}</span>
+                <span>Player Stats{{ idEditableObjectChanged ? '*' : '' }}</span>
                 <div class="badge badge-secondary badge-outline">
                     {{ player.stats.length }}
                 </div>

@@ -15,18 +15,15 @@ export const useAutosaveObject = <T extends object>(
 
     // This object is the editable copy of the base object. It needs to be a deep copy to avoid modifying the base object directly.
     const editableObject = ref<T>(JSON.parse(JSON.stringify(baseObject.value)));
-    const areEditableObjectFieldsChanged = ref(false);
+    const idEditableObjectChanged = ref(false);
 
     // Watch for changes in the editableObject to track if any field has changed compared to the baseObject
     watch(
         editableObject,
         (newEditableObject) => {
-            // Check if any field has changed compared to the baseObject
-            areEditableObjectFieldsChanged.value = Object.keys(newEditableObject).some(
-                (key: string) => {
-                    return baseObject.value[key] !== newEditableObject[key];
-                },
-            );
+            // Check if any field has changed compared to the baseObject (deep comparison)
+            idEditableObjectChanged.value =
+                JSON.stringify(baseObject.value) !== JSON.stringify(newEditableObject);
         },
         { deep: true },
     );
@@ -40,18 +37,15 @@ export const useAutosaveObject = <T extends object>(
             // If new records arrive from backend, update editableObject accordingly
             editableObject.value = JSON.parse(JSON.stringify(newBaseObject));
 
-            // Recheck change tracking
-            areEditableObjectFieldsChanged.value = Object.keys(editableObject.value).some(
-                (key: string) => {
-                    return baseObject.value[key] !== editableObject.value[key];
-                },
-            );
+            // Recheck change tracking (deep comparison)
+            idEditableObjectChanged.value =
+                JSON.stringify(baseObject.value) !== JSON.stringify(editableObject.value);
         },
         { deep: true, immediate: false },
     );
 
     const saveChanges = (): void => {
-        if (areEditableObjectFieldsChanged.value) {
+        if (idEditableObjectChanged.value) {
             saveCallback(editableObject.value);
 
             // When saved, the backend is expected to send an event that updates the baseObject, which will trigger the watcher and update the baseObject accordingly.
@@ -60,7 +54,7 @@ export const useAutosaveObject = <T extends object>(
 
     return {
         editableObject,
-        areEditableObjectFieldsChanged,
+        idEditableObjectChanged,
         saveChanges,
     };
 };

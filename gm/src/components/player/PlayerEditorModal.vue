@@ -15,7 +15,7 @@ const emit = defineEmits(['close']);
 const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
-const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
+const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
     name: string;
     secret: string;
     notes: string;
@@ -54,32 +54,24 @@ onUnmounted(() => {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="label"
-                    >Player Name{{ areEditableObjectFieldsChanged ? '*' : '' }}</label
-                >
+                <label class="label">Player Name{{ idEditableObjectChanged ? '*' : '' }}</label>
                 <input
                     type="text"
                     placeholder="Enter player name..."
                     v-model="editableObject.name"
-                    :class="
-                        'input w-full ' + (areEditableObjectFieldsChanged ? 'input-accent' : '')
-                    "
+                    :class="'input w-full ' + (idEditableObjectChanged ? 'input-accent' : '')"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
             </div>
 
             <div>
-                <label class="label"
-                    >Secret Code{{ areEditableObjectFieldsChanged ? '*' : '' }}</label
-                >
+                <label class="label">Secret Code{{ idEditableObjectChanged ? '*' : '' }}</label>
                 <input
                     type="text"
                     placeholder="Enter secret code..."
                     v-model="editableObject.secret"
-                    :class="
-                        'input w-full ' + (areEditableObjectFieldsChanged ? 'input-accent' : '')
-                    "
+                    :class="'input w-full ' + (idEditableObjectChanged ? 'input-accent' : '')"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
@@ -87,10 +79,10 @@ onUnmounted(() => {
         </div>
 
         <div>
-            <label class="label">Notes{{ areEditableObjectFieldsChanged ? '*' : '' }}</label>
+            <label class="label">Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
             <textarea
                 class="textarea w-full h-32"
-                :class="areEditableObjectFieldsChanged ? 'textarea-accent' : ''"
+                :class="idEditableObjectChanged ? 'textarea-accent' : ''"
                 placeholder="Enter notes about the player..."
                 v-model="editableObject.notes"
                 @focusout="saveChanges"
