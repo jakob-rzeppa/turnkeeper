@@ -17,6 +17,7 @@ vi.mock('../../repositories/gameStateRepository', () => {
             deleteGameState: vi.fn(),
             getGameStateById: vi.fn(),
             updateGameState: vi.fn(),
+            removeDeletedPlayersFromPlayerOrder: vi.fn(),
         },
     };
 });
@@ -397,28 +398,7 @@ describe('gameStateHandler', () => {
     });
 
     describe('removeDeletedPlayersFromPlayerOrder', () => {
-        it('should log a warning if no game state exists', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(null);
-
-            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message:
-                    'No game state found when attempting to remove deleted players from turn order.',
-            });
-        });
-
-        it('should remove deleted players from the turn order', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                id: 1,
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                    { id: 3, name: 'Charlie' },
-                ],
-                roundNumber: 1,
-            });
+        it('should call repository removeDeletedPlayersFromPlayerOrder method', () => {
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
                 { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
                 { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
@@ -426,57 +406,9 @@ describe('gameStateHandler', () => {
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
 
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    playerOrder: [
-                        { id: 1, name: 'Alice' },
-                        { id: 2, name: 'Bob' },
-                    ],
-                }),
-            );
-        });
-
-        it('should handle case where all players are deleted', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                id: 1,
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-            vi.mocked(playerRepository.getAllPlayers).mockReturnValue([]);
-
-            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
-
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    playerOrder: [],
-                }),
-            );
-        });
-
-        it('should not update if no players were deleted', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                id: 1,
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-            vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
+            expect(gameStateRepository.removeDeletedPlayersFromPlayerOrder).toHaveBeenCalledWith([
+                1, 2,
             ]);
-
-            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
-
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
         });
 
         it('should send game info to gm and users when everything worked', () => {

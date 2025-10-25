@@ -138,6 +138,46 @@ const gameStateRepository = {
             }
         }
     },
+    removeDeletedPlayersFromPlayerOrder: (existingPlayerIds: number[]) => {
+        const gameStateRow = db
+            .prepare('SELECT * FROM game_state WHERE id = ?')
+            .get(GAME_STATE_ID) as
+            | undefined
+            | {
+                  current_player_index: number;
+                  id: number;
+                  player_order: string;
+                  round_number: number;
+              };
+
+        if (!gameStateRow) {
+            return;
+        }
+
+        const currentPlayerOrderIds = gameStateRow.player_order
+            ? gameStateRow.player_order.split(',').map(Number)
+            : [];
+
+        const newPlayerOrderIds = currentPlayerOrderIds.filter((id) =>
+            existingPlayerIds.includes(id),
+        );
+
+        if (newPlayerOrderIds.length === currentPlayerOrderIds.length) {
+            return;
+        }
+
+        if (gameStateRow.current_player_index >= newPlayerOrderIds.length) {
+            // If the current player index is out of bounds after removal, set it to 0
+            db.prepare('UPDATE game_state SET current_player_index = 0 WHERE id = ?').run(
+                GAME_STATE_ID,
+            );
+        }
+
+        db.prepare('UPDATE game_state SET player_order = ? WHERE id = ?').run(
+            newPlayerOrderIds.join(','),
+            GAME_STATE_ID,
+        );
+    },
 };
 
 export default gameStateRepository;

@@ -114,30 +114,11 @@ const gameStateHandler = {
         });
     },
     removeDeletedPlayersFromPlayerOrder: (): void => {
-        const gameState = gameStateHandler.getGameState();
+        const allPlayers = playerRepository.getAllPlayers();
 
-        if (!gameState) {
-            logger.warn({
-                message:
-                    'No game state found when attempting to remove deleted players from turn order.',
-            });
-            return;
-        }
-
-        const allPlayerIds = playerRepository.getAllPlayers().map((p) => p.id);
-
-        const updatedPlayerOrder = gameState.playerOrder.filter((player) =>
-            allPlayerIds.includes(player.id),
+        gameStateRepository.removeDeletedPlayersFromPlayerOrder(
+            allPlayers.map((player) => player.id),
         );
-
-        if (updatedPlayerOrder.length === gameState.playerOrder.length) {
-            // No changes needed
-            return;
-        }
-
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            playerOrder: updatedPlayerOrder,
-        });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
         UserController.getAllInstances().forEach((instance) => {

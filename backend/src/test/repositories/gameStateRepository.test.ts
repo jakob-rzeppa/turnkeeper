@@ -239,4 +239,79 @@ describe('gameStateRepository', () => {
             expect(row).toBeUndefined();
         });
     });
+
+    describe('removeDeletedPlayersFromPlayerOrder', () => {
+        it('should remove deleted players from the player order', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2,3')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1, 3]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1,3');
+        });
+
+        it('should handle all players being deleted', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('');
+        });
+
+        it('should not change player order if all players exist', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1, 2]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1,2');
+        });
+
+        it('should set currentPlayerIndex to 0 if it exceeds new player order length', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 2, '1,2,3')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1');
+            expect(row.current_player_index).toBe(0);
+        });
+    });
 });
