@@ -4,6 +4,7 @@ import { useGameStore } from '@/stores/gameStore';
 import PlayerStatsEditor from '../player/PlayerStatsEditor.vue';
 import { usePlayerStore } from '@/stores/playerStore';
 import { computed } from 'vue';
+import PlayerNotesEditor from '../player/PlayerNotesEditor.vue';
 
 const gameStore = useGameStore();
 const playerStore = usePlayerStore();
@@ -18,6 +19,8 @@ const localPlayer = computed(() => {
         <div v-if="gameStore.isInitialized && localPlayer">
             <div v-if="gameStore.currentPlayerId" class="flex flex-col gap-4">
                 <h1 class="text-3xl font-bold text-primary">{{ localPlayer.name }}</h1>
+
+                <PlayerNotesEditor :player-id="gameStore.currentPlayerId" />
 
                 <PlayerStatsEditor
                     :player-id="gameStore.currentPlayerId"
