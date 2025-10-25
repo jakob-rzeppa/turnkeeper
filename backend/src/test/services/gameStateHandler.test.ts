@@ -420,8 +420,8 @@ describe('gameStateHandler', () => {
                 roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', stats: [] },
+                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
+                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
@@ -470,8 +470,8 @@ describe('gameStateHandler', () => {
                 roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', stats: [] },
+                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
+                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
@@ -491,8 +491,8 @@ describe('gameStateHandler', () => {
                 roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', stats: [] },
+                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
+                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
