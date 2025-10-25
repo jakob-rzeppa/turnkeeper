@@ -81,7 +81,7 @@ export const statsRepository = {
         const values: string[] = [];
 
         // Build the SET clause based on provided fields
-        if (updatedFields.name !== undefined) {
+        if (updatedFields.name !== undefined && updatedFields.name !== '') {
             fieldsToUpdate.push('name = ?');
             values.push(updatedFields.name);
         }
