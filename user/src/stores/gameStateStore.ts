@@ -1,4 +1,4 @@
-import useConnection from '@/composables/connection';
+import useConnection from '@/composables/useConnection';
 import { defineStore } from 'pinia';
 import { type GameState, type BackendToUserPayloads } from 'shared-types';
 import { computed, ref } from 'vue';

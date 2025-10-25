@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import useConnection from '@/composables/connection';
+import useConnection from '@/composables/useConnection';
 import { ref } from 'vue';
 
 const connection = useConnection();

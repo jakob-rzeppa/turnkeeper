@@ -4,7 +4,7 @@ import LoginForm from './components/LoginForm.vue';
 import MainContainer from './components/MainContainer.vue';
 import PlayerNameDisplay from './components/PlayerNameDisplay.vue';
 import PlayerDisplay from './components/StatsDisplay.vue';
-import useConnection from './composables/connection';
+import useConnection from './composables/useConnection';
 import { useGameStateStore } from './stores/gameStateStore';
 import { usePlayerStore } from './stores/playerStore';
 
