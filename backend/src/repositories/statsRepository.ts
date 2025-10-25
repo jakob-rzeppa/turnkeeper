@@ -58,13 +58,15 @@ export const statsRepository = {
         const fieldsToUpdate: string[] = [];
         const values: string[] = [];
 
-        // Build the SET clause dynamically based on provided fields
-        Object.keys(updatedFields).forEach((key) => {
-            const typedKey = key as keyof typeof updatedFields;
-            if (updatedFields[typedKey] === undefined) return;
-            fieldsToUpdate.push(key + ' = ?');
-            values.push(updatedFields[typedKey]);
-        });
+        // Build the SET clause based on provided fields
+        if (updatedFields.name !== undefined) {
+            fieldsToUpdate.push('name = ?');
+            values.push(updatedFields.name);
+        }
+        if (updatedFields.value !== undefined) {
+            fieldsToUpdate.push('value = ?');
+            values.push(updatedFields.value);
+        }
 
         if (fieldsToUpdate.length === 0) {
             return;
