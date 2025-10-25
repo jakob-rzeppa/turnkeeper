@@ -100,44 +100,6 @@ const gameStateRepository = {
             roundNumber: row.round_number,
         };
     },
-    updateGameState: (id: number, updatedFields: Partial<Omit<GameState, 'id'>>) => {
-        const fieldsToUpdate: string[] = [];
-        const values: (number | string)[] = [];
-
-        if (updatedFields.roundNumber !== undefined) {
-            fieldsToUpdate.push('round_number = ?');
-            values.push(updatedFields.roundNumber);
-        }
-
-        if (updatedFields.currentPlayerIndex !== undefined) {
-            fieldsToUpdate.push('current_player_index = ?');
-            values.push(updatedFields.currentPlayerIndex);
-        }
-
-        if (updatedFields.playerOrder !== undefined) {
-            fieldsToUpdate.push('player_order = ?');
-            values.push(updatedFields.playerOrder.map((p) => p.id).join(','));
-        }
-
-        if (fieldsToUpdate.length === 0) {
-            return;
-        }
-
-        values.push(id);
-
-        const query = `UPDATE game_state SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
-
-        try {
-            db.prepare(query).run(...values);
-        } catch (error: unknown) {
-            // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
-        }
-    },
     removeDeletedPlayersFromPlayerOrder: (existingPlayerIds: number[]) => {
         const gameStateRow = db
             .prepare('SELECT * FROM game_state WHERE id = ?')
@@ -177,6 +139,44 @@ const gameStateRepository = {
             newPlayerOrderIds.join(','),
             GAME_STATE_ID,
         );
+    },
+    updateGameState: (id: number, updatedFields: Partial<Omit<GameState, 'id'>>) => {
+        const fieldsToUpdate: string[] = [];
+        const values: (number | string)[] = [];
+
+        if (updatedFields.roundNumber !== undefined) {
+            fieldsToUpdate.push('round_number = ?');
+            values.push(updatedFields.roundNumber);
+        }
+
+        if (updatedFields.currentPlayerIndex !== undefined) {
+            fieldsToUpdate.push('current_player_index = ?');
+            values.push(updatedFields.currentPlayerIndex);
+        }
+
+        if (updatedFields.playerOrder !== undefined) {
+            fieldsToUpdate.push('player_order = ?');
+            values.push(updatedFields.playerOrder.map((p) => p.id).join(','));
+        }
+
+        if (fieldsToUpdate.length === 0) {
+            return;
+        }
+
+        values.push(id);
+
+        const query = `UPDATE game_state SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+
+        try {
+            db.prepare(query).run(...values);
+        } catch (error: unknown) {
+            // Handle error silently
+
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
+        }
     },
 };
 

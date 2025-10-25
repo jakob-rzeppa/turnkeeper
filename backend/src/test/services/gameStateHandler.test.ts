@@ -16,8 +16,8 @@ vi.mock('../../repositories/gameStateRepository', () => {
             createGameState: vi.fn(),
             deleteGameState: vi.fn(),
             getGameStateById: vi.fn(),
-            updateGameState: vi.fn(),
             removeDeletedPlayersFromPlayerOrder: vi.fn(),
+            updateGameState: vi.fn(),
         },
     };
 });
@@ -400,8 +400,8 @@ describe('gameStateHandler', () => {
     describe('removeDeletedPlayersFromPlayerOrder', () => {
         it('should call repository removeDeletedPlayersFromPlayerOrder method', () => {
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
+                { id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
+                { id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
@@ -423,8 +423,8 @@ describe('gameStateHandler', () => {
                 roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', secret: 'secret1', notes: '', stats: [] },
-                { id: 2, name: 'Bob', secret: 'secret2', notes: '', stats: [] },
+                { id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
+                { id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();

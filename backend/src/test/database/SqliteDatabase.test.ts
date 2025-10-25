@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
-import { SqliteDatabase } from '../../database/SqliteDatabase';
+
 import config from '../../config/config';
+import { SqliteDatabase } from '../../database/SqliteDatabase';
 
 vi.mock('../../config/config.ts', () => ({
     default: {
@@ -11,7 +12,7 @@ vi.mock('../../config/config.ts', () => ({
 describe('SqliteDatabase', () => {
     beforeEach(() => {
         // Reset the singleton instance before each test
-        SqliteDatabase['instance'] = null;
+        SqliteDatabase.instance = null;
 
         vi.mocked(config).dbPath = ':memory:';
     });

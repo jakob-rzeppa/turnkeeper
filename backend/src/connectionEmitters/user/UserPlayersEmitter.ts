@@ -31,8 +31,8 @@ export default class UserPlayersEmitter {
             player: {
                 id: player.id,
                 name: player.name,
-                stats: player.stats,
                 notes: player.notes,
+                stats: player.stats,
             },
         };
 

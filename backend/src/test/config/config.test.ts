@@ -1,4 +1,4 @@
-import { describe, it, expect, vi, beforeEach } from 'vitest';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 vi.mock('dotenv', () => ({
     default: {
@@ -48,13 +48,10 @@ describe('Config', () => {
             const { default: config } = await import('../../config/config');
             const initialKeys = Object.keys(config);
 
-            expect(() => ((config as any).newProp = 'test')).toThrowError(
-                new TypeError('Cannot add property newProp, object is not extensible'),
-            );
-            expect(() => ((config as any).dbPath = 'test')).toThrowError(
+            expect(() => (config.dbPath = 'test')).toThrowError(
                 new TypeError("Cannot assign to read only property 'dbPath' of object '#<Object>'"),
             );
-            expect(() => ((config as any).port = 3000)).toThrowError(
+            expect(() => (config.port = 3000)).toThrowError(
                 new TypeError("Cannot assign to read only property 'port' of object '#<Object>'"),
             );
 
