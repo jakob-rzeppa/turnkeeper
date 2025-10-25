@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { usePlayerStore } from '@/stores/playerStore';
 import { usePlayerEmitter } from '@/emitters/playerEmitter';
-import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor';
+import { useAutosaveObject } from '@/composables/useAutosaveObject';
 import { onUnmounted } from 'vue';
 import PlayerStatsEditor from './PlayerStatsEditor.vue';
 
@@ -15,28 +15,31 @@ const emit = defineEmits(['close']);
 const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
-const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
-    useAutosaveObjectEditor<{ name: string; secret: string; notes: string }>(
-        () => {
-            const player = playerStore.getPlayerById(props.playerId);
+const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
+    name: string;
+    secret: string;
+    notes: string;
+}>(
+    () => {
+        const player = playerStore.getPlayerById(props.playerId);
 
-            // If no player is found, close the editor (e.g. player was deleted)
-            if (!player) emit('close');
+        // If no player is found, close the editor (e.g. player was deleted)
+        if (!player) emit('close');
 
-            return {
-                name: player?.name ?? '',
-                secret: player?.secret ?? '',
-                notes: player?.notes ?? '',
-            };
-        },
-        (newObject) => {
-            playerEmitter.updatePlayer(props.playerId, {
-                name: newObject.name,
-                secret: newObject.secret,
-                notes: newObject.notes,
-            });
-        },
-    );
+        return {
+            name: player?.name ?? '',
+            secret: player?.secret ?? '',
+            notes: player?.notes ?? '',
+        };
+    },
+    (newObject) => {
+        playerEmitter.updatePlayer(props.playerId, {
+            name: newObject.name,
+            secret: newObject.secret,
+            notes: newObject.notes,
+        });
+    },
+);
 
 onUnmounted(() => {
     saveChanges();
@@ -52,17 +55,15 @@ onUnmounted(() => {
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
                 <label class="label"
-                    >Player Name{{ areEditableObjectFieldsChanged.name ? '*' : '' }}</label
+                    >Player Name{{ areEditableObjectFieldsChanged ? '*' : '' }}</label
                 >
                 <input
                     type="text"
                     placeholder="Enter player name..."
-                    :value="editableObject.name"
+                    v-model="editableObject.name"
                     :class="
-                        'input w-full ' +
-                        (areEditableObjectFieldsChanged.name ? 'input-accent' : '')
+                        'input w-full ' + (areEditableObjectFieldsChanged ? 'input-accent' : '')
                     "
-                    @input="handleFieldInput('name', $event)"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
@@ -70,17 +71,15 @@ onUnmounted(() => {
 
             <div>
                 <label class="label"
-                    >Secret Code{{ areEditableObjectFieldsChanged.secret ? '*' : '' }}</label
+                    >Secret Code{{ areEditableObjectFieldsChanged ? '*' : '' }}</label
                 >
                 <input
                     type="text"
                     placeholder="Enter secret code..."
-                    :value="editableObject.secret"
+                    v-model="editableObject.secret"
                     :class="
-                        'input w-full ' +
-                        (areEditableObjectFieldsChanged.secret ? 'input-accent' : '')
+                        'input w-full ' + (areEditableObjectFieldsChanged ? 'input-accent' : '')
                     "
-                    @input="handleFieldInput('secret', $event)"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
@@ -88,13 +87,12 @@ onUnmounted(() => {
         </div>
 
         <div>
-            <label class="label">Notes{{ areEditableObjectFieldsChanged.notes ? '*' : '' }}</label>
+            <label class="label">Notes{{ areEditableObjectFieldsChanged ? '*' : '' }}</label>
             <textarea
                 class="textarea w-full h-32"
-                :class="areEditableObjectFieldsChanged.notes ? 'textarea-accent' : ''"
+                :class="areEditableObjectFieldsChanged ? 'textarea-accent' : ''"
                 placeholder="Enter notes about the player..."
-                :value="editableObject.notes"
-                @input="handleFieldInput('notes', $event)"
+                v-model="editableObject.notes"
                 @focusout="saveChanges"
             ></textarea>
         </div>

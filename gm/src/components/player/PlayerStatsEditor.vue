@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { onUnmounted, ref, watch } from 'vue';
-import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor';
 import { usePlayerStore } from '@/stores/playerStore';
 import type { Player } from 'shared-types';
 import { usePlayerEmitter } from '@/emitters/playerEmitter';
 import { useModalStore } from '@/stores/modalStore';
 import NewStatModal from './NewStatModal.vue';
+import { useAutosaveObject } from '../../composables/useAutosaveObject';
 
 const props = defineProps<{
     playerId: number;
@@ -27,25 +27,26 @@ watch(
     { immediate: true, deep: true },
 );
 
-const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
-    useAutosaveObjectEditor<{ [keyof: string]: string }>(
-        () => {
-            const statsRecord: { [keyof: string]: string } = {};
-            player.value?.stats.forEach((stat) => {
-                statsRecord[stat.id.toString()] = stat.value;
-            });
-            return statsRecord;
-        },
-        (newStats) => {
-            Object.keys(newStats).forEach((statId: string) => {
-                playerEmitter.updateStatValueForPlayer(
-                    props.playerId,
-                    parseInt(statId),
-                    newStats[statId],
-                );
-            });
-        },
-    );
+const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
+    [keyof: string]: string;
+}>(
+    () => {
+        const statsRecord: { [keyof: string]: string } = {};
+        player.value?.stats.forEach((stat) => {
+            statsRecord[stat.id.toString()] = stat.value.toString();
+        });
+        return statsRecord;
+    },
+    (newStats) => {
+        Object.keys(newStats).forEach((statId: string) => {
+            playerEmitter.updateStatValueForPlayer(
+                props.playerId,
+                parseInt(statId),
+                newStats[statId],
+            );
+        });
+    },
+);
 
 onUnmounted(() => {
     saveChanges();
@@ -72,15 +73,14 @@ onUnmounted(() => {
                     <label
                         @focusout="saveChanges"
                         @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
-                        :class="`input input-bordered input-sm w-full ${areEditableObjectFieldsChanged[stat.id] ? 'input-primary' : ''}`"
+                        :class="`input input-bordered input-sm w-full ${areEditableObjectFieldsChanged ? 'input-primary' : ''}`"
                     >
                         <span class="label">{{
-                            stat.name + (areEditableObjectFieldsChanged[stat.id] ? '*' : '')
+                            stat.name + (areEditableObjectFieldsChanged ? '*' : '')
                         }}</span>
                         <input
                             type="text"
-                            :value="editableObject[stat.id]"
-                            @input="(e: Event) => handleFieldInput(stat.id, e)"
+                            v-model="editableObject[stat.id]"
                             :placeholder="`Enter ${stat.name}...`"
                         />
                     </label>

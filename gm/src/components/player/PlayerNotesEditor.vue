@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAutosaveObjectEditor } from '@/composables/useAutosaveObjectEditor';
+import { useAutosaveObject } from '@/composables/useAutosaveObject';
 import { usePlayerEmitter } from '@/emitters/playerEmitter';
 import { usePlayerStore } from '@/stores/playerStore';
 import { onUnmounted } from 'vue';
@@ -11,25 +11,28 @@ const props = defineProps<{
 const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
-const { editableObject, areEditableObjectFieldsChanged, handleFieldInput, saveChanges } =
-    useAutosaveObjectEditor<{ name: string; secret: string; notes: string }>(
-        () => {
-            const player = playerStore.getPlayerById(props.playerId);
+const { editableObject, areEditableObjectFieldsChanged, saveChanges } = useAutosaveObject<{
+    name: string;
+    secret: string;
+    notes: string;
+}>(
+    () => {
+        const player = playerStore.getPlayerById(props.playerId);
 
-            return {
-                name: player?.name ?? '',
-                secret: player?.secret ?? '',
-                notes: player?.notes ?? '',
-            };
-        },
-        (newObject) => {
-            playerEmitter.updatePlayer(props.playerId, {
-                name: newObject.name,
-                secret: newObject.secret,
-                notes: newObject.notes,
-            });
-        },
-    );
+        return {
+            name: player?.name ?? '',
+            secret: player?.secret ?? '',
+            notes: player?.notes ?? '',
+        };
+    },
+    (newObject) => {
+        playerEmitter.updatePlayer(props.playerId, {
+            name: newObject.name,
+            secret: newObject.secret,
+            notes: newObject.notes,
+        });
+    },
+);
 
 onUnmounted(() => {
     saveChanges();
@@ -38,13 +41,12 @@ onUnmounted(() => {
 
 <template>
     <div>
-        <label class="label">Notes{{ areEditableObjectFieldsChanged.notes ? '*' : '' }}</label>
+        <label class="label">Notes{{ areEditableObjectFieldsChanged ? '*' : '' }}</label>
         <textarea
             class="textarea w-full h-32"
-            :class="areEditableObjectFieldsChanged.notes ? 'textarea-accent' : ''"
+            :class="areEditableObjectFieldsChanged ? 'textarea-accent' : ''"
             placeholder="Enter notes about the player..."
-            :value="editableObject.notes"
-            @input="handleFieldInput('notes', $event)"
+            v-model="editableObject.notes"
             @focusout="saveChanges"
         ></textarea>
     </div>
