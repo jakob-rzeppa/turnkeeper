@@ -14,9 +14,21 @@ const playerEmitter = usePlayerEmitter();
 
 const scopeRef = ref<'global' | 'player'>(props.playerId ? 'player' : 'global');
 const statNameRef = ref('');
-const statInitialValueRef = ref('');
+const statValueTypeRef = ref<'string' | 'number' | 'boolean'>('string');
+// Since v-model on input type="number" returns string, we only use string | boolean here
+const statInitialValueRef = ref<string | boolean>('');
 
 const createStat = () => {
+    let value: string | number | boolean = statInitialValueRef.value;
+
+    switch (typeof statInitialValueRef.value) {
+        case 'number':
+            value = Number(statInitialValueRef.value);
+            break;
+        default:
+            break;
+    }
+
     const statData: Omit<PlayerStat, 'id'> = {
         name: statNameRef.value,
         value: statInitialValueRef.value,
@@ -48,7 +60,7 @@ const createStat = () => {
         </div>
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div class="form-control">
+            <div>
                 <label class="label">
                     <span class="label-text font-medium">Stat Name</span>
                 </label>
@@ -61,15 +73,42 @@ const createStat = () => {
                 />
             </div>
 
-            <div class="form-control">
+            <div>
+                <label class="label">
+                    <span class="label-text font-medium">Value Type</span>
+                </label>
+                <select class="select select-primary w-full" v-model="statValueTypeRef">
+                    <option value="string">String</option>
+                    <option value="number">Number</option>
+                    <option value="boolean">Boolean</option>
+                </select>
+            </div>
+
+            <div class="col-span-2">
                 <label class="label">
                     <span class="label-text font-medium">Initial Value</span>
                 </label>
                 <input
+                    v-if="statValueTypeRef === 'string'"
                     type="text"
                     v-model="statInitialValueRef"
                     class="input input-bordered input-secondary w-full"
-                    placeholder="e.g., 100, 0, Beginner..."
+                    placeholder="e.g., Beginner, ..."
+                    @keyup.enter="createStat"
+                />
+                <input
+                    v-if="statValueTypeRef === 'number'"
+                    type="number"
+                    v-model="statInitialValueRef"
+                    class="input input-bordered input-secondary w-full"
+                    placeholder="e.g., 100, 0, ..."
+                    @keyup.enter="createStat"
+                />
+                <input
+                    v-if="statValueTypeRef === 'boolean'"
+                    type="checkbox"
+                    v-model="statInitialValueRef"
+                    class="checkbox checkbox-secondary"
                     @keyup.enter="createStat"
                 />
             </div>
