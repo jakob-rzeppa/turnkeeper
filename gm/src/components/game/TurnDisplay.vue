@@ -2,8 +2,12 @@
 import { useGameEmitter } from '@/emitters/gameEmitter';
 import DisplayContainer from '../container/DisplayContainer.vue';
 import { useGameStore } from '@/stores/gameStore';
+import { useModalStore } from '@/stores/modalStore';
+import PlayerEditorModal from '../player/PlayerEditorModal.vue';
 
 const gameStore = useGameStore();
+const modalStore = useModalStore();
+
 const gameEmitter = useGameEmitter();
 
 function endTurn() {
@@ -43,7 +47,12 @@ function endTurn() {
                             >
                                 {{ index + 1 }}
                             </span>
-                            <span>{{ player.name }}</span>
+                            <span
+                                @click="
+                                    modalStore.openModal(PlayerEditorModal, { playerId: player.id })
+                                "
+                                >{{ player.name }}</span
+                            >
                         </div>
                     </li>
                 </ul>
