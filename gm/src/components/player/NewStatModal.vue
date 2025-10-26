@@ -19,19 +19,27 @@ const statValueTypeRef = ref<'string' | 'number' | 'boolean'>('string');
 const statInitialValueRef = ref<string | boolean>('');
 
 const createStat = () => {
-    let value: string | number | boolean = statInitialValueRef.value;
+    let value: string | number | boolean;
 
-    switch (typeof statInitialValueRef.value) {
+    switch (statValueTypeRef.value) {
         case 'number':
             value = Number(statInitialValueRef.value);
             break;
-        default:
+        case 'boolean':
+            if (typeof statInitialValueRef.value === 'boolean') {
+                value = statInitialValueRef.value;
+            } else {
+                value = statInitialValueRef.value === 'false';
+            }
             break;
+        case 'string':
+        default:
+            value = String(statInitialValueRef.value);
     }
 
     const statData: Omit<PlayerStat, 'id'> = {
         name: statNameRef.value,
-        value: statInitialValueRef.value,
+        value,
     };
     playerEmitter.createStatForPlayer(statData, scopeRef.value, props.playerId);
 

@@ -81,14 +81,6 @@ const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObje
                     value = String(newStats[statId].value);
             }
 
-            console.log(
-                'Saving stat change for statId:',
-                statId,
-                'with value:',
-                value,
-                typeof value,
-            );
-
             playerEmitter.updateStatValueForPlayer(
                 props.playerId,
                 parseInt(statId),
@@ -121,7 +113,7 @@ onUnmounted(() => {
                     :key="stat.id"
                     class="flex items-center p-1 bg-base-200 rounded-xl gap-2 overflow-scroll"
                     @keypress="
-                        (e) => {
+                        (e: KeyboardEvent) => {
                             if (e.key === 'Enter') {
                                 saveChanges();
                             }
