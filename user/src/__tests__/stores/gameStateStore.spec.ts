@@ -3,7 +3,7 @@ import { setActivePinia, createPinia } from 'pinia';
 import { useGameStateStore } from '../../stores/gameStateStore';
 
 const mockSocketOn = vi.fn();
-vi.mock('@/composables/connection', () => ({
+vi.mock('@/composables/useConnection', () => ({
     default: () => ({
         socket: {
             on: mockSocketOn,
