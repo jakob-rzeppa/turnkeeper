@@ -32,19 +32,19 @@ usePlayerStore();
             <CreatePlayerButton />
             <EndGameButton />
         </Drawer>
-        <div class="container mx-auto p-6 lg:p-8">
-            <div v-if="isConnected" class="space-y-6">
-                <div class="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
-                    <div class="lg:col-span-1">
+        <div class="container mx-auto p-3">
+            <div v-if="isConnected">
+                <div class="grid grid-cols-5 gap-3">
+                    <div class="col-span-2 row-span-1">
                         <TurnDisplay />
                     </div>
-                    <div class="lg:col-span-1">
+                    <div class="col-span-3 row-span-2">
                         <CurrentPlayerDisplay />
                     </div>
-                    <div class="lg:col-span-1">
+                    <div class="col-span-2 row-span-1">
                         <LogDisplay />
                     </div>
-                    <div class="lg:col-span-2 xl:col-span-3">
+                    <div class="col-span-5">
                         <PlayerDisplay />
                     </div>
                 </div>
