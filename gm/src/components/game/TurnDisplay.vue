@@ -17,13 +17,28 @@ function endTurn() {
 
 <template>
     <DisplayContainer label="Turn Management">
-        <div v-if="gameStore.isInitialized" class="space-y-6">
-            <!-- Round Info -->
-            <div class="stats shadow-sm">
-                <div class="stat">
-                    <div class="stat-title">Current Round</div>
-                    <div class="stat-value text-primary">{{ gameStore.round.roundNumber }}</div>
+        <div v-if="gameStore.isInitialized" class="flex flex-col gap-4">
+            <div class="flex flex-row align-middle gap-4">
+                <!-- Round Info -->
+                <div class="stats shadow-lg w-max">
+                    <div class="stat">
+                        <div class="stat-title">Current Round</div>
+                        <div class="stat-value text-primary">{{ gameStore.round.roundNumber }}</div>
+                    </div>
                 </div>
+
+                <!-- End Turn Button -->
+                <button class="btn btn-accent btn-lg flex-1 my-auto" @click="endTurn">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            stroke-width="2"
+                            d="M9 5l7 7-7 7"
+                        ></path>
+                    </svg>
+                    End Turn
+                </button>
             </div>
 
             <!-- Player Order Breadcrumbs -->
@@ -56,19 +71,6 @@ function endTurn() {
                     </li>
                 </ul>
             </div>
-
-            <!-- End Turn Button -->
-            <button class="btn btn-accent btn-lg w-full" @click="endTurn">
-                <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M9 5l7 7-7 7"
-                    ></path>
-                </svg>
-                End Turn
-            </button>
         </div>
         <div v-else class="text-center py-8">
             <div class="alert alert-info">
