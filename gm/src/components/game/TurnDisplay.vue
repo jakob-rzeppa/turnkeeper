@@ -37,22 +37,21 @@ function endTurn() {
                         <div
                             class="flex items-center space-x-2"
                             :class="{
-                                'bg-accent text-accent-content px-3 py-1 rounded-full font-bold':
+                                'hover:cursor-pointer hover:bg-accent hover:text-accent-content pl-2 pr-4 py-2 rounded-full ': true,
+                                'bg-accent text-accent-content font-bold hover:bg-secondary hover:text-secondary-content':
                                     gameStore.currentPlayerId === player.id,
                                 'text-base-content/70': gameStore.currentPlayerId !== player.id,
                             }"
+                            @click="
+                                modalStore.openModal(PlayerEditorModal, { playerId: player.id })
+                            "
                         >
                             <span
                                 class="inline-flex items-center justify-center w-6 h-6 text-xs rounded-full bg-primary text-primary-content"
                             >
                                 {{ index + 1 }}
                             </span>
-                            <span
-                                @click="
-                                    modalStore.openModal(PlayerEditorModal, { playerId: player.id })
-                                "
-                                >{{ player.name }}</span
-                            >
+                            <span>{{ player.name }}</span>
                         </div>
                     </li>
                 </ul>
