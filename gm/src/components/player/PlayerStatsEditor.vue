@@ -134,7 +134,7 @@ onUnmounted(() => {
                             "
                         />
                         <select
-                            class="select select-sm w-28 flex-shrink-0 join-item"
+                            class="select select-sm w-28 shrink-0 join-item"
                             v-model="editableObject[stat.id].type"
                         >
                             <option value="string">String</option>
@@ -161,7 +161,7 @@ onUnmounted(() => {
                     </div>
                     <input
                         v-if="editableObject[stat.id].type === 'boolean'"
-                        class="checkbox checkbox-secondary flex-shrink-0"
+                        class="checkbox checkbox-secondary shrink-0"
                         type="checkbox"
                         v-model="editableObject[stat.id].value"
                     />
