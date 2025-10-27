@@ -6,6 +6,7 @@ import { usePlayerEmitter } from '@/emitters/playerEmitter';
 import { useModalStore } from '@/stores/modalStore';
 import NewStatModal from './NewStatModal.vue';
 import { useAutosaveObject } from '../../composables/useAutosaveObject';
+import NumericStatValueInput from './NumericStatValueInput.vue';
 
 const props = defineProps<{
     playerId: number;
@@ -27,11 +28,16 @@ watch(
     { immediate: true, deep: true },
 );
 
-const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
+const {
+    baseObject: baseStats,
+    editableObject: editableStats,
+    idEditableObjectChanged: areStatsChanged,
+    saveChanges,
+} = useAutosaveObject<{
     [keyof: string]: {
         name: string;
         type: 'string' | 'number' | 'boolean';
-        value: string | boolean;
+        value: string | number | boolean;
     };
 }>(
     () => {
@@ -39,52 +45,24 @@ const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObje
             [keyof: string]: {
                 name: string;
                 type: 'string' | 'number' | 'boolean';
-                value: string | boolean;
+                value: string | number | boolean;
             };
         } = {};
         player.value?.stats.forEach((stat) => {
-            let valueAsStringOrBoolean: string | boolean;
-
-            if (typeof stat.value === 'boolean') {
-                valueAsStringOrBoolean = stat.value;
-            } else if (typeof stat.value === 'number') {
-                valueAsStringOrBoolean = stat.value.toString();
-            } else {
-                valueAsStringOrBoolean = String(stat.value);
-            }
-
             statsRecord[stat.id.toString()] = {
                 name: stat.name,
                 type: typeof stat.value as 'string' | 'number' | 'boolean',
-                value: valueAsStringOrBoolean,
+                value: stat.value,
             };
         });
         return statsRecord;
     },
     (newStats) => {
         Object.keys(newStats).forEach((statId: string) => {
-            let value: string | number | boolean;
-
-            switch (newStats[statId].type) {
-                case 'number':
-                    value = Number(newStats[statId].value);
-                    break;
-                case 'boolean':
-                    if (typeof newStats[statId].value === 'boolean') {
-                        value = newStats[statId].value;
-                    } else {
-                        value = newStats[statId].value === 'false';
-                    }
-                    break;
-                case 'string':
-                default:
-                    value = String(newStats[statId].value);
-            }
-
             playerEmitter.updateStatValueForPlayer(
                 props.playerId,
                 parseInt(statId),
-                value,
+                newStats[statId].value,
                 newStats[statId].name,
             );
         });
@@ -101,7 +79,7 @@ onUnmounted(() => {
     <div v-else class="card bg-base-100 border border-secondary/20">
         <div class="card-body">
             <div class="card-title text-secondary mb-4 flex items-center justify-between">
-                <span>Player Stats{{ idEditableObjectChanged ? '*' : '' }}</span>
+                <span>Player Stats{{ areStatsChanged ? '*' : '' }}</span>
                 <div class="badge badge-secondary badge-outline">
                     {{ player.stats.length }}
                 </div>
@@ -124,46 +102,47 @@ onUnmounted(() => {
                         <input
                             type="text"
                             class="input input-sm w-auto min-w-[50px] join-item"
-                            v-model="editableObject[stat.id].name"
+                            v-model="editableStats[stat.id].name"
                             :placeholder="`Stat Name`"
                             :size="
                                 Math.max(
-                                    editableObject[stat.id].name.length * 0.8 || 5,
+                                    editableStats[stat.id].name.length * 0.8 || 5,
                                     5,
                                 ) /* Math.max ensures the input is at least 5 characters wide */
                             "
                         />
                         <select
                             class="select select-sm w-28 shrink-0 join-item"
-                            v-model="editableObject[stat.id].type"
+                            v-model="editableStats[stat.id].type"
                         >
                             <option value="string">String</option>
                             <option value="number">Number</option>
                             <option
                                 value="boolean"
-                                @select="() => (editableObject[stat.id].value = '')"
+                                @select="() => (editableStats[stat.id].value = '')"
                             >
                                 Boolean
                             </option>
                         </select>
-                        <input
-                            v-if="editableObject[stat.id].type === 'number'"
+                        <NumericStatValueInput
+                            v-if="editableStats[stat.id].type === 'number'"
                             class="input input-sm flex-1 join-item"
-                            type="number"
-                            v-model="editableObject[stat.id].value"
+                            :baseStats="baseStats"
+                            :editableStats="editableStats"
+                            :statId="stat.id.toString()"
                         />
                         <input
-                            v-if="editableObject[stat.id].type === 'string'"
+                            v-if="editableStats[stat.id].type === 'string'"
                             class="input input-sm flex-1 join-item"
                             type="text"
-                            v-model="editableObject[stat.id].value"
+                            v-model="editableStats[stat.id].value"
                         />
                     </div>
                     <input
-                        v-if="editableObject[stat.id].type === 'boolean'"
+                        v-if="editableStats[stat.id].type === 'boolean'"
                         class="checkbox checkbox-secondary shrink-0"
                         type="checkbox"
-                        v-model="editableObject[stat.id].value"
+                        v-model="editableStats[stat.id].value"
                     />
                     <button
                         class="btn btn-error btn-sm btn-circle join-item"

@@ -53,6 +53,7 @@ export const useAutosaveObject = <T extends object>(
     };
 
     return {
+        baseObject,
         editableObject,
         idEditableObjectChanged,
         saveChanges,
