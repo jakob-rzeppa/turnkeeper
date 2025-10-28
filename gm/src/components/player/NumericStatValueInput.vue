@@ -35,11 +35,14 @@ watch(
 watch(
     () => inputValue.value,
     (newValue) => {
-        let newValueAsNumber = parseFloat(newValue);
+        let newValueAsNumber = eval(newValue);
 
-        if (isNaN(newValueAsNumber)) {
+        if (typeof newValueAsNumber !== 'number' || isNaN(newValueAsNumber)) {
             newValueAsNumber = 0;
         }
+
+        // Round to 2 decimal points
+        newValueAsNumber = Math.round(newValueAsNumber * 100) / 100;
 
         if (props.editableStats[props.statId]) {
             props.editableStats[props.statId].value = newValueAsNumber;
