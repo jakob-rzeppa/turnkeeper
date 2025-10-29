@@ -23,45 +23,38 @@ const playerStore = usePlayerStore();
             </div>
         </div>
 
-        <div v-else class="space-y-3">
-            <div
-                v-for="stat in playerStore.player.stats"
-                :key="stat.name"
-                class="flex items-center justify-between p-4 bg-base-200 rounded-lg"
-            >
-                <div class="border-r border-base-300 mr-3 pr-3">
-                    <span class="font-semibold w-fit">{{ stat.name }}</span>
-                </div>
-
-                <div>
-                    <div v-if="typeof stat.value === 'boolean'" class="flex items-center">
-                        <div :class="['badge', stat.value ? 'badge-success' : 'badge-error']">
-                            {{ stat.value ? 'Yes' : 'No' }}
-                        </div>
-                    </div>
-                    <div
-                        v-else-if="typeof stat.value === 'number'"
-                        class="text-2xl font-bold text-primary"
-                    >
-                        {{ stat.value }}
-                    </div>
-                    <div
-                        v-else-if="Array.isArray(stat.value)"
-                        class="flex flex-wrap gap-1 justify-end"
-                    >
-                        <div
-                            v-for="item in stat.value"
-                            :key="item"
-                            class="badge badge-outline badge-sm"
-                        >
-                            {{ item }}
-                        </div>
-                    </div>
-                    <div v-else class="text-lg font-semibold">
-                        {{ stat.value }}
-                    </div>
-                </div>
-            </div>
+        <div v-else class="overflow-x-auto">
+            <table class="table table-zebra">
+                <thead>
+                    <tr>
+                        <th class="w-1">Stat</th>
+                        <th>Value</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr v-for="stat in playerStore.player.stats" :key="stat.name">
+                        <td class="font-semibold whitespace-nowrap">{{ stat.name }}</td>
+                        <td>
+                            <div v-if="typeof stat.value === 'boolean'" class="flex">
+                                <div
+                                    :class="['badge', stat.value ? 'badge-success' : 'badge-error']"
+                                >
+                                    {{ stat.value ? 'True' : 'False' }}
+                                </div>
+                            </div>
+                            <div
+                                v-else-if="typeof stat.value === 'number'"
+                                class="font-semibold italic"
+                            >
+                                {{ stat.value }}
+                            </div>
+                            <div v-else class="font-semibold">
+                                {{ stat.value }}
+                            </div>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
         </div>
     </div>
 </template>
