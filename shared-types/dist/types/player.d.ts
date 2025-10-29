@@ -3,6 +3,7 @@ export interface Player {
     name: string;
     secret: string;
     notes: string;
+    hiddenNotes: string;
     stats: PlayerStat[];
 }
 export interface PlayerStat {

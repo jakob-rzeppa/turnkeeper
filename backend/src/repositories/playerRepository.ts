@@ -30,12 +30,13 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, p.notes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
+                'SELECT p.id, p.name, p.secret, p.notes, p.hidden_notes AS hiddenNotes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
             )
             .all() as {
             id: number;
             name: string;
             notes: string;
+            hiddenNotes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -52,6 +53,7 @@ const playerRepository = {
                     id: row.id,
                     name: row.name,
                     notes: row.notes,
+                    hiddenNotes: row.hiddenNotes,
                     secret: row.secret,
                     stats: [],
                 });
@@ -91,12 +93,13 @@ const playerRepository = {
          */
         const dbRes = db
             .prepare(
-                'SELECT p.id, p.name, p.secret, s.id AS statId, p.notes, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
+                'SELECT p.id, p.name, p.secret, p.notes, p.hidden_notes AS hiddenNotes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
             )
             .all(id) as {
             id: number;
             name: string;
             notes: string;
+            hiddenNotes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -112,6 +115,7 @@ const playerRepository = {
             id: dbRes[0].id,
             name: dbRes[0].name,
             notes: dbRes[0].notes,
+            hiddenNotes: dbRes[0].hiddenNotes,
             secret: dbRes[0].secret,
             stats: [],
         };
@@ -173,6 +177,10 @@ const playerRepository = {
         if (updatedFields.notes !== undefined) {
             fieldsToUpdate.push('notes = ?');
             values.push(updatedFields.notes);
+        }
+        if (updatedFields.hiddenNotes !== undefined) {
+            fieldsToUpdate.push('hidden_notes = ?');
+            values.push(updatedFields.hiddenNotes);
         }
 
         if (fieldsToUpdate.length === 0) {

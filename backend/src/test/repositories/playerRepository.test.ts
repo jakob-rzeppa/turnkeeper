@@ -22,7 +22,7 @@ describe('Player Repository', () => {
     describe('getAllPlayers', () => {
         it('should return all players from the database', () => {
             db.prepare(
-                "INSERT INTO players (name, secret, notes) VALUES ('Alice', 'secret1', 'notes1'), ('Bob', 'secret2', 'notes2')",
+                "INSERT INTO players (name, secret, notes, hidden_notes) VALUES ('Alice', 'secret1', 'notes1', 'hidden1'), ('Bob', 'secret2', 'notes2', 'hidden2')",
             ).run();
 
             const players = playerRepository.getAllPlayers();
@@ -31,9 +31,11 @@ describe('Player Repository', () => {
             expect(players[0].name).toBe('Alice');
             expect(players[0].secret).toBe('secret1');
             expect(players[0].notes).toBe('notes1');
+            expect(players[0].hiddenNotes).toBe('hidden1');
             expect(players[1].name).toBe('Bob');
             expect(players[1].secret).toBe('secret2');
             expect(players[1].notes).toBe('notes2');
+            expect(players[1].hiddenNotes).toBe('hidden2');
         });
 
         it('should return an empty array if no players exist', () => {
@@ -172,12 +174,22 @@ describe('Player Repository', () => {
             expect(players[0].name).toBe('Alice');
             expect(players[0].notes).toBe(''); // Default value for notes should be an empty string
         });
+
+        it('should return players with empty hidden notes', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            const players = playerRepository.getAllPlayers();
+
+            expect(players).toHaveLength(1);
+            expect(players[0].name).toBe('Alice');
+            expect(players[0].hiddenNotes).toBe(''); // Default value for hiddenNotes should be an empty string
+        });
     });
 
     describe('getPlayerById', () => {
         it('should return a player by id from the database', () => {
             db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+                "INSERT INTO players (id, name, secret, notes, hidden_notes) VALUES (1, 'Alice', 'secret1', 'notes1', 'hidden1'), (2, 'Bob', 'secret2', 'notes2', 'hidden2')",
             );
 
             const player = playerRepository.getPlayerById(1);
@@ -185,6 +197,8 @@ describe('Player Repository', () => {
             expect(player).toBeDefined();
             expect(player?.name).toBe('Alice');
             expect(player?.secret).toBe('secret1');
+            expect(player?.notes).toBe('notes1');
+            expect(player?.hiddenNotes).toBe('hidden1');
         });
 
         it('should return null if player does not exist', () => {
@@ -290,6 +304,7 @@ describe('Player Repository', () => {
 
             expect(player.name).toBe('Alice');
             expect(player.notes).toBe(''); // Default value for notes should be an empty string
+            expect(player.hiddenNotes).toBe(''); // Default value for hiddenNotes should be an empty string
         });
     });
 
@@ -394,14 +409,27 @@ describe('Player Repository', () => {
 
             playerRepository.updatePlayer(1, { notes: 'Updated notes' });
 
-            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(1) as {
-                id: number;
-                name: string;
-                notes?: string;
-                secret: string;
+            const player = db.prepare('SELECT notes FROM players WHERE id = ?').get(1) as {
+                notes: string;
             };
 
             expect(player.notes).toBe('Updated notes');
+        });
+
+        it("should update an existing player's notes in the database", () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret, notes, hidden_notes) VALUES (1, 'Alice', 'secret1', '', '')",
+            );
+
+            playerRepository.updatePlayer(1, { hiddenNotes: 'Updated hidden notes' });
+
+            const player = db
+                .prepare('SELECT hidden_notes AS hiddenNotes FROM players WHERE id = ?')
+                .get(1) as {
+                hiddenNotes: string;
+            };
+
+            expect(player.hiddenNotes).toBe('Updated hidden notes');
         });
 
         it('should not update a non-existent player', () => {
