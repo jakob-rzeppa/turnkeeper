@@ -14,6 +14,7 @@ import EndGameButton from './components/game/EndGameButton.vue';
 import { useGameStore } from './stores/gameStore';
 import { useLogStore } from './stores/logStore';
 import { usePlayerStore } from './stores/playerStore';
+import QuickActions from './components/QuickActions.vue';
 
 const { isConnected } = connection();
 
@@ -42,10 +43,13 @@ usePlayerStore();
                         <CurrentPlayerDisplay />
                     </div>
                     <div class="col-span-2 row-span-1">
-                        <LogDisplay />
+                        <QuickActions />
                     </div>
-                    <div class="col-span-5">
+                    <div class="col-span-3">
                         <PlayerDisplay />
+                    </div>
+                    <div class="col-span-2">
+                        <LogDisplay />
                     </div>
                 </div>
             </div>
