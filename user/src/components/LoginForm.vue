@@ -7,6 +7,9 @@ const connection = useConnection();
 const name = ref('');
 const secret = ref('');
 
+// Try to connect with existing cookie on component mount
+connection.connectWithCookie();
+
 function login() {
     connection.connect({ playerName: name.value, playerSecret: secret.value });
 }

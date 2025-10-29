@@ -1,4 +1,5 @@
 import io from 'socket.io-client';
+import { getCookie, removeCookie, setCookie } from 'typescript-cookie';
 import { ref } from 'vue';
 
 const socket = io('http://localhost:3000/user', { autoConnect: false });
@@ -16,6 +17,7 @@ socket.on('connect', () => {
         connectionTimeoutId = null;
     }
     isConnected.value = true;
+    setCookie('auth', JSON.stringify(socket.auth), { expires: 7 });
 });
 
 socket.on('disconnect', () => {
@@ -25,6 +27,7 @@ socket.on('disconnect', () => {
         connectionTimeoutId = null;
     }
     isConnected.value = false;
+    removeCookie('auth');
 });
 
 socket.on('connection_error', (error) => {
@@ -65,6 +68,18 @@ export default function useConnection() {
         }
     }
 
+    function connectWithCookie() {
+        const authCookie = getCookie('auth');
+        if (authCookie) {
+            try {
+                const auth = JSON.parse(authCookie);
+                connect({ playerName: auth.playerName, playerSecret: auth.playerSecret });
+            } catch (error) {
+                console.error('Failed to parse auth cookie:', error);
+            }
+        }
+    }
+
     function disconnect() {
         if (socket.connected) {
             socket.disconnect();
@@ -75,6 +90,7 @@ export default function useConnection() {
         socket,
         isConnected,
         connect,
+        connectWithCookie,
         disconnect,
     };
 }
