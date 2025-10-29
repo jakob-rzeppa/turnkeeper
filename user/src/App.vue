@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import GameDisplay from './components/GameDisplay.vue';
 import LoginForm from './components/LoginForm.vue';
+import LogoutButton from './components/LogoutButton.vue';
 import MainContainer from './components/MainContainer.vue';
 import PlayerNameDisplay from './components/PlayerNameDisplay.vue';
 import PlayerNotesDisplay from './components/PlayerNotesDisplay.vue';
@@ -17,7 +18,7 @@ useGameStateStore();
 </script>
 
 <template>
-    <div>
+    <div class="min-h-screen">
         <LoginForm v-if="!isConnected" />
         <MainContainer v-else>
             <PlayerNameDisplay />
@@ -25,5 +26,8 @@ useGameStateStore();
             <PlayerNotesDisplay />
             <PlayerDisplay />
         </MainContainer>
+        <LogoutButton v-if="isConnected" />
+        <!-- Footer spacer for mobile (to scroll down) -->
+        <div class="h-[50vh]"></div>
     </div>
 </template>

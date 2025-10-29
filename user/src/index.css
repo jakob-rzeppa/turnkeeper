@@ -15,14 +15,6 @@ body {
     background-color: var(--color-base-200);
 }
 
-/* Ensure touch targets are at least 44px for accessibility */
-.btn,
-.input,
-.textarea,
-.select {
-    min-height: 44px;
-}
-
 /* Prevent zoom on input focus on iOS */
 input,
 textarea,
