@@ -12,23 +12,20 @@ const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
 const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
-    name: string;
-    secret: string;
     notes: string;
+    hiddenNotes: string;
 }>(
     () => {
         const player = playerStore.getPlayerById(props.playerId);
 
         return {
-            name: player?.name ?? '',
-            secret: player?.secret ?? '',
             notes: player?.notes ?? '',
+            hiddenNotes: player?.hiddenNotes ?? '',
         };
     },
     (newObject) => {
         playerEmitter.updatePlayer(props.playerId, {
-            name: newObject.name,
-            secret: newObject.secret,
+            hiddenNotes: newObject.hiddenNotes,
             notes: newObject.notes,
         });
     },
@@ -47,6 +44,17 @@ onUnmounted(() => {
             :class="idEditableObjectChanged ? 'textarea-accent' : ''"
             placeholder="Enter notes about the player..."
             v-model="editableObject.notes"
+            @focusout="saveChanges"
+        ></textarea>
+    </div>
+
+    <div>
+        <label class="label">Hidden Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+        <textarea
+            class="textarea w-full h-32"
+            :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+            placeholder="Enter notes about the player..."
+            v-model="editableObject.hiddenNotes"
             @focusout="saveChanges"
         ></textarea>
     </div>

@@ -19,6 +19,7 @@ const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObje
     name: string;
     secret: string;
     notes: string;
+    hiddenNotes: string;
 }>(
     () => {
         const player = playerStore.getPlayerById(props.playerId);
@@ -30,6 +31,7 @@ const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObje
             name: player?.name ?? '',
             secret: player?.secret ?? '',
             notes: player?.notes ?? '',
+            hiddenNotes: player?.hiddenNotes ?? '',
         };
     },
     (newObject) => {
@@ -37,6 +39,7 @@ const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObje
             name: newObject.name,
             secret: newObject.secret,
             notes: newObject.notes,
+            hiddenNotes: newObject.hiddenNotes,
         });
     },
 );
@@ -85,6 +88,17 @@ onUnmounted(() => {
                 :class="idEditableObjectChanged ? 'textarea-accent' : ''"
                 placeholder="Enter notes about the player..."
                 v-model="editableObject.notes"
+                @focusout="saveChanges"
+            ></textarea>
+        </div>
+
+        <div>
+            <label class="label">Hidden Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+            <textarea
+                class="textarea w-full h-32"
+                :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+                placeholder="Enter notes about the player..."
+                v-model="editableObject.hiddenNotes"
                 @focusout="saveChanges"
             ></textarea>
         </div>
