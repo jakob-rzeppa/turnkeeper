@@ -58,7 +58,11 @@ function endTurn() {
                                 'text-base-content/70': gameStore.currentPlayerId !== player.id,
                             }"
                             @click="
-                                modalStore.openModal(PlayerEditorModal, { playerId: player.id })
+                                modalStore.openModal(
+                                    PlayerEditorModal,
+                                    { playerId: player.id },
+                                    '4xl',
+                                )
                             "
                         >
                             <span

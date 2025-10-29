@@ -10,6 +10,7 @@ interface Modal {
     id: number;
     component: Component;
     props?: Record<string, unknown>;
+    width: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | '8xl';
 }
 
 // incremental id for new modals
@@ -20,8 +21,12 @@ export const useModalStore = defineStore('modal', {
         modals: [] as Modal[],
     }),
     actions: {
-        openModal(component: Component, props: Modal['props'] = {}): void {
-            this.modals.push({ id: ++id, component: markRaw(component), props });
+        openModal(
+            component: Component,
+            props: Modal['props'] = {},
+            width: Modal['width'] = '2xl',
+        ): void {
+            this.modals.push({ id: ++id, component: markRaw(component), props, width });
         },
         closeTopModal(): void {
             if (this.modals.length > 0) {

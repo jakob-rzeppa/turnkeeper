@@ -15,6 +15,7 @@ const modalStore = useModalStore();
             v-if="modalStore.topModal"
             :key="modalStore.topModal.id"
             :z-index="1000"
+            :width="modalStore.topModal.width"
             @close="modalStore.closeTopModal"
         >
             <component

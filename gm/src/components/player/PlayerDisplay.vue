@@ -8,7 +8,7 @@ const playerStore = usePlayerStore();
 const modalStore = useModalStore();
 
 function openPlayerEditor(playerId: number) {
-    modalStore.openModal(PlayerEditorModal, { playerId });
+    modalStore.openModal(PlayerEditorModal, { playerId }, '4xl');
 }
 </script>
 
