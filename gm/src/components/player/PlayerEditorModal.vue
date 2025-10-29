@@ -50,7 +50,7 @@ onUnmounted(() => {
 </script>
 
 <template>
-    <div class="space-y-6">
+    <div>
         <div class="text-center">
             <h1 class="text-3xl font-bold text-primary mb-2">Edit Player</h1>
         </div>
@@ -102,6 +102,8 @@ onUnmounted(() => {
                 @focusout="saveChanges"
             ></textarea>
         </div>
+
+        <div class="divider"></div>
 
         <PlayerStatsEditor
             :player-id="props.playerId"
