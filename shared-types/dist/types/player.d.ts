@@ -10,4 +10,5 @@ export interface PlayerStat {
     name: string;
     value: string | number | boolean;
 }
+export type UserPlayer = Pick<Player, "id" | "name" | "notes" | "stats">;
 //# sourceMappingURL=player.d.ts.map

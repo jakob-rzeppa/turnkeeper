@@ -1,10 +1,10 @@
 import useConnection from '@/composables/useConnection';
 import { defineStore } from 'pinia';
-import type { BackendToUserPayloads, Player } from 'shared-types';
+import type { BackendToUserPayloads, UserPlayer } from 'shared-types';
 import { ref } from 'vue';
 
 export const usePlayerStore = defineStore('player', () => {
-    const player = ref<Omit<Player, 'secret'> | null>(null);
+    const player = ref<UserPlayer | null>(null);
 
     const connection = useConnection();
 
