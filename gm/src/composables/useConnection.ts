@@ -3,7 +3,7 @@ import { ref } from 'vue';
 
 const socket = io('http://localhost:3000/gm', { autoConnect: false });
 const isConnected = ref(socket.connected);
-let connectionTimeoutId: number | null = null;
+let connectionTimeoutId: NodeJS.Timeout | null = null;
 
 const CONNECTION_TIMEOUT = 2000; // 2 seconds
 
