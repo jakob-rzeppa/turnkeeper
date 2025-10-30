@@ -1,6 +1,6 @@
 export interface Message {
-    id: string;
-    playerId: string | null;
+    id: number;
+    playerId: number | null;
     sendBy: "player" | "system" | "gm";
     content: string;
     timestamp: Date;
