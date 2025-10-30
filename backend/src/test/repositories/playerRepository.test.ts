@@ -416,7 +416,7 @@ describe('Player Repository', () => {
             expect(player.notes).toBe('Updated notes');
         });
 
-        it("should update an existing player's notes in the database", () => {
+        it("should update an existing player's hidden notes in the database", () => {
             db.exec(
                 "INSERT INTO players (id, name, secret, notes, hidden_notes) VALUES (1, 'Alice', 'secret1', '', '')",
             );

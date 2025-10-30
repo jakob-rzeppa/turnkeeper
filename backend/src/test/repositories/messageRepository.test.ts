@@ -1,7 +1,8 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
-import messageRepository from '../../repositories/messageRepository';
 import { Message } from 'shared-types';
+import { beforeEach, describe, expect, it, vi } from 'vitest';
+
 import { SqliteDatabase } from '../../database/SqliteDatabase';
+import messageRepository from '../../repositories/messageRepository';
 import logger from '../../services/logger';
 
 // Mock the config to use an in-memory database for testing
@@ -30,9 +31,9 @@ describe('Message Repository', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
 
             const newMessage: Omit<Message, 'id' | 'timestamp'> = {
+                content: 'Hello, world!',
                 playerId: 1,
                 sendBy: 'player',
-                content: 'Hello, world!',
             };
 
             messageRepository.createMessage(newMessage);
@@ -40,19 +41,19 @@ describe('Message Repository', () => {
             const messages = db.prepare('SELECT * FROM messages').all();
             expect(messages.length).toBe(1);
             expect(messages[0]).toEqual({
+                content: newMessage.content,
                 id: 1,
                 player_id: newMessage.playerId,
                 send_by: newMessage.sendBy,
-                content: newMessage.content,
-                timestamp: expect.any(String),
+                timestamp: expect.any(String) as unknown,
             });
         });
 
         it('should handle messages meant only for the GM', () => {
             const newMessage: Omit<Message, 'id' | 'timestamp'> = {
+                content: 'This is a GM-only message.',
                 playerId: null,
                 sendBy: 'system',
-                content: 'This is a GM-only message.',
             };
 
             messageRepository.createMessage(newMessage);
@@ -60,32 +61,32 @@ describe('Message Repository', () => {
             const messages = db.prepare('SELECT * FROM messages').all();
             expect(messages.length).toBe(1);
             expect(messages[0]).toEqual({
+                content: newMessage.content,
                 id: 1,
                 player_id: null,
                 send_by: newMessage.sendBy,
-                content: newMessage.content,
-                timestamp: expect.any(String),
+                timestamp: expect.any(String) as unknown,
             });
         });
 
         it('should log an error for invalid sendBy values', () => {
             const newMessage: Omit<Message, 'id' | 'timestamp'> = {
+                content: 'This should fail.',
                 playerId: 1,
                 // @ts-expect-error Testing invalid value
                 sendBy: 'invalid_sender',
-                content: 'This should fail.',
             };
 
             expect(() => {
                 messageRepository.createMessage(newMessage);
             }).not.toThrow();
             expect(logger.error).toHaveBeenCalledWith({
-                message: 'Invalid sendBy value: invalid_sender',
                 details: {
-                    playerId: 1,
                     content: 'This should fail.',
+                    playerId: 1,
                     sendBy: 'invalid_sender',
                 },
+                message: 'Invalid sendBy value: invalid_sender',
             });
         });
     });
@@ -117,24 +118,24 @@ describe('Message Repository', () => {
             expect(messages.length).toBe(3);
             expect(messages).toContainEqual(
                 expect.objectContaining({
+                    content: 'Hello',
                     playerId: 1,
                     sendBy: 'player',
-                    content: 'Hello',
                     timestamp: new Date('2023-01-01 10:00:00'),
                 }),
             );
             expect(messages).toContainEqual(
                 expect.objectContaining({
-                    playerId: 1,
                     content: 'Gm message',
+                    playerId: 1,
                     sendBy: 'gm',
                     timestamp: new Date('2023-01-01 10:02:00'),
                 }),
             );
             expect(messages).toContainEqual(
                 expect.objectContaining({
-                    playerId: 1,
                     content: 'System message',
+                    playerId: 1,
                     sendBy: 'system',
                     timestamp: new Date('2023-01-01 10:01:00'),
                 }),
@@ -177,28 +178,30 @@ describe('Message Repository', () => {
 
             expect(groupedMessages[1]).toContainEqual(
                 expect.objectContaining({
+                    content: 'Hello Alice',
                     playerId: 1,
                     sendBy: 'player',
-                    content: 'Hello Alice',
                     timestamp: new Date('2023-01-01 10:00:00'),
                 }),
             );
             expect(groupedMessages[1]).toContainEqual(
                 expect.objectContaining({
+                    content: 'GM message for Alice',
                     playerId: 1,
                     sendBy: 'gm',
-                    content: 'GM message for Alice',
                     timestamp: new Date('2023-01-01 10:10:00'),
                 }),
             );
             expect(groupedMessages[2]).toContainEqual(
                 expect.objectContaining({
+                    content: 'Hello Bob',
                     playerId: 2,
                     sendBy: 'player',
-                    content: 'Hello Bob',
                     timestamp: new Date('2023-01-01 10:05:00'),
                 }),
             );
+
+            expect(groupedMessages[1][0].timestamp <= groupedMessages[1][1].timestamp).toBe(true);
         });
 
         it('should return an empty object when there are no messages', () => {
@@ -231,10 +234,10 @@ describe('Message Repository', () => {
             messageRepository.deleteAllMessagesByPlayerId(1);
 
             const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                id: number;
-                player_id: number | null;
-                send_by: 'player' | 'system' | 'gm';
                 content: string;
+                id: number;
+                player_id: null | number;
+                send_by: 'gm' | 'player' | 'system';
                 timestamp: string;
             }[];
             expect(remainingMessages.length).toBe(1);
@@ -250,10 +253,10 @@ describe('Message Repository', () => {
             messageRepository.deleteAllMessagesByPlayerId(2); // No messages for player ID 2
 
             const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                id: number;
-                player_id: number | null;
-                send_by: 'player' | 'system' | 'gm';
                 content: string;
+                id: number;
+                player_id: null | number;
+                send_by: 'gm' | 'player' | 'system';
                 timestamp: string;
             }[];
             expect(remainingMessages.length).toBe(1);
@@ -276,10 +279,10 @@ describe('Message Repository', () => {
             messageRepository.deleteMessageById(1);
 
             const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                id: number;
-                player_id: number | null;
-                send_by: 'player' | 'system' | 'gm';
                 content: string;
+                id: number;
+                player_id: null | number;
+                send_by: 'gm' | 'player' | 'system';
                 timestamp: string;
             }[];
             expect(remainingMessages.length).toBe(1);
@@ -295,10 +298,10 @@ describe('Message Repository', () => {
             messageRepository.deleteMessageById(999); // Non-existent ID
 
             const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                id: number;
-                player_id: number | null;
-                send_by: 'player' | 'system' | 'gm';
                 content: string;
+                id: number;
+                player_id: null | number;
+                send_by: 'gm' | 'player' | 'system';
                 timestamp: string;
             }[];
             expect(remainingMessages.length).toBe(1);

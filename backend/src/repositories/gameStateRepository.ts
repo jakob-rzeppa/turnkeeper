@@ -21,26 +21,12 @@ const gameStateRepository = {
                 gamestate.currentPlayerIndex,
                 gamestate.playerOrder.map((p) => p.id).join(','),
             );
-        } catch (error: unknown) {
+        } catch {
             // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
         }
     },
     deleteGameState: (id: number) => {
-        try {
-            db.prepare('DELETE FROM game_state WHERE id = ?').run(id);
-        } catch (error: unknown) {
-            // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
-        }
+        db.prepare('DELETE FROM game_state WHERE id = ?').run(id);
     },
     getGameStateById: (id: number): GameState | null => {
         const row = db.prepare('SELECT * FROM game_state WHERE id = ?').get(id) as
@@ -128,17 +114,21 @@ const gameStateRepository = {
             return;
         }
 
-        if (gameStateRow.current_player_index >= newPlayerOrderIds.length) {
-            // If the current player index is out of bounds after removal, set it to 0
-            db.prepare(
-                'UPDATE game_state SET current_player_index = 0, round_number = round_number + 1 WHERE id = ?',
-            ).run(GAME_STATE_ID);
-        }
+        try {
+            if (gameStateRow.current_player_index >= newPlayerOrderIds.length) {
+                // If the current player index is out of bounds after removal, set it to 0
+                db.prepare(
+                    'UPDATE game_state SET current_player_index = 0, round_number = round_number + 1 WHERE id = ?',
+                ).run(GAME_STATE_ID);
+            }
 
-        db.prepare('UPDATE game_state SET player_order = ? WHERE id = ?').run(
-            newPlayerOrderIds.join(','),
-            GAME_STATE_ID,
-        );
+            db.prepare('UPDATE game_state SET player_order = ? WHERE id = ?').run(
+                newPlayerOrderIds.join(','),
+                GAME_STATE_ID,
+            );
+        } catch {
+            // Handle error silently
+        }
     },
     updateGameState: (id: number, updatedFields: Partial<Omit<GameState, 'id'>>) => {
         const fieldsToUpdate: string[] = [];

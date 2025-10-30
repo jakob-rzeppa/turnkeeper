@@ -10,13 +10,8 @@ const playerRepository = {
         const secret = makePlayerSecret({ length: 4 });
         try {
             db.prepare('INSERT INTO players (name, secret) VALUES (?, ?)').run(playerName, secret);
-        } catch (error: unknown) {
+        } catch {
             // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
         }
     },
     deletePlayer: (id: number): void => {
@@ -33,10 +28,10 @@ const playerRepository = {
                 'SELECT p.id, p.name, p.secret, p.notes, p.hidden_notes AS hiddenNotes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id ORDER BY p.id',
             )
             .all() as {
+            hiddenNotes: string;
             id: number;
             name: string;
             notes: string;
-            hiddenNotes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -50,10 +45,10 @@ const playerRepository = {
             // Create the player if not seen before
             if (players[players.length - 1]?.id !== row.id) {
                 players.push({
+                    hiddenNotes: row.hiddenNotes,
                     id: row.id,
                     name: row.name,
                     notes: row.notes,
-                    hiddenNotes: row.hiddenNotes,
                     secret: row.secret,
                     stats: [],
                 });
@@ -96,10 +91,10 @@ const playerRepository = {
                 'SELECT p.id, p.name, p.secret, p.notes, p.hidden_notes AS hiddenNotes, s.id AS statId, s.name AS statName, s.type AS statType, s.value AS statValue FROM players p LEFT JOIN player_stats s ON p.id = s.player_id WHERE p.id = ?',
             )
             .all(id) as {
+            hiddenNotes: string;
             id: number;
             name: string;
             notes: string;
-            hiddenNotes: string;
             secret: string;
             statId?: number;
             statName?: string;
@@ -112,10 +107,10 @@ const playerRepository = {
         }
 
         const player: Player = {
+            hiddenNotes: dbRes[0].hiddenNotes,
             id: dbRes[0].id,
             name: dbRes[0].name,
             notes: dbRes[0].notes,
-            hiddenNotes: dbRes[0].hiddenNotes,
             secret: dbRes[0].secret,
             stats: [],
         };
@@ -194,13 +189,8 @@ const playerRepository = {
 
         try {
             db.prepare(query).run(...values);
-        } catch (error: unknown) {
+        } catch {
             // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
         }
     },
 };
