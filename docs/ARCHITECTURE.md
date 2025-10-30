@@ -19,6 +19,22 @@ sequenceDiagram
     Backend-->>-User: "game:info" updated Player Order
 ```
 
+## Messages event sequence
+
+```mermaid
+sequenceDiagram
+    Gm->>+Backend: "messages:send"
+    Backend-->>Gm: "messages:new"
+    Backend-->>-User: "messages:new"
+    User->>+Backend: "messages:send"
+    Backend-->>Gm: "messages:new"
+    Backend-->>-User: "messages:new"
+    Gm->>+Backend: "messages:history"
+    Backend-->>-Gm: "messages:all"
+    User->>+Backend: "messages:history"
+    Backend-->>-User: "messages:all"
+```
+
 ## Gm connection
 
 ```mermaid
