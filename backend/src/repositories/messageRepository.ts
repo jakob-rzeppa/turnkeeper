@@ -97,6 +97,32 @@ const messageRepository = {
 
         return messages;
     },
+    getMessagesWithoutPlayerId: (): Message[] => {
+        const stmt = db.prepare(
+            `SELECT * FROM messages WHERE player_id IS NULL ORDER BY timestamp ASC`,
+        );
+        const rows = stmt.all() as {
+            content: string;
+            id: number;
+            player_id: null | number;
+            send_by: 'gm' | 'player' | 'system';
+            timestamp: string;
+        }[];
+
+        if (rows.length === 0) {
+            return [];
+        }
+
+        const messages: Message[] = rows.map((row) => ({
+            content: row.content,
+            id: row.id,
+            playerId: row.player_id,
+            sendBy: row.send_by,
+            timestamp: new Date(row.timestamp),
+        }));
+
+        return messages;
+    },
 };
 
 export default messageRepository;
