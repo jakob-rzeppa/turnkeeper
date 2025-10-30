@@ -26,9 +26,15 @@ sequenceDiagram
     Gm->>+Backend: "messages:send"
     Backend-->>Gm: "messages:new"
     Backend-->>-User: "messages:new"
+
     User->>+Backend: "messages:send"
     Backend-->>Gm: "messages:new"
     Backend-->>-User: "messages:new"
+
+    note over Backend: Some event happend
+    Backend-->>Gm: "messages:new"
+    Backend-->>User: "messages:new"
+
     Gm->>+Backend: "messages:history"
     Backend-->>-Gm: "messages:all"
     User->>+Backend: "messages:history"
