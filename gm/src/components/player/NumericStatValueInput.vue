@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import { ref, watch } from 'vue';
 
+const emit = defineEmits<{
+    (e: 'update:value', statId: string, value: number): void;
+}>();
+
 const props = defineProps<{
     class: string;
     statId: string;
@@ -37,15 +41,11 @@ watch(
     (newValue) => {
         let newValueAsNumber = eval(newValue);
 
-        if (typeof newValueAsNumber !== 'number' || isNaN(newValueAsNumber)) {
-            newValueAsNumber = 0;
-        }
-
         // Round to 2 decimal points
         newValueAsNumber = Math.round(newValueAsNumber * 100) / 100;
 
         if (props.editableStats[props.statId]) {
-            props.editableStats[props.statId].value = newValueAsNumber;
+            emit('update:value', props.statId, Math.max(0, newValueAsNumber));
         }
     },
     { immediate: true },

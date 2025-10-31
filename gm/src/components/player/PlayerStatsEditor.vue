@@ -130,6 +130,11 @@ onUnmounted(() => {
                             :baseStats="baseStats"
                             :editableStats="editableStats"
                             :statId="stat.id.toString()"
+                            @update:value="
+                                (statId: string, value: number) => {
+                                    editableStats[statId].value = value;
+                                }
+                            "
                         />
                         <input
                             v-if="editableStats[stat.id].type === 'string'"

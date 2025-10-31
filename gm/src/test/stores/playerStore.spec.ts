@@ -54,6 +54,7 @@ describe('usePlayerStore', () => {
                         name: 'Alice',
                         secret: 'abc123',
                         notes: 'Loves chess',
+                        hiddenNotes: '',
                         stats: [
                             { id: 1, name: 'gamesPlayed', value: 10 },
                             { id: 2, name: 'wins', value: 5 },
@@ -68,6 +69,7 @@ describe('usePlayerStore', () => {
                     name: 'Alice',
                     secret: 'abc123',
                     notes: 'Loves chess',
+                    hiddenNotes: '',
                     stats: [
                         { id: 1, name: 'gamesPlayed', value: 10 },
                         { id: 2, name: 'wins', value: 5 },
