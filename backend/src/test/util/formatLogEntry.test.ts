@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import { formatLogEntry } from '../../util/formatLogEntry';
+import { formatLogEntry } from '../../util/formatLogEntry.js';
 
 describe('formatLogEntry', () => {
     it('should format log entries correctly', () => {

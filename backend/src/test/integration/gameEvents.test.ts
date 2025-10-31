@@ -2,7 +2,7 @@ import { GmToBackendEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
+import GmController from '../../connectionControllers/GmController.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({

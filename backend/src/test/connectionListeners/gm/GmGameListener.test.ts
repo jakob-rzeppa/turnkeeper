@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 import GmGameListener from '../../../connectionListeners/gm/GmGameListener.js';
 import gameStateHandler from '../../../services/gameStateHandler.js';
 
-vi.mock('../../../services/gameStateHandler.js', () => ({
+vi.mock('../../../services/gameStateHandler', () => ({
     default: {
         deleteGameState: vi.fn(),
         getGameState: vi.fn(),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-import makePlayerSecret from '../../util/makePlayerSecret';
+import makePlayerSecret from '../../util/makePlayerSecret.js';
 
 describe('makePlayerSecret', () => {
     it('generates a secret of the specified length', () => {

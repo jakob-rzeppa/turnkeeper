@@ -1,6 +1,6 @@
-import type { GameState } from "./game";
-import type { LogEntry } from "./log";
-import type { Player, PlayerStat } from "./player";
+import type { GameState } from "./game.js";
+import type { LogEntry } from "./log.js";
+import type { Player, PlayerStat } from "./player.js";
 export interface BackendToGmEventPayloads {
     "game:info": {
         gameState: GameState | null;

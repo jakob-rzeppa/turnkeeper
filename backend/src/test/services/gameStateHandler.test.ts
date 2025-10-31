@@ -1,11 +1,11 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
-import UserController from '../../connectionControllers/UserController';
-import gameStateRepository from '../../repositories/gameStateRepository';
-import playerRepository from '../../repositories/playerRepository';
-import gameStateHandler from '../../services/gameStateHandler';
-import logger from '../../services/logger';
+import GmController from '../../connectionControllers/GmController.js';
+import UserController from '../../connectionControllers/UserController.js';
+import gameStateRepository from '../../repositories/gameStateRepository.js';
+import playerRepository from '../../repositories/playerRepository.js';
+import gameStateHandler from '../../services/gameStateHandler.js';
+import logger from '../../services/logger.js';
 
 // Using a constant ID since for now there is only one game state at a time
 const GAME_STATE_ID = 1;

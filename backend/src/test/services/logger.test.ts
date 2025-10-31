@@ -1,8 +1,8 @@
 import { describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
-import logger from '../../services/logger';
-import { formatLogEntry } from '../../util/formatLogEntry';
+import GmController from '../../connectionControllers/GmController.js';
+import logger from '../../services/logger.js';
+import { formatLogEntry } from '../../util/formatLogEntry.js';
 
 // Mock GmController to avoid side effects
 vi.mock('../../connectionControllers/GmController', () => ({

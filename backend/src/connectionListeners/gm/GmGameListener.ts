@@ -1,7 +1,7 @@
 import { GmToBackendEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
-import gameStateHandler from '../../services/gameStateHandler';
+import gameStateHandler from '../../services/gameStateHandler.js';
 
 /**
  * Listener for GM actions to control the game loop (turns, rounds, player order)

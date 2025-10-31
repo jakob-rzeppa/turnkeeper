@@ -6,11 +6,11 @@
         "outDir": "./dist",
         "rootDir": "./src",
 
-        "noEmit": true,
+        "noEmit": false,
         "tsBuildInfoFile": "./node_modules/.tmp/tsconfig.node.tsbuildinfo",
 
-        "module": "ESNext",
-        "moduleResolution": "Bundler",
+        "module": "NodeNext",
+        "moduleResolution": "NodeNext",
         "types": ["node"]
     }
 }

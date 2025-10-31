@@ -1,9 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
-import UserController from '../../connectionControllers/UserController';
-import { statsRepository } from '../../repositories/statsRepository';
-import { statsHandler } from '../../services/statsHandler';
+import GmController from '../../connectionControllers/GmController.js';
+import UserController from '../../connectionControllers/UserController.js';
+import { statsRepository } from '../../repositories/statsRepository.js';
+import { statsHandler } from '../../services/statsHandler.js';
 
 vi.mock('../../repositories/statsRepository.ts', () => ({
     statsRepository: {

@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
+import GmController from '../../connectionControllers/GmController.js';
 
 // Mock all emitters and listeners
 vi.mock('../../connectionEmitters/gm/GmGameEmitter');

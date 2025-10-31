@@ -1,7 +1,7 @@
 import { GameState } from 'shared-types';
 
-import { SqliteDatabase } from '../database/SqliteDatabase';
-import logger from '../services/logger';
+import { SqliteDatabase } from '../database/SqliteDatabase.js';
+import logger from '../services/logger.js';
 
 const db = SqliteDatabase.getInstance();
 

@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 
-import config from '../config/config';
+import config from '../config/config.js';
 
 export class SqliteDatabase extends Database {
     private static instance: null | SqliteDatabase = null;

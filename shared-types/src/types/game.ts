@@ -1,4 +1,4 @@
-import type { Player } from "./player";
+import type { Player } from "./player.js";
 
 export type PlayerOrderWithNames = Pick<Player, "id" | "name">[];
 

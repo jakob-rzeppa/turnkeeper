@@ -1,8 +1,8 @@
 import { PlayerStat } from 'shared-types';
 
-import { SqliteDatabase } from '../database/SqliteDatabase';
-import logger from '../services/logger';
-import playerRepository from './playerRepository';
+import { SqliteDatabase } from '../database/SqliteDatabase.js';
+import logger from '../services/logger.js';
+import playerRepository from './playerRepository.js';
 
 const db = SqliteDatabase.getInstance();
 
