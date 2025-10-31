@@ -2,7 +2,9 @@ import io from 'socket.io-client';
 import { getCookie, removeCookie, setCookie } from 'typescript-cookie';
 import { ref } from 'vue';
 
-const socket = io('http://localhost:3000/user', { autoConnect: false });
+const socket = io(import.meta.env.VITE_SOCKET_URL || 'http://localhost:3000/user', {
+    autoConnect: false,
+});
 const isConnected = ref(socket.connected);
 let connectionTimeoutId: number | null = null;
 
