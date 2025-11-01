@@ -517,4 +517,53 @@ describe('gameStateHandler', () => {
             ).toHaveBeenCalled();
         });
     });
+
+    describe('updateNotes', () => {
+        it('should update the notes in the game state', () => {
+            const newNotes = 'Updated game notes';
+
+            gameStateHandler.updateNotes(newNotes);
+
+            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                expect.objectContaining({
+                    notes: newNotes,
+                }),
+            );
+        });
+
+        it('should send game info to gm and users when everything worked', () => {
+            const newNotes = 'Updated game notes';
+
+            gameStateHandler.updateNotes(newNotes);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
+        });
+    });
+
+    describe('updateHiddenNotes', () => {
+        it('should update the hidden notes in the game state', () => {
+            const newHiddenNotes = 'Updated hidden notes';
+
+            gameStateHandler.updateHiddenNotes(newHiddenNotes);
+
+            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                expect.objectContaining({
+                    hiddenNotes: newHiddenNotes,
+                }),
+            );
+        });
+
+        it('should send game info to gm when everything worked', () => {
+            const newHiddenNotes = 'Updated hidden notes';
+
+            gameStateHandler.updateHiddenNotes(newHiddenNotes);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+        });
+    });
 });

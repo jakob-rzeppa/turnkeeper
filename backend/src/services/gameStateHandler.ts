@@ -125,6 +125,23 @@ const gameStateHandler = {
             instance.userGameEmitter.sendGameInfo();
         });
     },
+    updateHiddenNotes: (newHiddenNotes: string): void => {
+        gameStateRepository.updateGameState(GAME_STATE_ID, {
+            hiddenNotes: newHiddenNotes,
+        });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+    },
+    updateNotes: (newNotes: string): void => {
+        gameStateRepository.updateGameState(GAME_STATE_ID, {
+            notes: newNotes,
+        });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
+    },
     updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
         const playerNames = newPlayerIdOrder.map((id) => playerRepository.getPlayerNameById(id));
 
