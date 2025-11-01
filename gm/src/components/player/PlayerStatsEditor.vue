@@ -31,7 +31,7 @@ watch(
 const {
     baseObject: baseStats,
     editableObject: editableStats,
-    idEditableObjectChanged: areStatsChanged,
+    isEditableObjectChanged: areStatsChanged,
     saveChanges,
 } = useAutosaveObject<{
     [keyof: string]: {

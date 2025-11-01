@@ -15,7 +15,7 @@ const emit = defineEmits(['close']);
 const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
-const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
+const { editableObject, isEditableObjectChanged, saveChanges } = useAutosaveObject<{
     name: string;
     secret: string;
     notes: string;
@@ -57,24 +57,24 @@ onUnmounted(() => {
 
         <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
             <div>
-                <label class="label">Player Name{{ idEditableObjectChanged ? '*' : '' }}</label>
+                <label class="label">Player Name{{ isEditableObjectChanged ? '*' : '' }}</label>
                 <input
                     type="text"
                     placeholder="Enter player name..."
                     v-model="editableObject.name"
-                    :class="'input w-full ' + (idEditableObjectChanged ? 'input-accent' : '')"
+                    :class="'input w-full ' + (isEditableObjectChanged ? 'input-accent' : '')"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
             </div>
 
             <div>
-                <label class="label">Secret Code{{ idEditableObjectChanged ? '*' : '' }}</label>
+                <label class="label">Secret Code{{ isEditableObjectChanged ? '*' : '' }}</label>
                 <input
                     type="text"
                     placeholder="Enter secret code..."
                     v-model="editableObject.secret"
-                    :class="'input w-full ' + (idEditableObjectChanged ? 'input-accent' : '')"
+                    :class="'input w-full ' + (isEditableObjectChanged ? 'input-accent' : '')"
                     @focusout="saveChanges"
                     @keypress="(e) => (e.key === 'Enter' ? saveChanges() : null)"
                 />
@@ -82,10 +82,10 @@ onUnmounted(() => {
         </div>
 
         <div>
-            <label class="label">Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+            <label class="label">Notes{{ isEditableObjectChanged ? '*' : '' }}</label>
             <textarea
                 class="textarea w-full h-32"
-                :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+                :class="isEditableObjectChanged ? 'textarea-accent' : ''"
                 placeholder="Enter notes about the player..."
                 v-model="editableObject.notes"
                 @focusout="saveChanges"
@@ -93,10 +93,10 @@ onUnmounted(() => {
         </div>
 
         <div>
-            <label class="label">Hidden Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+            <label class="label">Hidden Notes{{ isEditableObjectChanged ? '*' : '' }}</label>
             <textarea
                 class="textarea w-full h-32"
-                :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+                :class="isEditableObjectChanged ? 'textarea-accent' : ''"
                 placeholder="Enter notes about the player..."
                 v-model="editableObject.hiddenNotes"
                 @focusout="saveChanges"
