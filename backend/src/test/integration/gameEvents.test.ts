@@ -92,7 +92,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -110,7 +112,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 1,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -142,7 +146,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 1,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -161,7 +167,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 2,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -186,7 +194,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 3, name: 'Player Three' },
@@ -210,7 +220,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 3, name: 'Player Three' },
                     { id: 1, name: 'Player One' },
@@ -238,7 +250,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).not.toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
