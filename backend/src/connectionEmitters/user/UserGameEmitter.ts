@@ -16,7 +16,17 @@ export default class UserGameEmitter {
     public sendGameInfo() {
         const gameState = gameStateHandler.getGameState();
 
-        const payload: BackendToUserPayloads['game:info'] = { gameState };
+        const payload: BackendToUserPayloads['game:info'] = {
+            gameState: gameState
+                ? {
+                      currentPlayerIndex: gameState.currentPlayerIndex,
+                      id: gameState.id,
+                      notes: gameState.notes,
+                      playerOrder: gameState.playerOrder,
+                      roundNumber: gameState.roundNumber,
+                  }
+                : null,
+        };
 
         this.socket.emit('game:info', payload);
     }
