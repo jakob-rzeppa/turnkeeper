@@ -19,6 +19,12 @@ export interface GmToBackendEventPayloads {
     "game:playerOrder:update": {
         playerIdsInOrder: number[];
     };
+    "game:notes:update": {
+        notes: string;
+    };
+    "game:hiddenNotes:update": {
+        hiddenNotes: string;
+    };
     "players:create": {
         name: string;
     };

@@ -11,6 +11,8 @@ vi.mock('../../../services/gameStateHandler', () => ({
         initGameState: vi.fn(),
         nextTurn: vi.fn(),
         updateGameState: vi.fn(),
+        updateHiddenNotes: vi.fn(),
+        updateNotes: vi.fn(),
         updatePlayerOrder: vi.fn(),
     },
 }));
@@ -46,6 +48,11 @@ describe('GmGameListener', () => {
             expect(mockSocket.on).toHaveBeenCalledWith('game:end', expect.any(Function));
             expect(mockSocket.on).toHaveBeenCalledWith(
                 'game:playerOrder:update',
+                expect.any(Function),
+            );
+            expect(mockSocket.on).toHaveBeenCalledWith('game:notes:update', expect.any(Function));
+            expect(mockSocket.on).toHaveBeenCalledWith(
+                'game:hiddenNotes:update',
                 expect.any(Function),
             );
         });
@@ -98,6 +105,28 @@ describe('GmGameListener', () => {
 
             expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledWith(playerIdsInOrder);
             expect(gameStateHandler.updatePlayerOrder).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('game:notes:update event', () => {
+        it('should update the notes in the gameloop', () => {
+            const notes = 'These are the updated game notes.';
+
+            eventHandlers['game:notes:update']({ notes });
+
+            expect(gameStateHandler.updateNotes).toHaveBeenCalledWith(notes);
+            expect(gameStateHandler.updateNotes).toHaveBeenCalledTimes(1);
+        });
+    });
+
+    describe('game:hiddenNotes:update event', () => {
+        it('should update the hidden notes in the gameloop', () => {
+            const hiddenNotes = 'These are the updated hidden notes.';
+
+            eventHandlers['game:hiddenNotes:update']({ hiddenNotes });
+
+            expect(gameStateHandler.updateHiddenNotes).toHaveBeenCalledWith(hiddenNotes);
+            expect(gameStateHandler.updateHiddenNotes).toHaveBeenCalledTimes(1);
         });
     });
 });

@@ -7,12 +7,19 @@ export interface BackendToGmEventPayloads {
     "log:entry": { entry: LogEntry };
     "players:info": { players: Player[] };
 }
+
 export interface GmToBackendEventPayloads {
     "game:init": {
         playerIdsInOrder: number[];
     };
     "game:playerOrder:update": {
         playerIdsInOrder: number[];
+    };
+    "game:notes:update": {
+        notes: string;
+    };
+    "game:hiddenNotes:update": {
+        hiddenNotes: string;
     };
     "players:create": {
         name: string;
