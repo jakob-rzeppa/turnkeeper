@@ -11,7 +11,7 @@ const GAME_STATE_ID = 1;
 // In that case we would need to save the current game state Id in-memory
 
 const gameStateRepository = {
-    createGameState: (gamestate: Omit<GameState, 'id'>) => {
+    createGameState: (gamestate: Omit<GameState, 'hiddenNotes' | 'id' | 'notes'>) => {
         try {
             db.prepare(
                 'INSERT INTO game_state (id, round_number, current_player_index, player_order) VALUES (?, ?, ?, ?)',
@@ -47,7 +47,9 @@ const gameStateRepository = {
             | undefined
             | {
                   current_player_index: number;
+                  hidden_notes: string;
                   id: number;
+                  notes: string;
                   player_order: string;
                   round_number: number;
               };
@@ -57,7 +59,9 @@ const gameStateRepository = {
         if (row.player_order.length === 0) {
             return {
                 currentPlayerIndex: row.current_player_index,
+                hiddenNotes: row.hidden_notes,
                 id: row.id,
+                notes: row.notes,
                 playerOrder: [],
                 roundNumber: row.round_number,
             };
@@ -95,7 +99,9 @@ const gameStateRepository = {
 
         return {
             currentPlayerIndex: row.current_player_index,
+            hiddenNotes: row.hidden_notes,
             id: row.id,
+            notes: row.notes,
             playerOrder: orderedPlayerRows,
             roundNumber: row.round_number,
         };

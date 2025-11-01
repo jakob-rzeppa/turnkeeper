@@ -33,15 +33,17 @@ describe('gameStateRepository', () => {
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2'), (3, 'Charlie', 'secret3')",
             );
             db.exec(`
-                INSERT INTO game_state (id, round_number, current_player_index, player_order)
-                VALUES (1, 2, 0, '1,2,3')
+                INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                VALUES (1, 2, 0, '1,2,3', 'Some notes', 'Some hidden notes')
             `);
 
             const gamestate = gameStateRepository.getGameStateById(1);
 
             expect(gamestate).toEqual({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Some hidden notes',
                 id: 1,
+                notes: 'Some notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -66,7 +68,9 @@ describe('gameStateRepository', () => {
 
             expect(gamestate).toEqual({
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 2,
+                notes: '',
                 playerOrder: [],
                 roundNumber: 1,
             });
@@ -83,7 +87,9 @@ describe('gameStateRepository', () => {
 
             expect(gamestate).toEqual({
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 3,
+                notes: '',
                 playerOrder: [{ id: 4, name: 'Dave' }],
                 roundNumber: 1,
             });
@@ -117,7 +123,9 @@ describe('gameStateRepository', () => {
 
             expect(gamestate).toEqual({
                 currentPlayerIndex: 1,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
                 playerOrder: [
                     { id: 7, name: 'Grace' },
                     { id: 5, name: 'Eve' },
@@ -143,7 +151,9 @@ describe('gameStateRepository', () => {
 
             const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
                 current_player_index: number;
+                hidden_notes: string;
                 id: number;
+                notes: string;
                 player_order: string;
                 round_number: number;
             };
@@ -152,6 +162,8 @@ describe('gameStateRepository', () => {
             expect(row.round_number).toBe(0);
             expect(row.current_player_index).toBe(0);
             expect(row.player_order).toBe('1,2');
+            expect(row.notes).toBe('');
+            expect(row.hidden_notes).toBe('');
         });
     });
 
@@ -159,30 +171,36 @@ describe('gameStateRepository', () => {
         describe('when updating an existing game state', () => {
             it('should update the game state', () => {
                 db.exec(`
-                    INSERT INTO game_state (id, round_number, current_player_index, player_order)
-                    VALUES (1, 1, 0, '1,2')
+                    INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                    VALUES (1, 1, 0, '1,2', 'Test notes', 'Test hidden notes')
                 `);
 
                 gameStateRepository.updateGameState(1, {
                     currentPlayerIndex: 1,
+                    hiddenNotes: 'Updated hidden notes',
+                    notes: 'Updated notes',
                     roundNumber: 2,
                 });
 
                 const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
                     current_player_index: number;
+                    hidden_notes: string;
                     id: number;
+                    notes: string;
                     player_order: string;
                     round_number: number;
                 };
 
                 expect(row.round_number).toBe(2);
                 expect(row.current_player_index).toBe(1);
+                expect(row.hidden_notes).toBe('Updated hidden notes');
+                expect(row.notes).toBe('Updated notes');
             });
 
             it('should not update non-provided fields', () => {
                 db.exec(`
-                    INSERT INTO game_state (id, round_number, current_player_index, player_order)
-                    VALUES (1, 1, 0, '1,2')
+                    INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                    VALUES (1, 1, 0, '1,2', 'Test notes', 'Test hidden notes')
                 `);
 
                 gameStateRepository.updateGameState(1, {
@@ -191,13 +209,18 @@ describe('gameStateRepository', () => {
 
                 const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
                     current_player_index: number;
+                    hidden_notes: string;
                     id: number;
+                    notes: string;
                     player_order: string;
                     round_number: number;
                 };
 
                 expect(row.round_number).toBe(3);
                 expect(row.current_player_index).toBe(0);
+                expect(row.player_order).toBe('1,2');
+                expect(row.hidden_notes).toBe('Test hidden notes');
+                expect(row.notes).toBe('Test notes');
             });
 
             it('should update player order', () => {
@@ -213,11 +236,10 @@ describe('gameStateRepository', () => {
                     ],
                 });
 
-                const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
-                    current_player_index: number;
-                    id: number;
+                const row = db
+                    .prepare('SELECT player_order FROM game_state WHERE id = 1')
+                    .get() as {
                     player_order: string;
-                    round_number: number;
                 };
 
                 expect(row.player_order).toBe('2,1');

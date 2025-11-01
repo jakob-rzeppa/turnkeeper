@@ -36,7 +36,7 @@ export class SqliteDatabase extends Database {
         );
 
         this.exec(
-            `CREATE TABLE IF NOT EXISTS game_state (id INTEGER PRIMARY KEY, round_number INT NOT NULL, current_player_index INT NOT NULL, player_order TEXT NOT NULL)`,
+            `CREATE TABLE IF NOT EXISTS game_state (id INTEGER PRIMARY KEY, round_number INT NOT NULL, current_player_index INT NOT NULL, player_order TEXT NOT NULL, notes TEXT NOT NULL DEFAULT "", hidden_notes TEXT NOT NULL DEFAULT "")`,
         );
     }
 }
