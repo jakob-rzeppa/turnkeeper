@@ -5,7 +5,7 @@ const playerStore = usePlayerStore();
 </script>
 
 <template>
-    <div class="divider">Stats</div>
+    <div class="divider">Your Stats</div>
 
     <div v-if="!playerStore.player">
         <div class="alert alert-error">
