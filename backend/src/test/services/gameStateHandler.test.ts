@@ -74,7 +74,9 @@ describe('gameStateHandler', () => {
         it('should return the current game state', () => {
             const expectedGameState = {
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -216,7 +218,9 @@ describe('gameStateHandler', () => {
         it('should update the currentPlayerIndex to the next player', () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -237,7 +241,9 @@ describe('gameStateHandler', () => {
         it('should increment roundNumber and reset currentPlayerIndex when at end of player order', () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 1,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -259,7 +265,9 @@ describe('gameStateHandler', () => {
         it('should handle empty player order', () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [],
                 roundNumber: 1,
             });
@@ -289,7 +297,9 @@ describe('gameStateHandler', () => {
         it('should send game info to gm and users when everything worked', () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -334,7 +344,9 @@ describe('gameStateHandler', () => {
             vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Alice');
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -354,7 +366,9 @@ describe('gameStateHandler', () => {
             vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Charlie');
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -380,7 +394,9 @@ describe('gameStateHandler', () => {
             vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Charlie');
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -400,8 +416,8 @@ describe('gameStateHandler', () => {
     describe('removeDeletedPlayersFromPlayerOrder', () => {
         it('should call repository removeDeletedPlayersFromPlayerOrder method', () => {
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
-                { id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
+                { hiddenNotes: '', id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
+                { hiddenNotes: '', id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();
@@ -414,7 +430,9 @@ describe('gameStateHandler', () => {
         it('should send game info to gm and users when everything worked', () => {
             vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Test hidden notes',
                 id: 1,
+                notes: 'Test notes',
                 playerOrder: [
                     { id: 1, name: 'Alice' },
                     { id: 2, name: 'Bob' },
@@ -423,8 +441,8 @@ describe('gameStateHandler', () => {
                 roundNumber: 1,
             });
             vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
-                { id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
+                { hiddenNotes: '', id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
+                { hiddenNotes: '', id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
             ]);
 
             gameStateHandler.removeDeletedPlayersFromPlayerOrder();

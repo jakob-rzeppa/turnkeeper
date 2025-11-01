@@ -68,7 +68,7 @@ const gameStateHandler = {
             return;
         }
 
-        const newGameState: Omit<GameState, 'id'> = {
+        const newGameState: Omit<GameState, 'hiddenNotes' | 'id' | 'notes'> = {
             currentPlayerIndex: 0,
             playerOrder: newPlayerIdOrder.map((id, index) => ({
                 id,
