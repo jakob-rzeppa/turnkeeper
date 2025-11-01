@@ -165,6 +165,16 @@ const gameStateRepository = {
             values.push(updatedFields.playerOrder.map((p) => p.id).join(','));
         }
 
+        if (updatedFields.notes !== undefined) {
+            fieldsToUpdate.push('notes = ?');
+            values.push(updatedFields.notes);
+        }
+
+        if (updatedFields.hiddenNotes !== undefined) {
+            fieldsToUpdate.push('hidden_notes = ?');
+            values.push(updatedFields.hiddenNotes);
+        }
+
         if (fieldsToUpdate.length === 0) {
             return;
         }
