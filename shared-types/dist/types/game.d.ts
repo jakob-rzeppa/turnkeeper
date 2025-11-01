@@ -6,5 +6,7 @@ export interface GameState {
     currentPlayerIndex: number;
     roundNumber: number;
     notes: string;
+    hiddenNotes: string;
 }
+export type UserGameState = Pick<GameState, "id" | "playerOrder" | "currentPlayerIndex" | "roundNumber" | "notes">;
 //# sourceMappingURL=game.d.ts.map

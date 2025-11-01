@@ -8,4 +8,11 @@ export interface GameState {
     currentPlayerIndex: number;
     roundNumber: number;
     notes: string;
+    hiddenNotes: string;
 }
+
+// The UserGameState type only exposes non-sensitive information and is used for game state representation in the user interface.
+export type UserGameState = Pick<
+    GameState,
+    "id" | "playerOrder" | "currentPlayerIndex" | "roundNumber" | "notes"
+>;
