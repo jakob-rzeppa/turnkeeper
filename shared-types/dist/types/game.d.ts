@@ -5,5 +5,6 @@ export interface GameState {
     playerOrder: PlayerOrderWithNames;
     currentPlayerIndex: number;
     roundNumber: number;
+    notes: string;
 }
 //# sourceMappingURL=game.d.ts.map

@@ -7,4 +7,5 @@ export interface GameState {
     playerOrder: PlayerOrderWithNames;
     currentPlayerIndex: number;
     roundNumber: number;
+    notes: string;
 }
