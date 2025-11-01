@@ -1,10 +1,10 @@
 import useConnection from '@/composables/useConnection';
 import { defineStore } from 'pinia';
-import { type GameState, type BackendToUserPayloads } from 'shared-types';
+import { type BackendToUserPayloads, type UserGameState } from 'shared-types';
 import { computed, ref } from 'vue';
 
 export const useGameStateStore = defineStore('game', () => {
-    const gameState = ref<GameState | null>(null);
+    const gameState = ref<UserGameState | null>(null);
 
     const currentPlayer = computed<{ id: number; name: string } | null>(
         () => gameState.value?.playerOrder[gameState.value.currentPlayerIndex] ?? null,
