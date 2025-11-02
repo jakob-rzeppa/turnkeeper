@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import config from '../../config/config';
-import { SqliteDatabase } from '../../database/SqliteDatabase';
+import config from '../../config/config.js';
+import { SqliteDatabase } from '../../database/SqliteDatabase.js';
 
 vi.mock('../../config/config.ts', () => ({
     default: {

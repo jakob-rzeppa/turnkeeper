@@ -1,10 +1,10 @@
 import { GameState } from 'shared-types';
 
-import GmController from '../connectionControllers/GmController';
-import UserController from '../connectionControllers/UserController';
-import gameStateRepository from '../repositories/gameStateRepository';
-import playerRepository from '../repositories/playerRepository';
-import logger from './logger';
+import GmController from '../connectionControllers/GmController.js';
+import UserController from '../connectionControllers/UserController.js';
+import gameStateRepository from '../repositories/gameStateRepository.js';
+import playerRepository from '../repositories/playerRepository.js';
+import logger from './logger.js';
 
 // Using a constant ID since for now there is only one game state at a time
 const GAME_STATE_ID = 1;
@@ -68,7 +68,7 @@ const gameStateHandler = {
             return;
         }
 
-        const newGameState: Omit<GameState, 'id'> = {
+        const newGameState: Omit<GameState, 'hiddenNotes' | 'id' | 'notes'> = {
             currentPlayerIndex: 0,
             playerOrder: newPlayerIdOrder.map((id, index) => ({
                 id,
@@ -119,6 +119,23 @@ const gameStateHandler = {
         gameStateRepository.removeDeletedPlayersFromPlayerOrder(
             allPlayers.map((player) => player.id),
         );
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((instance) => {
+            instance.userGameEmitter.sendGameInfo();
+        });
+    },
+    updateHiddenNotes: (newHiddenNotes: string): void => {
+        gameStateRepository.updateGameState(GAME_STATE_ID, {
+            hiddenNotes: newHiddenNotes,
+        });
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+    },
+    updateNotes: (newNotes: string): void => {
+        gameStateRepository.updateGameState(GAME_STATE_ID, {
+            notes: newNotes,
+        });
 
         GmController.getInstance()?.gmGameEmitter.sendGameInfo();
         UserController.getAllInstances().forEach((instance) => {

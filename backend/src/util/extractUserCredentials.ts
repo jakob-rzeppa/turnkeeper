@@ -1,6 +1,6 @@
 import { Socket } from 'socket.io';
 
-import playerRepository from '../repositories/playerRepository';
+import playerRepository from '../repositories/playerRepository.js';
 
 export const extractUserCredentials = (
     socket: Socket,

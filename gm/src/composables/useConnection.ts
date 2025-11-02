@@ -1,7 +1,9 @@
 import io from 'socket.io-client';
 import { ref } from 'vue';
 
-const socket = io('http://localhost:3000/gm', { autoConnect: false });
+const socket = io(import.meta.env.BACKEND_URL || 'http://localhost:3000/gm', {
+    autoConnect: false,
+});
 const isConnected = ref(socket.connected);
 let connectionTimeoutId: NodeJS.Timeout | null = null;
 

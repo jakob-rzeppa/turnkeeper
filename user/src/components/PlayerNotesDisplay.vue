@@ -5,7 +5,7 @@ const playerStore = usePlayerStore();
 </script>
 
 <template>
-    <div class="divider">Notes</div>
+    <div class="divider">Player Notes</div>
     <div v-if="!playerStore.player">
         <div class="alert alert-error">
             <span>No player found</span>

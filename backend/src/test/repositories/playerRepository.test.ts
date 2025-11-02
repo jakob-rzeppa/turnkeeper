@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SqliteDatabase } from '../../database/SqliteDatabase';
-import playerRepository from '../../repositories/playerRepository';
+import { SqliteDatabase } from '../../database/SqliteDatabase.js';
+import playerRepository from '../../repositories/playerRepository.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({

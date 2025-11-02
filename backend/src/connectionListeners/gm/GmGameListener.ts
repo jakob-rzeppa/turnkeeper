@@ -1,7 +1,7 @@
 import { GmToBackendEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
-import gameStateHandler from '../../services/gameStateHandler';
+import gameStateHandler from '../../services/gameStateHandler.js';
 
 /**
  * Listener for GM actions to control the game loop (turns, rounds, player order)
@@ -34,6 +34,20 @@ export default class GmGameListener {
                 this.updatePlayerOrder(playerIdsInOrder);
             },
         );
+
+        this.socket.on(
+            'game:notes:update',
+            ({ notes }: GmToBackendEventPayloads['game:notes:update']) => {
+                this.updateNotes(notes);
+            },
+        );
+
+        this.socket.on(
+            'game:hiddenNotes:update',
+            ({ hiddenNotes }: GmToBackendEventPayloads['game:hiddenNotes:update']) => {
+                this.updateHiddenNotes(hiddenNotes);
+            },
+        );
     }
 
     private endGame() {
@@ -46,6 +60,14 @@ export default class GmGameListener {
 
     private nextTurn() {
         gameStateHandler.nextTurn();
+    }
+
+    private updateHiddenNotes(newHiddenNotes: string) {
+        gameStateHandler.updateHiddenNotes(newHiddenNotes);
+    }
+
+    private updateNotes(newNotes: string) {
+        gameStateHandler.updateNotes(newNotes);
     }
 
     private updatePlayerOrder(playerIdsInOrder: number[]) {

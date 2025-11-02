@@ -1,18 +1,25 @@
-import type { GameState } from "./game";
-import type { LogEntry } from "./log";
-import type { Player, PlayerStat } from "./player";
+import type { GameState } from "./game.js";
+import type { LogEntry } from "./log.js";
+import type { Player, PlayerStat } from "./player.js";
 
 export interface BackendToGmEventPayloads {
     "game:info": { gameState: GameState | null };
     "log:entry": { entry: LogEntry };
     "players:info": { players: Player[] };
 }
+
 export interface GmToBackendEventPayloads {
     "game:init": {
         playerIdsInOrder: number[];
     };
     "game:playerOrder:update": {
         playerIdsInOrder: number[];
+    };
+    "game:notes:update": {
+        notes: string;
+    };
+    "game:hiddenNotes:update": {
+        hiddenNotes: string;
     };
     "players:create": {
         name: string;

@@ -1,8 +1,8 @@
 import { Socket } from 'socket.io';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmGameEmitter from '../../../connectionEmitters/gm/GmGameEmitter';
-import gameStateHandler from '../../../services/gameStateHandler';
+import GmGameEmitter from '../../../connectionEmitters/gm/GmGameEmitter.js';
+import gameStateHandler from '../../../services/gameStateHandler.js';
 
 vi.mock('../../../services/gameStateHandler', () => ({
     default: {

@@ -24,6 +24,22 @@ export const useGameEmitter = () => {
         connection.socket.emit('game:playerOrder:update', payload);
     }
 
+    function updateGameNotes(notes: string) {
+        const payload: GmToBackendEventPayloads['game:notes:update'] = {
+            notes,
+        };
+
+        connection.socket.emit('game:notes:update', payload);
+    }
+
+    function updateHiddenNotes(hiddenNotes: string) {
+        const payload: GmToBackendEventPayloads['game:hiddenNotes:update'] = {
+            hiddenNotes,
+        };
+
+        connection.socket.emit('game:hiddenNotes:update', payload);
+    }
+
     function nextTurn() {
         connection.socket.emit('game:turn:next');
     }
@@ -32,6 +48,8 @@ export const useGameEmitter = () => {
         initGame,
         endGame,
         updatePlayerOrder,
+        updateGameNotes,
+        updateHiddenNotes,
         nextTurn,
     };
 };

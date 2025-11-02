@@ -1,8 +1,8 @@
-import type { GameState } from "./game";
-import type { UserPlayer } from "./player";
+import type { UserGameState } from "./game.js";
+import type { UserPlayer } from "./player.js";
 
 export interface BackendToUserPayloads {
-    "game:info": { gameState: GameState | null };
+    "game:info": { gameState: UserGameState | null };
     "player:info": { player: UserPlayer };
 }
 

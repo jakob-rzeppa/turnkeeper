@@ -1,10 +1,10 @@
 import { Socket } from 'socket.io';
 import { afterEach, beforeAll, describe, expect, it, Mock, vi } from 'vitest';
 
-import { authenticateUser } from '../../auth/userAuth';
-import UserController from '../../connectionControllers/UserController';
-import playerRepository from '../../repositories/playerRepository';
-import logger from '../../services/logger';
+import { authenticateUser } from '../../auth/userAuth.js';
+import UserController from '../../connectionControllers/UserController.js';
+import playerRepository from '../../repositories/playerRepository.js';
+import logger from '../../services/logger.js';
 
 vi.mock('../../connectionControllers/UserController', () => ({
     default: {

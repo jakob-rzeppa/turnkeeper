@@ -15,6 +15,8 @@ import { useGameStore } from './stores/gameStore';
 import { useLogStore } from './stores/logStore';
 import { usePlayerStore } from './stores/playerStore';
 import QuickActions from './components/QuickActions.vue';
+import GameNotesEditor from './components/game/GameNotesEditor.vue';
+import RandomGenerator from './components/RandomGenerator.vue';
 
 const { isConnected } = connection();
 
@@ -39,17 +41,23 @@ usePlayerStore();
                     <div class="col-span-2 row-span-1">
                         <TurnDisplay />
                     </div>
-                    <div class="col-span-3 row-span-2">
+                    <div class="col-span-3 row-span-3">
                         <CurrentPlayerDisplay />
                     </div>
-                    <div class="col-span-2 row-span-1">
-                        <QuickActions />
+                    <div class="col-span-2 row-span-2">
+                        <GameNotesEditor />
                     </div>
-                    <div class="col-span-3">
-                        <PlayerDisplay />
+                    <div class="col-span-2 row-span-1">
+                        <RandomGenerator />
                     </div>
                     <div class="col-span-2">
                         <LogDisplay />
+                    </div>
+                    <div class="col-span-1">
+                        <QuickActions />
+                    </div>
+                    <div class="col-span-5">
+                        <PlayerDisplay />
                     </div>
                 </div>
             </div>

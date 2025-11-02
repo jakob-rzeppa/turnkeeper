@@ -11,7 +11,7 @@ const props = defineProps<{
 const playerStore = usePlayerStore();
 const playerEmitter = usePlayerEmitter();
 
-const { editableObject, idEditableObjectChanged, saveChanges } = useAutosaveObject<{
+const { editableObject, isEditableObjectChanged, saveChanges } = useAutosaveObject<{
     notes: string;
     hiddenNotes: string;
 }>(
@@ -38,10 +38,10 @@ onUnmounted(() => {
 
 <template>
     <div>
-        <label class="label">Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+        <label class="label">Notes{{ isEditableObjectChanged ? '*' : '' }}</label>
         <textarea
             class="textarea w-full h-32"
-            :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+            :class="isEditableObjectChanged ? 'textarea-accent' : ''"
             placeholder="Enter notes about the player..."
             v-model="editableObject.notes"
             @focusout="saveChanges"
@@ -49,10 +49,10 @@ onUnmounted(() => {
     </div>
 
     <div>
-        <label class="label">Hidden Notes{{ idEditableObjectChanged ? '*' : '' }}</label>
+        <label class="label">Hidden Notes{{ isEditableObjectChanged ? '*' : '' }}</label>
         <textarea
             class="textarea w-full h-32"
-            :class="idEditableObjectChanged ? 'textarea-accent' : ''"
+            :class="isEditableObjectChanged ? 'textarea-accent' : ''"
             placeholder="Enter notes about the player..."
             v-model="editableObject.hiddenNotes"
             @focusout="saveChanges"

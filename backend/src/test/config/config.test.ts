@@ -18,7 +18,7 @@ describe('Config', () => {
             process.env.DB_PATH = 'f';
             process.env.PORT = '200';
 
-            const { default: config } = await import('../../config/config');
+            const { default: config } = await import('../../config/config.js');
 
             expect(config.port).toBe(200);
             expect(config.dbPath).toBe('f');
@@ -28,7 +28,7 @@ describe('Config', () => {
             delete process.env.DB_PATH;
             delete process.env.PORT;
 
-            const { default: config } = await import('../../config/config');
+            const { default: config } = await import('../../config/config.js');
 
             expect(config.port).toBe(3000);
             expect(config.dbPath).toBeNull();
@@ -37,7 +37,7 @@ describe('Config', () => {
 
     describe('Config structure', () => {
         it('should have exactly two properties', async () => {
-            const { default: config } = await import('../../config/config');
+            const { default: config } = await import('../../config/config.js');
             const keys = Object.keys(config);
             expect(keys).toHaveLength(2);
             expect(keys).toContain('dbPath');
@@ -45,7 +45,7 @@ describe('Config', () => {
         });
 
         it('should not allow modifications', async () => {
-            const { default: config } = await import('../../config/config');
+            const { default: config } = await import('../../config/config.js');
             const initialKeys = Object.keys(config);
 
             expect(() => (config.dbPath = 'test')).toThrowError(

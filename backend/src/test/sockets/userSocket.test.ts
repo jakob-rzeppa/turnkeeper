@@ -1,11 +1,11 @@
 import { Server, Socket } from 'socket.io';
 import { afterEach, beforeAll, describe, expect, it, Mock, vi } from 'vitest';
 
-import { authenticateUser } from '../../auth/userAuth';
-import UserController from '../../connectionControllers/UserController';
-import logger from '../../services/logger';
-import { createUserSocket, handleDisconnect, onUserConnection } from '../../sockets/userSocket';
-import { extractUserCredentials } from '../../util/extractUserCredentials';
+import { authenticateUser } from '../../auth/userAuth.js';
+import UserController from '../../connectionControllers/UserController.js';
+import logger from '../../services/logger.js';
+import { createUserSocket, handleDisconnect, onUserConnection } from '../../sockets/userSocket.js';
+import { extractUserCredentials } from '../../util/extractUserCredentials.js';
 
 vi.mock('../../services/logger', () => ({
     default: {

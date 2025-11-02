@@ -1,8 +1,8 @@
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SqliteDatabase } from '../../database/SqliteDatabase';
-import { statsRepository } from '../../repositories/statsRepository';
-import logger from '../../services/logger';
+import { SqliteDatabase } from '../../database/SqliteDatabase.js';
+import { statsRepository } from '../../repositories/statsRepository.js';
+import logger from '../../services/logger.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({

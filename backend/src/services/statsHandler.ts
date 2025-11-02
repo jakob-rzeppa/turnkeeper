@@ -1,8 +1,8 @@
 import { PlayerStat } from 'shared-types';
 
-import GmController from '../connectionControllers/GmController';
-import UserController from '../connectionControllers/UserController';
-import { statsRepository } from '../repositories/statsRepository';
+import GmController from '../connectionControllers/GmController.js';
+import UserController from '../connectionControllers/UserController.js';
+import { statsRepository } from '../repositories/statsRepository.js';
 
 export const statsHandler = {
     createStatForAllPlayers(statData: Omit<PlayerStat, 'id'>) {

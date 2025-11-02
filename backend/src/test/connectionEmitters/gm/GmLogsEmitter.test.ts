@@ -2,7 +2,7 @@ import { LogEntry } from 'shared-types';
 import { Socket } from 'socket.io';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmLogsEmitter from '../../../connectionEmitters/gm/GmLogsEmitter';
+import GmLogsEmitter from '../../../connectionEmitters/gm/GmLogsEmitter.js';
 
 describe('GmLogsEmitter', () => {
     let mockSocket: Socket;

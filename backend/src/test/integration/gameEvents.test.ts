@@ -2,7 +2,7 @@ import { GmToBackendEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 import { beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
+import GmController from '../../connectionControllers/GmController.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({
@@ -21,6 +21,8 @@ describe('Gm Game Events Integration Tests', () => {
         NEXT_TURN: 'game:turn:next',
         PLAYER_CREATE: 'players:create',
         PLAYER_DELETE: 'players:delete',
+        UPDATE_HIDDEN_NOTES: 'game:hiddenNotes:update',
+        UPDATE_NOTES: 'game:notes:update',
         UPDATE_PLAYER_ORDER: 'game:playerOrder:update',
     } as const;
 
@@ -92,7 +94,61 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: '',
                 id: 1,
+                notes: '',
+                playerOrder: [
+                    { id: 1, name: 'Player One' },
+                    { id: 2, name: 'Player Two' },
+                ],
+                roundNumber: 1,
+            },
+        });
+    });
+
+    it('should update game notes', () => {
+        const notesPayload: GmToBackendEventPayloads['game:notes:update'] = {
+            notes: 'These are the game notes.',
+        };
+
+        const notesHandler = eventHandlers[EVENTS.UPDATE_NOTES] as (
+            arg: GmToBackendEventPayloads['game:notes:update'],
+        ) => void;
+
+        notesHandler(notesPayload);
+
+        expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
+            gameState: {
+                currentPlayerIndex: 0,
+                hiddenNotes: '',
+                id: 1,
+                notes: 'These are the game notes.',
+                playerOrder: [
+                    { id: 1, name: 'Player One' },
+                    { id: 2, name: 'Player Two' },
+                ],
+                roundNumber: 1,
+            },
+        });
+    });
+
+    it('should update hidden notes', () => {
+        const hiddenNotesPayload: GmToBackendEventPayloads['game:hiddenNotes:update'] = {
+            hiddenNotes: 'These are the hidden notes.',
+        };
+
+        const hiddenNotesHandler = eventHandlers[EVENTS.UPDATE_HIDDEN_NOTES] as (
+            arg: GmToBackendEventPayloads['game:hiddenNotes:update'],
+        ) => void;
+
+        hiddenNotesHandler(hiddenNotesPayload);
+
+        expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
+            gameState: {
+                currentPlayerIndex: 0,
+                hiddenNotes: 'These are the hidden notes.',
+                id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -110,7 +166,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 1,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -142,7 +200,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 1,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -161,7 +221,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 2,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },
@@ -186,7 +248,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 3, name: 'Player Three' },
@@ -210,7 +274,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 3, name: 'Player Three' },
                     { id: 1, name: 'Player One' },
@@ -238,7 +304,9 @@ describe('Gm Game Events Integration Tests', () => {
         expect(mockSocket.emit).not.toHaveBeenCalledWith('game:info', {
             gameState: {
                 currentPlayerIndex: 0,
+                hiddenNotes: 'These are the hidden notes.',
                 id: 1,
+                notes: 'These are the game notes.',
                 playerOrder: [
                     { id: 1, name: 'Player One' },
                     { id: 2, name: 'Player Two' },

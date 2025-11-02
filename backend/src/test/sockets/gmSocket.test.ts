@@ -1,9 +1,9 @@
 import { Server, Socket } from 'socket.io';
 import { afterAll, afterEach, beforeAll, describe, expect, it, Mock, vi } from 'vitest';
 
-import GmController from '../../connectionControllers/GmController';
-import logger from '../../services/logger';
-import { createGmSocket, handleDisconnect, onGmConnection } from '../../sockets/gmSocket';
+import GmController from '../../connectionControllers/GmController.js';
+import logger from '../../services/logger.js';
+import { createGmSocket, handleDisconnect, onGmConnection } from '../../sockets/gmSocket.js';
 
 vi.mock('../../services/logger', () => ({
     default: {

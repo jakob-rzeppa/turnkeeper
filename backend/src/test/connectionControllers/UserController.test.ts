@@ -1,7 +1,7 @@
 import { Socket } from 'socket.io';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import UserController from '../../connectionControllers/UserController';
+import UserController from '../../connectionControllers/UserController.js';
 
 // Mock all emitters
 vi.mock('../../connectionEmitters/user/UserGameEmitter');

@@ -1,6 +1,6 @@
 import Database from 'better-sqlite3';
 
-import config from '../config/config';
+import config from '../config/config.js';
 
 export class SqliteDatabase extends Database {
     private static instance: null | SqliteDatabase = null;
@@ -61,13 +61,15 @@ export class SqliteDatabase extends Database {
                 FOREIGN KEY (player_id) REFERENCES players (id)
             )`,
         );
-
+      
         this.exec(
             `CREATE TABLE IF NOT EXISTS game_state (
                 id INTEGER PRIMARY KEY, 
                 round_number INT NOT NULL, 
                 current_player_index INT NOT NULL, 
-                player_order TEXT NOT NULL
+                player_order TEXT NOT NULL, 
+                notes TEXT NOT NULL DEFAULT "", 
+                hidden_notes TEXT NOT NULL DEFAULT ""
             )`,
         );
     }

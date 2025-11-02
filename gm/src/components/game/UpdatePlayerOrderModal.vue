@@ -9,7 +9,7 @@ const emit = defineEmits(['close']);
 const gameStore = useGameStore();
 const gameEmitter = useGameEmitter();
 
-const playerOrderRef = ref<{ id: string; name: string }[]>([]);
+const playerOrderRef = ref<{ id: number; name: string }[]>([]);
 
 playerOrderRef.value = [...gameStore.playerOrder];
 

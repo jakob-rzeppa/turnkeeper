@@ -14,6 +14,8 @@ export const useGameStore = defineStore('game', () => {
         roundNumber: 0,
         currentPlayerIndex: 0,
     });
+    const notes = ref<string>('');
+    const hiddenNotes = ref<string>('');
 
     const currentPlayerId = computed(() => {
         return playerOrder.value[round.value.currentPlayerIndex]?.id ?? null;
@@ -32,6 +34,8 @@ export const useGameStore = defineStore('game', () => {
         };
         isInitialized.value = true;
         playerOrder.value = gameState.playerOrder;
+        notes.value = gameState.notes;
+        hiddenNotes.value = gameState.hiddenNotes;
     });
 
     return {
@@ -39,5 +43,7 @@ export const useGameStore = defineStore('game', () => {
         isInitialized,
         round,
         currentPlayerId,
+        notes,
+        hiddenNotes,
     };
 });

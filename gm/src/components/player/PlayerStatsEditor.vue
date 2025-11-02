@@ -31,7 +31,7 @@ watch(
 const {
     baseObject: baseStats,
     editableObject: editableStats,
-    idEditableObjectChanged: areStatsChanged,
+    isEditableObjectChanged: areStatsChanged,
     saveChanges,
 } = useAutosaveObject<{
     [keyof: string]: {
@@ -97,6 +97,7 @@ onUnmounted(() => {
                             }
                         }
                     "
+                    @focusout="saveChanges"
                 >
                     <div class="flex-1 flex items-center join">
                         <input
@@ -130,6 +131,11 @@ onUnmounted(() => {
                             :baseStats="baseStats"
                             :editableStats="editableStats"
                             :statId="stat.id.toString()"
+                            @update:value="
+                                (statId: string, value: number) => {
+                                    editableStats[statId].value = value;
+                                }
+                            "
                         />
                         <input
                             v-if="editableStats[stat.id].type === 'string'"
