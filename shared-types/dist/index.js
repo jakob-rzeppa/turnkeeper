@@ -1,6 +1,7 @@
-export * from "./types/player.js";
-export * from "./types/log.js";
-export * from "./types/game.js";
-export * from "./types/gmEvents.js";
-export * from "./types/userEvents.js";
+export * from "./types/player";
+export * from "./types/log";
+export * from "./types/game";
+export * from "./types/message";
+export * from "./types/gmEvents";
+export * from "./types/userEvents";
 //# sourceMappingURL=index.js.map

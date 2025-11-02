@@ -10,13 +10,8 @@ const playerRepository = {
         const secret = makePlayerSecret({ length: 4 });
         try {
             db.prepare('INSERT INTO players (name, secret) VALUES (?, ?)').run(playerName, secret);
-        } catch (error: unknown) {
+        } catch {
             // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
         }
     },
     deletePlayer: (id: number): void => {
@@ -194,13 +189,8 @@ const playerRepository = {
 
         try {
             db.prepare(query).run(...values);
-        } catch (error: unknown) {
+        } catch {
             // Handle error silently
-
-            // This is to satisfy the linter that error is used
-            if (error instanceof Error) {
-                return;
-            }
         }
     },
 };

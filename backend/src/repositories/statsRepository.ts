@@ -28,10 +28,13 @@ export const statsRepository = {
                     value = stat.value;
                     break;
             }
-
-            db.prepare(
-                'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
-            ).run(player.id, stat.name, typeof stat.value, value);
+            try {
+                db.prepare(
+                    'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
+                ).run(player.id, stat.name, typeof stat.value, value);
+            } catch {
+                // Handle error silently
+            }
         });
     },
     createStatForPlayer: (playerId: number, stat: Omit<PlayerStat, 'id'>): void => {
@@ -62,9 +65,13 @@ export const statsRepository = {
                 break;
         }
 
-        db.prepare(
-            'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
-        ).run(playerId, stat.name, typeof stat.value, value);
+        try {
+            db.prepare(
+                'INSERT INTO player_stats (player_id, name, type, value) VALUES (?, ?, ?, ?)',
+            ).run(player.id, stat.name, typeof stat.value, value);
+        } catch {
+            // Handle error silently
+        }
     },
     removeAllStatsFromPlayer: (playerId: number): void => {
         db.prepare('DELETE FROM player_stats WHERE player_id = ?').run(playerId);
@@ -111,10 +118,14 @@ export const statsRepository = {
         values.push(statId.toString());
         values.push(playerId.toString());
 
-        db.prepare(
-            'UPDATE player_stats SET ' +
-                fieldsToUpdate.join(', ') +
-                ' WHERE id = ? AND player_id = ?',
-        ).run(values);
+        try {
+            db.prepare(
+                'UPDATE player_stats SET ' +
+                    fieldsToUpdate.join(', ') +
+                    ' WHERE id = ? AND player_id = ?',
+            ).run(values);
+        } catch {
+            // Handle error silently
+        }
     },
 };
