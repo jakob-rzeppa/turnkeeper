@@ -97,6 +97,7 @@ onUnmounted(() => {
                             }
                         }
                     "
+                    @focusout="saveChanges"
                 >
                     <div class="flex-1 flex items-center join">
                         <input
