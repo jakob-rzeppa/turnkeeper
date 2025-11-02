@@ -1,9 +1,9 @@
 import { Message } from 'shared-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
-import { SqliteDatabase } from '../../database/SqliteDatabase';
-import messageRepository from '../../repositories/messageRepository';
-import logger from '../../services/logger';
+import { SqliteDatabase } from '../../database/SqliteDatabase.js';
+import messageRepository from '../../repositories/messageRepository.js';
+import logger from '../../services/logger.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({
