@@ -1,4 +1,5 @@
 import type { UserGameState } from "./game.js";
+import type { Message } from "./message.js";
 import type { UserPlayer } from "./player.js";
 export interface BackendToUserPayloads {
     "game:info": {
@@ -6,6 +7,9 @@ export interface BackendToUserPayloads {
     };
     "player:info": {
         player: UserPlayer;
+    };
+    "messages:all": {
+        messages: Message[];
     };
 }
 export interface UserToBackendPayloads {

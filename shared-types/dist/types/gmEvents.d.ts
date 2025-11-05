@@ -1,5 +1,6 @@
 import type { GameState } from "./game.js";
 import type { LogEntry } from "./log.js";
+import type { Message } from "./message.js";
 import type { Player, PlayerStat } from "./player.js";
 export interface BackendToGmEventPayloads {
     "game:info": {
@@ -10,6 +11,11 @@ export interface BackendToGmEventPayloads {
     };
     "players:info": {
         players: Player[];
+    };
+    "messages:all": {
+        messages: {
+            [playerId: string]: Message[];
+        };
     };
 }
 export interface GmToBackendEventPayloads {
