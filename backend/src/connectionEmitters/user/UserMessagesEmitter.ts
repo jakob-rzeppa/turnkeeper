@@ -1,4 +1,4 @@
-import { BackendToUserPayloads } from 'shared-types';
+import { BackendToUserEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import messageRepository from '../../repositories/messageRepository.js';
@@ -18,7 +18,7 @@ export default class UserMessagesEmitter {
     public sendAllMessages() {
         const messages = messageRepository.getMessagesByPlayerId(this.playerId);
 
-        const payload: BackendToUserPayloads['messages:all'] = {
+        const payload: BackendToUserEventPayloads['messages:all'] = {
             messages: messages.map((msg) => ({
                 content: msg.content,
                 id: msg.id,

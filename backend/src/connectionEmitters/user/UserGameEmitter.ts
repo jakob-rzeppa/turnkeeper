@@ -1,4 +1,4 @@
-import { BackendToUserPayloads } from 'shared-types';
+import { BackendToUserEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import gameStateHandler from '../../services/gameStateHandler.js';
@@ -16,7 +16,7 @@ export default class UserGameEmitter {
     public sendGameInfo() {
         const gameState = gameStateHandler.getGameState();
 
-        const payload: BackendToUserPayloads['game:info'] = {
+        const payload: BackendToUserEventPayloads['game:info'] = {
             gameState: gameState
                 ? {
                       currentPlayerIndex: gameState.currentPlayerIndex,

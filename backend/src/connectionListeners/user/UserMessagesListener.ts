@@ -1,4 +1,4 @@
-import { UserToBackendPayloads } from 'shared-types';
+import { UserToBackendEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 import messagesHandler from '../../services/messagesHandler.js';
 
@@ -10,9 +10,12 @@ export default class UserMessagesListener {
         this.playerId = playerId;
         this.socket = s;
 
-        this.socket.on('messages:send', ({ content }: UserToBackendPayloads['messages:send']) => {
-            this.sendMessageToGm(content);
-        });
+        this.socket.on(
+            'messages:send',
+            ({ content }: UserToBackendEventPayloads['messages:send']) => {
+                this.sendMessageToGm(content);
+            },
+        );
     }
 
     private sendMessageToGm(content: string) {

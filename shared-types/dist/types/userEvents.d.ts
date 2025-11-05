@@ -1,7 +1,7 @@
 import type { UserGameState } from "./game.js";
 import type { Message } from "./message.js";
 import type { UserPlayer } from "./player.js";
-export interface BackendToUserPayloads {
+export interface BackendToUserEventPayloads {
     "game:info": {
         gameState: UserGameState | null;
     };
@@ -12,7 +12,7 @@ export interface BackendToUserPayloads {
         messages: Message[];
     };
 }
-export interface UserToBackendPayloads {
+export interface UserToBackendEventPayloads {
     "messages:send": {
         content: string;
     };

@@ -1,4 +1,4 @@
-import { BackendToUserPayloads } from 'shared-types';
+import { BackendToUserEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import playerRepository from '../../repositories/playerRepository.js';
@@ -27,7 +27,7 @@ export default class UserPlayersEmitter {
             return;
         }
 
-        const payload: BackendToUserPayloads['player:info'] = {
+        const payload: BackendToUserEventPayloads['player:info'] = {
             player: {
                 id: player.id,
                 name: player.name,
