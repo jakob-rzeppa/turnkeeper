@@ -39,12 +39,15 @@ describe('UserPlayersEmitter', () => {
 
     describe('sendPlayers', () => {
         it('should emit players:info with the correct payload', () => {
+            emitter = new UserPlayersEmitter(playerId, mockSocket);
+            // The sendOwnPlayer is called in the constructor so it will be called two times, we clear the mocks to only test the second call
+            vi.clearAllMocks();
+
             const mockPlayer = { id: '1', name: 'Player 1' };
             vi.mocked(playerRepository.getPlayerById).mockReturnValueOnce(
                 mockPlayer as unknown as Player,
             );
 
-            emitter = new UserPlayersEmitter(playerId, mockSocket);
             emitter.sendOwnPlayer();
 
             expect(mockSocket.emit).toHaveBeenCalledWith('player:info', {

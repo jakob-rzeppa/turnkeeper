@@ -36,6 +36,10 @@ describe('UserGameEmitter', () => {
 
     describe('sendGameInfo', () => {
         it('should emit game:info with the correct payload', () => {
+            emitter = new UserGameEmitter(mockSocket);
+            // The sendGameInfo is called in the constructor so it will be called two times, we clear the mocks to only test the second call
+            vi.clearAllMocks();
+
             vi.mocked(gameStateHandler.getGameState).mockReturnValue({
                 currentPlayerIndex: 0,
                 hiddenNotes: 'Some hidden notes',
@@ -47,10 +51,6 @@ describe('UserGameEmitter', () => {
                 ],
                 roundNumber: 3,
             });
-
-            emitter = new UserGameEmitter(mockSocket);
-            // The sendGameInfo is called in the constructor so it will be called two times, we clear the mocks to only test the second call
-            vi.clearAllMocks();
 
             emitter.sendGameInfo();
 
