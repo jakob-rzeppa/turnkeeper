@@ -78,6 +78,7 @@ describe('GmController', () => {
             expect(instance).not.toBeNull();
             expect(instance?.gmGameListener).toBeDefined();
             expect(instance?.gmPlayersListener).toBeDefined();
+            expect(instance?.gmMessagesListener).toBeDefined();
         });
     });
 

@@ -6,6 +6,7 @@ import GmMessagesEmitter from '../connectionEmitters/gm/GmMessagesEmitter.js';
 import GmPlayersEmitter from '../connectionEmitters/gm/GmPlayersEmitter.js';
 import GmGameListener from '../connectionListeners/gm/GmGameListener.js';
 import GmPlayersListener from '../connectionListeners/gm/GmPlayersListener.js';
+import GmMessagesListener from '../connectionListeners/gm/GmMessagesListener.js';
 
 export default class GmController {
     // Singleton instance / register only one GM players listener at a time
@@ -20,6 +21,7 @@ export default class GmController {
     // Listeners
     public gmGameListener: GmGameListener;
     public gmPlayersListener: GmPlayersListener;
+    public gmMessagesListener: GmMessagesListener;
 
     private constructor(s: Socket) {
         // Initialize emitters
@@ -31,6 +33,7 @@ export default class GmController {
         // Initialize listeners
         this.gmGameListener = new GmGameListener(s);
         this.gmPlayersListener = new GmPlayersListener(s);
+        this.gmMessagesListener = new GmMessagesListener(s);
     }
 
     public static getInstance = (): GmController | null => {

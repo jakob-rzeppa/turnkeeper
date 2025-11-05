@@ -56,5 +56,9 @@ export interface GmToBackendEventPayloads {
         playerId: number;
         statId: number;
     };
+    "messages:send": {
+        playerId: number;
+        content: string;
+    };
 }
 //# sourceMappingURL=gmEvents.d.ts.map

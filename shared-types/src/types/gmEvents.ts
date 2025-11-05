@@ -48,4 +48,8 @@ export interface GmToBackendEventPayloads {
         playerId: number;
         statId: number;
     };
+    "messages:send": {
+        playerId: number;
+        content: string;
+    };
 }
