@@ -38,7 +38,9 @@ describe('GmGameEmitter', () => {
         it('should emit game:info with the correct payload', () => {
             vi.mocked(gameStateHandler.getGameState).mockReturnValue({
                 currentPlayerIndex: 0,
+                hiddenNotes: 'Some hidden notes',
                 id: 1,
+                notes: 'Some game notes',
                 playerOrder: [
                     { id: 1, name: 'Player 1' },
                     { id: 2, name: 'Player 2' },
@@ -56,7 +58,9 @@ describe('GmGameEmitter', () => {
             expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
                 gameState: {
                     currentPlayerIndex: 0,
+                    hiddenNotes: 'Some hidden notes',
                     id: 1,
+                    notes: 'Some game notes',
                     playerOrder: [
                         { id: 1, name: 'Player 1' },
                         { id: 2, name: 'Player 2' },
