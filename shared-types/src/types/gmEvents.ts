@@ -7,7 +7,7 @@ export interface BackendToGmEventPayloads {
     "game:info": { gameState: GameState | null };
     "log:entry": { entry: LogEntry };
     "players:info": { players: Player[] };
-    "messages:all": { messages: { [playerId: string]: Message[] } };
+    "messages:all": { messages: { [playerId: number]: Message[] } };
 }
 
 export interface GmToBackendEventPayloads {

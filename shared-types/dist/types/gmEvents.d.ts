@@ -14,7 +14,7 @@ export interface BackendToGmEventPayloads {
     };
     "messages:all": {
         messages: {
-            [playerId: string]: Message[];
+            [playerId: number]: Message[];
         };
     };
 }
