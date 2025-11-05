@@ -1,6 +1,7 @@
 import { Socket } from 'socket.io';
 
 import UserGameEmitter from '../connectionEmitters/user/UserGameEmitter.js';
+import UserMessagesEmitter from '../connectionEmitters/user/UserMessagesEmitter.js';
 import UserPlayersEmitter from '../connectionEmitters/user/UserPlayersEmitter.js';
 
 export default class UserController {
@@ -13,6 +14,7 @@ export default class UserController {
     // Emitters
     public userGameEmitter: UserGameEmitter;
     public userPlayersEmitter: UserPlayersEmitter;
+    public userMessagesEmitter: UserMessagesEmitter;
 
     private constructor(playerId: number, s: Socket) {
         this.playerId = playerId;
@@ -20,6 +22,7 @@ export default class UserController {
 
         this.userPlayersEmitter = new UserPlayersEmitter(this.playerId, this.socket);
         this.userGameEmitter = new UserGameEmitter(this.socket);
+        this.userMessagesEmitter = new UserMessagesEmitter(this.playerId, this.socket);
     }
 
     public static getAllInstances = (): UserController[] => {

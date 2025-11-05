@@ -2,6 +2,7 @@ import { Socket } from 'socket.io';
 
 import GmGameEmitter from '../connectionEmitters/gm/GmGameEmitter.js';
 import GmLogsEmitter from '../connectionEmitters/gm/GmLogsEmitter.js';
+import GmMessagesEmitter from '../connectionEmitters/gm/GmMessagesEmitter.js';
 import GmPlayersEmitter from '../connectionEmitters/gm/GmPlayersEmitter.js';
 import GmGameListener from '../connectionListeners/gm/GmGameListener.js';
 import GmPlayersListener from '../connectionListeners/gm/GmPlayersListener.js';
@@ -12,24 +13,24 @@ export default class GmController {
 
     // Emitters
     public gmGameEmitter: GmGameEmitter;
+    public gmLogsEmitter: GmLogsEmitter;
+    public gmPlayersEmitter: GmPlayersEmitter;
+    public gmMessagesEmitter: GmMessagesEmitter;
 
     // Listeners
     public gmGameListener: GmGameListener;
-
-    public gmLogsEmitter: GmLogsEmitter;
-
-    public gmPlayersEmitter: GmPlayersEmitter;
-
     public gmPlayersListener: GmPlayersListener;
-    private constructor(s: Socket) {
-        // Initialize listeners
-        this.gmGameListener = new GmGameListener(s);
-        this.gmPlayersListener = new GmPlayersListener(s);
 
-        // Initial emits
+    private constructor(s: Socket) {
+        // Initialize emitters
         this.gmGameEmitter = new GmGameEmitter(s);
         this.gmPlayersEmitter = new GmPlayersEmitter(s);
         this.gmLogsEmitter = new GmLogsEmitter(s);
+        this.gmMessagesEmitter = new GmMessagesEmitter(s);
+
+        // Initialize listeners
+        this.gmGameListener = new GmGameListener(s);
+        this.gmPlayersListener = new GmPlayersListener(s);
     }
 
     public static getInstance = (): GmController | null => {

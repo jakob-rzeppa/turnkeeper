@@ -68,6 +68,7 @@ describe('GmController', () => {
             expect(instance?.gmGameEmitter).toBeDefined();
             expect(instance?.gmLogsEmitter).toBeDefined();
             expect(instance?.gmPlayersEmitter).toBeDefined();
+            expect(instance?.gmMessagesEmitter).toBeDefined();
         });
 
         it('should create listener instances accessible via the controller', () => {

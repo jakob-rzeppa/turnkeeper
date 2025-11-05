@@ -122,6 +122,7 @@ describe('UserController', () => {
             expect(instance).toBeDefined();
             expect(instance?.userGameEmitter).toBeDefined();
             expect(instance?.userPlayersEmitter).toBeDefined();
+            expect(instance?.userMessagesEmitter).toBeDefined();
         });
 
         it('should store the socket and playerId in the instance', () => {
