@@ -13,5 +13,8 @@ export interface BackendToUserPayloads {
     };
 }
 export interface UserToBackendPayloads {
+    "messages:send": {
+        content: string;
+    };
 }
 //# sourceMappingURL=userEvents.d.ts.map

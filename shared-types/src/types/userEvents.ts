@@ -8,4 +8,8 @@ export interface BackendToUserPayloads {
     "messages:all": { messages: Message[] };
 }
 
-export interface UserToBackendPayloads {}
+export interface UserToBackendPayloads {
+    "messages:send": {
+        content: string;
+    };
+}

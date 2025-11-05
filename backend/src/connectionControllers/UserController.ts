@@ -3,6 +3,7 @@ import { Socket } from 'socket.io';
 import UserGameEmitter from '../connectionEmitters/user/UserGameEmitter.js';
 import UserMessagesEmitter from '../connectionEmitters/user/UserMessagesEmitter.js';
 import UserPlayersEmitter from '../connectionEmitters/user/UserPlayersEmitter.js';
+import UserMessagesListener from '../connectionListeners/user/UserMessagesListener.js';
 
 export default class UserController {
     // Multiple instances / register one user controller per playerId
@@ -16,13 +17,20 @@ export default class UserController {
     public userPlayersEmitter: UserPlayersEmitter;
     public userMessagesEmitter: UserMessagesEmitter;
 
+    // Listeners
+    public userMessagesListener: UserMessagesListener;
+
     private constructor(playerId: number, s: Socket) {
         this.playerId = playerId;
         this.socket = s;
 
+        // Initialize Emitters
         this.userPlayersEmitter = new UserPlayersEmitter(this.playerId, this.socket);
         this.userGameEmitter = new UserGameEmitter(this.socket);
         this.userMessagesEmitter = new UserMessagesEmitter(this.playerId, this.socket);
+
+        // Initialize Listeners
+        this.userMessagesListener = new UserMessagesListener(this.playerId, this.socket);
     }
 
     public static getAllInstances = (): UserController[] => {
