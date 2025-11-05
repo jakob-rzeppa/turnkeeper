@@ -24,6 +24,8 @@ export default tseslint.config(
     {
         rules: {
             'perfectionist/sort-classes': 'off',
+            'perfectionist/sort-objects': 'off',
+            'perfectionist/sort-imports': 'off',
         },
     },
     {
