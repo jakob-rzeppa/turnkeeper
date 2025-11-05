@@ -42,7 +42,7 @@ const messageRepository = {
         const rows = stmt.all() as {
             content: string;
             id: number;
-            player_id: null | number;
+            player_id: number;
             send_by: 'gm' | 'player' | 'system';
             timestamp: string;
         }[];
@@ -56,11 +56,6 @@ const messageRepository = {
                 sendBy: row.send_by,
                 timestamp: new Date(row.timestamp),
             };
-
-            // Skip messages with null playerId (GM-only messages)
-            if (row.player_id === null) {
-                return;
-            }
 
             if (!Object.keys(groupedMessages).includes(row.player_id.toString())) {
                 groupedMessages[row.player_id] = [];
@@ -78,33 +73,7 @@ const messageRepository = {
         const rows = stmt.all(playerId) as {
             content: string;
             id: number;
-            player_id: null | number;
-            send_by: 'gm' | 'player' | 'system';
-            timestamp: string;
-        }[];
-
-        if (rows.length === 0) {
-            return [];
-        }
-
-        const messages: Message[] = rows.map((row) => ({
-            content: row.content,
-            id: row.id,
-            playerId: row.player_id,
-            sendBy: row.send_by,
-            timestamp: new Date(row.timestamp),
-        }));
-
-        return messages;
-    },
-    getMessagesWithoutPlayerId: (): Message[] => {
-        const stmt = db.prepare(
-            `SELECT * FROM messages WHERE player_id IS NULL ORDER BY timestamp ASC`,
-        );
-        const rows = stmt.all() as {
-            content: string;
-            id: number;
-            player_id: null | number;
+            player_id: number;
             send_by: 'gm' | 'player' | 'system';
             timestamp: string;
         }[];

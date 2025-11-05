@@ -53,7 +53,7 @@ export class SqliteDatabase extends Database {
         this.exec(
             `CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY, 
-                player_id INT, 
+                player_id INT NOT NULL, 
                 send_by TEXT NOT NULL CHECK(send_by IN ('player', 'system', 'gm')), 
                 content TEXT NOT NULL DEFAULT "", 
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, 
@@ -61,7 +61,7 @@ export class SqliteDatabase extends Database {
                 FOREIGN KEY (player_id) REFERENCES players (id)
             )`,
         );
-      
+
         this.exec(
             `CREATE TABLE IF NOT EXISTS game_state (
                 id INTEGER PRIMARY KEY, 

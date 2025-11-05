@@ -49,26 +49,6 @@ describe('Message Repository', () => {
             });
         });
 
-        it('should handle messages meant only for the GM', () => {
-            const newMessage: Omit<Message, 'id' | 'timestamp'> = {
-                content: 'This is a GM-only message.',
-                playerId: null,
-                sendBy: 'system',
-            };
-
-            messageRepository.createMessage(newMessage);
-
-            const messages = db.prepare('SELECT * FROM messages').all();
-            expect(messages.length).toBe(1);
-            expect(messages[0]).toEqual({
-                content: newMessage.content,
-                id: 1,
-                player_id: null,
-                send_by: newMessage.sendBy,
-                timestamp: expect.any(String) as unknown,
-            });
-        });
-
         it('should log an error for invalid sendBy values', () => {
             const newMessage: Omit<Message, 'id' | 'timestamp'> = {
                 content: 'This should fail.',
@@ -145,15 +125,6 @@ describe('Message Repository', () => {
                     messages[1].timestamp <= messages[2].timestamp,
             ).toBe(true);
         });
-
-        it('should handle messages with null playerId (GM-only messages) by not returning them', () => {
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (NULL, 'system', 'GM-only message', '2023-01-01 10:00:00')",
-            );
-
-            const messages = messageRepository.getMessagesByPlayerId(1);
-            expect(messages).toEqual([]);
-        });
     });
 
     describe('getAllMessagesGroupedByPlayerId', () => {
@@ -207,15 +178,6 @@ describe('Message Repository', () => {
         it('should return an empty object when there are no messages', () => {
             const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
             expect(groupedMessages).toEqual({});
-        });
-
-        it('should handle messages with null playerId (GM-only messages)', () => {
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (NULL, 'system', 'GM-only message', '2023-01-01 10:00:00')",
-            );
-
-            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
-            expect(Object.keys(groupedMessages).length).toBe(0);
         });
     });
 
@@ -306,47 +268,6 @@ describe('Message Repository', () => {
             }[];
             expect(remainingMessages.length).toBe(1);
             expect(remainingMessages[0].id).toBe(1);
-        });
-    });
-
-    describe('getMessagesWithoutPlayerId', () => {
-        it('should return an empty array when no GM-only messages exist', () => {
-            const messages = messageRepository.getMessagesWithoutPlayerId();
-            expect(messages).toEqual([]);
-        });
-
-        it('should return GM-only messages', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (NULL, 'system', 'GM-only message 1', '2023-01-01 10:00:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (NULL, 'system', 'GM-only message 2', '2023-01-01 10:05:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Player message', '2023-01-01 10:10:00')",
-            );
-
-            const messages = messageRepository.getMessagesWithoutPlayerId();
-            expect(messages.length).toBe(2);
-            expect(messages).toContainEqual(
-                expect.objectContaining({
-                    content: 'GM-only message 1',
-                    playerId: null,
-                    sendBy: 'system',
-                    timestamp: new Date('2023-01-01 10:00:00'),
-                }),
-            );
-            expect(messages).toContainEqual(
-                expect.objectContaining({
-                    content: 'GM-only message 2',
-                    playerId: null,
-                    sendBy: 'system',
-                    timestamp: new Date('2023-01-01 10:05:00'),
-                }),
-            );
-
-            expect(messages[0].timestamp <= messages[1].timestamp).toBe(true);
         });
     });
 });
