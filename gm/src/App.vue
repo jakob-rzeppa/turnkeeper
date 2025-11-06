@@ -17,6 +17,7 @@ import { usePlayerStore } from './stores/playerStore';
 import QuickActions from './components/QuickActions.vue';
 import GameNotesEditor from './components/game/GameNotesEditor.vue';
 import RandomGenerator from './components/RandomGenerator.vue';
+import { useModalStore } from './stores/modalStore';
 
 const { isConnected } = connection();
 
@@ -24,6 +25,7 @@ const { isConnected } = connection();
 useGameStore();
 useLogStore();
 usePlayerStore();
+useModalStore();
 </script>
 
 <template>
