@@ -1,49 +1,22 @@
 <script setup lang="ts">
 import { useLogStore } from '@/stores/logStore';
 import DisplayContainer from '../container/DisplayContainer.vue';
-import { nextTick, watch, ref } from 'vue';
+import { computed } from 'vue';
 
-const { logs } = useLogStore();
-const logContainer = ref<HTMLElement>();
+const logStore = useLogStore();
 
-const isAtBottom = () => {
-    if (!logContainer.value) return true;
-    const { scrollTop, scrollHeight, clientHeight } = logContainer.value;
-    return Math.abs(scrollHeight - clientHeight - scrollTop) < 50;
-};
-
-const scrollToNewElement = async () => {
-    if (logContainer.value) {
-        if (!isAtBottom()) return;
-
-        // Wait for DOM updates to complete
-        await nextTick();
-
-        // Small additional delay to ensure content is fully rendered
-        setTimeout(() => {
-            if (logContainer.value) {
-                logContainer.value.scrollTo({
-                    top: logContainer.value.scrollHeight,
-                });
-            }
-        }, 10);
-    }
-};
-
-watch(
-    () => logs.length,
-    () => {
-        scrollToNewElement();
-    },
-);
+// By using reversed logs and flex-col-reverse, we can keep the scroll at the bottom
+const reversedLogs = computed(() => {
+    return [...logStore.logs].reverse();
+});
 </script>
 
 <template>
     <DisplayContainer label="Game Logs">
         <div class="h-96 overflow-y-auto" ref="logContainer">
-            <div v-if="logs.length > 0" class="flex flex-col-reverse gap-2">
+            <div v-if="reversedLogs.length > 0" class="flex flex-col-reverse gap-2">
                 <div
-                    v-for="(log, index) in [...logs].reverse()"
+                    v-for="(log, index) in reversedLogs"
                     :key="index"
                     class="p-3 rounded-lg border-l-4 transition-all hover:shadow-sm"
                     :class="{
@@ -87,7 +60,7 @@ watch(
                         </div>
 
                         <!-- Severity Icon -->
-                        <div class="flex-shrink-0">
+                        <div class="shrink-0">
                             <svg
                                 v-if="log.severity === 'info'"
                                 class="w-4 h-4 text-info"
@@ -148,11 +121,6 @@ watch(
                     <p class="text-xs text-base-content/50 mt-1">Game activity will appear here</p>
                 </div>
             </div>
-        </div>
-
-        <!-- Auto-scroll to bottom indicator -->
-        <div v-if="logs.length > 5" class="mt-3 text-xs text-center text-base-content/50">
-            <kbd class="kbd kbd-xs">Scroll</kbd> to view older logs
         </div>
     </DisplayContainer>
 </template>
