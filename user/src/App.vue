@@ -8,6 +8,7 @@ import PlayerNotesDisplay from './components/PlayerNotesDisplay.vue';
 import PlayerDisplay from './components/StatsDisplay.vue';
 import useConnection from './composables/useConnection';
 import { useGameStateStore } from './stores/gameStateStore';
+import { useMessagesStore } from './stores/messagesStore';
 import { usePlayerStore } from './stores/playerStore';
 
 const { isConnected } = useConnection();
@@ -15,6 +16,7 @@ const { isConnected } = useConnection();
 // Initialize all stores, that define listeners for backend updates, so that they are ready when the user connects to the backend
 usePlayerStore();
 useGameStateStore();
+useMessagesStore();
 </script>
 
 <template>
