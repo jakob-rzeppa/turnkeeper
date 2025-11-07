@@ -1,7 +1,7 @@
 import io from 'socket.io-client';
 import { ref } from 'vue';
 
-const socket = io(import.meta.env.BACKEND_URL || 'http://localhost:3000/gm', {
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
     autoConnect: true,
 });
 const isConnected = ref(socket.connected);
