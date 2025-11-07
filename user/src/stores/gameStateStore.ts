@@ -1,6 +1,6 @@
 import useConnection from '@/composables/useConnection';
 import { defineStore } from 'pinia';
-import { type BackendToUserPayloads, type UserGameState } from 'shared-types';
+import { type BackendToUserEventPayloads, type UserGameState } from 'shared-types';
 import { computed, ref } from 'vue';
 
 export const useGameStateStore = defineStore('game', () => {
@@ -14,7 +14,7 @@ export const useGameStateStore = defineStore('game', () => {
 
     connection.socket.on(
         'game:info',
-        ({ gameState: newGameState }: BackendToUserPayloads['game:info']) => {
+        ({ gameState: newGameState }: BackendToUserEventPayloads['game:info']) => {
             gameState.value = newGameState;
         },
     );
