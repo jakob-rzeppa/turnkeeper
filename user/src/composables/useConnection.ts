@@ -2,7 +2,7 @@ import io from 'socket.io-client';
 import { getCookie, removeCookie, setCookie } from 'typescript-cookie';
 import { ref } from 'vue';
 
-const socket = io(import.meta.env.BACKEND_URL || 'http://localhost:3000/user', {
+const socket = io(import.meta.env.VITE_BACKEND_URL, {
     autoConnect: false,
 });
 const isConnected = ref(socket.connected);
