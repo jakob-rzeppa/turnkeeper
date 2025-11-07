@@ -15,7 +15,7 @@ vi.mock('@/composables/useConnection', () => {
     };
 });
 
-describe('useLogStore', () => {
+describe('useMessagesStore', () => {
     const connection = useConnection();
     const socket = connection.socket;
 
@@ -24,19 +24,19 @@ describe('useLogStore', () => {
         setActivePinia(createPinia());
     });
 
-    it('initializes with []', () => {
+    it('initializes with null: player', () => {
         const logStore = useLogStore();
 
         expect(logStore.logs).toHaveLength(0);
     });
 
-    it('registers socket listener for log:entry event', () => {
+    it('registers socket listener for players:info event', () => {
         useLogStore();
 
-        vi.mocked(socket.on).mock.calls.find((call) => call[0] === 'log:entry');
+        vi.mocked(socket.on).mock.calls.find((call) => call[0] === 'players:info');
     });
 
-    describe('handling log:entry event', () => {
+    describe('handling players:info event', () => {
         it('updates players correctly', () => {
             // Initialize the store first to register the socket listener
             useLogStore();
