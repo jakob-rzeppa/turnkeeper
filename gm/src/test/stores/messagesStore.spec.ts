@@ -2,7 +2,7 @@ import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { setActivePinia, createPinia } from 'pinia';
 import useConnection from '@/composables/useConnection';
 import type { BackendToGmEventPayloads } from 'shared-types';
-import { useLogStore } from '@/stores/logStore';
+import { useMessagesStore } from '@/stores/messagesStore';
 
 vi.mock('@/composables/useConnection', () => {
     const socket = {
@@ -24,44 +24,72 @@ describe('useMessagesStore', () => {
         setActivePinia(createPinia());
     });
 
-    it('initializes with null: player', () => {
-        const logStore = useLogStore();
+    it('initializes with empty object', () => {
+        const messagesStore = useMessagesStore();
 
-        expect(logStore.logs).toHaveLength(0);
+        expect(messagesStore.messages).toEqual({});
     });
 
-    it('registers socket listener for players:info event', () => {
-        useLogStore();
+    it('registers socket listener for messages:all event', () => {
+        useMessagesStore();
 
-        vi.mocked(socket.on).mock.calls.find((call) => call[0] === 'players:info');
+        vi.mocked(socket.on).mock.calls.find((call) => call[0] === 'messages:all');
     });
 
-    describe('handling players:info event', () => {
-        it('updates players correctly', () => {
+    describe('handling messages:all event', () => {
+        it('updates messages correctly', () => {
             // Initialize the store first to register the socket listener
-            useLogStore();
+            useMessagesStore();
 
-            const logEntryHandler = vi
+            const messagesAllHandler = vi
                 .mocked(socket.on)
-                .mock.calls.find((call) => call[0] === 'log:entry')?.[1] as (
-                payload: BackendToGmEventPayloads['log:entry'],
+                .mock.calls.find((call) => call[0] === 'messages:all')?.[1] as (
+                payload: BackendToGmEventPayloads['messages:all'],
             ) => void;
 
-            logEntryHandler({
-                entry: {
-                    timestamp: new Date('2024-01-01T12:00:00Z'),
-                    severity: 'info',
-                    message: 'Test log entry',
+            messagesAllHandler({
+                messages: {
+                    1: [
+                        {
+                            id: 1,
+                            playerId: 1,
+                            content: 'Test message 1',
+                            timestamp: new Date('2024-01-01T12:00:00Z'),
+                            sendBy: 'player',
+                        },
+                    ],
+                    2: [
+                        {
+                            id: 1,
+                            playerId: 1,
+                            content: 'Test message 1',
+                            timestamp: new Date('2024-01-01T12:00:00Z'),
+                            sendBy: 'gm',
+                        },
+                    ],
                 },
             });
 
-            expect(useLogStore().logs).toEqual([
-                {
-                    timestamp: new Date('2024-01-01T12:00:00Z'),
-                    severity: 'info',
-                    message: 'Test log entry',
-                },
-            ]);
+            expect(useMessagesStore().messages).toEqual({
+                1: [
+                    {
+                        id: 1,
+                        playerId: 1,
+                        content: 'Test message 1',
+                        timestamp: new Date('2024-01-01T12:00:00Z'),
+                        sendBy: 'player',
+                    },
+                ],
+                2: [
+                    {
+                        id: 1,
+                        playerId: 1,
+                        content: 'Test message 1',
+                        timestamp: new Date('2024-01-01T12:00:00Z'),
+                        sendBy: 'gm',
+                    },
+                ],
+            });
         });
     });
 });
