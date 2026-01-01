@@ -15,5 +15,12 @@ export const useMessagesStore = defineStore('messages', () => {
         },
     );
 
+    connection.socket.on(
+        'messages:new',
+        ({ message }: BackendToUserEventPayloads['messages:new']) => {
+            messages.value.push(message);
+        },
+    );
+
     return { messages };
 });
