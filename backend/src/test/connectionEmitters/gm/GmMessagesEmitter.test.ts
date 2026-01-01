@@ -87,5 +87,26 @@ describe('GmMessagesEmitter', () => {
                 },
             });
         });
+
+        it('should emit messages:new with the correct payload', () => {
+            const newMessage = {
+                content: 'New message content',
+                id: 3,
+                playerId: 1,
+                sendBy: 'gm' as const,
+                timestamp: new Date(),
+            };
+
+            emitter = new GmMessagesEmitter(mockSocket);
+            // The sendGameInfo is called in the constructor so it will be called two times, we clear the mocks to only test the second call
+            vi.clearAllMocks();
+
+            emitter.sendNewMessage(newMessage);
+
+            expect(mockSocket.emit).toHaveBeenCalledTimes(1);
+            expect(mockSocket.emit).toHaveBeenCalledWith('messages:new', {
+                message: newMessage,
+            });
+        });
     });
 });

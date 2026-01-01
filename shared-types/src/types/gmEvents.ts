@@ -8,6 +8,7 @@ export interface BackendToGmEventPayloads {
     "log:entry": { entry: LogEntry };
     "players:info": { players: Player[] };
     "messages:all": { messages: { [playerId: number]: Message[] } };
+    "messages:new": { message: Message };
 }
 
 export interface GmToBackendEventPayloads {

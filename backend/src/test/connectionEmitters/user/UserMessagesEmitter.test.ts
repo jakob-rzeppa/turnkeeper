@@ -83,5 +83,41 @@ describe('UserMessagesEmitter', () => {
                 ],
             });
         });
+
+        it('should emit messages:all with an empty array if there are no messages', () => {
+            vi.mocked(messageRepository.getMessagesByPlayerId).mockReturnValue([]);
+
+            emitter = new UserMessagesEmitter(1, mockSocket);
+            // The sendAllMessages is called in the constructor so it will be called two times, we clear the mocks to only test the second call
+            vi.clearAllMocks();
+
+            emitter.sendAllMessages();
+
+            expect(mockSocket.emit).toHaveBeenCalledTimes(1);
+            expect(mockSocket.emit).toHaveBeenCalledWith('messages:all', {
+                messages: [],
+            });
+        });
+
+        it('should emit messages:new with the correct payload', () => {
+            const newMessage = {
+                content: 'New message content',
+                id: 3,
+                playerId: 1,
+                sendBy: 'gm' as const,
+                timestamp: new Date(),
+            };
+
+            emitter = new UserMessagesEmitter(1, mockSocket);
+            // The sendAllMessages is called in the constructor so it will be called two times, we clear the mocks to only test the second call
+            vi.clearAllMocks();
+
+            emitter.sendNewMessage(newMessage);
+
+            expect(mockSocket.emit).toHaveBeenCalledTimes(1);
+            expect(mockSocket.emit).toHaveBeenCalledWith('messages:new', {
+                message: newMessage,
+            });
+        });
     });
 });

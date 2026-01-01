@@ -17,6 +17,9 @@ export interface BackendToGmEventPayloads {
             [playerId: number]: Message[];
         };
     };
+    "messages:new": {
+        message: Message;
+    };
 }
 export interface GmToBackendEventPayloads {
     "game:init": {

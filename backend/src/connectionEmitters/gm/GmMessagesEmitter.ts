@@ -1,4 +1,4 @@
-import { BackendToGmEventPayloads } from 'shared-types';
+import { BackendToGmEventPayloads, Message } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import messageRepository from '../../repositories/messageRepository.js';
@@ -21,5 +21,13 @@ export default class GmMessagesEmitter {
         };
 
         this.socket.emit('messages:all', payload);
+    }
+
+    public sendNewMessage(message: Message) {
+        const payload: BackendToGmEventPayloads['messages:new'] = {
+            message,
+        };
+
+        this.socket.emit('messages:new', payload);
     }
 }

@@ -11,6 +11,9 @@ export interface BackendToUserEventPayloads {
     "messages:all": {
         messages: Message[];
     };
+    "messages:new": {
+        message: Message;
+    };
 }
 export interface UserToBackendEventPayloads {
     "messages:send": {

@@ -1,4 +1,4 @@
-import { BackendToUserEventPayloads } from 'shared-types';
+import { BackendToUserEventPayloads, Message } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import messageRepository from '../../repositories/messageRepository.js';
@@ -29,5 +29,13 @@ export default class UserMessagesEmitter {
         };
 
         this.socket.emit('messages:all', payload);
+    }
+
+    public sendNewMessage(message: Message) {
+        const payload: BackendToUserEventPayloads['messages:new'] = {
+            message,
+        };
+
+        this.socket.emit('messages:new', payload);
     }
 }
