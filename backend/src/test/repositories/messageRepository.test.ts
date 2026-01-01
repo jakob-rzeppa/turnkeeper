@@ -27,7 +27,7 @@ describe('Message Repository', () => {
     });
 
     describe('createMessage', () => {
-        it('should create a new message in the database', () => {
+        it('should create a new message in the database and return the created message', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
 
             const newMessage: Omit<Message, 'id' | 'timestamp'> = {
@@ -36,7 +36,18 @@ describe('Message Repository', () => {
                 sendBy: 'player',
             };
 
-            messageRepository.createMessage(newMessage);
+            const message = messageRepository.createMessage(newMessage);
+
+            expect(message).not.toBeNull();
+            expect(message).toEqual(
+                expect.objectContaining({
+                    content: newMessage.content,
+                    playerId: newMessage.playerId,
+                    sendBy: newMessage.sendBy,
+                    id: expect.any(Number),
+                    timestamp: expect.any(Date),
+                }),
+            );
 
             const messages = db.prepare('SELECT * FROM messages').all();
             expect(messages.length).toBe(1);

@@ -6,7 +6,7 @@ import logger from '../services/logger.js';
 const db = SqliteDatabase.getInstance();
 
 const messageRepository = {
-    createMessage: (message: Omit<Message, 'id' | 'timestamp'>): void => {
+    createMessage: (message: Omit<Message, 'id' | 'timestamp'>): Message | null => {
         if (!['gm', 'player', 'system'].includes(message.sendBy)) {
             logger.error({
                 details: {
@@ -16,17 +16,37 @@ const messageRepository = {
                 },
                 message: `Invalid sendBy value: ${message.sendBy}`,
             });
-            return;
+            return null;
         }
 
         try {
             const stmt = db.prepare(
                 `INSERT INTO messages (player_id, send_by, content) 
-                 VALUES (?, ?, ?)`,
+                 VALUES (?, ?, ?)
+                 RETURNING id, player_id, send_by, content, timestamp`,
             );
-            stmt.run(message.playerId, message.sendBy, message.content);
+            const row = stmt.get(message.playerId, message.sendBy, message.content) as
+                | {
+                      content: string;
+                      id: number;
+                      player_id: number;
+                      send_by: 'gm' | 'player' | 'system';
+                      timestamp: string;
+                  }
+                | undefined;
+
+            return row
+                ? {
+                      content: row.content,
+                      id: row.id,
+                      playerId: row.player_id,
+                      sendBy: row.send_by,
+                      timestamp: new Date(row.timestamp),
+                  }
+                : null;
         } catch {
             // Handle error silently
+            return null;
         }
     },
     deleteAllMessagesByPlayerId: (playerId: number): void => {
