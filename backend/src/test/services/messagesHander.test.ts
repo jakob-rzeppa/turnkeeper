@@ -18,7 +18,7 @@ vi.mock('../../connectionControllers/GmController', () => {
         default: {
             getInstance: vi.fn().mockReturnValue({
                 gmMessagesEmitter: {
-                    sendAllMessages: vi.fn(),
+                    sendNewMessage: vi.fn(),
                 },
             }),
         },
@@ -30,7 +30,7 @@ vi.mock('../../connectionControllers/UserController', () => {
         default: {
             getInstance: vi.fn().mockReturnValue({
                 userMessagesEmitter: {
-                    sendAllMessages: vi.fn(),
+                    sendNewMessage: vi.fn(),
                 },
             }),
         },
@@ -39,9 +39,18 @@ vi.mock('../../connectionControllers/UserController', () => {
 
 describe('messagesHandler service', () => {
     describe('sendMessageFromPlayer', () => {
-        it('should send a message from a player', () => {
+        it('should call messageRepository with the message from a player', () => {
+            vi.mocked(messageRepository.createMessage).mockReturnValue({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: new Date(),
+            });
+
             messagesHandler.sendMessageFromPlayer(1, 'Hello from player');
 
+            expect(messageRepository.createMessage).toHaveBeenCalledTimes(1);
             expect(messageRepository.createMessage).toHaveBeenCalledWith({
                 content: 'Hello from player',
                 playerId: 1,
@@ -49,20 +58,48 @@ describe('messagesHandler service', () => {
             });
         });
 
-        it('should call gmMessagesEmitter.sendAllMessages and userMessagesEmitter.sendAllMessages', () => {
+        it('should call gmMessagesEmitter.sendNewMessage and userMessagesEmitter.sendNewMessage with the created message', () => {
+            vi.mocked(messageRepository.createMessage).mockReturnValue({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: new Date(),
+            });
+
             messagesHandler.sendMessageFromPlayer(1, 'Hello from player');
 
             expect(
-                GmController.getInstance()?.gmMessagesEmitter.sendAllMessages,
-            ).toHaveBeenCalled();
+                GmController.getInstance()?.gmMessagesEmitter.sendNewMessage,
+            ).toHaveBeenCalledWith({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: expect.any(Date),
+            });
             expect(
-                UserController.getInstance(1)?.userMessagesEmitter.sendAllMessages,
-            ).toHaveBeenCalled();
+                UserController.getInstance(1)?.userMessagesEmitter.sendNewMessage,
+            ).toHaveBeenCalledWith({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: expect.any(Date),
+            });
         });
     });
 
     describe('sendMessageToPlayer', () => {
-        it('should send a message to a player', () => {
+        it('should call messageRepository with the message to a player', () => {
+            vi.mocked(messageRepository.createMessage).mockReturnValue({
+                id: 1,
+                content: 'Hello to player',
+                playerId: 2,
+                sendBy: 'gm',
+                timestamp: new Date(),
+            });
+
             messagesHandler.sendMessageToPlayer(2, 'Hello to player');
 
             expect(messageRepository.createMessage).toHaveBeenCalledWith({
@@ -73,14 +110,34 @@ describe('messagesHandler service', () => {
         });
 
         it('should call gmMessagesEmitter.sendAllMessages and userMessagesEmitter.sendAllMessages', () => {
+            vi.mocked(messageRepository.createMessage).mockReturnValue({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: new Date(),
+            });
+
             messagesHandler.sendMessageFromPlayer(1, 'Hello from player');
 
             expect(
-                GmController.getInstance()?.gmMessagesEmitter.sendAllMessages,
-            ).toHaveBeenCalled();
+                GmController.getInstance()?.gmMessagesEmitter.sendNewMessage,
+            ).toHaveBeenCalledWith({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: expect.any(Date),
+            });
             expect(
-                UserController.getInstance(1)?.userMessagesEmitter.sendAllMessages,
-            ).toHaveBeenCalled();
+                UserController.getInstance(1)?.userMessagesEmitter.sendNewMessage,
+            ).toHaveBeenCalledWith({
+                id: 1,
+                content: 'Hello from player',
+                playerId: 1,
+                sendBy: 'player',
+                timestamp: expect.any(Date),
+            });
         });
     });
 });
