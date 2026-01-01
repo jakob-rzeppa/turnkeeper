@@ -15,7 +15,11 @@ const removeToast = (id: number) => {
 
 <template>
     <Teleport to="body">
-        <TransitionGroup name="toast" tag="ul" class="fixed top-4 right-4 z-50 flex flex-col gap-1">
+        <TransitionGroup
+            name="toast"
+            tag="ul"
+            class="fixed top-4 right-4 z-1000 flex flex-col gap-1"
+        >
             <li
                 v-for="toast in toastStore.toasts.entries()"
                 :key="toast[0]"
