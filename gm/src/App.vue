@@ -18,6 +18,7 @@ import QuickActions from './components/QuickActions.vue';
 import GameNotesEditor from './components/game/GameNotesEditor.vue';
 import RandomGenerator from './components/RandomGenerator.vue';
 import { useMessagesStore } from './stores/messagesStore';
+import ToastController from './components/toast/ToastController.vue';
 
 const { isConnected } = connection();
 
@@ -74,4 +75,5 @@ useMessagesStore();
         </div>
     </main>
     <ModalController />
+    <ToastController />
 </template>
