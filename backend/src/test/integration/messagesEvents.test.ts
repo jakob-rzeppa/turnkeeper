@@ -107,27 +107,23 @@ describe('Gm Game Events Integration Tests', () => {
 
         expect(gmMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(gmMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: {
-                    1: [expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' })],
-                },
+                message: expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
             }),
         );
         expect(userMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(userMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: expect.arrayContaining([
-                    expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
-                ]) as unknown[],
+                message: expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
             }),
         );
     });
 
     it('should send a second message from GM to user', () => {
         const payload: GmToBackendEventPayloads['messages:send'] = {
-            content: 'Second Message',
+            content: 'Second Message!',
             playerId: 1,
         };
 
@@ -139,24 +135,16 @@ describe('Gm Game Events Integration Tests', () => {
 
         expect(gmMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(gmMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: {
-                    1: [
-                        expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
-                        expect.objectContaining({ content: 'Second Message', sendBy: 'gm' }),
-                    ],
-                },
+                message: expect.objectContaining({ content: 'Second Message!', sendBy: 'gm' }),
             }),
         );
         expect(userMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(userMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: [
-                    expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
-                    expect.objectContaining({ content: 'Second Message', sendBy: 'gm' }),
-                ],
+                message: expect.objectContaining({ content: 'Second Message!', sendBy: 'gm' }),
             }),
         );
     });
@@ -174,26 +162,16 @@ describe('Gm Game Events Integration Tests', () => {
 
         expect(userMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(userMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: [
-                    expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
-                    expect.objectContaining({ content: 'Second Message', sendBy: 'gm' }),
-                    expect.objectContaining({ content: 'Hello GM!', sendBy: 'player' }),
-                ],
+                message: expect.objectContaining({ content: 'Hello GM!', sendBy: 'player' }),
             }),
         );
         expect(gmMockSocket.emit).toHaveBeenCalledTimes(1);
         expect(gmMockSocket.emit).toHaveBeenCalledWith(
-            'messages:all',
+            'messages:new',
             expect.objectContaining({
-                messages: {
-                    1: [
-                        expect.objectContaining({ content: 'Hello Player!', sendBy: 'gm' }),
-                        expect.objectContaining({ content: 'Second Message', sendBy: 'gm' }),
-                        expect.objectContaining({ content: 'Hello GM!', sendBy: 'player' }),
-                    ],
-                },
+                message: expect.objectContaining({ content: 'Hello GM!', sendBy: 'player' }),
             }),
         );
     });
