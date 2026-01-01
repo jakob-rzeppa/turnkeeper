@@ -22,7 +22,7 @@ const removeToast = (id: number) => {
                 @click="removeToast(toast[0])"
             >
                 <Toast
-                    :message="toast[1].message + ' (ID: ' + toast[0] + ')'"
+                    :message="toast[1].message"
                     :type="toast[1].type"
                     :duration="toast[1].duration"
                 />
