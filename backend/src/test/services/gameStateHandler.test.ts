@@ -20,6 +20,7 @@ vi.mock('../../repositories/gameStateRepository', () => {
             getGameStateById: vi.fn(),
             updateHiddenNotes: vi.fn(),
             updateNotes: vi.fn(),
+            updatePlayerOrder: vi.fn(),
             addPlayerToOrder: vi.fn(),
             removePlayerFromOrder: vi.fn(),
         },
@@ -127,6 +128,17 @@ describe('gameStateHandler', () => {
                 message: 'Failed to initialize game state: Database error',
             });
         });
+
+        it('should send game info to GM and all users', () => {
+            const playerOrder = [3, 1, 2];
+
+            gameStateHandler.initGameState(playerOrder);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
+        });
     });
 
     describe('deleteGameState', () => {
@@ -148,6 +160,15 @@ describe('gameStateHandler', () => {
                 message: 'Failed to delete game state: Database error',
             });
         });
+
+        it('should send game info to GM and all users', () => {
+            gameStateHandler.deleteGameState();
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
+        });
     });
 
     describe('advanceTurn', () => {
@@ -168,6 +189,15 @@ describe('gameStateHandler', () => {
             expect(logger.error).toHaveBeenCalledWith({
                 message: 'Failed to advance turn: Database error',
             });
+        });
+
+        it('should send game info to GM and all users', () => {
+            gameStateHandler.advanceTurn();
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
         });
     });
 
@@ -192,6 +222,17 @@ describe('gameStateHandler', () => {
             expect(logger.error).toHaveBeenCalledWith({
                 message: 'Failed to update public notes: Database error',
             });
+        });
+
+        it('should send game info to GM and all users', () => {
+            const newNotes = 'Updated public notes';
+
+            gameStateHandler.updateNotes(newNotes);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
         });
     });
 
@@ -223,6 +264,58 @@ describe('gameStateHandler', () => {
                 message: 'Failed to update hidden notes: Database error',
             });
         });
+
+        it('should send game info to GM and all users', () => {
+            const newHiddenNotes = 'Updated hidden notes';
+
+            gameStateHandler.updateHiddenNotes(newHiddenNotes);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
+        });
+    });
+
+    describe('updatePlayerOrder', () => {
+        it('should update the player order in the game state', () => {
+            const newPlayerOrder = [3, 1, 2];
+
+            gameStateHandler.updatePlayerOrder(newPlayerOrder);
+
+            expect(gameStateRepository.updatePlayerOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                newPlayerOrder,
+            );
+        });
+
+        it('should log an error if updating player order fails', () => {
+            const newPlayerOrder = [3, 1, 2];
+            vi.mocked(gameStateRepository.updatePlayerOrder).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            gameStateHandler.updatePlayerOrder(newPlayerOrder);
+
+            expect(gameStateRepository.updatePlayerOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                newPlayerOrder,
+            );
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to update player order: Database error',
+            });
+        });
+
+        it('should send game info to GM and all users', () => {
+            const newPlayerOrder = [3, 1, 2];
+
+            gameStateHandler.updatePlayerOrder(newPlayerOrder);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
+        });
     });
 
     describe('addPlayerToTurnOrder', () => {
@@ -252,6 +345,17 @@ describe('gameStateHandler', () => {
             expect(logger.error).toHaveBeenCalledWith({
                 message: `Failed to add player ${playerId} to turn order: Database error`,
             });
+        });
+
+        it('should send game info to GM and all users', () => {
+            const playerId = 4;
+
+            gameStateHandler.addPlayerToTurnOrder(playerId);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
         });
     });
 
@@ -335,6 +439,17 @@ describe('gameStateHandler', () => {
             gameStateHandler.removePlayerFromTurnOrder(playerId);
 
             expect(gameStateRepository.revertTurn).not.toHaveBeenCalled();
+        });
+
+        it('should send game info to GM and all users', () => {
+            const playerId = 2;
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(
+                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
+            ).toHaveBeenCalled();
         });
     });
 });

@@ -1,3 +1,5 @@
+import GmController from '../connectionControllers/GmController.js';
+import UserController from '../connectionControllers/UserController.js';
 import { GameState } from '../entities/GameState.js';
 import gameStateRepository from '../repositories/gameStateRepository.js';
 import logger from './logger.js';
@@ -42,6 +44,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -60,6 +67,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -78,6 +90,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -98,6 +115,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
     /**
      * Updates the hidden notes of the game state
@@ -117,6 +139,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -137,6 +164,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -157,6 +189,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 
     /**
@@ -185,6 +222,11 @@ const gameStateHandler = {
                 }`,
             });
         }
+
+        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+        UserController.getAllInstances().forEach((userInstance) => {
+            userInstance.userGameEmitter.sendGameInfo();
+        });
     },
 };
 
