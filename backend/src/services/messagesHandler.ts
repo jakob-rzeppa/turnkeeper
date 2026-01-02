@@ -1,4 +1,4 @@
-import { Message } from 'shared-types';
+import { Message } from '../entities/Message.js';
 
 import GmController from '../connectionControllers/GmController.js';
 import UserController from '../connectionControllers/UserController.js';
@@ -13,16 +13,20 @@ const messagesHandler = {
             sendBy: 'player',
         };
 
-        const createdMessage = messageRepository.createMessage(message);
+        try {
+            const createdMessage = messageRepository.createMessage(message);
 
-        if (!createdMessage) {
-            // Handle with just a log, since the players sit next to each other
-            logger.warn({ message: `Failed to send message from player ${playerId}` });
-            return;
+            GmController.getInstance()?.gmMessagesEmitter.sendNewMessage(createdMessage);
+            UserController.getInstance(playerId)?.userMessagesEmitter.sendNewMessage(
+                createdMessage,
+            );
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to handle message from player ${playerId}: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
         }
-
-        GmController.getInstance()?.gmMessagesEmitter.sendNewMessage(createdMessage);
-        UserController.getInstance(playerId)?.userMessagesEmitter.sendNewMessage(createdMessage);
     },
     sendMessageToPlayer: (playerId: number, content: string) => {
         const message: Omit<Message, 'id' | 'timestamp'> = {
@@ -31,16 +35,20 @@ const messagesHandler = {
             sendBy: 'gm',
         };
 
-        const createdMessage = messageRepository.createMessage(message);
+        try {
+            const createdMessage = messageRepository.createMessage(message);
 
-        if (!createdMessage) {
-            // Handle with just a log, since the players sit next to each other
-            logger.warn({ message: `Failed to send message to player ${playerId}` });
-            return;
+            GmController.getInstance()?.gmMessagesEmitter.sendNewMessage(createdMessage);
+            UserController.getInstance(playerId)?.userMessagesEmitter.sendNewMessage(
+                createdMessage,
+            );
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to handle message to player ${playerId}: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
         }
-
-        GmController.getInstance()?.gmMessagesEmitter.sendNewMessage(createdMessage);
-        UserController.getInstance(playerId)?.userMessagesEmitter.sendNewMessage(createdMessage);
     },
 };
 

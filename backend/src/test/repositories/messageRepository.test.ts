@@ -1,20 +1,13 @@
-import { Message } from 'shared-types';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SqliteDatabase } from '../../database/SqliteDatabase.js';
 import messageRepository from '../../repositories/messageRepository.js';
-import logger from '../../services/logger.js';
+import { NotFound, ValidationError } from '../../repositories/repositoryErrors.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({
     default: {
         dbPath: ':memory:',
-    },
-}));
-
-vi.mock('../../services/logger.ts', () => ({
-    default: {
-        error: vi.fn(),
     },
 }));
 
@@ -27,258 +20,272 @@ describe('Message Repository', () => {
     });
 
     describe('createMessage', () => {
-        it('should create a new message in the database and return the created message', () => {
+        it('should create a new message and return it with id and timestamp', () => {
+            // Create a player first
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
 
-            const newMessage: Omit<Message, 'id' | 'timestamp'> = {
-                content: 'Hello, world!',
+            const message = messageRepository.createMessage({
+                content: 'Hello World',
                 playerId: 1,
                 sendBy: 'player',
-            };
+            });
 
-            const message = messageRepository.createMessage(newMessage);
+            expect(message).toBeDefined();
+            expect(message.id).toBeDefined();
+            expect(message.content).toBe('Hello World');
+            expect(message.playerId).toBe(1);
+            expect(message.sendBy).toBe('player');
+            expect(message.timestamp).toBeInstanceOf(Date);
 
-            expect(message).not.toBeNull();
-            expect(message).toEqual(
-                expect.objectContaining({
-                    content: newMessage.content,
-                    playerId: newMessage.playerId,
-                    sendBy: newMessage.sendBy,
-                    id: expect.any(Number),
-                    timestamp: expect.any(Date),
-                }),
-            );
-
-            const messages = db.prepare('SELECT * FROM messages').all();
-            expect(messages.length).toBe(1);
-            expect(messages[0]).toEqual({
-                content: newMessage.content,
-                id: 1,
-                player_id: newMessage.playerId,
-                send_by: newMessage.sendBy,
-                timestamp: expect.any(String) as unknown,
+            // Verify it is stored in the database
+            const storedMessage = db.prepare('SELECT * FROM messages WHERE id = ?').get(message.id);
+            expect(storedMessage).toBeDefined();
+            expect(storedMessage).toMatchObject({
+                id: message.id,
+                content: 'Hello World',
+                player_id: 1,
+                send_by: 'player',
             });
         });
 
-        it('should log an error for invalid sendBy values', () => {
-            const newMessage: Omit<Message, 'id' | 'timestamp'> = {
-                content: 'This should fail.',
+        it('should create messages with different sendBy values', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            const playerMessage = messageRepository.createMessage({
+                content: 'From player',
                 playerId: 1,
-                // @ts-expect-error Testing invalid value
-                sendBy: 'invalid_sender',
-            };
-
-            expect(() => {
-                messageRepository.createMessage(newMessage);
-            }).not.toThrow();
-            expect(logger.error).toHaveBeenCalledWith({
-                details: {
-                    content: 'This should fail.',
-                    playerId: 1,
-                    sendBy: 'invalid_sender',
-                },
-                message: 'Invalid sendBy value: invalid_sender',
+                sendBy: 'player',
             });
+            const gmMessage = messageRepository.createMessage({
+                content: 'From GM',
+                playerId: 1,
+                sendBy: 'gm',
+            });
+
+            expect(playerMessage.sendBy).toBe('player');
+            expect(gmMessage.sendBy).toBe('gm');
         });
-    });
 
-    describe('getMessagesByPlayerId', () => {
-        it('should return an empty array when no messages exist for the player', () => {
-            const messages = messageRepository.getMessagesByPlayerId(1);
-            expect(messages).toEqual([]);
+        it('should throw ValidationError if sendBy is invalid', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            expect(() =>
+                messageRepository.createMessage({
+                    content: 'Test',
+                    playerId: 1,
+                    sendBy: 'invalid' as any,
+                }),
+            ).toThrow(ValidationError);
         });
 
-        it('should return messages for the specified player', () => {
-            db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'system', 'System message', '2023-01-01 10:01:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Hello', '2023-01-01 10:00:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (2, 'player', 'Other player message', '2023-01-01 10:03:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'gm', 'Gm message', '2023-01-01 10:02:00')",
-            );
+        it('should throw ValidationError if content is empty', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
 
-            const messages = messageRepository.getMessagesByPlayerId(1);
-            expect(messages.length).toBe(3);
-            expect(messages).toContainEqual(
-                expect.objectContaining({
-                    content: 'Hello',
+            expect(() =>
+                messageRepository.createMessage({
+                    content: '',
                     playerId: 1,
                     sendBy: 'player',
-                    timestamp: new Date('2023-01-01 10:00:00'),
                 }),
-            );
-            expect(messages).toContainEqual(
-                expect.objectContaining({
-                    content: 'Gm message',
-                    playerId: 1,
-                    sendBy: 'gm',
-                    timestamp: new Date('2023-01-01 10:02:00'),
-                }),
-            );
-            expect(messages).toContainEqual(
-                expect.objectContaining({
-                    content: 'System message',
-                    playerId: 1,
-                    sendBy: 'system',
-                    timestamp: new Date('2023-01-01 10:01:00'),
-                }),
-            );
-            expect(
-                messages[0].timestamp <= messages[1].timestamp &&
-                    messages[1].timestamp <= messages[2].timestamp,
-            ).toBe(true);
-        });
-    });
-
-    describe('getAllMessagesGroupedByPlayerId', () => {
-        it('should return all messages grouped by player ID', () => {
-            db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Hello Alice', '2023-01-01 10:00:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (2, 'player', 'Hello Bob', '2023-01-01 10:05:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'gm', 'GM message for Alice', '2023-01-01 10:10:00')",
-            );
-
-            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
-            expect(Object.keys(groupedMessages).length).toBe(2);
-            expect(groupedMessages[1].length).toBe(2);
-            expect(groupedMessages[2].length).toBe(1);
-
-            expect(groupedMessages[1]).toContainEqual(
-                expect.objectContaining({
-                    content: 'Hello Alice',
-                    playerId: 1,
-                    sendBy: 'player',
-                    timestamp: new Date('2023-01-01 10:00:00'),
-                }),
-            );
-            expect(groupedMessages[1]).toContainEqual(
-                expect.objectContaining({
-                    content: 'GM message for Alice',
-                    playerId: 1,
-                    sendBy: 'gm',
-                    timestamp: new Date('2023-01-01 10:10:00'),
-                }),
-            );
-            expect(groupedMessages[2]).toContainEqual(
-                expect.objectContaining({
-                    content: 'Hello Bob',
-                    playerId: 2,
-                    sendBy: 'player',
-                    timestamp: new Date('2023-01-01 10:05:00'),
-                }),
-            );
-
-            expect(groupedMessages[1][0].timestamp <= groupedMessages[1][1].timestamp).toBe(true);
+            ).toThrow(ValidationError);
         });
 
-        it('should return an empty object when there are no messages', () => {
-            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
-            expect(groupedMessages).toEqual({});
+        it('should throw NotFound if player does not exist', () => {
+            expect(() =>
+                messageRepository.createMessage({
+                    content: 'Test',
+                    playerId: 999,
+                    sendBy: 'player',
+                }),
+            ).toThrow(NotFound);
         });
     });
 
     describe('deleteAllMessagesByPlayerId', () => {
-        it('should delete all messages for the specified player ID', () => {
+        it('should delete all messages for a specific player', () => {
+            // Create players
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+
+            // Create messages for both players
             db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'player', 'Message 1')",
             );
             db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Hello Alice', '2023-01-01 10:00:00')",
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'gm', 'Message 2')",
             );
             db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (2, 'player', 'Hello Bob', '2023-01-01 10:05:00')",
+                "INSERT INTO messages (player_id, send_by, content) VALUES (2, 'player', 'Message 3')",
             );
 
             messageRepository.deleteAllMessagesByPlayerId(1);
 
-            const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                content: string;
-                id: number;
-                player_id: null | number;
-                send_by: 'gm' | 'player' | 'system';
-                timestamp: string;
-            }[];
-            expect(remainingMessages.length).toBe(1);
-            expect(remainingMessages[0].player_id).toBe(2);
+            // Verify Alice's messages are deleted
+            const aliceMessages = db.prepare('SELECT * FROM messages WHERE player_id = 1').all();
+            expect(aliceMessages).toHaveLength(0);
+
+            // Verify Bob's messages remain
+            const bobMessages = db.prepare('SELECT * FROM messages WHERE player_id = 2').all();
+            expect(bobMessages).toHaveLength(1);
         });
 
-        it('should do nothing if there are no messages for the specified player ID', () => {
+        it('should not throw error if player has no messages', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec(
-                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Hello Alice', '2023-01-01 10:00:00')",
-            );
 
-            messageRepository.deleteAllMessagesByPlayerId(2); // No messages for player ID 2
+            expect(() => messageRepository.deleteAllMessagesByPlayerId(1)).not.toThrow();
+        });
 
-            const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                content: string;
-                id: number;
-                player_id: null | number;
-                send_by: 'gm' | 'player' | 'system';
-                timestamp: string;
-            }[];
-            expect(remainingMessages.length).toBe(1);
-            expect(remainingMessages[0].player_id).toBe(1);
+        it('should throw NotFound if player does not exist', () => {
+            expect(() => messageRepository.deleteAllMessagesByPlayerId(999)).toThrow(NotFound);
         });
     });
 
     describe('deleteMessageById', () => {
-        it('should delete the message with the specified ID', () => {
+        it('should delete a specific message by its ID', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
             db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+                "INSERT INTO messages (id, player_id, send_by, content) VALUES (1, 1, 'player', 'Message 1')",
             );
             db.exec(
-                "INSERT INTO messages (id, player_id, send_by, content, timestamp) VALUES (1, 1, 'player', 'Hello Alice', '2023-01-01 10:00:00')",
-            );
-            db.exec(
-                "INSERT INTO messages (id, player_id, send_by, content, timestamp) VALUES (2, 2, 'player', 'Hello Bob', '2023-01-01 10:05:00')",
+                "INSERT INTO messages (id, player_id, send_by, content) VALUES (2, 1, 'player', 'Message 2')",
             );
 
             messageRepository.deleteMessageById(1);
 
-            const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                content: string;
-                id: number;
-                player_id: null | number;
-                send_by: 'gm' | 'player' | 'system';
-                timestamp: string;
-            }[];
-            expect(remainingMessages.length).toBe(1);
-            expect(remainingMessages[0].id).toBe(2);
+            // Verify message 1 is deleted
+            const message1 = db.prepare('SELECT * FROM messages WHERE id = 1').get();
+            expect(message1).toBeUndefined();
+
+            // Verify message 2 remains
+            const message2 = db.prepare('SELECT * FROM messages WHERE id = 2').get();
+            expect(message2).toBeDefined();
         });
 
-        it('should do nothing if the message ID does not exist', () => {
+        it('should throw NotFound if message does not exist', () => {
+            expect(() => messageRepository.deleteMessageById(999)).toThrow(NotFound);
+        });
+    });
+
+    describe('getAllMessagesGroupedByPlayerId', () => {
+        it('should return messages grouped by player ID', () => {
+            // Create players
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+
+            // Create messages
             db.exec(
-                "INSERT INTO messages (id, player_id, send_by, content, timestamp) VALUES (1, 1, 'player', 'Hello Alice', '2023-01-01 10:00:00')",
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'player', 'Alice Message 1')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'gm', 'Alice Message 2')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (2, 'player', 'Bob Message 1')",
             );
 
-            messageRepository.deleteMessageById(999); // Non-existent ID
+            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
 
-            const remainingMessages = db.prepare('SELECT * FROM messages').all() as {
-                content: string;
-                id: number;
-                player_id: null | number;
-                send_by: 'gm' | 'player' | 'system';
-                timestamp: string;
-            }[];
-            expect(remainingMessages.length).toBe(1);
-            expect(remainingMessages[0].id).toBe(1);
+            expect(groupedMessages[1]).toHaveLength(2);
+            expect(groupedMessages[1][0].content).toBe('Alice Message 1');
+            expect(groupedMessages[1][1].content).toBe('Alice Message 2');
+            expect(groupedMessages[2]).toHaveLength(1);
+            expect(groupedMessages[2][0].content).toBe('Bob Message 1');
+        });
+
+        it('should return empty object if no messages exist', () => {
+            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
+            expect(groupedMessages).toEqual({});
+        });
+
+        it('should return messages in chronological order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            // Insert messages with different timestamps
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'First', '2024-01-01 10:00:00')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Second', '2024-01-01 11:00:00')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Third', '2024-01-01 12:00:00')",
+            );
+
+            const groupedMessages = messageRepository.getAllMessagesGroupedByPlayerId();
+
+            expect(groupedMessages[1][0].content).toBe('First');
+            expect(groupedMessages[1][1].content).toBe('Second');
+            expect(groupedMessages[1][2].content).toBe('Third');
+        });
+    });
+
+    describe('getMessagesByPlayerId', () => {
+        it('should return all messages for a specific player', () => {
+            // Create players
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+
+            // Create messages
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'player', 'Alice Message 1')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'gm', 'Alice Message 2')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (2, 'player', 'Bob Message')",
+            );
+
+            const aliceMessages = messageRepository.getMessagesByPlayerId(1);
+
+            expect(aliceMessages).toHaveLength(2);
+            expect(aliceMessages[0].content).toBe('Alice Message 1');
+            expect(aliceMessages[0].playerId).toBe(1);
+            expect(aliceMessages[1].content).toBe('Alice Message 2');
+            expect(aliceMessages[1].playerId).toBe(1);
+        });
+
+        it('should return empty array if player has no messages', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            const messages = messageRepository.getMessagesByPlayerId(1);
+            expect(messages).toEqual([]);
+        });
+
+        it('should throw NotFound if player does not exist', () => {
+            expect(() => messageRepository.getMessagesByPlayerId(999)).toThrow(NotFound);
+        });
+
+        it('should return messages in chronological order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            // Insert messages with different timestamps
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'First', '2024-01-01 10:00:00')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Second', '2024-01-01 11:00:00')",
+            );
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content, timestamp) VALUES (1, 'player', 'Third', '2024-01-01 12:00:00')",
+            );
+
+            const messages = messageRepository.getMessagesByPlayerId(1);
+
+            expect(messages[0].content).toBe('First');
+            expect(messages[1].content).toBe('Second');
+            expect(messages[2].content).toBe('Third');
+        });
+
+        it('should properly parse message timestamps', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec(
+                "INSERT INTO messages (player_id, send_by, content) VALUES (1, 'player', 'Test')",
+            );
+
+            const messages = messageRepository.getMessagesByPlayerId(1);
+
+            expect(messages[0].timestamp).toBeInstanceOf(Date);
         });
     });
 });

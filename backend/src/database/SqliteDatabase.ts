@@ -81,8 +81,8 @@ export class SqliteDatabase extends Database {
             `CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY, 
                 player_id INT NOT NULL, 
-                send_by TEXT NOT NULL CHECK(send_by IN ('player', 'system', 'gm')), 
-                content TEXT NOT NULL DEFAULT "", 
+                send_by TEXT NOT NULL CHECK(send_by IN ('player', 'gm')), 
+                content TEXT NOT NULL CHECK(length(trim(content)) > 0), 
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, 
 
                 FOREIGN KEY (player_id) REFERENCES players (id)
