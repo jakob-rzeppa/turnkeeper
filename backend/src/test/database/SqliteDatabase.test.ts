@@ -11,9 +11,6 @@ vi.mock('../../config/config.ts', () => ({
 
 describe('SqliteDatabase', () => {
     beforeEach(() => {
-        // Reset the singleton instance before each test
-        SqliteDatabase.instance = null;
-
         vi.mocked(config).dbPath = ':memory:';
     });
 
@@ -33,7 +30,7 @@ describe('SqliteDatabase', () => {
             const tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -41,6 +38,9 @@ describe('SqliteDatabase', () => {
             expect(tables).toContain('players');
             expect(tables).toContain('player_stats');
             expect(tables).toContain('game_state');
+            expect(tables).toContain('tradables');
+            expect(tables).toContain('player_tradables');
+            expect(tables).toContain('messages');
         });
     });
 
@@ -52,7 +52,7 @@ describe('SqliteDatabase', () => {
             let tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -60,6 +60,9 @@ describe('SqliteDatabase', () => {
             expect(tables).toContain('players');
             expect(tables).toContain('player_stats');
             expect(tables).toContain('game_state');
+            expect(tables).toContain('tradables');
+            expect(tables).toContain('player_tradables');
+            expect(tables).toContain('messages');
 
             // Drop tables
             db.dropTables();
@@ -68,7 +71,7 @@ describe('SqliteDatabase', () => {
             tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -76,6 +79,9 @@ describe('SqliteDatabase', () => {
             expect(tables).not.toContain('players');
             expect(tables).not.toContain('player_stats');
             expect(tables).not.toContain('game_state');
+            expect(tables).not.toContain('tradables');
+            expect(tables).not.toContain('player_tradables');
+            expect(tables).not.toContain('messages');
         });
     });
 });

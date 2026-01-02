@@ -21,8 +21,13 @@ export class SqliteDatabase extends Database {
     }
 
     public dropTables() {
+        // First drop tables with foreign keys
         this.exec('DROP TABLE IF EXISTS player_stats');
+        this.exec('DROP TABLE IF EXISTS player_tradables');
         this.exec('DROP TABLE IF EXISTS messages');
+
+        // Then drop the other tables
+        this.exec('DROP TABLE IF EXISTS tradables');
         this.exec('DROP TABLE IF EXISTS players');
         this.exec('DROP TABLE IF EXISTS game_state');
     }
@@ -47,6 +52,26 @@ export class SqliteDatabase extends Database {
                 value TEXT NOT NULL DEFAULT "", 
                 
                 FOREIGN KEY (player_id) REFERENCES players (id)
+            )`,
+        );
+
+        this.exec(
+            `CREATE TABLE IF NOT EXISTS tradables (
+                id INTEGER PRIMARY KEY, 
+                name TEXT UNIQUE NOT NULL,
+                initial_quantity INT NOT NULL DEFAULT 0
+            )`,
+        );
+
+        this.exec(
+            `CREATE TABLE IF NOT EXISTS player_tradables (
+                id INTEGER PRIMARY KEY, 
+                player_id INT NOT NULL, 
+                tradable_id INT NOT NULL, 
+                quantity INT NOT NULL DEFAULT 0,
+                 
+                FOREIGN KEY (player_id) REFERENCES players (id),
+                FOREIGN KEY (tradable_id) REFERENCES tradables (id)
             )`,
         );
 
