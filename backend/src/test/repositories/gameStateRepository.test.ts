@@ -153,6 +153,50 @@ describe('gameStateRepository', () => {
         });
     });
 
+    describe('addPlayerToOrder', () => {
+        it('should add a player to the turn order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+            db.exec(
+                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
+            );
+            db.exec(
+                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0)',
+            );
+
+            gameStateRepository.addPlayerToOrder(1, 2);
+
+            const playerOrderRows = db
+                .prepare(
+                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
+                )
+                .all() as { player_id: number }[];
+
+            expect(playerOrderRows.map((row) => row.player_id)).toEqual([1, 2]);
+        });
+
+        it('should throw NotFound if game state does not exist', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            expect(() => gameStateRepository.addPlayerToOrder(999, 1)).toThrow(NotFound);
+        });
+
+        it('should throw ValidationError if player ID does not exist', () => {
+            db.exec(
+                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
+            );
+
+            expect(() => gameStateRepository.addPlayerToOrder(1, 999)).toThrow(ValidationError);
+        });
+
+        it('should throw ValidationError if player is already in the order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            gameStateRepository.createGameState([1]);
+
+            expect(() => gameStateRepository.addPlayerToOrder(1, 1)).toThrow(ValidationError);
+        });
+    });
+
     describe('removePlayerFromOrder', () => {
         it('should remove a player from the turn order', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");

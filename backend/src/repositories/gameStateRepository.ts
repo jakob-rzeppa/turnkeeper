@@ -191,6 +191,57 @@ const gameStateRepository = {
     },
 
     /**
+     * Adds a player to the turn order of the game state at the end of the order
+     *
+     * @param gameStateId the ID of the game state to update
+     * @param playerId the ID of the player to add to the order
+     * @throws NotFound if the game state does not exist
+     * @throws ValidationError if the player ID does not exist or is already in the order
+     * @throws DatabaseError if there was an unexpected error during the update
+     */
+    addPlayerToOrder: (gameStateId: number, playerId: number) => {
+        try {
+            // Check if game state exists
+            const gameStateExists = db
+                .prepare('SELECT 1 FROM game_state WHERE id = ?')
+                .get(gameStateId);
+
+            if (!gameStateExists) {
+                throw new NotFound(`Game state with ID ${gameStateId} does not exist.`);
+            }
+
+            // Get the current max position
+            const maxPositionRow = db
+                .prepare(
+                    'SELECT MAX(position) as max_position FROM player_order WHERE game_state_id = ?',
+                )
+                .get(gameStateId) as { max_position: number | null };
+
+            const newPosition = (maxPositionRow.max_position ?? -1) + 1;
+
+            const insertStmt = db.prepare(
+                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (?, ?, ?)',
+            );
+            insertStmt.run(gameStateId, playerId, newPosition);
+        } catch (err: unknown) {
+            if (!(err instanceof Error))
+                throw new DatabaseError('Unexpected error adding player to order.');
+
+            if (err instanceof NotFound) throw err;
+
+            if (err.message.includes('FOREIGN KEY constraint failed'))
+                throw new ValidationError('Player ID does not exist.');
+
+            if (err.message.includes('UNIQUE constraint failed'))
+                throw new ValidationError(
+                    `Player with ID ${playerId} is already in the player order.`,
+                );
+
+            throw new DatabaseError('Unexpected error adding player to order.');
+        }
+    },
+
+    /**
      * Removes a player from the turn order of the game state
      *
      * @param game_state_id the ID of the game state to update
