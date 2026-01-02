@@ -1,4 +1,4 @@
-import { Player } from 'shared-types';
+import { Player } from '../../../entities/Player.js';
 import { Socket } from 'socket.io';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
