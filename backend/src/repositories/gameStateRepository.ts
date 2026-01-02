@@ -2,6 +2,7 @@ import { GameState } from '../entities/GameState.js';
 
 import { SqliteDatabase } from '../database/SqliteDatabase.js';
 import { Conflict, DatabaseError, NotFound, ValidationError } from './repositoryErrors.js';
+import { reverse } from 'dns';
 
 const db = SqliteDatabase.getInstance();
 
@@ -289,7 +290,7 @@ const gameStateRepository = {
      * @throws NotFound if the game state does not exist
      * @throws DatabaseError if there was an unexpected error during the update
      */
-    advanceToNextPlayer: (game_state_id: number) => {
+    advanceTurn: (game_state_id: number) => {
         try {
             // Check if game state exists
             const gameState = db
@@ -328,6 +329,59 @@ const gameStateRepository = {
             if (err instanceof NotFound) throw err;
 
             throw new DatabaseError('Unexpected error advancing to next player.');
+        }
+    },
+
+    /**
+     * Reverts the game state to the previous player's turn.
+     *
+     * Makes sure to loop back to the last player if currently at the first player.
+     *
+     * @throws NotFound if the game state does not exist
+     * @throws DatabaseError if there was an unexpected error during the update
+     */
+    revertTurn: (game_state_id: number) => {
+        try {
+            // Check if game state exists
+            const gameState = db
+                .prepare(
+                    `SELECT gs.round_number, gs.current_player_index, COUNT(po.player_id) AS player_count
+                    FROM game_state gs
+                    JOIN player_order po ON gs.id = po.game_state_id
+                    WHERE gs.id = ?
+                    GROUP BY gs.id`,
+                )
+                .get(game_state_id) as
+                | { current_player_index: number; round_number: number; player_count: number }
+                | undefined;
+
+            if (!gameState) {
+                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
+            }
+
+            let newPlayerIndex = gameState.current_player_index - 1;
+            let roundNumber = gameState.round_number;
+
+            if (newPlayerIndex < 0) {
+                newPlayerIndex = gameState.player_count - 1;
+                roundNumber = Math.max(0, roundNumber - 1);
+            }
+
+            const updateStmt = db.prepare(
+                `UPDATE game_state
+                SET current_player_index = ?,
+                    round_number = ?
+                WHERE id = ?`,
+            );
+
+            updateStmt.run(newPlayerIndex, roundNumber, game_state_id);
+        } catch (err: unknown) {
+            if (!(err instanceof Error))
+                throw new DatabaseError('Unexpected error reversing to previous player.');
+
+            if (err instanceof NotFound) throw err;
+
+            throw new DatabaseError('Unexpected error reversing to previous player.');
         }
     },
 

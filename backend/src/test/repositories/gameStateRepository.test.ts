@@ -254,7 +254,7 @@ describe('gameStateRepository', () => {
             gameStateRepository.createGameState([1, 2, 3]);
 
             // Advance to player 2 (index 1)
-            gameStateRepository.advanceToNextPlayer(1);
+            gameStateRepository.advanceTurn(1);
 
             gameStateRepository.removePlayerFromOrder(1, 1);
 
@@ -279,7 +279,7 @@ describe('gameStateRepository', () => {
                 'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
             );
 
-            gameStateRepository.advanceToNextPlayer(1);
+            gameStateRepository.advanceTurn(1);
 
             const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
             expect(gameState.current_player_index).toBe(1);
@@ -297,9 +297,9 @@ describe('gameStateRepository', () => {
             );
 
             // Advance to player 2
-            gameStateRepository.advanceToNextPlayer(1);
+            gameStateRepository.advanceTurn(1);
             // Loop back to player 1, increment round
-            gameStateRepository.advanceToNextPlayer(1);
+            gameStateRepository.advanceTurn(1);
 
             const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
             expect(gameStateRows.current_player_index).toBe(0);
@@ -307,7 +307,43 @@ describe('gameStateRepository', () => {
         });
 
         it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.advanceToNextPlayer(999)).toThrow(NotFound);
+            expect(() => gameStateRepository.advanceTurn(999)).toThrow(NotFound);
+        });
+    });
+
+    describe('revertTurn', () => {
+        it('should revert to the previous player in turn order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+            db.exec(
+                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 1, 1, '', '')",
+            );
+            db.exec(
+                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
+            );
+
+            gameStateRepository.revertTurn(1);
+
+            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
+            expect(gameState.current_player_index).toBe(0);
+            expect(gameState.round_number).toBe(1);
+        });
+
+        it('should loop back to last player and decrement round number', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+            db.exec(
+                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 2, '', '')",
+            );
+            db.exec(
+                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
+            );
+
+            gameStateRepository.revertTurn(1);
+
+            const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
+            expect(gameStateRows.current_player_index).toBe(1);
+            expect(gameStateRows.round_number).toBe(1);
         });
     });
 
