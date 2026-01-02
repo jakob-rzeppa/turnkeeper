@@ -30,7 +30,7 @@ describe('SqliteDatabase', () => {
             const tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages', 'player_order')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -41,6 +41,7 @@ describe('SqliteDatabase', () => {
             expect(tables).toContain('tradables');
             expect(tables).toContain('player_tradables');
             expect(tables).toContain('messages');
+            expect(tables).toContain('player_order');
         });
     });
 
@@ -52,7 +53,7 @@ describe('SqliteDatabase', () => {
             let tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages', 'player_order')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -63,6 +64,7 @@ describe('SqliteDatabase', () => {
             expect(tables).toContain('tradables');
             expect(tables).toContain('player_tradables');
             expect(tables).toContain('messages');
+            expect(tables).toContain('player_order');
 
             // Drop tables
             db.dropTables();
@@ -71,7 +73,7 @@ describe('SqliteDatabase', () => {
             tables = (
                 db
                     .prepare(
-                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages')",
+                        "SELECT name FROM sqlite_master WHERE type='table' AND name IN ('players', 'player_stats', 'game_state', 'tradables', 'player_tradables', 'messages', 'player_order')",
                     )
                     .all() as { name: string }[]
             ).map((row) => row.name);
@@ -82,6 +84,7 @@ describe('SqliteDatabase', () => {
             expect(tables).not.toContain('tradables');
             expect(tables).not.toContain('player_tradables');
             expect(tables).not.toContain('messages');
+            expect(tables).not.toContain('player_order');
         });
     });
 });

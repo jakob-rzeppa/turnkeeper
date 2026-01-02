@@ -25,6 +25,7 @@ export class SqliteDatabase extends Database {
         this.exec('DROP TABLE IF EXISTS player_stats');
         this.exec('DROP TABLE IF EXISTS player_tradables');
         this.exec('DROP TABLE IF EXISTS messages');
+        this.exec('DROP TABLE IF EXISTS player_order');
 
         // Then drop the other tables
         this.exec('DROP TABLE IF EXISTS tradables');
@@ -92,12 +93,25 @@ export class SqliteDatabase extends Database {
         this.exec(
             `CREATE TABLE IF NOT EXISTS game_state (
                 id INTEGER PRIMARY KEY, 
-                round_number INT NOT NULL, 
-                current_player_index INT NOT NULL, 
-                player_order TEXT NOT NULL, 
+                round_number INT NOT NULL DEFAULT 0, 
+                current_player_index INT NOT NULL DEFAULT 0,
                 notes TEXT NOT NULL DEFAULT "", 
                 hidden_notes TEXT NOT NULL DEFAULT ""
             )`,
         );
+
+        this.exec(`
+            CREATE TABLE IF NOT EXISTS player_order (
+                id INTEGER PRIMARY KEY,
+                game_state_id INT NOT NULL,
+                player_id INT NOT NULL,
+                position INT NOT NULL,
+                
+                FOREIGN KEY (game_state_id) REFERENCES game_state (id),
+                FOREIGN KEY (player_id) REFERENCES players (id),
+                UNIQUE(position, game_state_id),
+                UNIQUE(player_id, game_state_id)
+            )
+        `);
     }
 }
