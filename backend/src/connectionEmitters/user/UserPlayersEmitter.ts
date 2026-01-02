@@ -17,25 +17,22 @@ export default class UserPlayersEmitter {
     }
 
     public sendOwnPlayer() {
-        const player = playerRepository.getPlayerById(this.playerId);
+        try {
+            const player = playerRepository.getPlayerById(this.playerId);
 
-        if (!player) {
-            logger.error({
-                details: { playerId: this.playerId },
-                message: `Tried to emit player info for non-existing player`,
-            });
+            const payload: BackendToUserEventPayloads['player:info'] = {
+                player: {
+                    id: player.id,
+                    name: player.name,
+                    notes: player.notes,
+                    stats: player.stats,
+                },
+            };
+
+            this.socket.emit('player:info', payload);
+        } catch (error) {
+            logger.error({ message: `Error fetching player with ID ${this.playerId}: ${error}` });
             return;
         }
-
-        const payload: BackendToUserEventPayloads['player:info'] = {
-            player: {
-                id: player.id,
-                name: player.name,
-                notes: player.notes,
-                stats: player.stats,
-            },
-        };
-
-        this.socket.emit('player:info', payload);
     }
 }
