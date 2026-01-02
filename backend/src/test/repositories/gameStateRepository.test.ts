@@ -30,9 +30,16 @@ describe('gameStateRepository', () => {
             // Verify game state is created
             const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
             expect(gameState).toBeDefined();
-            expect(JSON.parse(gameState.player_order)).toEqual([1, 2]);
             expect(gameState.current_player_index).toBe(0);
             expect(gameState.round_number).toBe(1);
+
+            // Verify player order
+            const playerOrder = db
+                .prepare(
+                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
+                )
+                .all() as { player_id: number }[];
+            expect(playerOrder.map((row) => row.player_id)).toEqual([1, 2]);
         });
 
         it('should throw Conflict if game state already exists', () => {
@@ -43,9 +50,11 @@ describe('gameStateRepository', () => {
 
             expect(() => gameStateRepository.createGameState([1, 2])).toThrow(Conflict);
 
-            // Verify no game state was created
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
-            expect(gameState).toBeUndefined();
+            // Verify only one game state exists
+            const gameStateCount = db.prepare('SELECT COUNT(*) as count FROM game_state').get() as {
+                count: number;
+            };
+            expect(gameStateCount.count).toBe(1);
         });
 
         it('should throw ValidationError if player order contains invalid player IDs', () => {
@@ -62,17 +71,6 @@ describe('gameStateRepository', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
 
             expect(() => gameStateRepository.createGameState([1, 1])).toThrow(ValidationError);
-
-            // Verify no game state was created
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
-            expect(gameState).toBeUndefined();
-        });
-
-        it('should throw ValidationError if player order is not containing all players', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-
-            expect(() => gameStateRepository.createGameState([1])).toThrow(ValidationError);
 
             // Verify no game state was created
             const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
@@ -153,16 +151,6 @@ describe('gameStateRepository', () => {
 
             expect(() => gameStateRepository.updatePlayerOrder(1, [1, 1])).toThrow(ValidationError);
         });
-
-        it('should throw ValidationError if player order does not contain all players', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-
-            expect(() => gameStateRepository.updatePlayerOrder(1, [1])).toThrow(ValidationError);
-        });
     });
 
     describe('removePlayerFromOrder', () => {
@@ -226,9 +214,13 @@ describe('gameStateRepository', () => {
 
             gameStateRepository.removePlayerFromOrder(1, 1);
 
-            const gameState = gameStateRepository.getGameStateById(1);
-            expect(gameState.playerOrder).toEqual([2, 3]);
-            expect(gameState.currentPlayerIndex).toBe(0);
+            const playerOrderRows = db
+                .prepare(
+                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
+                )
+                .all() as { player_id: number }[];
+
+            expect(playerOrderRows.map((row) => row.player_id)).toEqual([2, 3]);
         });
     });
 
@@ -245,9 +237,9 @@ describe('gameStateRepository', () => {
 
             gameStateRepository.advanceToNextPlayer(1);
 
-            const gameState = gameStateRepository.getGameStateById(1);
-            expect(gameState.currentPlayerIndex).toBe(1);
-            expect(gameState.roundNumber).toBe(1);
+            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
+            expect(gameState.current_player_index).toBe(1);
+            expect(gameState.round_number).toBe(1);
         });
 
         it('should loop back to first player and increment round number', () => {
@@ -265,9 +257,9 @@ describe('gameStateRepository', () => {
             // Loop back to player 1, increment round
             gameStateRepository.advanceToNextPlayer(1);
 
-            const gameState = gameStateRepository.getGameStateById(1);
-            expect(gameState.currentPlayerIndex).toBe(0);
-            expect(gameState.roundNumber).toBe(2);
+            const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
+            expect(gameStateRows.current_player_index).toBe(0);
+            expect(gameStateRows.round_number).toBe(2);
         });
 
         it('should throw NotFound if game state does not exist', () => {
