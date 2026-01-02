@@ -60,11 +60,13 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(2);
             expect(players[0].stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'level',
                 value: 'low',
             });
@@ -95,11 +97,13 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(2);
             expect(players[0].stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'score',
                 value: '',
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'level',
                 value: 'high',
             });
@@ -124,6 +128,7 @@ describe('Player Repository', () => {
             expect(alice?.stats).toHaveLength(1);
             expect(alice?.stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
@@ -132,6 +137,7 @@ describe('Player Repository', () => {
             expect(bob?.stats).toHaveLength(1);
             expect(bob?.stats).toContainEqual({
                 id: 2,
+                playerId: 2,
                 name: 'level',
                 value: 'low',
             });
@@ -151,16 +157,19 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(3);
             expect(players[0].stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'isActive',
                 value: true,
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'score',
                 value: 42,
             });
             expect(players[0].stats).toContainEqual({
                 id: 3,
+                playerId: 1,
                 name: 'rank',
                 value: 'gold',
             });
@@ -222,11 +231,13 @@ describe('Player Repository', () => {
             expect(player.stats).toHaveLength(2);
             expect(player.stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
             expect(player.stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'level',
                 value: 'low',
             });
@@ -257,11 +268,13 @@ describe('Player Repository', () => {
             expect(player.stats).toHaveLength(2);
             expect(player.stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'score',
                 value: '',
             });
             expect(player.stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'level',
                 value: 'high',
             });
@@ -281,16 +294,19 @@ describe('Player Repository', () => {
             expect(player.stats).toHaveLength(3);
             expect(player.stats).toContainEqual({
                 id: 1,
+                playerId: 1,
                 name: 'isActive',
                 value: true,
             });
             expect(player.stats).toContainEqual({
                 id: 2,
+                playerId: 1,
                 name: 'score',
                 value: 42,
             });
             expect(player.stats).toContainEqual({
                 id: 3,
+                playerId: 1,
                 name: 'rank',
                 value: 'gold',
             });

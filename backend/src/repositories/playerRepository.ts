@@ -1,4 +1,4 @@
-import type { Player } from 'shared-types';
+import type { Player } from '../entities/Player.js';
 
 import { SqliteDatabase } from '../database/SqliteDatabase.js';
 import makePlayerSecret from '../util/makePlayerSecret.js';
@@ -132,6 +132,7 @@ const playerRepository = {
 
                     players[players.length - 1].stats.push({
                         id: row.statId,
+                        playerId: row.id,
                         name: row.statName,
                         value: statValue,
                     });
@@ -212,6 +213,7 @@ const playerRepository = {
 
                     player.stats.push({
                         id: row.statId,
+                        playerId: row.id,
                         name: row.statName,
                         value: statValue,
                     });
