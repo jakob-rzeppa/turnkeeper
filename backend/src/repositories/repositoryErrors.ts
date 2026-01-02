@@ -7,20 +7,6 @@ export class NotFound extends Error {
     }
 }
 
-export class PlayerNotFound extends NotFound {
-    constructor(message: string) {
-        super(message);
-        this.name = 'PlayerNotFound';
-    }
-}
-
-export class TradableNotFound extends NotFound {
-    constructor(message: string) {
-        super(message);
-        this.name = 'TradableNotFound';
-    }
-}
-
 // --- Conflict ---
 
 export class Conflict extends Error {

@@ -1,3 +1,5 @@
+import { Tradable } from '../entities/Tradable.js';
+
 /**
  * Repository for tradables, handles all database operations related to tradables
  *
@@ -13,16 +15,19 @@ export const tradableRepository = {
      *
      * @param name of the tradable
      * @throws Conflict if a tradable with the same name already exists
+     * @throws ValidationError if the name is empty or invalid
      * @throws DatabaseError if there was an unexpected error creating the tradable
      */
-    createTradable: (name: string): void => {},
+    createTradable: (name: string, initialQuantity: number = 0): Tradable => {
+        return { id: 'dummy-id', name, initialQuantity };
+    },
 
     /**
      * Initializes a tradable for all players with quantity specified in tradables.initial_quantity.
      * If the tradable is already initialized for a player, it skips that player.
      *
      * @param tradableId of the tradable to initialize for all players
-     * @throws TradableNotFound if the tradable does not exist
+     * @throws NotFound if the tradable does not exist
      * @throws DatabaseError if there was an unexpected error during initialization
      */
     initializeTradableForAllPlayers: (tradableId: number): void => {},
@@ -33,7 +38,7 @@ export const tradableRepository = {
      *
      * @param playerId of the player
      * @param tradableId of the tradable to initialize for the player
-     * @throws TradableNotFound | PlayerNotFound if the player or tradable does not exist
+     * @throws NotFound if the player or tradable does not exist
      * @throws DatabaseError if there was an unexpected error during initialization
      */
     initializeTradableForPlayer: (playerId: number, tradableId: number): void => {},
@@ -42,7 +47,7 @@ export const tradableRepository = {
      * Deletes a tradable by its ID, also removes all associated player_tradables entries.
      *
      * @param tradableId of the tradable to delete
-     * @throws TradableNotFound if the tradable does not exist
+     * @throws NotFound if the tradable does not exist
      * @throws DatabaseError if there was an unexpected error during deletion
      */
     deleteTradable: (tradableId: number): void => {},
