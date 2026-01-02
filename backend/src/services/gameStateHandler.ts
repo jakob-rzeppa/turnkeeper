@@ -1,9 +1,5 @@
-import { GameState } from 'shared-types';
-
-import GmController from '../connectionControllers/GmController.js';
-import UserController from '../connectionControllers/UserController.js';
+import { GameState } from '../entities/GameState.js';
 import gameStateRepository from '../repositories/gameStateRepository.js';
-import playerRepository from '../repositories/playerRepository.js';
 import logger from './logger.js';
 
 // Using a constant ID since for now there is only one game state at a time
@@ -12,159 +8,183 @@ const GAME_STATE_ID = 1;
 // In that case we would need to save the current game state Id in-memory
 
 const gameStateHandler = {
-    addPlayerToTurnOrder: (playerId: number): void => {
-        const playerName = playerRepository.getPlayerNameById(playerId);
-        if (!playerName) {
-            logger.warn({
-                message: `Player with ID ${String(playerId)} not found.`,
-            });
-            return;
-        }
-
-        const gameState = gameStateHandler.getGameState();
-        if (!gameState) {
-            logger.warn({
-                message: 'No game state found when attempting to add player to turn order.',
-            });
-            return;
-        }
-
-        if (gameState.playerOrder.find((p) => p.id === playerId)) {
-            logger.warn({
-                message: `Player with ID ${String(playerId)} is already in the turn order.`,
-            });
-            return;
-        }
-
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            playerOrder: [...gameState.playerOrder, { id: playerId, name: playerName }],
-        });
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
-    },
-    deleteGameState: (): void => {
-        gameStateRepository.deleteGameState(GAME_STATE_ID);
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
-    },
+    /**
+     * Gets the current game state
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.getGameStateById
+     *
+     * @returns the current game state or null if an error occurred
+     */
     getGameState: (): GameState | null => {
-        const gameState = gameStateRepository.getGameStateById(GAME_STATE_ID);
-
-        return gameState;
+        try {
+            return gameStateRepository.getGameStateById(GAME_STATE_ID);
+        } catch (err: unknown) {
+            return null;
+        }
     },
-    initGameState: (newPlayerIdOrder: number[]): void => {
-        const playerNames = newPlayerIdOrder.map((id) => playerRepository.getPlayerNameById(id));
 
-        if (!playerNames.every((name) => name !== null)) {
-            logger.warn({
-                message: 'Attempted to initialize game state with non-existing player IDs.',
+    /**
+     * Initializes the game state with the given player order
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.createGameState
+     *
+     * @param playerOrder the order of player IDs for turn order
+     */
+    initGameState: (playerOrder: number[]): void => {
+        try {
+            gameStateRepository.createGameState(playerOrder);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to initialize game state: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
             });
-            return;
         }
-
-        const newGameState: Omit<GameState, 'hiddenNotes' | 'id' | 'notes'> = {
-            currentPlayerIndex: 0,
-            playerOrder: newPlayerIdOrder.map((id, index) => ({
-                id,
-                name: playerNames[index],
-            })),
-            roundNumber: 1,
-        };
-
-        gameStateRepository.createGameState(newGameState);
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
     },
-    nextTurn: (): void => {
-        const gameState = gameStateHandler.getGameState();
 
-        if (!gameState) {
-            logger.warn({
-                message: 'No game state found when attempting to advance to next turn.',
+    /**
+     * Deletes the current game state
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.deleteGameState
+     */
+    deleteGameState: (): void => {
+        try {
+            gameStateRepository.deleteGameState(GAME_STATE_ID);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to delete game state: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
             });
-            return;
         }
+    },
 
-        let updatedCurrentPlayerIndex = gameState.currentPlayerIndex + 1;
-        let newRoundNumber = gameState.roundNumber;
-
-        if (updatedCurrentPlayerIndex >= gameState.playerOrder.length) {
-            newRoundNumber += 1;
-            updatedCurrentPlayerIndex = 0;
+    /**
+     * Advances the turn to the next player in the turn order
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.advanceToNextPlayer
+     */
+    advanceTurn: (): void => {
+        try {
+            gameStateRepository.advanceTurn(GAME_STATE_ID);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to advance turn: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
         }
-
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            currentPlayerIndex: updatedCurrentPlayerIndex,
-            playerOrder: gameState.playerOrder,
-            roundNumber: newRoundNumber,
-        });
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
     },
-    removeDeletedPlayersFromPlayerOrder: (): void => {
-        const allPlayers = playerRepository.getAllPlayers();
 
-        gameStateRepository.removeDeletedPlayersFromPlayerOrder(
-            allPlayers.map((player) => player.id),
-        );
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
-    },
-    updateHiddenNotes: (newHiddenNotes: string): void => {
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            hiddenNotes: newHiddenNotes,
-        });
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-    },
+    /**
+     * Updates the public notes of the game state
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.updateNotes
+     *
+     * @param newNotes the new public notes
+     */
     updateNotes: (newNotes: string): void => {
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            notes: newNotes,
-        });
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
-    },
-    updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
-        const playerNames = newPlayerIdOrder.map((id) => playerRepository.getPlayerNameById(id));
-
-        if (!playerNames.every((name) => name !== null)) {
-            logger.warn({
-                message: 'Attempted to update player order with non-existing player IDs.',
+        try {
+            gameStateRepository.updateNotes(GAME_STATE_ID, newNotes);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to update public notes: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
             });
-            return;
         }
+    },
+    /**
+     * Updates the hidden notes of the game state
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.updateHiddenNotes
+     *
+     * @param newHiddenNotes the new hidden notes
+     */
+    updateHiddenNotes: (newHiddenNotes: string): void => {
+        try {
+            gameStateRepository.updateHiddenNotes(GAME_STATE_ID, newHiddenNotes);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to update hidden notes: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
+        }
+    },
 
-        const newPlayerOrder = newPlayerIdOrder.map((id, index) => ({
-            id,
-            name: playerNames[index],
-        }));
+    /**
+     * Updates the player order in the game state
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.updatePlayerOrder
+     *
+     * @param newPlayerIdOrder the new order of player IDs
+     */
+    updatePlayerOrder: (newPlayerIdOrder: number[]): void => {
+        try {
+            gameStateRepository.updatePlayerOrder(GAME_STATE_ID, newPlayerIdOrder);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to update player order: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
+        }
+    },
 
-        gameStateRepository.updateGameState(GAME_STATE_ID, {
-            playerOrder: newPlayerOrder,
-        });
+    /**
+     * Adds a new player to the turn order at the end
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.addPlayerToOrder
+     *
+     * @param playerId the ID of the player to add
+     */
+    addPlayerToTurnOrder: (playerId: number): void => {
+        try {
+            gameStateRepository.addPlayerToOrder(GAME_STATE_ID, playerId);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to add player ${playerId} to turn order: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
+        }
+    },
 
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((instance) => {
-            instance.userGameEmitter.sendGameInfo();
-        });
+    /**
+     * Removes a player from the turn order
+     *
+     * If the player is not in the order, does nothing.
+     * If the removed player is the current player, advances to the next player.
+     *
+     * If the removed player is before the current player in the order,
+     * adjusts the current player index accordingly.
+     *
+     * DEPENDENCIES:
+     * - gameStateRepository.removePlayerFromOrder
+     *
+     * @param playerId the ID of the player to remove
+     */
+    removePlayerFromTurnOrder: (playerId: number): void => {
+        try {
+            gameStateRepository.removePlayerFromOrder(GAME_STATE_ID, playerId);
+
+            gameStateRepository.revertTurn(GAME_STATE_ID);
+        } catch (err: unknown) {
+            logger.error({
+                message: `Failed to remove player ${playerId} from turn order: ${
+                    err instanceof Error ? err.message : 'Unknown error'
+                }`,
+            });
+        }
     },
 };
 

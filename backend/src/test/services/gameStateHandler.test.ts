@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from 'vitest';
+import { beforeEach, describe, expect, it, Mock, vi } from 'vitest';
 
 import GmController from '../../connectionControllers/GmController.js';
 import UserController from '../../connectionControllers/UserController.js';
@@ -13,11 +13,15 @@ const GAME_STATE_ID = 1;
 vi.mock('../../repositories/gameStateRepository', () => {
     return {
         default: {
+            advanceTurn: vi.fn(),
+            revertTurn: vi.fn(),
             createGameState: vi.fn(),
             deleteGameState: vi.fn(),
             getGameStateById: vi.fn(),
-            removeDeletedPlayersFromPlayerOrder: vi.fn(),
-            updateGameState: vi.fn(),
+            updateHiddenNotes: vi.fn(),
+            updateNotes: vi.fn(),
+            addPlayerToOrder: vi.fn(),
+            removePlayerFromOrder: vi.fn(),
         },
     };
 });
@@ -35,6 +39,7 @@ vi.mock('../../services/logger', () => {
     return {
         default: {
             warn: vi.fn(),
+            error: vi.fn(),
         },
     };
 });
@@ -71,129 +76,56 @@ describe('gameStateHandler', () => {
     });
 
     describe('getGameState', () => {
-        it('should return the current game state', () => {
-            const expectedGameState = {
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
+        it('should retrieve the game state from the repository', () => {
+            const mockGameState = {
+                id: GAME_STATE_ID,
+                currentPlayerIndex: 1,
+                roundNumber: 2,
                 notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                    { id: 3, name: 'Charlie' },
-                ],
-                roundNumber: 1,
+                hiddenNotes: 'Hidden notes',
+                playerOrder: [1, 2, 3],
             };
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(mockGameState);
 
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(expectedGameState);
+            const result = gameStateHandler.getGameState();
 
-            const gameState = gameStateHandler.getGameState();
+            expect(gameStateRepository.getGameStateById).toHaveBeenCalledWith(GAME_STATE_ID);
+            expect(result).toBe(mockGameState);
+        });
 
-            expect(gameState).toEqual(expectedGameState);
+        it('should return null', () => {
+            vi.mocked(gameStateRepository.getGameStateById).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            const result = gameStateHandler.getGameState();
+
+            expect(gameStateRepository.getGameStateById).toHaveBeenCalledWith(GAME_STATE_ID);
+            expect(result).toBeNull();
         });
     });
 
     describe('initGameState', () => {
-        it('should initialize a new game state with the provided player order', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                    3: 'Charlie',
-                };
-                return names[id] || null;
-            });
+        it('should create a new game state with the given player order', () => {
+            const playerOrder = [3, 1, 2];
 
-            const newPlayerIdOrder = [1, 2, 3];
+            gameStateHandler.initGameState(playerOrder);
 
-            gameStateHandler.initGameState(newPlayerIdOrder);
-
-            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    currentPlayerIndex: 0,
-                    playerOrder: [
-                        { id: 1, name: 'Alice' },
-                        { id: 2, name: 'Bob' },
-                        { id: 3, name: 'Charlie' },
-                    ],
-                    roundNumber: 1,
-                }),
-            );
+            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(playerOrder);
         });
 
-        it('should handle single player initialization', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                };
-                return names[id] || null;
+        it('should log an error if creation fails', () => {
+            const playerOrder = [3, 1, 2];
+            vi.mocked(gameStateRepository.createGameState).mockImplementation(() => {
+                throw new Error('Database error');
             });
 
-            const newPlayerIdOrder = [1];
+            gameStateHandler.initGameState(playerOrder);
 
-            gameStateHandler.initGameState(newPlayerIdOrder);
-
-            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    currentPlayerIndex: 0,
-                    playerOrder: [{ id: 1, name: 'Alice' }],
-                    roundNumber: 1,
-                }),
-            );
-        });
-
-        it('should handle empty player order', () => {
-            const newPlayerIdOrder: number[] = [];
-
-            gameStateHandler.initGameState(newPlayerIdOrder);
-
-            expect(playerRepository.getPlayerNameById).not.toHaveBeenCalled();
-            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(
-                expect.objectContaining({
-                    currentPlayerIndex: 0,
-                    playerOrder: [],
-                    roundNumber: 1,
-                }),
-            );
-        });
-
-        it('should log a warning if any player IDs do not exist', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                };
-                return names[id] || null;
+            expect(gameStateRepository.createGameState).toHaveBeenCalledWith(playerOrder);
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to initialize game state: Database error',
             });
-
-            const newPlayerIdOrder = [1, 2, 999]; // 999 does not exist
-
-            gameStateHandler.initGameState(newPlayerIdOrder);
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: 'Attempted to initialize game state with non-existing player IDs.',
-            });
-            expect(gameStateRepository.createGameState).not.toHaveBeenCalled();
-        });
-
-        it('should send game info to gm and users when everything worked', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                    3: 'Charlie',
-                };
-                return names[id] || null;
-            });
-
-            const newPlayerIdOrder = [1, 2, 3];
-
-            gameStateHandler.initGameState(newPlayerIdOrder);
-
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
         });
     });
 
@@ -201,369 +133,208 @@ describe('gameStateHandler', () => {
         it('should delete the current game state', () => {
             gameStateHandler.deleteGameState();
 
-            expect(gameStateRepository.deleteGameState).toHaveBeenCalledWith(GAME_STATE_ID);
+            expect(gameStateRepository.deleteGameState).toHaveBeenCalled();
         });
 
-        it('should send game info to gm and users when everything worked', () => {
+        it('should log an error if deletion fails', () => {
+            vi.mocked(gameStateRepository.deleteGameState).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
             gameStateHandler.deleteGameState();
 
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
+            expect(gameStateRepository.deleteGameState).toHaveBeenCalled();
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to delete game state: Database error',
+            });
         });
     });
 
-    describe('nextTurn', () => {
-        it('should update the currentPlayerIndex to the next player', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
+    describe('advanceTurn', () => {
+        it('should advance the turn to the next player', () => {
+            gameStateHandler.advanceTurn();
 
-            gameStateHandler.nextTurn();
-
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    currentPlayerIndex: 1,
-                }),
-            );
+            expect(gameStateRepository.advanceTurn).toHaveBeenCalled();
         });
 
-        it('should increment roundNumber and reset currentPlayerIndex when at end of player order', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 1,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
+        it('should log an error if advancing the turn fails', () => {
+            vi.mocked(gameStateRepository.advanceTurn).mockImplementation(() => {
+                throw new Error('Database error');
             });
 
-            gameStateHandler.nextTurn();
+            gameStateHandler.advanceTurn();
 
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    currentPlayerIndex: 0,
-                    roundNumber: 2,
-                }),
-            );
-        });
-
-        it('should handle empty player order', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [],
-                roundNumber: 1,
+            expect(gameStateRepository.advanceTurn).toHaveBeenCalled();
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to advance turn: Database error',
             });
-
-            gameStateHandler.nextTurn();
-
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    currentPlayerIndex: 0,
-                    roundNumber: 2,
-                }),
-            );
-        });
-
-        it('should log if no game state exists', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(null);
-
-            gameStateHandler.nextTurn();
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: 'No game state found when attempting to advance to next turn.',
-            });
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
-        });
-
-        it('should send game info to gm and users when everything worked', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-
-            gameStateHandler.nextTurn();
-
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
-        });
-    });
-
-    describe('addPlayerToTurnOrder', () => {
-        it('should log a warning if the player does not exist', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue(null);
-
-            gameStateHandler.addPlayerToTurnOrder(999);
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: `Player with ID 999 not found.`,
-            });
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
-        });
-
-        it('should log a warning if the game state does not exist', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Test Player');
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(null);
-
-            gameStateHandler.addPlayerToTurnOrder(1);
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: 'No game state found when attempting to add player to turn order.',
-            });
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
-        });
-
-        it('should log a warning if the player is already in the turn order', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Alice');
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-
-            gameStateHandler.addPlayerToTurnOrder(1);
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: `Player with ID 1 is already in the turn order.`,
-            });
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
-        });
-
-        it('should add the player to the turn order', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Charlie');
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-
-            gameStateHandler.addPlayerToTurnOrder(3);
-
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    playerOrder: [
-                        { id: 1, name: 'Alice' },
-                        { id: 2, name: 'Bob' },
-                        { id: 3, name: 'Charlie' },
-                    ],
-                }),
-            );
-        });
-
-        it('should send game info to gm and users when everything worked', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockReturnValue('Charlie');
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                ],
-                roundNumber: 1,
-            });
-
-            gameStateHandler.addPlayerToTurnOrder(3);
-
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
-        });
-    });
-
-    describe('removeDeletedPlayersFromPlayerOrder', () => {
-        it('should call repository removeDeletedPlayersFromPlayerOrder method', () => {
-            vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { hiddenNotes: '', id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
-                { hiddenNotes: '', id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
-            ]);
-
-            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
-
-            expect(gameStateRepository.removeDeletedPlayersFromPlayerOrder).toHaveBeenCalledWith([
-                1, 2,
-            ]);
-        });
-
-        it('should send game info to gm and users when everything worked', () => {
-            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue({
-                currentPlayerIndex: 0,
-                hiddenNotes: 'Test hidden notes',
-                id: 1,
-                notes: 'Test notes',
-                playerOrder: [
-                    { id: 1, name: 'Alice' },
-                    { id: 2, name: 'Bob' },
-                    { id: 3, name: 'Charlie' },
-                ],
-                roundNumber: 1,
-            });
-            vi.mocked(playerRepository.getAllPlayers).mockReturnValue([
-                { hiddenNotes: '', id: 1, name: 'Alice', notes: '', secret: 'secret1', stats: [] },
-                { hiddenNotes: '', id: 2, name: 'Bob', notes: '', secret: 'secret2', stats: [] },
-            ]);
-
-            gameStateHandler.removeDeletedPlayersFromPlayerOrder();
-
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
-        });
-    });
-
-    describe('updatePlayerOrder', () => {
-        it('should update the player order in the game state', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                    3: 'Charlie',
-                };
-                return names[id] || null;
-            });
-            const newPlayerOrder = [3, 2, 1];
-
-            gameStateHandler.updatePlayerOrder(newPlayerOrder);
-
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    playerOrder: [
-                        { id: 3, name: 'Charlie' },
-                        { id: 2, name: 'Bob' },
-                        { id: 1, name: 'Alice' },
-                    ],
-                }),
-            );
-        });
-
-        it('should log a warning if any player IDs do not exist', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                };
-                return names[id] || null;
-            });
-            const newPlayerOrder = [1, 2, 999]; // 999 does not exist
-
-            gameStateHandler.updatePlayerOrder(newPlayerOrder);
-
-            expect(logger.warn).toHaveBeenCalledWith({
-                message: 'Attempted to update player order with non-existing player IDs.',
-            });
-            expect(gameStateRepository.updateGameState).not.toHaveBeenCalled();
-        });
-
-        it('should send game info to gm and users when everything worked', () => {
-            vi.mocked(playerRepository.getPlayerNameById).mockImplementation((id) => {
-                const names: Record<number, string> = {
-                    1: 'Alice',
-                    2: 'Bob',
-                    3: 'Charlie',
-                };
-                return names[id] || null;
-            });
-            const newPlayerOrder = [3, 2, 1];
-
-            gameStateHandler.updatePlayerOrder(newPlayerOrder);
-
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
         });
     });
 
     describe('updateNotes', () => {
-        it('should update the notes in the game state', () => {
-            const newNotes = 'Updated game notes';
+        it('should update the public notes of the game state', () => {
+            const newNotes = 'Updated public notes';
 
             gameStateHandler.updateNotes(newNotes);
 
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
-                GAME_STATE_ID,
-                expect.objectContaining({
-                    notes: newNotes,
-                }),
-            );
+            expect(gameStateRepository.updateNotes).toHaveBeenCalledWith(GAME_STATE_ID, newNotes);
         });
 
-        it('should send game info to gm and users when everything worked', () => {
-            const newNotes = 'Updated game notes';
+        it('should log an error if updating notes fails', () => {
+            const newNotes = 'Updated public notes';
+            vi.mocked(gameStateRepository.updateNotes).mockImplementation(() => {
+                throw new Error('Database error');
+            });
 
             gameStateHandler.updateNotes(newNotes);
 
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
-            expect(
-                UserController.getAllInstances()[0].userGameEmitter.sendGameInfo,
-            ).toHaveBeenCalled();
+            expect(gameStateRepository.updateNotes).toHaveBeenCalledWith(GAME_STATE_ID, newNotes);
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to update public notes: Database error',
+            });
         });
     });
 
     describe('updateHiddenNotes', () => {
-        it('should update the hidden notes in the game state', () => {
+        it('should update the hidden notes of the game state', () => {
             const newHiddenNotes = 'Updated hidden notes';
 
             gameStateHandler.updateHiddenNotes(newHiddenNotes);
 
-            expect(gameStateRepository.updateGameState).toHaveBeenCalledWith(
+            expect(gameStateRepository.updateHiddenNotes).toHaveBeenCalledWith(
                 GAME_STATE_ID,
-                expect.objectContaining({
-                    hiddenNotes: newHiddenNotes,
-                }),
+                newHiddenNotes,
             );
         });
 
-        it('should send game info to gm when everything worked', () => {
+        it('should log an error if updating hidden notes fails', () => {
             const newHiddenNotes = 'Updated hidden notes';
+            vi.mocked(gameStateRepository.updateHiddenNotes).mockImplementation(() => {
+                throw new Error('Database error');
+            });
 
             gameStateHandler.updateHiddenNotes(newHiddenNotes);
 
-            expect(GmController.getInstance()?.gmGameEmitter.sendGameInfo).toHaveBeenCalled();
+            expect(gameStateRepository.updateHiddenNotes).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                newHiddenNotes,
+            );
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to update hidden notes: Database error',
+            });
+        });
+    });
+
+    describe('addPlayerToTurnOrder', () => {
+        it('should add a new player to the turn order', () => {
+            const playerId = 4;
+
+            gameStateHandler.addPlayerToTurnOrder(playerId);
+
+            expect(gameStateRepository.addPlayerToOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+        });
+
+        it('should log an error if adding player to turn order fails', () => {
+            const playerId = 4;
+            vi.mocked(gameStateRepository.addPlayerToOrder).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            gameStateHandler.addPlayerToTurnOrder(playerId);
+
+            expect(gameStateRepository.addPlayerToOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+            expect(logger.error).toHaveBeenCalledWith({
+                message: `Failed to add player ${playerId} to turn order: Database error`,
+            });
+        });
+    });
+
+    describe('removePlayerFromTurnOrder', () => {
+        it('should remove a player from the turn order', () => {
+            const playerId = 2;
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(gameStateRepository.removePlayerFromOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+        });
+
+        it('should update current player index if the removed player is the current player', () => {
+            const playerId = 2;
+            const mockGameState = {
+                id: GAME_STATE_ID,
+                currentPlayerIndex: 1,
+                roundNumber: 2,
+                notes: 'Test notes',
+                hiddenNotes: 'Hidden notes',
+                playerOrder: [1, 2, 3],
+            };
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(mockGameState);
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(gameStateRepository.removePlayerFromOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+            expect(gameStateRepository.revertTurn).toHaveBeenCalled();
+        });
+
+        it('should update current player index if the removed player is before the current player', () => {
+            const playerId = 1;
+            const mockGameState = {
+                id: GAME_STATE_ID,
+                currentPlayerIndex: 1,
+                roundNumber: 2,
+                notes: 'Test notes',
+                hiddenNotes: 'Hidden notes',
+                playerOrder: [1, 2, 3],
+            };
+            vi.mocked(gameStateRepository.getGameStateById).mockReturnValue(mockGameState);
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(gameStateRepository.removePlayerFromOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+            expect(gameStateRepository.revertTurn).toHaveBeenCalled();
+        });
+
+        it('should log an error if removing player from turn order fails', () => {
+            const playerId = 2;
+            vi.mocked(gameStateRepository.removePlayerFromOrder).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(gameStateRepository.removePlayerFromOrder).toHaveBeenCalledWith(
+                GAME_STATE_ID,
+                playerId,
+            );
+            expect(logger.error).toHaveBeenCalledWith({
+                message: 'Failed to remove player 2 from turn order: Database error',
+            });
+        });
+
+        it('should not attempt to update current player index if game state retrieval fails', () => {
+            const playerId = 2;
+            vi.mocked(gameStateRepository.getGameStateById).mockImplementation(() => {
+                throw new Error('Database error');
+            });
+
+            gameStateHandler.removePlayerFromTurnOrder(playerId);
+
+            expect(gameStateRepository.revertTurn).not.toHaveBeenCalled();
         });
     });
 });
