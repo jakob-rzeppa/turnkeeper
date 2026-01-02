@@ -6,6 +6,19 @@ import messageRepository from '../repositories/messageRepository.js';
 import logger from './logger.js';
 
 const messagesHandler = {
+    /**
+     * Handles a message sent from a player, creates the message in the database
+     * and notifies both the GM and the player about the new message.
+     *
+     * DEPENDENCIES:
+     * - GmController -> gmMessagesEmitter.sendNewMessage
+     * - UserController -> userMessagesEmitter.sendNewMessage
+     * - messageRepository.createMessage
+     * - logger.error
+     *
+     * @param playerId the ID of the player sending the message
+     * @param content the content of the message
+     */
     sendMessageFromPlayer: (playerId: number, content: string) => {
         const message: Omit<Message, 'id' | 'timestamp'> = {
             content,
@@ -28,6 +41,20 @@ const messagesHandler = {
             });
         }
     },
+
+    /**
+     * Handles sending a message to a player from the GM,
+     * creates the message in the database and notifies both the GM and the player about the new message.
+     *
+     * DEPENDENCIES:
+     * - GmController -> gmMessagesEmitter.sendNewMessage
+     * - UserController -> userMessagesEmitter.sendNewMessage
+     * - messageRepository.createMessage
+     * - logger.error
+     *
+     * @param playerId the ID of the player to send the message to
+     * @param content the content of the message
+     */
     sendMessageToPlayer: (playerId: number, content: string) => {
         const message: Omit<Message, 'id' | 'timestamp'> = {
             content,

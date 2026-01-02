@@ -1,7 +1,8 @@
-import { BackendToUserEventPayloads, Message } from 'shared-types';
+import { BackendToUserEventPayloads } from 'shared-types';
 import { Socket } from 'socket.io';
 
 import messageRepository from '../../repositories/messageRepository.js';
+import { Message } from '../../entities/Message.js';
 
 export default class UserMessagesEmitter {
     private playerId: number;
@@ -16,7 +17,13 @@ export default class UserMessagesEmitter {
     }
 
     public sendAllMessages() {
-        const messages = messageRepository.getMessagesByPlayerId(this.playerId);
+        let messages: Message[] = [];
+        try {
+            messages = messageRepository.getMessagesByPlayerId(this.playerId);
+        } catch (err: unknown) {
+            // If there's an error (e.g., player not found), we simply send an empty array
+            messages = [];
+        }
 
         const payload: BackendToUserEventPayloads['messages:all'] = {
             messages: messages.map((msg) => ({
