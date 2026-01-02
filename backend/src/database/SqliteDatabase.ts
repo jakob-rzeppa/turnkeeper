@@ -58,7 +58,8 @@ export class SqliteDatabase extends Database {
         this.exec(
             `CREATE TABLE IF NOT EXISTS tradables (
                 id INTEGER PRIMARY KEY, 
-                name TEXT UNIQUE NOT NULL,
+                -- Not allowing empty or whitespace-only names
+                name TEXT UNIQUE NOT NULL CHECK(length(trim(name)) > 0),
                 initial_quantity INT NOT NULL DEFAULT 0
             )`,
         );
@@ -71,7 +72,8 @@ export class SqliteDatabase extends Database {
                 quantity INT NOT NULL DEFAULT 0,
                  
                 FOREIGN KEY (player_id) REFERENCES players (id),
-                FOREIGN KEY (tradable_id) REFERENCES tradables (id)
+                FOREIGN KEY (tradable_id) REFERENCES tradables (id),
+                UNIQUE(player_id, tradable_id)
             )`,
         );
 

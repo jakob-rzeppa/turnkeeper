@@ -1,5 +1,5 @@
 export interface Tradable {
-    id: string;
+    id: number;
     name: string;
     initialQuantity: number;
 }
