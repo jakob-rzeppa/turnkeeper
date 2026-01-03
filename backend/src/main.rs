@@ -6,7 +6,6 @@ mod db;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
-use axum::routing::post;
 use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
@@ -26,7 +25,7 @@ async fn main() {
     let database_url = std::env::var("DATABASE_URL")
         .expect("DATABASE_URL environment variable is not set");
 
-    let db = create_pool(&database_url).await.unwrap();
+    let db = create_pool(&database_url).await.expect("Failed to create database pool");
 
     let state = AppState { db };
 
