@@ -1,6 +1,7 @@
 mod websocket;
 mod handler;
 mod error;
+mod util;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
