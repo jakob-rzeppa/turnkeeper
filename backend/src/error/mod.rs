@@ -6,6 +6,7 @@ use serde_json::json;
 #[derive(Debug)]
 pub enum HttpError {
     NotImplemented,
+    InternalServerError(String)
 }
 
 impl IntoResponse for HttpError {
@@ -13,6 +14,9 @@ impl IntoResponse for HttpError {
         let (status, error_message) = match self {
             HttpError::NotImplemented => (
                 StatusCode::NOT_IMPLEMENTED, "not implemented"
+            ),
+            HttpError::InternalServerError(_) => (
+                StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error"
             )
         };
 
