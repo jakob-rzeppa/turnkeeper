@@ -7,6 +7,7 @@ mod db;
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
 use axum::routing::post;
+use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use crate::db::create_pool;
@@ -20,8 +21,10 @@ pub struct AppState {
 
 #[tokio::main]
 async fn main() {
+    dotenv().expect("Failed to load .env file");
+
     let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL is not set in .env file");
+        .expect("DATABASE_URL environment variable is not set");
 
     let db = create_pool(&database_url).await.unwrap();
 
