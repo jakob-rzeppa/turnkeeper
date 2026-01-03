@@ -83,6 +83,11 @@ const gameStateHandler = {
     advanceTurn: (): void => {
         try {
             gameStateRepository.advanceTurn(GAME_STATE_ID);
+
+            GmController.getInstance()?.gmGameEmitter.sendGameInfo();
+            UserController.getAllInstances().forEach((userInstance) => {
+                userInstance.userGameEmitter.sendGameInfo();
+            });
         } catch (err: unknown) {
             logger.error({
                 message: `Failed to advance turn: ${
@@ -90,11 +95,6 @@ const gameStateHandler = {
                 }`,
             });
         }
-
-        GmController.getInstance()?.gmGameEmitter.sendGameInfo();
-        UserController.getAllInstances().forEach((userInstance) => {
-            userInstance.userGameEmitter.sendGameInfo();
-        });
     },
 
     /**

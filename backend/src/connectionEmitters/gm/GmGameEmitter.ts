@@ -18,6 +18,11 @@ export default class GmGameEmitter {
         const gameState = gameStateHandler.getGameState();
 
         if (!gameState) {
+            const payload: BackendToGmEventPayloads['game:info'] = {
+                gameState: null,
+            };
+
+            this.socket.emit('game:info', payload);
             return;
         }
 

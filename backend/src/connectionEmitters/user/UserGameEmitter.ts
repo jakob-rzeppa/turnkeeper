@@ -18,6 +18,11 @@ export default class UserGameEmitter {
         const gameState = gameStateHandler.getGameState();
 
         if (!gameState) {
+            const payload: BackendToUserEventPayloads['game:info'] = {
+                gameState: null,
+            };
+
+            this.socket.emit('game:info', payload);
             return;
         }
 

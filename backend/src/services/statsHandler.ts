@@ -6,7 +6,7 @@ import { statsRepository } from '../repositories/statsRepository.js';
 
 export const statsHandler = {
     createStatForAllPlayers(statData: Omit<PlayerStat, 'id'>) {
-        statsRepository.createStatForAllPlayers(statData);
+        statsRepository.createStatForAllPlayers(statData.name, statData.value);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getAllInstances().forEach((instance) => {
@@ -20,7 +20,7 @@ export const statsHandler = {
         playerId: number;
         statData: Omit<PlayerStat, 'id'>;
     }) {
-        statsRepository.createStatForPlayer(playerId, statData);
+        statsRepository.createStatForPlayer(playerId, statData.name, statData.value);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();
@@ -46,7 +46,7 @@ export const statsHandler = {
         playerId: number;
         statId: number;
     }) {
-        statsRepository.updateStatForPlayer(playerId, statId, newData);
+        statsRepository.updateStatForPlayer(playerId, statId, newData.name, newData.value);
 
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.userPlayersEmitter.sendOwnPlayer();

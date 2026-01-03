@@ -234,7 +234,7 @@ describe('Gm Player Integration Tests', () => {
     it("should delete a player's stat on 'players:stats:remove' event", () => {
         const payload: GmToBackendEventPayloads['players:stats:remove'] = {
             playerId: 1,
-            statId: 2,
+            statId: 3,
         };
         const statsRemoveHandler = eventHandlers[PLAYER_EVENTS.STATS_REMOVE] as (
             arg: GmToBackendEventPayloads['players:stats:remove'],
@@ -251,7 +251,7 @@ describe('Gm Player Integration Tests', () => {
                     expect.objectContaining({
                         id: 1,
                         stats: expect.not.arrayContaining([
-                            expect.objectContaining({ id: 2 }),
+                            expect.objectContaining({ id: 3 }),
                         ]) as unknown[],
                     }),
                 ]) as unknown[],

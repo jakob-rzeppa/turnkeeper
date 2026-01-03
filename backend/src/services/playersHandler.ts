@@ -16,11 +16,15 @@ const playerHandler = {
         if (!gameStateHandler.getGameState()) {
             return;
         }
-        const playerId = playerRepository.getPlayerIdByName(playerData.name);
-        if (!playerId) {
-            return;
+        try {
+            const playerId = playerRepository.getPlayerIdByName(playerData.name);
+
+            gameStateHandler.addPlayerToTurnOrder(playerId);
+        } catch (error) {
+            if (error instanceof Error) {
+                console.error(`Failed to add new player to turn order: ${error.message}`);
+            }
         }
-        gameStateHandler.addPlayerToTurnOrder(playerId);
     },
     deletePlayer(playerId: number) {
         statsRepository.removeAllStatsFromPlayer(playerId);
@@ -29,7 +33,7 @@ const playerHandler = {
         GmController.getInstance()?.gmPlayersEmitter.sendPlayers();
         UserController.getInstance(playerId)?.disconnect();
 
-        gameStateHandler.removeDeletedPlayersFromPlayerOrder();
+        gameStateHandler.removePlayerFromTurnOrder(playerId);
     },
     updatePlayerInfo({
         playerData,

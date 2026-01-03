@@ -179,7 +179,7 @@ describe('gameStateHandler', () => {
         });
 
         it('should log an error if advancing the turn fails', () => {
-            vi.mocked(gameStateRepository.advanceTurn).mockImplementation(() => {
+            vi.mocked(gameStateRepository.advanceTurn).mockImplementationOnce(() => {
                 throw new Error('Database error');
             });
 

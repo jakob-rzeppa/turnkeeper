@@ -310,16 +310,24 @@ const gameStateRepository = {
             }
 
             let newPlayerIndex = gameState.current_player_index + 1;
+            let shouldIncrementRound = false;
 
             if (newPlayerIndex >= gameState.player_count) {
                 newPlayerIndex = 0;
+                shouldIncrementRound = true;
             }
 
-            const updateStmt = db.prepare(
-                `UPDATE game_state
+            const updateStmt = shouldIncrementRound
+                ? db.prepare(
+                      `UPDATE game_state
                 SET current_player_index = ?, round_number = round_number + 1
                 WHERE id = ?`,
-            );
+                  )
+                : db.prepare(
+                      `UPDATE game_state
+                SET current_player_index = ?
+                WHERE id = ?`,
+                  );
 
             updateStmt.run(newPlayerIndex, game_state_id);
         } catch (err: unknown) {

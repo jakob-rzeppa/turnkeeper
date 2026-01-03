@@ -52,7 +52,7 @@ export class SqliteDatabase extends Database {
                 type TEXT NOT NULL CHECK(type IN ('string', 'number', 'boolean')), 
                 value TEXT NOT NULL DEFAULT "", 
                 
-                FOREIGN KEY (player_id) REFERENCES players (id)
+                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
             )`,
         );
 
@@ -72,7 +72,7 @@ export class SqliteDatabase extends Database {
                 tradable_id INT NOT NULL, 
                 quantity INT NOT NULL DEFAULT 0,
                  
-                FOREIGN KEY (player_id) REFERENCES players (id),
+                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE,
                 FOREIGN KEY (tradable_id) REFERENCES tradables (id),
                 UNIQUE(player_id, tradable_id)
             )`,
@@ -86,7 +86,7 @@ export class SqliteDatabase extends Database {
                 content TEXT NOT NULL CHECK(length(trim(content)) > 0), 
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, 
 
-                FOREIGN KEY (player_id) REFERENCES players (id)
+                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
             )`,
         );
 
@@ -108,7 +108,7 @@ export class SqliteDatabase extends Database {
                 position INT NOT NULL,
                 
                 FOREIGN KEY (game_state_id) REFERENCES game_state (id),
-                FOREIGN KEY (player_id) REFERENCES players (id),
+                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE,
                 UNIQUE(position, game_state_id),
                 UNIQUE(player_id, game_state_id)
             )

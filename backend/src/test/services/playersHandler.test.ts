@@ -1,4 +1,4 @@
-import { GameState } from 'shared-types';
+import { GameState } from '../../entities/GameState.js';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import GmController from '../../connectionControllers/GmController.js';
@@ -48,7 +48,7 @@ vi.mock('../../services/gameStateHandler', () => ({
     default: {
         addPlayerToTurnOrder: vi.fn(),
         getGameState: vi.fn(),
-        removeDeletedPlayersFromPlayerOrder: vi.fn(),
+        removePlayerFromTurnOrder: vi.fn(),
     },
 }));
 
@@ -88,7 +88,9 @@ describe('playersHandler', () => {
 
         it('should not add the new player to the gameloop turn order if player ID not found', () => {
             const playerData = { name: 'Test Player' };
-            vi.mocked(playerRepository.getPlayerIdByName).mockReturnValueOnce(null);
+            vi.mocked(playerRepository.getPlayerIdByName).mockImplementationOnce(() => {
+                throw new Error('Player not found');
+            });
             vi.mocked(gameStateHandler.getGameState).mockReturnValueOnce({} as GameState);
 
             playersHandler.createPlayer(playerData);
@@ -156,7 +158,7 @@ describe('playersHandler', () => {
 
             playersHandler.deletePlayer(playerId);
 
-            expect(gameStateHandler.removeDeletedPlayersFromPlayerOrder).toHaveBeenCalled();
+            expect(gameStateHandler.removePlayerFromTurnOrder).toHaveBeenCalledWith(playerId);
         });
     });
 });

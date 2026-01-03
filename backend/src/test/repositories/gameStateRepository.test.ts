@@ -283,7 +283,7 @@ describe('gameStateRepository', () => {
 
             const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
             expect(gameState.current_player_index).toBe(1);
-            expect(gameState.round_number).toBe(1);
+            expect(gameState.round_number).toBe(0);
         });
 
         it('should loop back to first player and increment round number', () => {
@@ -303,7 +303,7 @@ describe('gameStateRepository', () => {
 
             const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
             expect(gameStateRows.current_player_index).toBe(0);
-            expect(gameStateRows.round_number).toBe(2);
+            expect(gameStateRows.round_number).toBe(1);
         });
 
         it('should throw NotFound if game state does not exist', () => {
