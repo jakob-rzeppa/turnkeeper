@@ -46,7 +46,3 @@ async fn main() {
 
     println!("Server running at {}", addr);
 }
-
-async fn root_handler() -> &'static str {
-    "Hello, world!"
-}
