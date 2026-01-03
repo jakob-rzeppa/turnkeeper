@@ -3,6 +3,7 @@ mod handler;
 mod error;
 mod util;
 mod db;
+mod auth;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
