@@ -1,15 +1,18 @@
 mod websocket;
+mod handler;
+mod error;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use crate::handler::get_routes;
 use crate::websocket::websocket_handler;
 
 #[tokio::main]
 async fn main() {
     // Initialize the Axum router
     let app = Router::new()
-        .route("/", get(root_handler))
+        .merge(get_routes())
         .route("/ws", get(websocket_handler));
 
     // Specify the address to bind to
