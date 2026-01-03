@@ -4,11 +4,12 @@ mod gm;
 
 use axum::Router;
 use axum::routing::{delete, get, post};
+use crate::AppState;
 use crate::handler::game::{games_create, games_delete, games_get, games_get_all};
 use crate::handler::gm::login as login_gm;
 use crate::handler::user::{login as login_user, register as register_user};
 
-pub fn get_routes() -> Router {
+pub fn get_routes() -> Router<AppState> {
     Router::new()
         .route("/games", get(games_get_all))
         .route("/games/:id", get(games_get))
