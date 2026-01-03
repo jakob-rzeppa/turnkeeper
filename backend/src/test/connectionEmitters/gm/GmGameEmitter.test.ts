@@ -10,12 +10,6 @@ vi.mock('../../../services/gameStateHandler', () => ({
     },
 }));
 
-vi.mock('../../../repositories/playerRepository', () => ({
-    default: {
-        getPlayerById: (id: number) => ({ id, name: `Player ${id}`, stats: [] }),
-    },
-}));
-
 describe('GmGameEmitter', () => {
     let mockSocket: Socket;
     let emitter: GmGameEmitter; // Only register one emitter at a time
@@ -47,7 +41,10 @@ describe('GmGameEmitter', () => {
                 hiddenNotes: 'Some hidden notes',
                 id: 1,
                 notes: 'Some game notes',
-                playerOrder: [1, 2],
+                playerOrder: [
+                    { id: 1, name: 'Player 1' },
+                    { id: 2, name: 'Player 2' },
+                ],
                 roundNumber: 3,
             });
 

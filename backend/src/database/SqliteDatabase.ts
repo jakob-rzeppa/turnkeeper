@@ -21,14 +21,8 @@ export class SqliteDatabase extends Database {
     }
 
     public dropTables() {
-        // First drop tables with foreign keys
         this.exec('DROP TABLE IF EXISTS player_stats');
-        this.exec('DROP TABLE IF EXISTS player_tradables');
         this.exec('DROP TABLE IF EXISTS messages');
-        this.exec('DROP TABLE IF EXISTS player_order');
-
-        // Then drop the other tables
-        this.exec('DROP TABLE IF EXISTS tradables');
         this.exec('DROP TABLE IF EXISTS players');
         this.exec('DROP TABLE IF EXISTS game_state');
     }
@@ -52,29 +46,7 @@ export class SqliteDatabase extends Database {
                 type TEXT NOT NULL CHECK(type IN ('string', 'number', 'boolean')), 
                 value TEXT NOT NULL DEFAULT "", 
                 
-                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
-            )`,
-        );
-
-        this.exec(
-            `CREATE TABLE IF NOT EXISTS tradables (
-                id INTEGER PRIMARY KEY, 
-                -- Not allowing empty or whitespace-only names
-                name TEXT UNIQUE NOT NULL CHECK(length(trim(name)) > 0),
-                initial_quantity INT NOT NULL DEFAULT 0
-            )`,
-        );
-
-        this.exec(
-            `CREATE TABLE IF NOT EXISTS player_tradables (
-                id INTEGER PRIMARY KEY, 
-                player_id INT NOT NULL, 
-                tradable_id INT NOT NULL, 
-                quantity INT NOT NULL DEFAULT 0,
-                 
-                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE,
-                FOREIGN KEY (tradable_id) REFERENCES tradables (id),
-                UNIQUE(player_id, tradable_id)
+                FOREIGN KEY (player_id) REFERENCES players (id)
             )`,
         );
 
@@ -82,36 +54,23 @@ export class SqliteDatabase extends Database {
             `CREATE TABLE IF NOT EXISTS messages (
                 id INTEGER PRIMARY KEY, 
                 player_id INT NOT NULL, 
-                send_by TEXT NOT NULL CHECK(send_by IN ('player', 'gm')), 
-                content TEXT NOT NULL CHECK(length(trim(content)) > 0), 
+                send_by TEXT NOT NULL CHECK(send_by IN ('player', 'system', 'gm')), 
+                content TEXT NOT NULL DEFAULT "", 
                 timestamp DATETIME DEFAULT CURRENT_TIMESTAMP, 
 
-                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE
+                FOREIGN KEY (player_id) REFERENCES players (id)
             )`,
         );
 
         this.exec(
             `CREATE TABLE IF NOT EXISTS game_state (
                 id INTEGER PRIMARY KEY, 
-                round_number INT NOT NULL DEFAULT 0, 
-                current_player_index INT NOT NULL DEFAULT 0,
+                round_number INT NOT NULL, 
+                current_player_index INT NOT NULL, 
+                player_order TEXT NOT NULL, 
                 notes TEXT NOT NULL DEFAULT "", 
                 hidden_notes TEXT NOT NULL DEFAULT ""
             )`,
         );
-
-        this.exec(`
-            CREATE TABLE IF NOT EXISTS player_order (
-                id INTEGER PRIMARY KEY,
-                game_state_id INT NOT NULL,
-                player_id INT NOT NULL,
-                position INT NOT NULL,
-                
-                FOREIGN KEY (game_state_id) REFERENCES game_state (id),
-                FOREIGN KEY (player_id) REFERENCES players (id) ON DELETE CASCADE,
-                UNIQUE(position, game_state_id),
-                UNIQUE(player_id, game_state_id)
-            )
-        `);
     }
 }

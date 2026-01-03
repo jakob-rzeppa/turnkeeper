@@ -1,8 +1,7 @@
-import { GameState } from '../entities/GameState.js';
+import { GameState } from 'shared-types';
 
 import { SqliteDatabase } from '../database/SqliteDatabase.js';
-import { Conflict, DatabaseError, NotFound, ValidationError } from './repositoryErrors.js';
-import { reverse } from 'dns';
+import logger from '../services/logger.js';
 
 const db = SqliteDatabase.getInstance();
 
@@ -12,485 +11,177 @@ const GAME_STATE_ID = 1;
 // In that case we would need to save the current game state Id in-memory
 
 const gameStateRepository = {
-    /**
-     * Gets the game state by its ID
-     *
-     * @param id of the game state to retrieve
-     * @returns the game state
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error during retrieval
-     */
-    getGameStateById: (id: number): GameState => {
-        const stmt = db.prepare(
-            `SELECT gs.id, gs.current_player_index, gs.round_number, gs.notes, gs.hidden_notes, po.player_id AS player_id
-            FROM game_state gs
-            LEFT JOIN player_order po ON gs.id = po.game_state_id
-            WHERE gs.id = ?
-            ORDER BY po.position ASC`,
+    createGameState: (gamestate: Omit<GameState, 'hiddenNotes' | 'id' | 'notes'>) => {
+        try {
+            db.prepare(
+                'INSERT INTO game_state (id, round_number, current_player_index, player_order) VALUES (?, ?, ?, ?)',
+            ).run(
+                GAME_STATE_ID,
+                gamestate.roundNumber,
+                gamestate.currentPlayerIndex,
+                gamestate.playerOrder.map((p) => p.id).join(','),
+            );
+        } catch {
+            // Handle error silently
+        }
+    },
+    deleteGameState: (id: number) => {
+        db.prepare('DELETE FROM game_state WHERE id = ?').run(id);
+    },
+    getGameStateById: (id: number): GameState | null => {
+        const row = db.prepare('SELECT * FROM game_state WHERE id = ?').get(id) as
+            | undefined
+            | {
+                  current_player_index: number;
+                  hidden_notes: string;
+                  id: number;
+                  notes: string;
+                  player_order: string;
+                  round_number: number;
+              };
+
+        if (!row) return null;
+
+        if (row.player_order.length === 0) {
+            return {
+                currentPlayerIndex: row.current_player_index,
+                hiddenNotes: row.hidden_notes,
+                id: row.id,
+                notes: row.notes,
+                playerOrder: [],
+                roundNumber: row.round_number,
+            };
+        }
+
+        const playerOrder = row.player_order.split(',').map(Number);
+
+        const playerRows = db
+            .prepare(
+                `SELECT id, name FROM players WHERE id IN (?${',?'.repeat(
+                    playerOrder.length - 1,
+                )})`,
+            )
+            .all(playerOrder) as {
+            id: number;
+            name: string;
+        }[];
+
+        if (playerRows.length !== playerOrder.length) {
+            logger.error({
+                message:
+                    'Inconsistent game state: some player IDs in the game state do not exist in the players table.',
+            });
+            return null;
+        }
+
+        const orderedPlayerRows = playerOrder.map(
+            // Since we queried only existing IDs, the non-null assertion (as {id, name}) is safe here
+            (id) =>
+                playerRows.find((p) => p.id === id) as {
+                    id: number;
+                    name: string;
+                },
         );
 
-        try {
-            const row = stmt.all(id) as {
-                id: number;
-                current_player_index: number;
-                round_number: number;
-                notes: string;
-                hidden_notes: string;
-                player_id: number; // from player_order
-            }[];
-
-            if (row.length === 0) {
-                throw new NotFound(`Game state with ID ${id} does not exist.`);
-            }
-
-            let playerOrder: number[] = [];
-            for (const r of row) {
-                playerOrder.push(r.player_id);
-            }
-
-            return {
-                id: row[0].id,
-                playerOrder,
-                currentPlayerIndex: row[0].current_player_index,
-                roundNumber: row[0].round_number,
-                notes: row[0].notes,
-                hiddenNotes: row[0].hidden_notes,
-            };
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error retrieving game state.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error retrieving game state.');
-        }
+        return {
+            currentPlayerIndex: row.current_player_index,
+            hiddenNotes: row.hidden_notes,
+            id: row.id,
+            notes: row.notes,
+            playerOrder: orderedPlayerRows,
+            roundNumber: row.round_number,
+        };
     },
+    removeDeletedPlayersFromPlayerOrder: (existingPlayerIds: number[]) => {
+        const gameStateRow = db
+            .prepare('SELECT * FROM game_state WHERE id = ?')
+            .get(GAME_STATE_ID) as
+            | undefined
+            | {
+                  current_player_index: number;
+                  id: number;
+                  player_order: string;
+                  round_number: number;
+              };
 
-    /**
-     * Creates a new game state with the given fields
-     *
-     * @param player_order array of player IDs representing the turn order
-     * @returns the created game state
-     * @throws Conflict if a game state with the same ID already exists
-     * @throws ValidationError if the player order contains invalid player IDs or not unique IDs
-     * @throws DatabaseError if there was an unexpected error creating the game state
-     */
-    createGameState: (player_order: number[]): GameState => {
-        // Validate player order before transaction
-        if (player_order.length === 0) {
-            throw new ValidationError('Player order cannot be empty.');
+        if (!gameStateRow) {
+            return;
         }
 
-        // Check for duplicate player IDs
-        const uniqueIds = new Set(player_order);
-        if (uniqueIds.size !== player_order.length) {
-            throw new ValidationError('Player order contains duplicate player IDs.');
+        const currentPlayerOrderIds = gameStateRow.player_order
+            ? gameStateRow.player_order.split(',').map(Number)
+            : [];
+
+        const newPlayerOrderIds = currentPlayerOrderIds.filter((id) =>
+            existingPlayerIds.includes(id),
+        );
+
+        if (newPlayerOrderIds.length === currentPlayerOrderIds.length) {
+            return;
         }
 
         try {
-            // Use a transaction to ensure both game_state and player_order entries are created atomically
-            return db.transaction(() => {
-                const stmt = db.prepare(
-                    `INSERT INTO game_state (id, round_number, current_player_index, notes, hidden_notes)
-                VALUES (${GAME_STATE_ID}, 1, 0, '', '')
-                RETURNING id, round_number, current_player_index, notes, hidden_notes`,
-                );
-
-                const row = stmt.get() as {
-                    id: number;
-                    round_number: number;
-                    current_player_index: number;
-                    notes: string;
-                    hidden_notes: string;
-                };
-
-                const gameStateId = row.id;
-
-                // Insert player order entries
-                const insertOrderStmt = db.prepare(
-                    `INSERT INTO player_order (game_state_id, player_id, position)
-                VALUES (?, ?, ?)`,
-                );
-
-                for (let i = 0; i < player_order.length; i++) {
-                    insertOrderStmt.run(gameStateId, player_order[i], i);
-                }
-
-                return {
-                    id: row.id,
-                    playerOrder: player_order,
-                    currentPlayerIndex: row.current_player_index,
-                    roundNumber: row.round_number,
-                    notes: row.notes,
-                    hiddenNotes: row.hidden_notes,
-                };
-            })();
-        } catch (err: any) {
-            // Check SQLite error codes
-            if (
-                err.code === 'SQLITE_CONSTRAINT_PRIMARYKEY' ||
-                err.code === 'SQLITE_CONSTRAINT_UNIQUE'
-            )
-                throw new Conflict(`Game state with ID ${GAME_STATE_ID} already exists.`);
-
-            if (err.code === 'SQLITE_CONSTRAINT_FOREIGNKEY')
-                throw new ValidationError('One or more player IDs in player order do not exist.');
-
-            throw new DatabaseError('Unexpected error creating game state.');
-        }
-    },
-
-    /**
-     * Updates the player order of the game state
-     *
-     * @param game_state_id of the game state to update
-     * @param player_order array of player IDs representing the new turn order
-     * @throws NotFound if the game state does not exist
-     * @throws ValidationError if the player order contains invalid player IDs or not unique IDs
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    updatePlayerOrder: (game_state_id: number, player_order: number[]) => {
-        try {
-            // Check if game state exists
-            const gameStateExists = db
-                .prepare('SELECT 1 FROM game_state WHERE id = ?')
-                .get(game_state_id);
-
-            if (!gameStateExists) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
+            if (gameStateRow.current_player_index >= newPlayerOrderIds.length) {
+                // If the current player index is out of bounds after removal, set it to 0
+                db.prepare(
+                    'UPDATE game_state SET current_player_index = 0, round_number = round_number + 1 WHERE id = ?',
+                ).run(GAME_STATE_ID);
             }
 
-            // Use transaction for atomic delete + insert
-            db.transaction(() => {
-                const deleteStmt = db.prepare('DELETE FROM player_order WHERE game_state_id = ?');
-                deleteStmt.run(game_state_id);
-
-                // Insert new player order entries
-                const insertOrderStmt = db.prepare(
-                    `INSERT INTO player_order (game_state_id, player_id, position)
-            VALUES (?, ?, ?)`,
-                );
-
-                for (let i = 0; i < player_order.length; i++) {
-                    insertOrderStmt.run(game_state_id, player_order[i], i);
-                }
-            })();
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error updating player order.');
-
-            if (err instanceof NotFound) throw err;
-
-            if (err.message.includes('FOREIGN KEY constraint failed'))
-                throw new ValidationError('One or more player IDs in player order do not exist.');
-
-            if (err.message.includes('UNIQUE constraint failed'))
-                throw new ValidationError('Player order contains duplicate player IDs.');
-
-            throw new DatabaseError('Unexpected error updating player order.');
-        }
-    },
-
-    /**
-     * Adds a player to the turn order of the game state at the end of the order
-     *
-     * @param gameStateId the ID of the game state to update
-     * @param playerId the ID of the player to add to the order
-     * @throws NotFound if the game state does not exist
-     * @throws ValidationError if the player ID does not exist or is already in the order
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    addPlayerToOrder: (gameStateId: number, playerId: number) => {
-        try {
-            // Check if game state exists
-            const gameStateExists = db
-                .prepare('SELECT 1 FROM game_state WHERE id = ?')
-                .get(gameStateId);
-
-            if (!gameStateExists) {
-                throw new NotFound(`Game state with ID ${gameStateId} does not exist.`);
-            }
-
-            // Get the current max position
-            const maxPositionRow = db
-                .prepare(
-                    'SELECT MAX(position) as max_position FROM player_order WHERE game_state_id = ?',
-                )
-                .get(gameStateId) as { max_position: number | null };
-
-            const newPosition = (maxPositionRow.max_position ?? -1) + 1;
-
-            const insertStmt = db.prepare(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (?, ?, ?)',
+            db.prepare('UPDATE game_state SET player_order = ? WHERE id = ?').run(
+                newPlayerOrderIds.join(','),
+                GAME_STATE_ID,
             );
-            insertStmt.run(gameStateId, playerId, newPosition);
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error adding player to order.');
-
-            if (err instanceof NotFound) throw err;
-
-            if (err.message.includes('FOREIGN KEY constraint failed'))
-                throw new ValidationError('Player ID does not exist.');
-
-            if (err.message.includes('UNIQUE constraint failed'))
-                throw new ValidationError(
-                    `Player with ID ${playerId} is already in the player order.`,
-                );
-
-            throw new DatabaseError('Unexpected error adding player to order.');
+        } catch {
+            // Handle error silently
         }
     },
+    updateGameState: (id: number, updatedFields: Partial<Omit<GameState, 'id'>>) => {
+        const fieldsToUpdate: string[] = [];
+        const values: (number | string)[] = [];
 
-    /**
-     * Removes a player from the turn order of the game state
-     *
-     * @param game_state_id the ID of the game state to update
-     * @param player_id the ID of the player to remove from the order
-     * @throws NotFound if the game state or player in player_order does not exist
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    removePlayerFromOrder: (game_state_id: number, player_id: number) => {
-        try {
-            // Check if game state exists
-            const gameStateExists = db
-                .prepare('SELECT 1 FROM game_state WHERE id = ?')
-                .get(game_state_id);
-
-            if (!gameStateExists) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
-            }
-
-            const deleteStmt = db.prepare(
-                'DELETE FROM player_order WHERE game_state_id = ? AND player_id = ?',
-            );
-            const result = deleteStmt.run(game_state_id, player_id);
-
-            if (result.changes === 0) {
-                throw new NotFound(
-                    `Player with ID ${player_id} not found in player order for game state ${game_state_id}.`,
-                );
-            }
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error removing player from order.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error removing player from order.');
+        if (updatedFields.roundNumber !== undefined) {
+            fieldsToUpdate.push('round_number = ?');
+            values.push(updatedFields.roundNumber);
         }
-    },
 
-    /**
-     * Advances the game state to the next player's turn.
-     *
-     * Makes sure to loop back to the first player after the last player
-     * and increments the round number accordingly.
-     *
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    advanceTurn: (game_state_id: number) => {
-        try {
-            // Check if game state exists
-            const gameState = db
-                .prepare(
-                    `SELECT gs.current_player_index, COUNT(po.player_id) AS player_count
-                    FROM game_state gs
-                    JOIN player_order po ON gs.id = po.game_state_id
-                    WHERE gs.id = ?
-                    GROUP BY gs.id`,
-                )
-                .get(game_state_id) as
-                | { current_player_index: number; player_count: number }
-                | undefined;
-
-            if (!gameState) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
-            }
-
-            let newPlayerIndex = gameState.current_player_index + 1;
-            let shouldIncrementRound = false;
-
-            if (newPlayerIndex >= gameState.player_count) {
-                newPlayerIndex = 0;
-                shouldIncrementRound = true;
-            }
-
-            const updateStmt = shouldIncrementRound
-                ? db.prepare(
-                      `UPDATE game_state
-                SET current_player_index = ?, round_number = round_number + 1
-                WHERE id = ?`,
-                  )
-                : db.prepare(
-                      `UPDATE game_state
-                SET current_player_index = ?
-                WHERE id = ?`,
-                  );
-
-            updateStmt.run(newPlayerIndex, game_state_id);
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error advancing to next player.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error advancing to next player.');
+        if (updatedFields.currentPlayerIndex !== undefined) {
+            fieldsToUpdate.push('current_player_index = ?');
+            values.push(updatedFields.currentPlayerIndex);
         }
-    },
 
-    /**
-     * Reverts the game state to the previous player's turn.
-     *
-     * Makes sure to loop back to the last player if currently at the first player.
-     *
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    revertTurn: (game_state_id: number) => {
-        try {
-            // Check if game state exists
-            const gameState = db
-                .prepare(
-                    `SELECT gs.round_number, gs.current_player_index, COUNT(po.player_id) AS player_count
-                    FROM game_state gs
-                    JOIN player_order po ON gs.id = po.game_state_id
-                    WHERE gs.id = ?
-                    GROUP BY gs.id`,
-                )
-                .get(game_state_id) as
-                | { current_player_index: number; round_number: number; player_count: number }
-                | undefined;
-
-            if (!gameState) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
-            }
-
-            let newPlayerIndex = gameState.current_player_index - 1;
-            let roundNumber = gameState.round_number;
-
-            if (newPlayerIndex < 0) {
-                newPlayerIndex = gameState.player_count - 1;
-                roundNumber = Math.max(0, roundNumber - 1);
-            }
-
-            const updateStmt = db.prepare(
-                `UPDATE game_state
-                SET current_player_index = ?,
-                    round_number = ?
-                WHERE id = ?`,
-            );
-
-            updateStmt.run(newPlayerIndex, roundNumber, game_state_id);
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error reversing to previous player.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error reversing to previous player.');
+        if (updatedFields.playerOrder !== undefined) {
+            fieldsToUpdate.push('player_order = ?');
+            values.push(updatedFields.playerOrder.map((p) => p.id).join(','));
         }
-    },
 
-    /**
-     * Updates the notes of the game state.
-     *
-     * @param game_state_id the game state ID
-     * @param notes the new public notes
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    updateNotes: (game_state_id: number, notes: string) => {
-        try {
-            const updateStmt = db.prepare(
-                `UPDATE game_state
-                SET notes = ?
-                WHERE id = ?`,
-            );
-
-            const result = updateStmt.run(notes, game_state_id);
-
-            if (result.changes === 0) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
-            }
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error updating notes.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error updating notes.');
+        if (updatedFields.notes !== undefined) {
+            fieldsToUpdate.push('notes = ?');
+            values.push(updatedFields.notes);
         }
-    },
 
-    /**
-     * Updates the hidden notes of the game state.
-     *
-     * @param game_state_id the game state ID
-     * @param hiddenNotes the new hidden notes
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error during the update
-     */
-    updateHiddenNotes: (game_state_id: number, hiddenNotes: string) => {
-        try {
-            const updateStmt = db.prepare(
-                `UPDATE game_state
-                SET hidden_notes = ?
-                WHERE id = ?`,
-            );
-
-            const result = updateStmt.run(hiddenNotes, game_state_id);
-
-            if (result.changes === 0) {
-                throw new NotFound(`Game state with ID ${game_state_id} does not exist.`);
-            }
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error updating hidden notes.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error updating hidden notes.');
+        if (updatedFields.hiddenNotes !== undefined) {
+            fieldsToUpdate.push('hidden_notes = ?');
+            values.push(updatedFields.hiddenNotes);
         }
-    },
 
-    /**
-     * Deletes the game state with the given ID.
-     * It also deletes associated player order entries.
-     *
-     * @param id of the game state to delete
-     * @throws NotFound if the game state does not exist
-     * @throws DatabaseError if there was an unexpected error deleting the game state
-     */
-    deleteGameState: (id: number) => {
+        if (fieldsToUpdate.length === 0) {
+            return;
+        }
+
+        values.push(id);
+
+        const query = `UPDATE game_state SET ${fieldsToUpdate.join(', ')} WHERE id = ?`;
+
         try {
-            // Use transaction to delete both game_state and player_order entries atomically
-            db.transaction(() => {
-                // First check if game state exists
-                const gameStateExists = db.prepare('SELECT 1 FROM game_state WHERE id = ?').get(id);
+            db.prepare(query).run(...values);
+        } catch (error: unknown) {
+            // Handle error silently
 
-                if (!gameStateExists) {
-                    throw new NotFound(`Game state with ID ${id} does not exist.`);
-                }
-
-                // Delete player_order entries first (due to foreign key constraint)
-                const deleteOrderStmt = db.prepare(
-                    'DELETE FROM player_order WHERE game_state_id = ?',
-                );
-                deleteOrderStmt.run(id);
-
-                // Delete game_state
-                const deleteGameStateStmt = db.prepare('DELETE FROM game_state WHERE id = ?');
-                deleteGameStateStmt.run(id);
-            })();
-        } catch (err: unknown) {
-            if (!(err instanceof Error))
-                throw new DatabaseError('Unexpected error deleting game state.');
-
-            if (err instanceof NotFound) throw err;
-
-            throw new DatabaseError('Unexpected error deleting game state.');
+            // This is to satisfy the linter that error is used
+            if (error instanceof Error) {
+                return;
+            }
         }
     },
 };

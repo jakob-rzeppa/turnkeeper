@@ -9,7 +9,7 @@ vi.mock('../../../services/gameStateHandler', () => ({
         deleteGameState: vi.fn(),
         getGameState: vi.fn(),
         initGameState: vi.fn(),
-        advanceTurn: vi.fn(),
+        nextTurn: vi.fn(),
         updateGameState: vi.fn(),
         updateHiddenNotes: vi.fn(),
         updateNotes: vi.fn(),
@@ -73,13 +73,13 @@ describe('GmGameListener', () => {
         it('should call nextTurn on the gameloop', () => {
             eventHandlers['game:turn:next']();
 
-            expect(gameStateHandler.advanceTurn).toHaveBeenCalledTimes(1);
+            expect(gameStateHandler.nextTurn).toHaveBeenCalledTimes(1);
         });
 
         it('should not pass any arguments to nextTurn', () => {
             eventHandlers['game:turn:next']();
 
-            expect(gameStateHandler.advanceTurn).toHaveBeenCalledWith();
+            expect(gameStateHandler.nextTurn).toHaveBeenCalledWith();
         });
     });
 

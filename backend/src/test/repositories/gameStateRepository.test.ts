@@ -2,12 +2,20 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SqliteDatabase } from '../../database/SqliteDatabase.js';
 import gameStateRepository from '../../repositories/gameStateRepository.js';
-import { Conflict, NotFound, ValidationError } from '../../repositories/repositoryErrors.js';
+import logger from '../../services/logger.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({
     default: {
         dbPath: ':memory:',
+    },
+}));
+
+vi.mock('../../services/logger.ts', () => ({
+    default: {
+        error: vi.fn(),
+        info: vi.fn(),
+        warn: vi.fn(),
     },
 }));
 
@@ -19,396 +27,314 @@ describe('gameStateRepository', () => {
         db.initializeTables();
     });
 
-    describe('createGameState', () => {
-        it('should create a new game state with valid player order', () => {
-            // Create players
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-
-            gameStateRepository.createGameState([1, 2]);
-
-            // Verify game state is created
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
-            expect(gameState).toBeDefined();
-            expect(gameState.current_player_index).toBe(0);
-            expect(gameState.round_number).toBe(1);
-
-            // Verify player order
-            const playerOrder = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
-            expect(playerOrder.map((row) => row.player_id)).toEqual([1, 2]);
-        });
-
-        it('should throw Conflict if game state already exists', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-
-            gameStateRepository.createGameState([1, 2]);
-
-            expect(() => gameStateRepository.createGameState([1, 2])).toThrow(Conflict);
-
-            // Verify only one game state exists
-            const gameStateCount = db.prepare('SELECT COUNT(*) as count FROM game_state').get() as {
-                count: number;
-            };
-            expect(gameStateCount.count).toBe(1);
-        });
-
-        it('should throw ValidationError if player order contains invalid player IDs', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-
-            expect(() => gameStateRepository.createGameState([1, 999])).toThrow(ValidationError);
-
-            // Verify no game state was created
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
-            expect(gameState).toBeUndefined();
-        });
-
-        it('should throw ValidationError if player order contains duplicate IDs', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-
-            expect(() => gameStateRepository.createGameState([1, 1])).toThrow(ValidationError);
-
-            // Verify no game state was created
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
-            expect(gameState).toBeUndefined();
-        });
-    });
-
     describe('getGameStateById', () => {
-        it('should return the game state by ID', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
+        it('should return a game state object', () => {
             db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, 'test', 'secret')",
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2'), (3, 'Charlie', 'secret3')",
             );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                VALUES (1, 2, 0, '1,2,3', 'Some notes', 'Some hidden notes')
+            `);
 
-            const gameState = gameStateRepository.getGameStateById(1);
+            const gamestate = gameStateRepository.getGameStateById(1);
 
-            expect(gameState).toBeDefined();
-            expect(gameState.id).toBe(1);
-            expect(gameState.playerOrder).toEqual([1, 2]);
-            expect(gameState.currentPlayerIndex).toBe(0);
-            expect(gameState.roundNumber).toBe(0);
-            expect(gameState.notes).toBe('test');
-            expect(gameState.hiddenNotes).toBe('secret');
+            expect(gamestate).toEqual({
+                currentPlayerIndex: 0,
+                hiddenNotes: 'Some hidden notes',
+                id: 1,
+                notes: 'Some notes',
+                playerOrder: [
+                    { id: 1, name: 'Alice' },
+                    { id: 2, name: 'Bob' },
+                    { id: 3, name: 'Charlie' },
+                ],
+                roundNumber: 2,
+            });
         });
 
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.getGameStateById(999)).toThrow(NotFound);
+        it('should return undefined for non-existing game state', () => {
+            const gamestate = gameStateRepository.getGameStateById(999);
+            expect(gamestate).toBeNull();
+        });
+
+        it('should handle empty player order', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (2, 1, 0, '')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(2);
+
+            expect(gamestate).toEqual({
+                currentPlayerIndex: 0,
+                hiddenNotes: '',
+                id: 2,
+                notes: '',
+                playerOrder: [],
+                roundNumber: 1,
+            });
+        });
+
+        it('should handle single player in player order', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (4, 'Dave', 'secret4')");
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (3, 1, 0, '4')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(3);
+
+            expect(gamestate).toEqual({
+                currentPlayerIndex: 0,
+                hiddenNotes: '',
+                id: 3,
+                notes: '',
+                playerOrder: [{ id: 4, name: 'Dave' }],
+                roundNumber: 1,
+            });
+        });
+
+        it('should return null for inconsistent game state', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (5, 1, 0, '10,11')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(5);
+
+            expect(gamestate).toBeNull();
+            expect(logger.error).toHaveBeenCalledWith({
+                message:
+                    'Inconsistent game state: some player IDs in the game state do not exist in the players table.',
+            });
+        });
+
+        it('should have the correct order of players', () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (5, 'Eve', 'secret5'), (6, 'Frank', 'secret6'), (7, 'Grace', 'secret7')",
+            );
+            db.exec(`
+                INSERT INTO game_state (round_number, current_player_index, player_order)
+                VALUES (3, 1, '7,5,6')
+            `);
+
+            const gamestate = gameStateRepository.getGameStateById(1);
+
+            expect(gamestate).toEqual({
+                currentPlayerIndex: 1,
+                hiddenNotes: '',
+                id: 1,
+                notes: '',
+                playerOrder: [
+                    { id: 7, name: 'Grace' },
+                    { id: 5, name: 'Eve' },
+                    { id: 6, name: 'Frank' },
+                ],
+                roundNumber: 3,
+            });
         });
     });
 
-    describe('updatePlayerOrder', () => {
-        it('should update the player order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (3, 'Charlie', 'secret3')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1), (1, 3, 2)',
-            );
+    describe('createGameState', () => {
+        it('should create a new game state', () => {
+            const newGameState = {
+                currentPlayerIndex: 0,
+                playerOrder: [
+                    { id: 1, name: 'Alice' },
+                    { id: 2, name: 'Bob' },
+                ],
+                roundNumber: 0,
+            };
 
-            gameStateRepository.updatePlayerOrder(1, [2, 1, 3]);
+            gameStateRepository.createGameState(newGameState);
 
-            // Verify the order is updated in the database
-            const gameStateRows = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
-            expect(gameStateRows.map((row) => row.player_id)).toEqual([2, 1, 3]);
-        });
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                hidden_notes: string;
+                id: number;
+                notes: string;
+                player_order: string;
+                round_number: number;
+            };
 
-        it('should throw NotFound if game state does not exist', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-
-            expect(() => gameStateRepository.updatePlayerOrder(999, [1])).toThrow(NotFound);
-        });
-
-        it('should throw ValidationError if player order contains invalid player IDs', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-
-            expect(() => gameStateRepository.updatePlayerOrder(1, [1, 999])).toThrow(
-                ValidationError,
-            );
-        });
-
-        it('should throw ValidationError if player order contains duplicates', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            gameStateRepository.createGameState([1]);
-
-            expect(() => gameStateRepository.updatePlayerOrder(1, [1, 1])).toThrow(ValidationError);
+            expect(row).toBeDefined();
+            expect(row.round_number).toBe(0);
+            expect(row.current_player_index).toBe(0);
+            expect(row.player_order).toBe('1,2');
+            expect(row.notes).toBe('');
+            expect(row.hidden_notes).toBe('');
         });
     });
 
-    describe('addPlayerToOrder', () => {
-        it('should add a player to the turn order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0)',
-            );
+    describe('updateGameState', () => {
+        describe('when updating an existing game state', () => {
+            it('should update the game state', () => {
+                db.exec(`
+                    INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                    VALUES (1, 1, 0, '1,2', 'Test notes', 'Test hidden notes')
+                `);
 
-            gameStateRepository.addPlayerToOrder(1, 2);
+                gameStateRepository.updateGameState(1, {
+                    currentPlayerIndex: 1,
+                    hiddenNotes: 'Updated hidden notes',
+                    notes: 'Updated notes',
+                    roundNumber: 2,
+                });
 
-            const playerOrderRows = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
+                const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                    current_player_index: number;
+                    hidden_notes: string;
+                    id: number;
+                    notes: string;
+                    player_order: string;
+                    round_number: number;
+                };
 
-            expect(playerOrderRows.map((row) => row.player_id)).toEqual([1, 2]);
-        });
+                expect(row.round_number).toBe(2);
+                expect(row.current_player_index).toBe(1);
+                expect(row.hidden_notes).toBe('Updated hidden notes');
+                expect(row.notes).toBe('Updated notes');
+            });
 
-        it('should throw NotFound if game state does not exist', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+            it('should not update non-provided fields', () => {
+                db.exec(`
+                    INSERT INTO game_state (id, round_number, current_player_index, player_order, notes, hidden_notes)
+                    VALUES (1, 1, 0, '1,2', 'Test notes', 'Test hidden notes')
+                `);
 
-            expect(() => gameStateRepository.addPlayerToOrder(999, 1)).toThrow(NotFound);
-        });
+                gameStateRepository.updateGameState(1, {
+                    roundNumber: 3,
+                });
 
-        it('should throw ValidationError if player ID does not exist', () => {
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
+                const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                    current_player_index: number;
+                    hidden_notes: string;
+                    id: number;
+                    notes: string;
+                    player_order: string;
+                    round_number: number;
+                };
 
-            expect(() => gameStateRepository.addPlayerToOrder(1, 999)).toThrow(ValidationError);
-        });
+                expect(row.round_number).toBe(3);
+                expect(row.current_player_index).toBe(0);
+                expect(row.player_order).toBe('1,2');
+                expect(row.hidden_notes).toBe('Test hidden notes');
+                expect(row.notes).toBe('Test notes');
+            });
 
-        it('should throw ValidationError if player is already in the order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            gameStateRepository.createGameState([1]);
+            it('should update player order', () => {
+                db.exec(`
+                    INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                    VALUES (1, 1, 0, '1,2')
+                `);
 
-            expect(() => gameStateRepository.addPlayerToOrder(1, 1)).toThrow(ValidationError);
-        });
-    });
+                gameStateRepository.updateGameState(1, {
+                    playerOrder: [
+                        { id: 2, name: 'Bob' },
+                        { id: 1, name: 'Alice' },
+                    ],
+                });
 
-    describe('removePlayerFromOrder', () => {
-        it('should remove a player from the turn order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (3, 'Charlie', 'secret3')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1), (1, 3, 2)',
-            );
+                const row = db
+                    .prepare('SELECT player_order FROM game_state WHERE id = 1')
+                    .get() as {
+                    player_order: string;
+                };
 
-            gameStateRepository.removePlayerFromOrder(1, 2);
-
-            const playerOrderRows = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
-
-            expect(playerOrderRows.map((row) => row.player_id)).toEqual([1, 3]);
-        });
-
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.removePlayerFromOrder(999, 1)).toThrow(NotFound);
-
-            // Verify no changes in player_order table
-            const playerOrderRows = db.prepare('SELECT * FROM player_order').all() as {
-                player_id: number;
-            }[];
-
-            expect(playerOrderRows).toEqual([]);
-        });
-
-        it('should throw NotFound if player is not in the order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            gameStateRepository.createGameState([1, 2]);
-
-            expect(() => gameStateRepository.removePlayerFromOrder(1, 999)).toThrow(NotFound);
-
-            // Verify no changes in player_order table
-            const playerOrderRows = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
-            expect(playerOrderRows.map((row) => row.player_id)).toEqual([1, 2]);
-        });
-
-        it('should adjust current player index if removing player before current', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (3, 'Charlie', 'secret3')");
-            gameStateRepository.createGameState([1, 2, 3]);
-
-            // Advance to player 2 (index 1)
-            gameStateRepository.advanceTurn(1);
-
-            gameStateRepository.removePlayerFromOrder(1, 1);
-
-            const playerOrderRows = db
-                .prepare(
-                    'SELECT player_id FROM player_order WHERE game_state_id = 1 ORDER BY position ASC',
-                )
-                .all() as { player_id: number }[];
-
-            expect(playerOrderRows.map((row) => row.player_id)).toEqual([2, 3]);
-        });
-    });
-
-    describe('advanceToNextPlayer', () => {
-        it('should advance to the next player in turn order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
-
-            gameStateRepository.advanceTurn(1);
-
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
-            expect(gameState.current_player_index).toBe(1);
-            expect(gameState.round_number).toBe(0);
-        });
-
-        it('should loop back to first player and increment round number', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
-
-            // Advance to player 2
-            gameStateRepository.advanceTurn(1);
-            // Loop back to player 1, increment round
-            gameStateRepository.advanceTurn(1);
-
-            const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
-            expect(gameStateRows.current_player_index).toBe(0);
-            expect(gameStateRows.round_number).toBe(1);
-        });
-
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.advanceTurn(999)).toThrow(NotFound);
-        });
-    });
-
-    describe('revertTurn', () => {
-        it('should revert to the previous player in turn order', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 1, 1, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
-
-            gameStateRepository.revertTurn(1);
-
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
-            expect(gameState.current_player_index).toBe(0);
-            expect(gameState.round_number).toBe(1);
-        });
-
-        it('should loop back to last player and decrement round number', () => {
-            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
-            db.exec("INSERT INTO players (id, name, secret) VALUES (2, 'Bob', 'secret2')");
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 2, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
-
-            gameStateRepository.revertTurn(1);
-
-            const gameStateRows = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as any;
-            expect(gameStateRows.current_player_index).toBe(1);
-            expect(gameStateRows.round_number).toBe(1);
-        });
-    });
-
-    describe('updateNotes', () => {
-        it('should update the public notes of the game state', () => {
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-
-            gameStateRepository.updateNotes(1, 'New public notes');
-
-            const gameState = gameStateRepository.getGameStateById(1);
-            expect(gameState.notes).toBe('New public notes');
-        });
-
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.updateNotes(999, 'Notes')).toThrow(NotFound);
-        });
-    });
-
-    describe('updateHiddenNotes', () => {
-        it('should update the hidden notes of the game state', () => {
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-
-            gameStateRepository.updateHiddenNotes(1, 'New hidden notes');
-
-            const gameState = gameStateRepository.getGameStateById(1);
-            expect(gameState.hiddenNotes).toBe('New hidden notes');
-        });
-
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.updateHiddenNotes(999, 'Hidden Notes')).toThrow(
-                NotFound,
-            );
+                expect(row.player_order).toBe('2,1');
+            });
         });
     });
 
     describe('deleteGameState', () => {
         it('should delete the game state', () => {
-            db.exec(
-                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
-            );
-            db.exec(
-                "INSERT INTO game_state (id, current_player_index, round_number, notes, hidden_notes) VALUES (1, 0, 0, '', '')",
-            );
-            db.exec(
-                'INSERT INTO player_order (game_state_id, player_id, position) VALUES (1, 1, 0), (1, 2, 1)',
-            );
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2')
+            `);
 
             gameStateRepository.deleteGameState(1);
 
-            const gameState = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
-            expect(gameState).toBeUndefined();
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get();
 
-            // Verify player_order entries are also deleted
-            const playerOrderRows = db
-                .prepare('SELECT * FROM player_order WHERE game_state_id = 1')
-                .all() as { player_id: number }[];
-            expect(playerOrderRows).toEqual([]);
+            expect(row).toBeUndefined();
+        });
+    });
+
+    describe('removeDeletedPlayersFromPlayerOrder', () => {
+        it('should remove deleted players from the player order', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2,3')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1, 3]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1,3');
         });
 
-        it('should throw NotFound if game state does not exist', () => {
-            expect(() => gameStateRepository.deleteGameState(999)).toThrow(NotFound);
+        it('should handle all players being deleted', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('');
+        });
+
+        it('should not change player order if all players exist', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 0, '1,2')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1, 2]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1,2');
+        });
+
+        it('should set currentPlayerIndex to 0 if it exceeds new player order length', () => {
+            db.exec(`
+                INSERT INTO game_state (id, round_number, current_player_index, player_order)
+                VALUES (1, 1, 2, '1,2,3')
+            `);
+
+            gameStateRepository.removeDeletedPlayersFromPlayerOrder([1]);
+
+            const row = db.prepare('SELECT * FROM game_state WHERE id = 1').get() as {
+                current_player_index: number;
+                id: number;
+                player_order: string;
+                round_number: number;
+            };
+
+            expect(row.player_order).toBe('1');
+            expect(row.round_number).toBe(2);
+            expect(row.current_player_index).toBe(0);
         });
     });
 });

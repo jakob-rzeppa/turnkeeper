@@ -59,7 +59,7 @@ export default class GmGameListener {
     }
 
     private nextTurn() {
-        gameStateHandler.advanceTurn();
+        gameStateHandler.nextTurn();
     }
 
     private updateHiddenNotes(newHiddenNotes: string) {

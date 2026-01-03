@@ -6,10 +6,6 @@ import UserController from '../../connectionControllers/UserController.js';
 // Mock all emitters
 vi.mock('../../connectionEmitters/user/UserGameEmitter');
 vi.mock('../../connectionEmitters/user/UserPlayersEmitter');
-vi.mock('../../connectionEmitters/user/UserMessagesEmitter');
-
-// Mock all listeners
-vi.mock('../../connectionListeners/user/UserMessagesListener');
 
 describe('UserController', () => {
     let mockSocket: Socket;

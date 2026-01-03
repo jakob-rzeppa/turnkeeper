@@ -7,10 +7,8 @@ import GmController from '../../connectionControllers/GmController.js';
 vi.mock('../../connectionEmitters/gm/GmGameEmitter');
 vi.mock('../../connectionEmitters/gm/GmLogsEmitter');
 vi.mock('../../connectionEmitters/gm/GmPlayersEmitter');
-vi.mock('../../connectionEmitters/gm/GmMessagesEmitter');
 vi.mock('../../connectionListeners/gm/GmGameListener');
 vi.mock('../../connectionListeners/gm/GmPlayersListener');
-vi.mock('../../connectionListeners/gm/GmMessagesListener');
 
 describe('GmController', () => {
     let mockSocket: Socket;

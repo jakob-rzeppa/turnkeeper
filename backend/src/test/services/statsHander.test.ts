@@ -48,15 +48,15 @@ describe('statsHandler', () => {
 
     describe('createStatForAllPlayers', () => {
         it('should create a stat for all players', () => {
-            const statData = { name: 'health', value: '100' };
+            const statData = { name: 'health', playerId: 0, value: '100' };
 
             statsHandler.createStatForAllPlayers(statData);
 
-            expect(statsRepository.createStatForAllPlayers).toHaveBeenCalledWith('health', '100');
+            expect(statsRepository.createStatForAllPlayers).toHaveBeenCalledWith(statData);
         });
 
         it('should notify GM and all users after creating stat', () => {
-            const statData = { name: 'health', value: '100' };
+            const statData = { name: 'health', playerId: 0, value: '100' };
 
             statsHandler.createStatForAllPlayers(statData);
 
@@ -68,31 +68,27 @@ describe('statsHandler', () => {
         });
 
         it('should allow statData with empty value', () => {
-            const statData = { name: 'stamina', value: '' };
+            const statData = { name: 'stamina', playerId: 0, value: '' };
 
             statsHandler.createStatForAllPlayers(statData);
 
-            expect(statsRepository.createStatForAllPlayers).toHaveBeenCalledWith('stamina', '');
+            expect(statsRepository.createStatForAllPlayers).toHaveBeenCalledWith(statData);
         });
     });
 
     describe('createStatForPlayer', () => {
         it('should create a stat for a specific player', () => {
             const playerId = 1;
-            const statData = { name: 'mana', value: '50' };
+            const statData = { name: 'mana', playerId: 0, value: '50' };
 
             statsHandler.createStatForPlayer({ playerId, statData });
 
-            expect(statsRepository.createStatForPlayer).toHaveBeenCalledWith(
-                playerId,
-                'mana',
-                '50',
-            );
+            expect(statsRepository.createStatForPlayer).toHaveBeenCalledWith(playerId, statData);
         });
 
         it('should notify GM and the specific user after creating stat', () => {
             const playerId = 1;
-            const statData = { name: 'mana', value: '50' };
+            const statData = { name: 'mana', playerId: 0, value: '50' };
 
             statsHandler.createStatForPlayer({ playerId, statData });
 
@@ -103,11 +99,11 @@ describe('statsHandler', () => {
         });
 
         it('should allow statData with empty value', () => {
-            const statData = { name: 'stamina', value: '' };
+            const statData = { name: 'stamina', playerId: 0, value: '' };
 
             statsHandler.createStatForPlayer({ playerId: 0, statData });
 
-            expect(statsRepository.createStatForPlayer).toHaveBeenCalledWith(0, 'stamina', '');
+            expect(statsRepository.createStatForPlayer).toHaveBeenCalledWith(0, statData);
         });
     });
 
@@ -122,8 +118,7 @@ describe('statsHandler', () => {
             expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
                 playerId,
                 statId,
-                undefined,
-                '75',
+                newData,
             );
         });
 
@@ -150,8 +145,7 @@ describe('statsHandler', () => {
             expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
                 playerId,
                 statId,
-                undefined,
-                '',
+                newData,
             );
         });
 
@@ -165,8 +159,7 @@ describe('statsHandler', () => {
             expect(statsRepository.updateStatForPlayer).toHaveBeenCalledWith(
                 playerId,
                 statId,
-                'energy',
-                '90',
+                newData,
             );
         });
     });

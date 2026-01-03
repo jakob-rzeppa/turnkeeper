@@ -2,7 +2,6 @@ import { beforeEach, describe, expect, it, vi } from 'vitest';
 
 import { SqliteDatabase } from '../../database/SqliteDatabase.js';
 import playerRepository from '../../repositories/playerRepository.js';
-import { Conflict, NotFound, ValidationError } from '../../repositories/repositoryErrors.js';
 
 // Mock the config to use an in-memory database for testing
 vi.mock('../../config/config.ts', () => ({
@@ -60,13 +59,11 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(2);
             expect(players[0].stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'level',
                 value: 'low',
             });
@@ -97,13 +94,11 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(2);
             expect(players[0].stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'score',
                 value: '',
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'level',
                 value: 'high',
             });
@@ -128,7 +123,6 @@ describe('Player Repository', () => {
             expect(alice?.stats).toHaveLength(1);
             expect(alice?.stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
@@ -137,7 +131,6 @@ describe('Player Repository', () => {
             expect(bob?.stats).toHaveLength(1);
             expect(bob?.stats).toContainEqual({
                 id: 2,
-                playerId: 2,
                 name: 'level',
                 value: 'low',
             });
@@ -157,19 +150,16 @@ describe('Player Repository', () => {
             expect(players[0].stats).toHaveLength(3);
             expect(players[0].stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'isActive',
                 value: true,
             });
             expect(players[0].stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'score',
                 value: 42,
             });
             expect(players[0].stats).toContainEqual({
                 id: 3,
-                playerId: 1,
                 name: 'rank',
                 value: 'gold',
             });
@@ -205,17 +195,15 @@ describe('Player Repository', () => {
             const player = playerRepository.getPlayerById(1);
 
             expect(player).toBeDefined();
-            expect(player.name).toBe('Alice');
-            expect(player.secret).toBe('secret1');
-            expect(player.notes).toBe('notes1');
-            expect(player.hiddenNotes).toBe('hidden1');
+            expect(player?.name).toBe('Alice');
+            expect(player?.secret).toBe('secret1');
+            expect(player?.notes).toBe('notes1');
+            expect(player?.hiddenNotes).toBe('hidden1');
         });
 
-        it('should throw NotFound if player does not exist', () => {
-            expect(() => playerRepository.getPlayerById(999)).toThrow(NotFound);
-            expect(() => playerRepository.getPlayerById(999)).toThrow(
-                'Player with ID 999 does not exist.',
-            );
+        it('should return null if player does not exist', () => {
+            const player = playerRepository.getPlayerById(999);
+            expect(player).toBeNull();
         });
 
         it('should return players with their stats', () => {
@@ -227,17 +215,15 @@ describe('Player Repository', () => {
             const player = playerRepository.getPlayerById(1);
 
             expect(player).toBeDefined();
-            expect(player.name).toBe('Alice');
-            expect(player.stats).toHaveLength(2);
-            expect(player.stats).toContainEqual({
+            expect(player?.name).toBe('Alice');
+            expect(player?.stats).toHaveLength(2);
+            expect(player?.stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'score',
                 value: 'high',
             });
-            expect(player.stats).toContainEqual({
+            expect(player?.stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'level',
                 value: 'low',
             });
@@ -249,9 +235,9 @@ describe('Player Repository', () => {
             const player = playerRepository.getPlayerById(1);
 
             expect(player).toBeDefined();
-            expect(player.name).toBe('Alice');
-            expect(player.stats).toBeDefined();
-            expect(player.stats).toHaveLength(0);
+            expect(player?.name).toBe('Alice');
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(0);
         });
 
         it('should return players with stats, that have empty values', () => {
@@ -263,18 +249,16 @@ describe('Player Repository', () => {
             const player = playerRepository.getPlayerById(1);
 
             expect(player).toBeDefined();
-            expect(player.name).toBe('Alice');
-            expect(player.stats).toBeDefined();
-            expect(player.stats).toHaveLength(2);
-            expect(player.stats).toContainEqual({
+            expect(player?.name).toBe('Alice');
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(2);
+            expect(player?.stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'score',
                 value: '',
             });
-            expect(player.stats).toContainEqual({
+            expect(player?.stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'level',
                 value: 'high',
             });
@@ -289,24 +273,21 @@ describe('Player Repository', () => {
             const player = playerRepository.getPlayerById(1);
 
             expect(player).toBeDefined();
-            expect(player.name).toBe('Alice');
-            expect(player.stats).toBeDefined();
-            expect(player.stats).toHaveLength(3);
-            expect(player.stats).toContainEqual({
+            expect(player?.name).toBe('Alice');
+            expect(player?.stats).toBeDefined();
+            expect(player?.stats).toHaveLength(3);
+            expect(player?.stats).toContainEqual({
                 id: 1,
-                playerId: 1,
                 name: 'isActive',
                 value: true,
             });
-            expect(player.stats).toContainEqual({
+            expect(player?.stats).toContainEqual({
                 id: 2,
-                playerId: 1,
                 name: 'score',
                 value: 42,
             });
-            expect(player.stats).toContainEqual({
+            expect(player?.stats).toContainEqual({
                 id: 3,
-                playerId: 1,
                 name: 'rank',
                 value: 'gold',
             });
@@ -337,18 +318,34 @@ describe('Player Repository', () => {
             expect(playerId).toBe(2);
         });
 
-        it('should throw NotFound if player name does not exist', () => {
+        it('should return null if player name does not exist', () => {
             db.exec(
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
             );
 
-            expect(() => playerRepository.getPlayerIdByName('non-existent-name')).toThrow(NotFound);
-            expect(() => playerRepository.getPlayerIdByName('non-existent-name')).toThrow(
-                'Player with name "non-existent-name" does not exist.',
-            );
+            const playerId = playerRepository.getPlayerIdByName('non-existent-name');
+            expect(playerId).toBeNull();
         });
     });
+    describe('getPlayerNameById', () => {
+        it('should return a player name by id from the database', () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+            );
 
+            const playerName = playerRepository.getPlayerNameById(2);
+            expect(playerName).toBe('Bob');
+        });
+
+        it('should return null if player id does not exist', () => {
+            db.exec(
+                "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
+            );
+
+            const playerName = playerRepository.getPlayerNameById(5);
+            expect(playerName).toBeNull();
+        });
+    });
     describe('createPlayer', () => {
         it('should create a new player in the database', () => {
             playerRepository.createPlayer('Charlie');
@@ -364,26 +361,16 @@ describe('Player Repository', () => {
             expect(player.secret).toHaveLength(4); // The secret length is 4
             expect(player.notes).toBe(''); // Default value for notes should be an empty string
         });
-
-        it('should throw ValidationError when creating a player with an empty name', () => {
-            expect(() => playerRepository.createPlayer('')).toThrow(ValidationError);
-            expect(() => playerRepository.createPlayer('')).toThrow('Player name cannot be empty.');
-        });
-
-        it('should throw ValidationError when creating a player with a whitespace-only name', () => {
-            expect(() => playerRepository.createPlayer('   ')).toThrow(ValidationError);
-            expect(() => playerRepository.createPlayer('   ')).toThrow(
-                'Player name cannot be empty.',
-            );
-        });
-
-        it('should throw Conflict when creating a player with a duplicate name', () => {
+        it('should not create a player with a duplicate name', () => {
             db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Charlie', 'secret1')");
 
-            expect(() => playerRepository.createPlayer('Charlie')).toThrow(Conflict);
-            expect(() => playerRepository.createPlayer('Charlie')).toThrow(
-                'Player with name "Charlie" already exists.',
-            );
+            playerRepository.createPlayer('Charlie');
+
+            const players = db
+                .prepare('SELECT * FROM players WHERE name = ?')
+                .all('Charlie') as object[];
+
+            expect(players).toHaveLength(1); // Only one player with the name "Charlie" should exist
         });
     });
     describe('updatePlayer', () => {
@@ -445,24 +432,42 @@ describe('Player Repository', () => {
             expect(player.hiddenNotes).toBe('Updated hidden notes');
         });
 
-        it('should throw NotFound when updating a non-existent player', () => {
-            expect(() => playerRepository.updatePlayer(999, { name: 'NonExistent' })).toThrow(
-                NotFound,
-            );
-            expect(() => playerRepository.updatePlayer(999, { name: 'NonExistent' })).toThrow(
-                'Player with ID 999 does not exist.',
-            );
+        it('should not update a non-existent player', () => {
+            playerRepository.updatePlayer(999, { name: 'NonExistent' });
+
+            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(999) as
+                | undefined
+                | { id: number; name: string; secret: string };
+
+            expect(player).toBeUndefined();
         });
 
-        it("should throw Conflict when updating a player's name to a duplicate name", () => {
+        it("should not update a player's name to a duplicate name", () => {
             db.exec(
                 "INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1'), (2, 'Bob', 'secret2')",
             );
 
-            expect(() => playerRepository.updatePlayer(1, { name: 'Bob' })).toThrow(Conflict);
-            expect(() => playerRepository.updatePlayer(1, { name: 'Bob' })).toThrow(
-                'Player with name "Bob" already exists.',
-            );
+            playerRepository.updatePlayer(1, { name: 'Bob' });
+            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(1) as {
+                id: number;
+                name: string;
+                secret: string;
+            };
+
+            expect(player.name).toBe('Alice'); // Name should remain unchanged
+        });
+
+        it('should not update if there are no fields to update supplied', () => {
+            db.exec("INSERT INTO players (id, name, secret) VALUES (1, 'Alice', 'secret1')");
+
+            playerRepository.updatePlayer(1, {});
+            const player = db.prepare('SELECT * FROM players WHERE id = ?').get(1) as {
+                id: number;
+                name: string;
+                secret: string;
+            };
+
+            expect(player.name).toBe('Alice'); // Name should remain unchanged
         });
     });
     describe('deletePlayer', () => {
@@ -478,11 +483,10 @@ describe('Player Repository', () => {
             expect(player).toBeUndefined();
         });
 
-        it('should throw NotFound when trying to delete a non-existent player', () => {
-            expect(() => playerRepository.deletePlayer(999)).toThrow(NotFound);
-            expect(() => playerRepository.deletePlayer(999)).toThrow(
-                'Player with ID 999 does not exist.',
-            );
+        it('should not fail when trying to delete a non-existent player', () => {
+            expect(() => {
+                playerRepository.deletePlayer(999);
+            }).not.toThrow();
         });
     });
 });

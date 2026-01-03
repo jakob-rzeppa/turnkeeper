@@ -247,7 +247,7 @@ describe('Gm Game Events Integration Tests', () => {
 
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
-                currentPlayerIndex: 2,
+                currentPlayerIndex: 0,
                 hiddenNotes: 'These are the hidden notes.',
                 id: 1,
                 notes: 'These are the game notes.',
@@ -255,7 +255,7 @@ describe('Gm Game Events Integration Tests', () => {
                     { id: 1, name: 'Player One' },
                     { id: 3, name: 'Player Three' },
                 ],
-                roundNumber: 1,
+                roundNumber: 2,
             },
         });
     });
@@ -273,7 +273,7 @@ describe('Gm Game Events Integration Tests', () => {
 
         expect(mockSocket.emit).toHaveBeenCalledWith('game:info', {
             gameState: {
-                currentPlayerIndex: 2,
+                currentPlayerIndex: 0,
                 hiddenNotes: 'These are the hidden notes.',
                 id: 1,
                 notes: 'These are the game notes.',
@@ -281,7 +281,7 @@ describe('Gm Game Events Integration Tests', () => {
                     { id: 3, name: 'Player Three' },
                     { id: 1, name: 'Player One' },
                 ],
-                roundNumber: 1,
+                roundNumber: 2,
             },
         });
     });
@@ -301,11 +301,24 @@ describe('Gm Game Events Integration Tests', () => {
 
         nextTurnHandler();
 
-        expect(mockSocket.emit).not.toHaveBeenCalledWith('game:info', expect.anything());
+        expect(mockSocket.emit).not.toHaveBeenCalledWith('game:info', {
+            gameState: {
+                currentPlayerIndex: 0,
+                hiddenNotes: 'These are the hidden notes.',
+                id: 1,
+                notes: 'These are the game notes.',
+                playerOrder: [
+                    { id: 1, name: 'Player One' },
+                    { id: 2, name: 'Player Two' },
+                    { id: 3, name: 'Player Three' },
+                ],
+                roundNumber: 2,
+            },
+        });
         expect(mockSocket.emit).toHaveBeenCalledWith('log:entry', {
             entry: {
-                message: 'Failed to advance turn: Game state with ID 1 does not exist.',
-                severity: 'error',
+                message: 'No game state found when attempting to advance to next turn.',
+                severity: 'warning',
                 timestamp: expect.any(Date) as Date,
             },
         });
