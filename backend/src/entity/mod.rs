@@ -1,0 +1,10 @@
+use sqlx::FromRow;
+
+#[derive(FromRow)]
+pub struct User {
+    pub id: i64,
+    pub name: String,
+    // the password is stored in plain text,
+    // so the gm can look up a password if a user forgot it
+    pub password: String,
+}
