@@ -12,7 +12,7 @@ axum = { version = "0.8.8", features = ["ws"] }
 jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
 
 # DB
-sqlx = { version = "0.8.6", features = [ "runtime-tokio", "sqlite", "macros", "derive", "chrono", "migrate" ] }
+sqlx = { version = "0.8.6", features = [ "runtime-tokio", "sqlite", "macros", "derive", "chrono" ] }
 
 # Json
 serde = "1.0.228"
