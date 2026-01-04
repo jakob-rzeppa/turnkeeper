@@ -1,41 +1,77 @@
+use std::string::ToString;
 use std::sync::LazyLock;
 use jsonwebtoken::{encode, decode, Header, Algorithm, EncodingKey, DecodingKey, Validation};
 use serde::{Serialize, Deserialize};
 use std::time::{SystemTime, UNIX_EPOCH};
 
-const JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
+const GM_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {
-        return "test secret".to_string();
+        return "gm test secret".to_string();
     }
 
-    std::env::var("JWT_SECRET")
+    std::env::var("GM_JWT_SECRET")
         .expect("JWT_SECRET environment variable is not set")
 });
 
-// Define a struct to represent the claims in the JWT
+const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
+    if cfg!(test) {
+        return "user test secret".to_string();
+    }
+
+    std::env::var("USER_JWT_SECRET")
+        .expect("JWT_SECRET environment variable is not set")
+});
+
+// Define structs to represent the claims in the JWT
 #[derive(Serialize, Deserialize)]
-struct Claims {
+struct UserClaims {
     user_id: u32,
     exp: usize,  // Expiration time
 }
-
-// Function to generate a JWT
-fn generate_jwt(user_id: u32) -> String {
-    let exp = SystemTime::now().duration_since(UNIX_EPOCH).unwrap().as_secs() + 3600 * 5; // 5 hour expiration
-    let claims = Claims { user_id, exp: exp as usize };
-
-    let header = Header::new(Algorithm::HS256);
-    let encoding_key = EncodingKey::from_secret(JWT_SECRET.as_bytes());
-
-    encode(&header, &claims, &encoding_key).unwrap()
+#[derive(Serialize, Deserialize)]
+struct GmClaims {
+    exp: usize,  // Expiration time
 }
 
-// Function to validate a JWT
-fn validate_jwt(token: &str) -> Result<Claims, jsonwebtoken::errors::Error> {
-    let decoding_key = DecodingKey::from_secret(JWT_SECRET.as_bytes());
+
+// Functions to generate a JWT
+fn generate_user_jwt(user_id: u32) -> Result<String, anyhow::Error> {
+    let exp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 3600 * 5; // 5 hour expiration
+    let claims = UserClaims { user_id, exp: exp as usize };
+
+    let header = Header::new(Algorithm::HS256);
+    let encoding_key = EncodingKey::from_secret(USER_JWT_SECRET.as_bytes());
+
+    Ok(encode(&header, &claims, &encoding_key)?)
+}
+
+fn generate_gm_jwt() -> Result<String, anyhow::Error> {
+    let exp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 3600 * 5; // 5 hour expiration
+    let claims = GmClaims { exp: exp as usize };
+
+    let header = Header::new(Algorithm::HS256);
+    let encoding_key = EncodingKey::from_secret(GM_JWT_SECRET.as_bytes());
+
+    Ok(encode(&header, &claims, &encoding_key)?)
+}
+
+// Functions to validate a JWT
+fn validate_user_jwt(token: &str) -> Result<u32, anyhow::Error> {
+    let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
     let validation = Validation::new(Algorithm::HS256);
 
-    decode::<Claims>(token, &decoding_key, &validation).map(|data| data.claims)
+    let claims = decode::<UserClaims>(token, &decoding_key, &validation).map(|data| data.claims)?;
+
+    Ok(claims.user_id)
+}
+
+fn validate_gm_jwt(token: &str) -> Result<(), anyhow::Error> {
+    let decoding_key = DecodingKey::from_secret(GM_JWT_SECRET.as_bytes());
+    let validation = Validation::new(Algorithm::HS256);
+
+    let claims = decode::<GmClaims>(token, &decoding_key, &validation).map(|data| data.claims)?;
+
+    Ok(())
 }
 
 #[cfg(test)]
@@ -43,14 +79,42 @@ mod tests {
     use super::*;
 
     #[test]
-    fn generate_and_validate_jwt() {
-        let jwt = generate_jwt(1);
+    fn generate_and_validate_user_jwt() {
+        let jwt = generate_user_jwt(1).unwrap();
 
-        assert!(validate_jwt(&jwt).is_ok());
+        let user_id = validate_user_jwt(&jwt).unwrap();
+
+        assert_eq!(user_id, 1);
     }
 
     #[test]
-    fn invalid_jwt() {
-        assert!(validate_jwt("aioefhaiöfake").is_err());
+    fn generate_and_validate_gm_jwt() {
+        let jwt = generate_gm_jwt().unwrap();
+
+        assert!(validate_gm_jwt(&jwt).is_ok());
+    }
+
+    #[test]
+    fn generate_user_and_validate_gm_jwt() {
+        let jwt = generate_user_jwt(1).unwrap();
+
+        assert!(validate_gm_jwt(&jwt).is_err());
+    }
+
+    #[test]
+    fn generate_gm_and_validate_user_jwt() {
+        let jwt = generate_gm_jwt().unwrap();
+
+        assert!(validate_user_jwt(&jwt).is_err());
+    }
+
+    #[test]
+    fn invalid_gm_jwt() {
+        assert!(validate_gm_jwt("aioefhaiöfake").is_err());
+    }
+
+    #[test]
+    fn invalid_user_jwt() {
+        assert!(validate_user_jwt("aioefhaiöfake").is_err());
     }
 }
