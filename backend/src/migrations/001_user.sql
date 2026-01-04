@@ -1,4 +1,0 @@
-CREATE TABLE IF NOT EXISTS users (
-    id NUMBER PRIMARY KEY,
-    name TEXT NOT NULL
-)
