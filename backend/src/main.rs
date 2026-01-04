@@ -1,9 +1,11 @@
 mod websocket;
 mod handler;
 mod error;
-mod util;
 mod db;
 mod auth;
+mod entity;
+mod repository;
+mod macros;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
