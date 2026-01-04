@@ -2,6 +2,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
+use sqlx::error::DatabaseError;
 
 #[derive(Debug)]
 pub enum HttpError {
@@ -26,4 +27,12 @@ impl IntoResponse for HttpError {
 
         (status, body).into_response()
     }
+}
+
+#[derive(Debug)]
+pub enum RepositoryError {
+    NotFound(i64),
+    Conflict(String),
+    Invalid(String),
+    Database(String),
 }
