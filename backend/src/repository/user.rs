@@ -11,7 +11,7 @@ pub struct UserCreateInformation {
 
 pub async fn create_user(mut connection: PoolConnection<Sqlite>, user_info: UserCreateInformation) -> Result<User, RepositoryError> {
     if user_info.name.is_empty() || user_info.password.is_empty() {
-        return Err(RepositoryError::Invalid("Username or password must not be empty".to_string()));
+        return Err(RepositoryError::InvalidParameter("Username or password must not be empty".to_string()));
     }
 
     let user: User = query_as!(
@@ -73,7 +73,13 @@ mod tests {
         };
 
         let connection = pool.acquire().await.unwrap();
-        assert!(create_user(connection, user_create_info).await.is_err());
+        let err = create_user(connection, user_create_info).await.unwrap_err();
+
+        match err {
+            RepositoryError::InvalidParameter(e) =>
+                assert_eq!(e, "Username or password must not be empty".to_string()),
+            _ => panic!("unexpected error"),
+        }
     }
 
     #[tokio::test]
@@ -86,7 +92,13 @@ mod tests {
         };
 
         let connection = pool.acquire().await.unwrap();
-        assert!(create_user(connection, user_create_info).await.is_err());
+        let err = create_user(connection, user_create_info).await.unwrap_err();
+
+        match err {
+            RepositoryError::InvalidParameter(e) =>
+                assert_eq!(e, "Username or password must not be empty".to_string()),
+            _ => panic!("unexpected error"),
+        }
     }
 
     #[tokio::test]
@@ -107,6 +119,13 @@ mod tests {
         };
 
         let connection = pool.acquire().await.unwrap();
-        assert!(create_user(connection, user_create_info_2).await.is_err());
+        let err = create_user(connection, user_create_info_2).await.unwrap_err();
+        
+        match err {
+            RepositoryError::Conflict(msg) => {
+                assert_eq!(msg, "Username already exists");
+            }
+            _ => panic!("Expected Conflict error, got: {:?}", err),
+        }
     }
 }
