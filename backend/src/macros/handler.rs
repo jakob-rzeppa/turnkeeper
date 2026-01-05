@@ -19,10 +19,10 @@
 ///
 /// json_request!('name', 'request definition', 'response definition')
 ///
-/// then the 'name' + Request and 'name' + Response structs can be used
+/// After, the 'name' + Request and 'name' + Response structs can be used.
 ///
-/// the Request struct implements FromRequest and the Response IntoResponse,
-/// so they can be used directly in axum handlers
+/// The Request struct implements FromRequest and the Response IntoResponse,
+/// so they can be used directly in axum handlers.
 ///
 /// EXAMPLE:
 ///
@@ -34,7 +34,7 @@
 macro_rules! json_handler {
     ($handler_name:ident, $request:tt, $response:tt) => {
         paste::paste! {
-            #[derive(serde::Deserialize)]
+            #[derive(serde::Deserialize, Debug)]
             pub struct [<$handler_name Request>] $request
 
             impl<S> axum::extract::FromRequest<S> for [<$handler_name Request>]
@@ -63,7 +63,7 @@ macro_rules! json_handler {
                 }
             }
 
-            #[derive(serde::Serialize)]
+            #[derive(serde::Serialize, Debug)]
             pub struct [<$handler_name Response>] $response
 
             impl axum::response::IntoResponse for [<$handler_name Response>] {
