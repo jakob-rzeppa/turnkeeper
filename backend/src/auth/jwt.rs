@@ -25,7 +25,7 @@ const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
 // Define structs to represent the claims in the JWT
 #[derive(Serialize, Deserialize)]
 struct UserClaims {
-    user_id: u32,
+    user_id: i64,
     exp: usize,  // Expiration time
 }
 #[derive(Serialize, Deserialize)]
@@ -35,7 +35,7 @@ struct GmClaims {
 
 
 // Functions to generate a JWT
-fn generate_user_jwt(user_id: u32) -> Result<String, anyhow::Error> {
+pub fn generate_user_jwt(user_id: i64) -> Result<String, anyhow::Error> {
     let exp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 3600 * 5; // 5 hour expiration
     let claims = UserClaims { user_id, exp: exp as usize };
 
@@ -45,7 +45,7 @@ fn generate_user_jwt(user_id: u32) -> Result<String, anyhow::Error> {
     Ok(encode(&header, &claims, &encoding_key)?)
 }
 
-fn generate_gm_jwt() -> Result<String, anyhow::Error> {
+pub fn generate_gm_jwt() -> Result<String, anyhow::Error> {
     let exp = SystemTime::now().duration_since(UNIX_EPOCH)?.as_secs() + 3600 * 5; // 5 hour expiration
     let claims = GmClaims { exp: exp as usize };
 
@@ -56,7 +56,9 @@ fn generate_gm_jwt() -> Result<String, anyhow::Error> {
 }
 
 // Functions to validate a JWT
-fn validate_user_jwt(token: &str) -> Result<u32, anyhow::Error> {
+
+/// returns the users id
+pub fn validate_user_jwt(token: &str) -> Result<i64, anyhow::Error> {
     let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
     let validation = Validation::new(Algorithm::HS256);
 
@@ -65,7 +67,7 @@ fn validate_user_jwt(token: &str) -> Result<u32, anyhow::Error> {
     Ok(claims.user_id)
 }
 
-fn validate_gm_jwt(token: &str) -> Result<(), anyhow::Error> {
+pub fn validate_gm_jwt(token: &str) -> Result<(), anyhow::Error> {
     let decoding_key = DecodingKey::from_secret(GM_JWT_SECRET.as_bytes());
     let validation = Validation::new(Algorithm::HS256);
 
