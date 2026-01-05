@@ -8,7 +8,9 @@ pub enum HttpError {
     NotImplemented,
     NotFound(String),
     Conflict(String),
-    InternalServerError
+    InternalServerError,
+    UnsupportedMediaType,
+    BadRequest(String),
 }
 
 impl IntoResponse for HttpError {
@@ -26,6 +28,12 @@ impl IntoResponse for HttpError {
             HttpError::InternalServerError => (
                 StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string()
             ),
+            HttpError::UnsupportedMediaType => (
+                StatusCode::UNSUPPORTED_MEDIA_TYPE, "Unsupported MediaType".to_string()
+            ),
+            HttpError::BadRequest(e) => (
+                StatusCode::BAD_REQUEST, e
+            )
         };
 
         let body = Json::from(json!({
