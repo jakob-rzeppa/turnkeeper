@@ -17,6 +17,7 @@ sqlx = { version = "0.8.6", features = [ "runtime-tokio", "sqlite", "macros", "d
 # Json
 serde = "1.0.228"
 serde_json = "1.0.148"
+serde_valid = "2.0.1"
 
 # Identifier concatenation in macros
 paste = "1.0.15"
