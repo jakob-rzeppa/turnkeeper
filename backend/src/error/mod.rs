@@ -3,7 +3,7 @@ use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde_json::json;
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum HttpError {
     NotImplemented,
     NotFound(String),
@@ -44,7 +44,7 @@ impl IntoResponse for HttpError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub enum RepositoryError {
     NotFound(String),
     Conflict(String),
