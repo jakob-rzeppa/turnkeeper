@@ -12,6 +12,8 @@ pub enum HttpError {
     InternalServerError,
     UnsupportedMediaType,
     BadRequest(String),
+    Unauthorized(String),
+
 }
 
 impl IntoResponse for HttpError {
@@ -34,6 +36,9 @@ impl IntoResponse for HttpError {
             ),
             HttpError::BadRequest(e) => (
                 StatusCode::BAD_REQUEST, e
+            ),
+            HttpError::Unauthorized(e) => (
+                StatusCode::UNAUTHORIZED, e
             )
         };
 
@@ -77,4 +82,22 @@ pub enum JwtError {
     TimeError(String),
     EncodeError(String),
     DecodeError(String),
+}
+
+impl Into<HttpError> for JwtError {
+    fn into(self) -> HttpError {
+        match self {
+            JwtError::TimeError(e) => {
+                eprintln!("Error when getting the time for jwt: {}", e);
+                HttpError::InternalServerError
+            }
+            JwtError::EncodeError(e) => {
+                eprintln!("Error when encoding the JWT: {}", e);
+                HttpError::InternalServerError
+            }
+            JwtError::DecodeError(e) => {
+                HttpError::Unauthorized(e)
+            }
+        }
+    }
 }
