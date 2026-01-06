@@ -1,8 +1,8 @@
 use axum::extract::{State};
-use crate::error::HttpError;
+use crate::error::{HttpError, JwtError};
 use crate::{get_db_connection, json_handler, AppState};
-use crate::auth::jwt::generate_user_jwt;
 use crate::repository::user::{create_user, UserCreateInformation};
+use crate::auth::jwt::generate_user_jwt;
 
 json_handler!(Login, {
     name: String,
@@ -38,11 +38,7 @@ pub async fn register(State(state): State<AppState>, payload: RegisterRequest) -
 
     let user = create_user(conn, user_create_information).await.map_err(|e| e.into())?;
 
-    let token = generate_user_jwt(user.id).map_err(|e| {
-        // Generate user jwt should not throw
-        eprintln!("generate user jwt error: {}", e);
-        HttpError::InternalServerError
-    })?;
+    let token = generate_user_jwt(user.id).map_err(|e| e.into())?;
 
     Ok(RegisterResponse {
         token
