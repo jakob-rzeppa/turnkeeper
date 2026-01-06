@@ -4,6 +4,7 @@ use axum::response::{IntoResponse, Response};
 use serde_json::json;
 
 #[derive(Debug, PartialEq)]
+#[derive(Clone)]
 pub enum HttpError {
     NotImplemented,
     NotFound(String),
@@ -69,4 +70,11 @@ impl Into<HttpError> for RepositoryError {
             }
         }
     }
+}
+
+#[derive(Debug)]
+pub enum JwtError {
+    TimeError(String),
+    EncodeError(String),
+    DecodeError(String),
 }
