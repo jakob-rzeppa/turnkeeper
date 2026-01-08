@@ -489,6 +489,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "fnmock"
+version = "0.1.0"
+source = "git+https://github.com/jakob-rzeppa/fnmock.git#e3ca6f68531c52889627f412f9083f7f62f1ce0d"
+dependencies = [
+ "fnmock-derive",
+]
+
+[[package]]
+name = "fnmock-derive"
+version = "0.1.0"
+source = "git+https://github.com/jakob-rzeppa/fnmock.git#e3ca6f68531c52889627f412f9083f7f62f1ce0d"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "foldhash"
 version = "0.1.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2202,6 +2220,7 @@ dependencies = [
  "anyhow",
  "axum",
  "dotenv",
+ "fnmock",
  "jsonwebtoken",
  "paste",
  "serde",

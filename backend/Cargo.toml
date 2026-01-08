@@ -28,3 +28,6 @@ thiserror = "2.0.17"
 
 # Env
 dotenv = "0.15.0"
+
+# Mocking
+fnmock = { git = "https://github.com/jakob-rzeppa/fnmock.git", version = "0.1.0" }
