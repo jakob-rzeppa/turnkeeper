@@ -5,6 +5,9 @@ use crate::{json_handler, AppState};
 use crate::repository::user::UserCreateInformation;
 
 #[use_mock]
+use crate::repository::user::get_id_by_name_if_password;
+
+#[use_mock]
 use crate::repository::user::create_user;
 
 #[use_mock]
@@ -21,7 +24,14 @@ json_handler!(Login, {
 ///
 /// authenticates a user via username and password and returns a JSON WEB TOKEN
 pub async fn login(State(state): State<AppState>, payload: LoginRequest) -> Result<LoginResponse, HttpError> {
-    Err(HttpError::NotImplemented)
+    let user_id = match get_id_by_name_if_password(state.db, payload.name, payload.password).await.map_err(|e| e.into())? {
+        Some(user_id) => user_id,
+        None => { return Err(HttpError::Unauthorized("Invalid credentials".to_string())); }
+    };
+
+    let token = generate_user_jwt(user_id).map_err(|e| e.into())?;
+
+    Ok(LoginResponse { token })
 }
 
 json_handler!(Register, {
@@ -53,6 +63,64 @@ pub async fn register(State(state): State<AppState>, payload: RegisterRequest) -
 #[cfg(test)]
 mod test {
     use super::*;
+
+    mod login {
+        use axum::extract::State;
+        use crate::AppState;
+        use crate::auth::jwt::generate_user_jwt_mock;
+        use crate::db::create_test_pool;
+        use crate::error::{HttpError, RepositoryError};
+        use crate::handler::user::{login, LoginRequest};
+        use crate::repository::user::{get_id_by_name_if_password_mock};
+
+        #[tokio::test]
+        async fn returns_an_token() {
+            generate_user_jwt_mock::setup(|i| {
+                Ok(format!("token {}", i))
+            });
+            get_id_by_name_if_password_mock::setup(|_| {
+                Ok(Some(1))
+            });
+
+            let pool = create_test_pool().await;
+            let state = AppState { db: pool };
+
+            let payload = LoginRequest {
+                name: "test user".to_string(),
+                password: "test password".to_string(),
+            };
+
+            let result = login(State(state), payload).await.unwrap();
+
+            assert_eq!(result.token, "token 1".to_string());
+
+            get_id_by_name_if_password_mock::assert_with("test user".to_string(), "test password".to_string());
+        }
+
+        #[tokio::test]
+        async fn invalid_credentials() {
+            get_id_by_name_if_password_mock::setup(|_| {
+                Ok(None)
+            });
+            generate_user_jwt_mock::setup(|i| {
+                Ok(format!("token {}", i))
+            });
+
+            let pool = create_test_pool().await;
+            let state = AppState { db: pool };
+
+            let payload = LoginRequest {
+                name: "test user".to_string(),
+                password: "test password".to_string(),
+            };
+
+            let err = login(State(state), payload).await.unwrap_err();
+
+            assert_eq!(err, HttpError::Unauthorized("Invalid credentials".to_string()));
+
+            generate_user_jwt_mock::assert_times(0);
+        }
+    }
 
     mod register {
         use crate::auth::jwt::generate_user_jwt_mock;
