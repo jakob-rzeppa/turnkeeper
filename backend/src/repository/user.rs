@@ -1,18 +1,21 @@
-use sqlx::pool::PoolConnection;
-use sqlx::{query_as, Sqlite};
+use fnmock::derive::mock_function;
+use sqlx::{query_as, SqlitePool};
 use crate::entity::User;
 use crate::error::RepositoryError;
-use crate::map_query_err;
+use crate::{get_db_connection, map_query_err};
 
+#[derive(Clone, PartialEq)]
 pub struct UserCreateInformation {
     pub name: String,
     pub password: String,
 }
 
-pub async fn create_user(mut connection: PoolConnection<Sqlite>, user_info: UserCreateInformation) -> Result<User, RepositoryError> {
+pub async fn create_user(db: SqlitePool, user_info: UserCreateInformation) -> Result<User, RepositoryError> {
     if user_info.name.is_empty() || user_info.password.is_empty() {
         return Err(RepositoryError::InvalidParameter("Username or password must not be empty".to_string()));
     }
+
+    let mut conn = get_db_connection!(db);
 
     let user: User = query_as!(
         User,
@@ -20,7 +23,7 @@ pub async fn create_user(mut connection: PoolConnection<Sqlite>, user_info: User
         user_info.name,
         user_info.password
     )
-        .fetch_one(&mut *connection)
+        .fetch_one(&mut *conn)
         .await
         .map_err(map_query_err!(|db_err| {
             if db_err.message().contains("UNIQUE constraint failed: users.name") {
@@ -47,8 +50,7 @@ mod tests {
             password: "123456".to_string(),
         };
 
-        let connection = pool.acquire().await.unwrap();
-        let user = create_user(connection, user_create_info).await.unwrap();
+        let user = create_user(pool.clone(), user_create_info).await.unwrap();
 
         assert_eq!(user.id, 1);
         assert_eq!(user.name, "Test");
@@ -72,8 +74,7 @@ mod tests {
             password: "123456".to_string(),
         };
 
-        let connection = pool.acquire().await.unwrap();
-        let err = create_user(connection, user_create_info).await.unwrap_err();
+        let err = create_user(pool, user_create_info).await.unwrap_err();
 
         match err {
             RepositoryError::InvalidParameter(e) =>
@@ -91,8 +92,7 @@ mod tests {
             password: "".to_string(),
         };
 
-        let connection = pool.acquire().await.unwrap();
-        let err = create_user(connection, user_create_info).await.unwrap_err();
+        let err = create_user(pool, user_create_info).await.unwrap_err();
 
         match err {
             RepositoryError::InvalidParameter(e) =>
@@ -110,16 +110,14 @@ mod tests {
             password: "123456".to_string(),
         };
 
-        let connection = pool.acquire().await.unwrap();
-        let _user_1 = create_user(connection, user_create_info_1).await.unwrap();
+        let _user_1 = create_user(pool.clone(), user_create_info_1).await.unwrap();
 
         let user_create_info_2 = UserCreateInformation {
             name: "Test".to_string(),
             password: "1234567".to_string(),
         };
 
-        let connection = pool.acquire().await.unwrap();
-        let err = create_user(connection, user_create_info_2).await.unwrap_err();
+        let err = create_user(pool, user_create_info_2).await.unwrap_err();
         
         match err {
             RepositoryError::Conflict(msg) => {
