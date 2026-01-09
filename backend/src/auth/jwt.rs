@@ -3,6 +3,7 @@ use std::sync::LazyLock;
 use jsonwebtoken::{encode, decode, Header, Algorithm, EncodingKey, DecodingKey, Validation};
 use serde::{Serialize, Deserialize};
 use std::time::{SystemTime, UNIX_EPOCH};
+use fnmock::derive::{fake_function, mock_function};
 use crate::error::JwtError;
 
 const GM_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
@@ -36,6 +37,7 @@ struct GmClaims {
 
 
 // Functions to generate a JWT
+#[mock_function]
 pub fn generate_user_jwt(user_id: i64) -> Result<String, JwtError> {
     let exp = SystemTime::now().duration_since(UNIX_EPOCH)
         .map_err(|e| JwtError::TimeError(e.to_string()))?
@@ -65,6 +67,7 @@ pub fn generate_gm_jwt() -> Result<String, JwtError> {
 // Functions to validate a JWT
 
 /// returns the users id
+#[fake_function]
 pub fn validate_user_jwt(token: &str) -> Result<i64, JwtError> {
     let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
     let validation = Validation::new(Algorithm::HS256);

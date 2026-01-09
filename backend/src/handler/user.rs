@@ -1,7 +1,10 @@
 use axum::extract::{State};
-use crate::error::{HttpError, JwtError};
+use fnmock::derive::use_mock;
+use crate::error::{HttpError};
 use crate::{get_db_connection, json_handler, AppState};
 use crate::repository::user::{create_user, UserCreateInformation};
+
+#[use_mock]
 use crate::auth::jwt::generate_user_jwt;
 
 json_handler!(Login, {
@@ -29,14 +32,13 @@ json_handler!(Register, {
 ///
 /// registers a new user via username and password
 pub async fn register(State(state): State<AppState>, payload: RegisterRequest) -> Result<RegisterResponse, HttpError> {
-    let conn = get_db_connection!(state.db);
 
     let user_create_information = UserCreateInformation {
         name: payload.name,
         password: payload.password,
     };
 
-    let user = create_user(conn, user_create_information).await.map_err(|e| e.into())?;
+    let user = create_user(state.db, user_create_information).await.map_err(|e| e.into())?;
 
     let token = generate_user_jwt(user.id).map_err(|e| e.into())?;
 
@@ -50,11 +52,16 @@ mod test {
     use super::*;
 
     mod register {
+        use crate::auth::jwt::generate_user_jwt_mock;
         use super::*;
         use crate::db::create_test_pool;
 
         #[tokio::test]
         async fn returns_a_token() {
+            generate_user_jwt_mock::setup(|_| {
+                Ok("Mock Token".to_string())
+            });
+
             let pool = create_test_pool().await;
             let state = AppState { db: pool };
 
@@ -68,6 +75,9 @@ mod test {
             assert!(result.is_ok());
             let response = result.unwrap();
             assert!(!response.token.is_empty());
+
+            generate_user_jwt_mock::assert_times(1);
+            generate_user_jwt_mock::assert_with(1);
         }
 
         #[tokio::test]

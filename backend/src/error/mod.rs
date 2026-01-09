@@ -77,7 +77,7 @@ impl Into<HttpError> for RepositoryError {
     }
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq, Clone)]
 pub enum JwtError {
     TimeError(String),
     EncodeError(String),

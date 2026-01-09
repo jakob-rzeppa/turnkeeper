@@ -491,7 +491,7 @@ dependencies = [
 [[package]]
 name = "fnmock"
 version = "0.1.0"
-source = "git+https://github.com/jakob-rzeppa/fnmock.git#e3ca6f68531c52889627f412f9083f7f62f1ce0d"
+source = "git+https://github.com/jakob-rzeppa/fnmock.git#2d900884200ecfe497694b1b4726548a4abf2bb6"
 dependencies = [
  "fnmock-derive",
 ]
@@ -499,7 +499,7 @@ dependencies = [
 [[package]]
 name = "fnmock-derive"
 version = "0.1.0"
-source = "git+https://github.com/jakob-rzeppa/fnmock.git#e3ca6f68531c52889627f412f9083f7f62f1ce0d"
+source = "git+https://github.com/jakob-rzeppa/fnmock.git#2d900884200ecfe497694b1b4726548a4abf2bb6"
 dependencies = [
  "proc-macro2",
  "quote",
