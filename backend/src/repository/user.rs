@@ -4,12 +4,13 @@ use crate::entity::User;
 use crate::error::RepositoryError;
 use crate::{get_db_connection, map_query_err};
 
-#[derive(Clone, PartialEq)]
+#[derive(Clone, PartialEq, Debug)]
 pub struct UserCreateInformation {
     pub name: String,
     pub password: String,
 }
 
+#[mock_function(ignore = [db])]
 pub async fn create_user(db: SqlitePool, user_info: UserCreateInformation) -> Result<User, RepositoryError> {
     if user_info.name.is_empty() || user_info.password.is_empty() {
         return Err(RepositoryError::InvalidParameter("Username or password must not be empty".to_string()));

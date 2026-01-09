@@ -1,8 +1,11 @@
 use axum::extract::{State};
 use fnmock::derive::use_mock;
 use crate::error::{HttpError};
-use crate::{get_db_connection, json_handler, AppState};
-use crate::repository::user::{create_user, UserCreateInformation};
+use crate::{json_handler, AppState};
+use crate::repository::user::UserCreateInformation;
+
+#[use_mock]
+use crate::repository::user::create_user;
 
 #[use_mock]
 use crate::auth::jwt::generate_user_jwt;
@@ -55,11 +58,20 @@ mod test {
         use crate::auth::jwt::generate_user_jwt_mock;
         use super::*;
         use crate::db::create_test_pool;
+        use crate::entity::User;
+        use crate::repository::user::create_user_mock;
 
         #[tokio::test]
         async fn returns_a_token() {
             generate_user_jwt_mock::setup(|_| {
                 Ok("Mock Token".to_string())
+            });
+            create_user_mock::setup(|_| {
+                Ok(User {
+                    id: 1,
+                    name: "mock user".to_string(),
+                    password: "mock password".to_string(),
+                })
             });
 
             let pool = create_test_pool().await;
@@ -82,6 +94,17 @@ mod test {
 
         #[tokio::test]
         async fn adds_user_to_the_database() {
+            generate_user_jwt_mock::setup(|_| {
+                Ok("Mock Token".to_string())
+            });
+            create_user_mock::setup(|_| {
+                Ok(User {
+                    id: 1,
+                    name: "mock user".to_string(),
+                    password: "mock password".to_string(),
+                })
+            });
+
             let pool = create_test_pool().await;
             let state = AppState { db: pool.clone() };
 
@@ -94,12 +117,11 @@ mod test {
 
             assert!(result.is_ok());
 
-            let mut conn = pool.acquire().await.unwrap();
-            let rows = sqlx::query!("SELECT * FROM users").fetch_all(&mut *conn).await.unwrap();
-
-            assert_eq!(1, rows.len());
-            assert_eq!("test user", rows[0].name);
-            assert_eq!("password123", rows[0].password);
+            create_user_mock::assert_times(1);
+            create_user_mock::assert_with(UserCreateInformation {
+                name: "test user".to_string(),
+                password: "password123".to_string(),
+            });
         }
     }
 }
