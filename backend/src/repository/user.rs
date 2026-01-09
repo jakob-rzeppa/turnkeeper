@@ -4,6 +4,24 @@ use crate::entity::User;
 use crate::error::RepositoryError;
 use crate::{get_db_connection, map_query_err};
 
+#[mock_function(ignore = [db])]
+pub async fn get_user(db: SqlitePool, id: i64) -> Result<Option<User>, RepositoryError> {
+    let mut conn = get_db_connection!(db);
+
+    let user: Option<User> = query_as!(
+        User,
+        "SELECT * FROM users WHERE id = $1",
+        id
+    )
+        .fetch_optional(&mut *conn)
+        .await
+        .map_err(map_query_err!(|db_err| {
+            RepositoryError::Database(db_err.message().to_string())
+        }))?;
+
+    Ok(user)
+}
+
 #[derive(Clone, PartialEq, Debug)]
 pub struct UserCreateInformation {
     pub name: String,
@@ -39,8 +57,56 @@ pub async fn create_user(db: SqlitePool, user_info: UserCreateInformation) -> Re
 
 #[cfg(test)]
 mod tests {
+    use sqlx::query;
     use crate::db::create_test_pool;
     use super::*;
+
+    #[tokio::test]
+    async fn test_get_user() {
+        let pool = create_test_pool().await;
+
+        let id = 1;
+
+        {
+            let mut connection = pool.acquire().await.unwrap();
+            query!(
+                "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
+                id,
+                "some name",
+                "some password"
+            )
+                .execute(&mut *connection).await.unwrap();
+        }
+
+        let user = get_user(pool, id).await.unwrap();
+
+        assert!(user.is_some());
+        assert_eq!(user.unwrap(), User {
+            id: 1,
+            name: "some name".to_string(),
+            password: "some password".to_string(),
+        });
+    }
+
+    #[tokio::test]
+    async fn test_get_user_not_found() {
+        let pool = create_test_pool().await;
+
+        {
+            let mut connection = pool.acquire().await.unwrap();
+            query!(
+                "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
+                1,
+                "some name",
+                "some password"
+            )
+                .execute(&mut *connection).await.unwrap();
+        }
+
+        let user = get_user(pool, 999).await.unwrap();
+
+        assert!(user.is_none());
+    }
 
     #[tokio::test]
     async fn test_create_user() {
