@@ -1,5 +1,5 @@
 use fnmock::derive::mock_function;
-use sqlx::{query_as, SqlitePool};
+use sqlx::{query, query_as, SqlitePool};
 use crate::entity::User;
 use crate::error::RepositoryError;
 use crate::{get_db_connection, map_query_err};
@@ -20,6 +20,25 @@ pub async fn get_user(db: SqlitePool, id: i64) -> Result<Option<User>, Repositor
         }))?;
 
     Ok(user)
+}
+
+#[mock_function(ignore = [db])]
+pub async fn get_id_by_name_if_password(db: SqlitePool, name: String, password: String) -> Result<Option<i64>, RepositoryError> {
+    let mut conn = get_db_connection!(db);
+
+    let result = query!(
+        "SELECT id FROM users WHERE name = $1 AND password = $2",
+        name,
+        password
+    )
+        .fetch_optional(&mut *conn)
+        .await
+        .map_err(map_query_err!(|db_err| {
+            RepositoryError::Database(db_err.message().to_string())
+        }))?
+        .and_then(|row| row.id);
+
+    Ok(result)
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -104,6 +123,69 @@ mod tests {
         }
 
         let user = get_user(pool, 999).await.unwrap();
+
+        assert!(user.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_get_id_by_name_if_password() {
+        let pool = create_test_pool().await;
+
+        let id = 1;
+
+        {
+            let mut connection = pool.acquire().await.unwrap();
+            query!(
+                "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
+                id,
+                "some name",
+                "some password"
+            )
+                .execute(&mut *connection).await.unwrap();
+        }
+
+        let user = get_id_by_name_if_password(pool, "some name".to_string(), "some password".to_string()).await.unwrap();
+
+        assert!(user.is_some());
+        assert_eq!(user.unwrap(), 1);
+    }
+
+    #[tokio::test]
+    async fn test_get_id_by_name_if_password_invalid_password() {
+        let pool = create_test_pool().await;
+
+        {
+            let mut connection = pool.acquire().await.unwrap();
+            query!(
+                "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
+                1,
+                "some name",
+                "some password"
+            )
+                .execute(&mut *connection).await.unwrap();
+        }
+
+        let user = get_id_by_name_if_password(pool, "some name".to_string(), "invalid password".to_string()).await.unwrap();
+
+        assert!(user.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_get_id_by_name_if_password_invalid_name() {
+        let pool = create_test_pool().await;
+
+        {
+            let mut connection = pool.acquire().await.unwrap();
+            query!(
+                "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
+                1,
+                "some name",
+                "some password"
+            )
+                .execute(&mut *connection).await.unwrap();
+        }
+
+        let user = get_id_by_name_if_password(pool, "invalid name".to_string(), "some password".to_string()).await.unwrap();
 
         assert!(user.is_none());
     }
