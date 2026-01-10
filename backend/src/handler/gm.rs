@@ -1,6 +1,7 @@
 use std::sync::LazyLock;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
+use serde_valid::Validate;
 use crate::error::HttpError;
 
 const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
@@ -12,8 +13,9 @@ const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
         .expect("GM_PASSWORD environment variable is not set")
 });
 
-#[derive(Deserialize, JsonRequest, Debug)]
+#[derive(Deserialize, Validate, JsonRequest, Debug)]
 pub struct LoginRequest {
+    #[validate(min_length = 1)]
     password: String,
 }
 
