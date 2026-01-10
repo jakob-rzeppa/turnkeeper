@@ -4,6 +4,9 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+# Macros
+backend-derive = { path = "./backend-derive" }
+
 # Async Runtime
 tokio = {  version = "1.49.0", features = ["full"] }
 

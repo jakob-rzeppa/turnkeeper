@@ -109,6 +109,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "backend-derive"
+version = "0.1.0"
+dependencies = [
+ "proc-macro2",
+ "quote",
+ "syn",
+]
+
+[[package]]
 name = "base16ct"
 version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2219,6 +2228,7 @@ version = "0.1.0"
 dependencies = [
  "anyhow",
  "axum",
+ "backend-derive",
  "dotenv",
  "fnmock",
  "jsonwebtoken",
