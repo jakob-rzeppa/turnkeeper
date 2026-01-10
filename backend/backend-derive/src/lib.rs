@@ -3,12 +3,12 @@ use quote::quote;
 use syn::{parse_macro_input, DeriveInput};
 
 /// Derive macro to automatically implement `axum::extract::FromRequest`
-/// that validates JSON content type and extracts JSON body.
+/// that extracts and validates JSON body.
 ///
 /// # Example
 ///
 /// ```rust
-/// #[derive(serde::Deserialize, JsonRequest)]
+/// #[derive(serde::Deserialize, serde_valid::Validate, JsonRequest)]
 /// pub struct MyHandlerRequest {
 ///     message: String,
 /// }
@@ -36,8 +36,14 @@ use syn::{parse_macro_input, DeriveInput};
 ///         }
 ///
 ///         // Extract JSON
-///         match axum::Json::<Self>::from_request(req, state).await {
-///             Ok(axum::Json(payload)) => Ok(payload),
+///         let extracted = match axum::Json::<Self>::from_request(req, state).await {
+///             Ok(axum::Json(payload)) => payload,
+///             Err(e) => return Err(crate::error::HttpError::BadRequest(e.to_string())),
+///         };
+///
+///         // Validate
+///         match extracted.validate() {
+///             Ok(_) => Ok(extracted),
 ///             Err(e) => Err(crate::error::HttpError::BadRequest(e.to_string())),
 ///         }
 ///     }
@@ -68,8 +74,14 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
                 }
 
                 // Extract JSON
-                match axum::Json::<Self>::from_request(req, state).await {
-                    Ok(axum::Json(payload)) => Ok(payload),
+                let extracted = match axum::Json::<Self>::from_request(req, state).await {
+                    Ok(axum::Json(payload)) => payload,
+                    Err(e) => return Err(crate::error::HttpError::BadRequest(e.to_string())),
+                };
+
+                // Validate
+                match extracted.validate() {
+                    Ok(_) => Ok(extracted),
                     Err(e) => Err(crate::error::HttpError::BadRequest(e.to_string())),
                 }
             }
