@@ -1,7 +1,9 @@
 use axum::extract::{State};
+use backend_derive::{JsonRequest, JsonResponse};
 use fnmock::derive::use_mock;
+use serde::{Serialize, Deserialize};
 use crate::error::{HttpError};
-use crate::{json_handler, AppState};
+use crate::{AppState};
 use crate::repository::user::UserCreateInformation;
 
 #[use_mock]
@@ -13,12 +15,16 @@ use crate::repository::user::create_user;
 #[use_mock]
 use crate::auth::jwt::generate_user_jwt;
 
-json_handler!(Login, {
+#[derive(Deserialize, JsonRequest, Debug)]
+pub struct LoginRequest {
     name: String,
     password: String
-}, {
+}
+
+#[derive(Serialize, JsonResponse, Debug)]
+pub struct LoginResponse {
     token: String,
-});
+}
 
 /// POST /user/login
 ///
@@ -34,12 +40,16 @@ pub async fn login(State(state): State<AppState>, payload: LoginRequest) -> Resu
     Ok(LoginResponse { token })
 }
 
-json_handler!(Register, {
+#[derive(Deserialize, JsonRequest)]
+pub struct RegisterRequest {
     name: String,
     password: String
-}, {
+}
+
+#[derive(Serialize, JsonResponse)]
+pub struct RegisterResponse {
     token: String,
-});
+}
 
 /// POST /user/register
 ///
