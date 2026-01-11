@@ -1,20 +1,12 @@
 use axum::extract::{State};
 use backend_derive::{JsonRequest, JsonResponse};
-use fnmock::derive::use_mock;
 use serde::{Serialize, Deserialize};
 use serde_valid::Validate;
 use crate::error::{HttpError};
 use crate::{AppState};
-use crate::repository::user::UserCreateInformation;
-
-#[use_mock]
-use crate::repository::user::get_id_by_name_if_password;
-
-#[use_mock]
-use crate::repository::user::create_user;
-
-#[use_mock]
 use crate::auth::jwt::generate_user_jwt;
+use crate::repository::user::{create_user, UserCreateInformation};
+use crate::repository::user::get_id_by_name_if_password;
 
 #[derive(Deserialize, Validate, JsonRequest, Debug)]
 pub struct LoginRequest {
