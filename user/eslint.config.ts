@@ -14,8 +14,11 @@ export default defineConfig([
         extends: ["js/recommended"],
         languageOptions: { globals: globals.browser },
     },
-    tseslint.configs.recommended,
-    pluginVue.configs["flat/essential"],
+    ...tseslint.configs.recommended,
+    ...pluginVue.configs["flat/essential"].map(config => ({
+        ...config,
+        files: ["**/*.vue"],
+    })),
     {
         files: ["**/*.vue"],
         languageOptions: { parserOptions: { parser: tseslint.parser } },
@@ -27,7 +30,7 @@ export default defineConfig([
         extends: ["json/recommended"],
     },
     {
-        files: ["**/*.jsonc"],
+        files: ["**/*.jsonc", "**/tsconfig*.json"],
         plugins: { json },
         language: "json/jsonc",
         extends: ["json/recommended"],
