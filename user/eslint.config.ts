@@ -1,56 +1,56 @@
-import js from "@eslint/js";
-import globals from "globals";
-import tseslint from "typescript-eslint";
-import pluginVue from "eslint-plugin-vue";
-import json from "@eslint/json";
-import markdown from "@eslint/markdown";
-import css from "@eslint/css";
-import { defineConfig } from "eslint/config";
+import js from '@eslint/js';
+import globals from 'globals';
+import tseslint from 'typescript-eslint';
+import pluginVue from 'eslint-plugin-vue';
+import json from '@eslint/json';
+import markdown from '@eslint/markdown';
+import css from '@eslint/css';
+import { defineConfig } from 'eslint/config';
 
 export default defineConfig([
     {
-        files: ["**/*.{js,mjs,cjs,ts,mts,cts,vue}"],
+        files: ['**/*.{js,mjs,cjs,ts,mts,cts,vue}'],
         plugins: { js },
-        extends: ["js/recommended"],
+        extends: ['js/recommended'],
         languageOptions: { globals: globals.browser },
     },
     ...tseslint.configs.recommended,
-    ...pluginVue.configs["flat/essential"].map(config => ({
+    ...pluginVue.configs['flat/essential'].map(config => ({
         ...config,
-        files: ["**/*.vue"],
+        files: ['**/*.vue'],
     })),
     {
-        files: ["**/*.vue"],
+        files: ['**/*.vue'],
         languageOptions: { parserOptions: { parser: tseslint.parser } },
     },
     {
-        files: ["**/*.json"],
+        files: ['**/*.json'],
         plugins: { json },
-        language: "json/json",
-        extends: ["json/recommended"],
+        language: 'json/json',
+        extends: ['json/recommended'],
     },
     {
-        files: ["**/*.jsonc", "**/tsconfig*.json"],
+        files: ['**/*.jsonc', '**/tsconfig*.json'],
         plugins: { json },
-        language: "json/jsonc",
-        extends: ["json/recommended"],
+        language: 'json/jsonc',
+        extends: ['json/recommended'],
     },
     {
-        files: ["**/*.json5"],
+        files: ['**/*.json5'],
         plugins: { json },
-        language: "json/json5",
-        extends: ["json/recommended"],
+        language: 'json/json5',
+        extends: ['json/recommended'],
     },
     {
-        files: ["**/*.md"],
+        files: ['**/*.md'],
         plugins: { markdown },
-        language: "markdown/gfm",
-        extends: ["markdown/recommended"],
+        language: 'markdown/gfm',
+        extends: ['markdown/recommended'],
     },
     {
-        files: ["**/*.css"],
+        files: ['**/*.css'],
         plugins: { css },
-        language: "css/css",
-        extends: ["css/recommended"],
+        language: 'css/css',
+        extends: ['css/recommended'],
     },
 ]);
