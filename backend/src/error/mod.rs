@@ -1,7 +1,9 @@
+
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
-use serde_json::json;
+use serde_json::{json, Value};
+
 
 #[derive(Debug, PartialEq)]
 #[derive(Clone)]
@@ -13,40 +15,51 @@ pub enum HttpError {
     UnsupportedMediaType,
     BadRequest(String),
     Unauthorized(String),
-
+    ValidationError {
+        message: String,
+        validation_errors: Value,
+    },
 }
 
 impl IntoResponse for HttpError {
     fn into_response(self) -> Response {
-        let (status, error_message) = match self {
-            HttpError::NotImplemented => (
-                StatusCode::NOT_IMPLEMENTED, "not implemented".to_string()
-            ),
-            HttpError::NotFound(e) => (
-                StatusCode::NOT_FOUND, e
-            ),
-            HttpError::Conflict(e) => (
-                StatusCode::CONFLICT, e
-            ),
-            HttpError::InternalServerError => (
-                StatusCode::INTERNAL_SERVER_ERROR, "Internal Server Error".to_string()
-            ),
-            HttpError::UnsupportedMediaType => (
-                StatusCode::UNSUPPORTED_MEDIA_TYPE, "Unsupported MediaType".to_string()
-            ),
-            HttpError::BadRequest(e) => (
-                StatusCode::BAD_REQUEST, e
-            ),
-            HttpError::Unauthorized(e) => (
-                StatusCode::UNAUTHORIZED, e
-            )
-        };
-
-        let body = Json::from(json!({
-            "error": error_message,
-        }));
-
-        (status, body).into_response()
+        match self {
+            HttpError::NotImplemented => {
+                let body = Json::from(json!({ "error": "not implemented" }));
+                (StatusCode::NOT_IMPLEMENTED, body).into_response()
+            },
+            HttpError::NotFound(e) => {
+                let body = Json::from(json!({ "error": e }));
+                (StatusCode::NOT_FOUND, body).into_response()
+            },
+            HttpError::Conflict(e) => {
+                let body = Json::from(json!({ "error": e }));
+                (StatusCode::CONFLICT, body).into_response()
+            },
+            HttpError::InternalServerError => {
+                let body = Json::from(json!({ "error": "Internal Server Error" }));
+                (StatusCode::INTERNAL_SERVER_ERROR, body).into_response()
+            },
+            HttpError::UnsupportedMediaType => {
+                let body = Json::from(json!({ "error": "Unsupported MediaType" }));
+                (StatusCode::UNSUPPORTED_MEDIA_TYPE, body).into_response()
+            },
+            HttpError::BadRequest(e) => {
+                let body = Json::from(json!({ "error": e }));
+                (StatusCode::BAD_REQUEST, body).into_response()
+            },
+            HttpError::Unauthorized(e) => {
+                let body = Json::from(json!({ "error": e }));
+                (StatusCode::UNAUTHORIZED, body).into_response()
+            },
+            HttpError::ValidationError { message, validation_errors } => {
+                let body = json!({
+                    "error": message,
+                    "validation_errors": validation_errors,
+                });
+                (StatusCode::BAD_REQUEST, Json::from(body)).into_response()
+            }
+        }
     }
 }
 

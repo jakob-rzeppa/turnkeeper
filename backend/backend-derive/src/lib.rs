@@ -82,7 +82,18 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
                 // Validate
                 match extracted.validate() {
                     Ok(_) => Ok(extracted),
-                    Err(e) => Err(crate::error::HttpError::BadRequest(e.to_string())),
+                    Err(e) => {
+                        match crate::util::validation::convert_serde_valid_error(&e.to_string()) {
+                            Ok(validation_errors) => Err(crate::error::HttpError::ValidationError {
+                                message: "Validation failed".to_string(),
+                                validation_errors,
+                            }),
+                            Err(e) => {
+                                eprintln!("Parsing serde_valid error failed: {}", e);
+                                Err(crate::error::HttpError::InternalServerError)
+                            },
+                        }
+                    }
                 }
             }
         }
