@@ -15,10 +15,7 @@ pub enum HttpError {
     UnsupportedMediaType,
     BadRequest(String),
     Unauthorized(String),
-    ValidationError {
-        message: String,
-        validation_errors: Value,
-    },
+    ValidationError(String),
 }
 
 impl IntoResponse for HttpError {
@@ -52,12 +49,9 @@ impl IntoResponse for HttpError {
                 let body = Json::from(json!({ "error": e }));
                 (StatusCode::UNAUTHORIZED, body).into_response()
             },
-            HttpError::ValidationError { message, validation_errors } => {
-                let body = json!({
-                    "error": message,
-                    "validation_errors": validation_errors,
-                });
-                (StatusCode::BAD_REQUEST, Json::from(body)).into_response()
+            HttpError::ValidationError(e) => {
+                let body = Json::from(json!({ "error": e }));
+                (StatusCode::BAD_REQUEST, body).into_response()
             }
         }
     }
