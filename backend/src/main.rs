@@ -13,9 +13,11 @@ use std::net::SocketAddr;
 use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use tower::ServiceBuilder;
 use crate::db::create_pool;
 use crate::handler::get_routes;
 use crate::websocket::websocket_handler;
+use tower_http::cors::{Any, CorsLayer};
 
 #[derive(Clone)]
 pub struct AppState {
@@ -33,11 +35,18 @@ async fn main() {
 
     let state = AppState { db };
 
+    // ONLY FOR DEVELOPMENT - change later
+    let cors_layer = CorsLayer::new()
+        .allow_origin(Any)
+        .allow_methods(Any)
+        .allow_headers(Any);
+
     // Initialize the Axum router
     let app = Router::new()
         .merge(get_routes())
         .route("/ws", get(websocket_handler))
-        .with_state(state);
+        .with_state(state)
+        .layer(ServiceBuilder::new().layer(cors_layer));
 
     // Specify the address to bind to
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
