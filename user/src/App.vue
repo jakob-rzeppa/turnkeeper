@@ -1,8 +1,10 @@
-<script setup lang="ts"></script>
+<script setup lang="ts">
+import UserAuth from './components/UserAuth.vue';
+</script>
 
 <template>
     <div class="container">
-        <h1>Turnkeeper user client</h1>
-        <button class="btn btn-success">Click me</button>
+        <h1 class="display-1 text-center">Turnkeeper user client</h1>
+        <UserAuth />
     </div>
 </template>
