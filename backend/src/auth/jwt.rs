@@ -51,6 +51,7 @@ pub fn generate_user_jwt(user_id: i64) -> Result<String, JwtError> {
         .map_err(|e| JwtError::EncodeError(e.to_string()))?)
 }
 
+#[mock_function]
 pub fn generate_gm_jwt() -> Result<String, JwtError> {
     let exp = SystemTime::now().duration_since(UNIX_EPOCH)
         .map_err(|e| JwtError::TimeError(e.to_string()))?
@@ -78,6 +79,7 @@ pub fn validate_user_jwt(token: &str) -> Result<i64, JwtError> {
     Ok(claims.user_id)
 }
 
+#[fake_function]
 pub fn validate_gm_jwt(token: &str) -> Result<(), JwtError> {
     let decoding_key = DecodingKey::from_secret(GM_JWT_SECRET.as_bytes());
     let validation = Validation::new(Algorithm::HS256);
