@@ -1,7 +1,15 @@
 // Centralized HTTP API handler for Turnkeeper
+import { ref, type Ref } from '@vue/runtime-dom';
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+
+export const api = axios.create({
+    baseURL: API_BASE_URL,
+    headers: {
+        'Content-Type': 'application/json',
+    },
+});
 
 // Get JWT token from localStorage (or other storage if needed)
 function getToken(): string | null {
@@ -12,13 +20,6 @@ function getToken(): string | null {
             ?.split('=')[1] || null
     );
 }
-
-export const api = axios.create({
-    baseURL: API_BASE_URL,
-    headers: {
-        'Content-Type': 'application/json',
-    },
-});
 
 // Request interceptor to add Authorization header if token exists
 api.interceptors.request.use(config => {
@@ -49,26 +50,32 @@ api.interceptors.response.use(
 );
 
 // Result type for error-as-value handling
-export type HttpResult<T, E = Error> = { ok: true; value: T } | { ok: false; error: E };
+export type RequestStatus<T, E = Error> =
+    | { loading: true; value: null; error: null }
+    | { loading: false; value: T; error: null }
+    | { loading: false; value: null; error: E };
 
 // Generic request handler with Result type
-export async function request<T = object>(
+export function request<T = object>(
     method: AxiosRequestConfig['method'],
     url: string,
     data?: object,
     config?: AxiosRequestConfig
-): Promise<HttpResult<T>> {
-    try {
-        const response: AxiosResponse<T> = await api({
-            method,
-            url,
-            data,
-            ...config,
-        });
-        return { ok: true, value: response.data };
-    } catch (err: unknown) {
-        if (err instanceof Error) return { ok: false, error: err };
+): Ref<RequestStatus<T>> {
+    const response: Ref<RequestStatus<T>> = ref({ loading: true, value: null, error: null });
 
-        return { ok: false, error: new Error('Unknown error occurred') };
-    }
+    api({
+        method,
+        url,
+        data,
+        ...config,
+    })
+        .then((res: AxiosResponse<T>) => {
+            response.value = { loading: false, value: res.data, error: null };
+        })
+        .catch((err: Error) => {
+            response.value = { loading: false, value: null, error: err };
+        });
+
+    return response;
 }
