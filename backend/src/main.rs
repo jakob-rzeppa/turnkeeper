@@ -7,6 +7,7 @@ mod entity;
 mod repository;
 mod macros;
 mod util;
+mod domain;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;

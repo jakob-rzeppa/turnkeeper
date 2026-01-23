@@ -108,3 +108,8 @@ impl Into<HttpError> for JwtError {
         }
     }
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum DomainError {
+    InvalidParameter(String),
+}
