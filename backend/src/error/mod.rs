@@ -1,9 +1,9 @@
-
+use std::fmt::Display;
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
-use serde_json::{json, Value};
-
+use serde_json::{json};
+use thiserror::Error;
 
 #[derive(Debug, PartialEq)]
 #[derive(Clone)]
@@ -111,5 +111,21 @@ impl Into<HttpError> for JwtError {
 
 #[derive(Debug, PartialEq, Clone)]
 pub enum DomainError {
-    InvalidParameter(String),
+    InvalidParameter {
+        msg: String,
+    },
+}
+
+impl DomainError {
+    /// Adds a prefix to the message
+    ///
+    /// If `prefix("test module")` is used on `DomainError::InvalidParameter { msg: "id can't be null" }`
+    /// will return `DomainError::InvalidParameter { msg: "test module: id can't be null" }`.
+    pub fn prefix(self, prefix: String) -> Self {
+        match self {
+            DomainError::InvalidParameter { msg } => {
+                DomainError::InvalidParameter { msg: format!("{0}: {1}", prefix, msg) }
+            }
+        }
+    }
 }
