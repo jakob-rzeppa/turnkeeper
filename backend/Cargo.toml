@@ -14,6 +14,9 @@ tokio = {  version = "1.49.0", features = ["full"] }
 axum = { version = "0.8.8", features = ["ws"] }
 jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
 
+# Uuid
+uuid = { version = "1.19.0", features = ["v4"] }
+
 # DB
 sqlx = { version = "0.8.6", features = [ "runtime-tokio", "sqlite", "macros", "derive", "chrono", "migrate" ] }
 
