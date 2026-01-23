@@ -1,5 +1,5 @@
-import { ref } from 'vue';
-import { request } from '../services/httpApi';
+import { ref, watch } from 'vue';
+import { request } from './useHttpApi';
 import { useAuthStore } from '../stores/auth';
 
 export function useAuth() {
@@ -7,6 +7,7 @@ export function useAuth() {
 
     const mode = ref<'login' | 'register'>('login');
     const form = ref({ name: '', password: '' });
+    const loading = ref(false);
     const error = ref('');
 
     // Sync store token with cookie on composable initialization.
@@ -19,27 +20,37 @@ export function useAuth() {
         error.value = '';
     }
 
-    async function handleSubmit() {
+    function handleSubmit() {
         error.value = '';
         const endpoint = mode.value === 'login' ? '/user/login' : '/user/register';
         const payload = { ...form.value };
+        const resultRef = request<{ token: string }>('POST', endpoint, payload);
+        loading.value = true;
 
-        const result = await request<{ token: string; message?: string }>(
-            'POST',
-            endpoint,
-            payload
+        // Watch for changes in the resultRef
+        const stop = watch(
+            resultRef,
+            result => {
+                if (!result.loading) {
+                    if (result.value) {
+                        authStore.setToken(result.value.token);
+                        stop();
+                    } else if (result.error) {
+                        error.value = result.error.message || 'Unknown error';
+                        stop();
+                    }
+                }
+
+                loading.value = result.loading;
+            },
+            { immediate: true, deep: true }
         );
-
-        if (result.ok) {
-            authStore.setToken(result.value.token);
-        } else {
-            error.value = result.error.message || 'Unknown error';
-        }
     }
 
     return {
         mode,
         form,
+        loading,
         error,
         toggleMode,
         handleSubmit,
