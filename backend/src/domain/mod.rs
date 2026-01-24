@@ -1,5 +1,9 @@
 pub mod repository;
 
+pub mod command {
+    pub mod game;
+}
+
 pub mod entity {
     pub mod game;
     pub mod user;
