@@ -1,13 +1,10 @@
-mod websocket;
-mod handler;
 mod error;
-mod db;
-mod auth;
 mod entity;
-mod repository;
 mod macros;
 mod util;
 mod domain;
+mod application;
+mod infrastructure;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
@@ -15,10 +12,10 @@ use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
-use crate::db::create_pool;
-use crate::handler::get_routes;
-use crate::websocket::websocket_handler;
+use crate::infrastructure::db::create_pool;
+use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
+use crate::infrastructure::handler::get_routes;
 
 #[derive(Clone)]
 pub struct AppState {

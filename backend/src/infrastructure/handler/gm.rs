@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
-use crate::auth::jwt::generate_gm_jwt;
+use crate::infrastructure::auth::jwt::generate_gm_jwt;
 use crate::error::HttpError;
 
 const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
@@ -40,7 +40,7 @@ pub async fn login(request: LoginRequest) -> Result<LoginResponse, HttpError> {
 
 #[cfg(test)]
 mod tests {
-    use crate::auth::jwt::generate_gm_jwt_mock;
+    use crate::infrastructure::auth::jwt::generate_gm_jwt_mock;
     use super::*;
 
     #[tokio::test]

@@ -4,9 +4,9 @@ use serde::{Serialize, Deserialize};
 use serde_valid::Validate;
 use crate::error::{HttpError};
 use crate::{AppState};
-use crate::auth::jwt::generate_user_jwt;
-use crate::repository::user::{create_user, UserCreateInformation};
-use crate::repository::user::get_id_by_name_if_password;
+use crate::infrastructure::auth::jwt::generate_user_jwt;
+use crate::infrastructure::repository::user::{create_user, UserCreateInformation};
+use crate::infrastructure::repository::user::get_id_by_name_if_password;
 
 #[derive(Deserialize, Validate, JsonRequest, Debug)]
 pub struct LoginRequest {
@@ -74,11 +74,11 @@ mod test {
     mod login {
         use axum::extract::State;
         use crate::AppState;
-        use crate::auth::jwt::generate_user_jwt_mock;
-        use crate::db::create_test_pool;
-        use crate::error::{HttpError, RepositoryError};
-        use crate::handler::user::{login, LoginRequest};
-        use crate::repository::user::{get_id_by_name_if_password_mock};
+        use crate::infrastructure::auth::jwt::generate_user_jwt_mock;
+        use crate::infrastructure::db::create_test_pool;
+        use crate::error::{HttpError};
+        use crate::infrastructure::handler::user::{login, LoginRequest};
+        use crate::infrastructure::repository::user::{get_id_by_name_if_password_mock};
 
         #[tokio::test]
         async fn returns_an_token() {
@@ -130,11 +130,11 @@ mod test {
     }
 
     mod register {
-        use crate::auth::jwt::generate_user_jwt_mock;
+        use crate::infrastructure::auth::jwt::generate_user_jwt_mock;
         use super::*;
-        use crate::db::create_test_pool;
+        use crate::infrastructure::db::create_test_pool;
         use crate::entity::User;
-        use crate::repository::user::create_user_mock;
+        use crate::infrastructure::repository::user::create_user_mock;
 
         #[tokio::test]
         async fn returns_a_token() {

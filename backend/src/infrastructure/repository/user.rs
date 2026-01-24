@@ -77,7 +77,7 @@ pub async fn create_user(db: SqlitePool, user_info: UserCreateInformation) -> Re
 #[cfg(test)]
 mod tests {
     use sqlx::query;
-    use crate::db::create_test_pool;
+    use crate::infrastructure::db::create_test_pool;
     use super::*;
 
     #[tokio::test]

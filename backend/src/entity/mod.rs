@@ -1,5 +1,6 @@
 use sqlx::FromRow;
 
+/// DEPRECATED
 #[derive(FromRow, Debug, Clone, PartialEq)]
 pub struct User {
     pub id: i64,
