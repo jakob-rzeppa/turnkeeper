@@ -114,6 +114,9 @@ pub enum DomainError {
     InvalidParameter {
         msg: String,
     },
+    AlreadyExists {
+        msg: String,
+    }
 }
 
 impl DomainError {
@@ -125,6 +128,9 @@ impl DomainError {
         match self {
             DomainError::InvalidParameter { msg } => {
                 DomainError::InvalidParameter { msg: format!("{0}: {1}", prefix, msg) }
+            }
+            DomainError::AlreadyExists { msg } => {
+                DomainError::AlreadyExists { msg: format!("{0}: {1}", prefix, msg) }
             }
         }
     }
