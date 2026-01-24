@@ -1,7 +1,6 @@
-use crate::domain::value_object::stat::key::Key;
 use crate::error::DomainError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Name {
     value: String,
 }

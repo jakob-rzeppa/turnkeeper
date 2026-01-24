@@ -1,3 +1,4 @@
+#[derive(Debug, Clone, PartialEq)]
 pub struct StringValue {
     value: String,
 }

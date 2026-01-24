@@ -1,6 +1,6 @@
 use crate::error::DomainError;
 
-#[derive(Debug)]
+#[derive(Debug, Clone, PartialEq)]
 pub struct Key {
     key: String,
 }
