@@ -132,6 +132,7 @@ impl DomainError {
             DomainError::AlreadyExists { msg } => {
                 DomainError::AlreadyExists { msg: format!("{0}: {1}", prefix, msg) }
             }
+            _ => self,
         }
     }
 }
@@ -143,5 +144,6 @@ pub enum ApplicationError {
     },
     AlreadyExists {
         msg: String,
-    }
+    },
+    NotImplemented,
 }
