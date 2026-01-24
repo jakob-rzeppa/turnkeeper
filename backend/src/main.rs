@@ -1,5 +1,4 @@
 mod error;
-mod entity;
 mod macros;
 mod util;
 mod domain;
