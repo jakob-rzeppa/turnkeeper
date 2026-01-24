@@ -1,7 +1,8 @@
-use uuid::Uuid;
-use crate::error::ApplicationError;
+use crate::domain::entity::game::Game;
 
-pub trait GameHandler {
-    fn create_game(&self, id: Uuid) -> Result<Uuid, ApplicationError>;
-    fn delete_game(&self, id: Uuid) -> Result<(), ApplicationError>;
+/// The GameHandler is the central manager of the game.
+///
+/// It will be created when starting / resuming a game and is persisted while the game is running.
+pub struct GameHandler {
+    instance: Game,
 }
