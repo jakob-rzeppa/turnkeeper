@@ -1,0 +1,35 @@
+@startuml
+top to bottom direction
+skinparam packageStyle rectangle
+
+' External elements
+package "External" {
+    rectangle GmClient
+    rectangle UserClient
+    database Database
+}
+
+' Infrastructure layer
+package "Infrastructure" {
+    rectangle WsGameHandler
+    rectangle GameRepository
+}
+
+' Application layer
+package "Application" {
+    rectangle ActiveGameHandler
+}
+
+' Domain layer
+package "Domain" {
+    rectangle Game
+}
+
+' Flow
+GmClient --> WsGameHandler
+UserClient --> WsGameHandler
+WsGameHandler --> ActiveGameHandler
+ActiveGameHandler --> Game
+ActiveGameHandler --> GameRepository
+GameRepository --> Database
+@enduml
