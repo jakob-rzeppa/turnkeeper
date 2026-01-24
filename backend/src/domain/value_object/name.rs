@@ -1,4 +1,4 @@
-use crate::error::DomainError;
+use crate::domain::error::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Name {
@@ -6,9 +6,9 @@ pub struct Name {
 }
 
 impl Name {
-    pub fn try_new(name: String) -> Result<Self, DomainError> {
+    pub fn try_new(name: String) -> Result<Self, Error> {
         if name.is_empty() {
-            return Err(DomainError::InvalidParameter { msg: "name cannot be empty".into() });
+            return Err(Error::InvalidState { msg: "name cannot be empty".into() });
         }
 
         Ok(Self { value: name })
@@ -34,6 +34,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, DomainError::InvalidParameter { msg: "name cannot be empty".into() });
+        assert_eq!(res, Error::InvalidState { msg: "name cannot be empty".into() });
     }
 }

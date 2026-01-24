@@ -1,4 +1,4 @@
-use crate::error::DomainError;
+use crate::domain::error::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Password {
@@ -6,9 +6,9 @@ pub struct Password {
 }
 
 impl Password {
-    pub fn try_new(value: String) -> Result<Self, DomainError> {
+    pub fn try_new(value: String) -> Result<Self, Error> {
         if value.len() < 4 {
-            return Err(DomainError::InvalidParameter { msg: "password value must contain at least four characters".to_string() });
+            return Err(Error::InvalidState { msg: "password value must contain at least four characters".to_string() });
         }
 
         Ok(Self { value })
@@ -34,6 +34,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, DomainError::InvalidParameter { msg: "password value must contain at least four characters".into() });
+        assert_eq!(res, Error::InvalidState { msg: "password value must contain at least four characters".into() });
     }
 }

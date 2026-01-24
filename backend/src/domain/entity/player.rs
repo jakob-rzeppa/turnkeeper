@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use crate::domain::entity::stat::Stat;
 use crate::domain::entity::user::User;
-use crate::error::DomainError;
+use crate::domain::error::Error;
 
 /// The representation of a player
 ///
@@ -22,9 +22,9 @@ impl Player {
         }
     }
 
-    fn try_add_stat(&mut self, stat: Stat) -> Result<(), DomainError> {
+    fn try_add_stat(&mut self, stat: Stat) -> Result<(), Error> {
         if self.stats.contains(&stat) {
-            return Err(DomainError::AlreadyExists {
+            return Err(Error::InvalidState {
                 msg: "stat for player already exists".to_string(),
             })
         }
@@ -33,19 +33,19 @@ impl Player {
         Ok(())
     }
 
-    pub fn try_add_string_stat(&mut self, id: Uuid, key: String, value: String) -> Result<(), DomainError> {
+    pub fn try_add_string_stat(&mut self, id: Uuid, key: String, value: String) -> Result<(), Error> {
         let stat = Stat::try_new_string_stat(id, key, value).map_err(|e| e.prefix("player builder".to_string()))?;
         self.try_add_stat(stat)?;
         Ok(())
     }
 
-    pub fn try_add_number_stat(&mut self, id: Uuid, key: String, value: i64) -> Result<(), DomainError> {
+    pub fn try_add_number_stat(&mut self, id: Uuid, key: String, value: i64) -> Result<(), Error> {
         let stat = Stat::try_new_number_stat(id, key, value).map_err(|e| e.prefix("player builder".to_string()))?;
         self.try_add_stat(stat)?;
         Ok(())
     }
 
-    pub fn try_add_bool_stat(&mut self, id: Uuid, key: String, value: bool) -> Result<(), DomainError> {
+    pub fn try_add_bool_stat(&mut self, id: Uuid, key: String, value: bool) -> Result<(), Error> {
         let stat = Stat::try_new_bool_stat(id, key, value).map_err(|e| e.prefix("player builder".to_string()))?;
         self.try_add_stat(stat)?;
         Ok(())

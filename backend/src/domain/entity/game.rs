@@ -1,6 +1,5 @@
 use uuid::Uuid;
 use crate::domain::entity::player::Player;
-use crate::domain::entity::user::User;
 
 /// The representation of the game
 ///

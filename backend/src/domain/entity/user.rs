@@ -1,7 +1,7 @@
 use uuid::Uuid;
+use crate::domain::error::Error;
 use crate::domain::value_object::name::Name;
 use crate::domain::value_object::password::Password;
-use crate::error::DomainError;
 
 /// The representation of a user
 pub struct User {
@@ -13,7 +13,7 @@ pub struct User {
 }
 
 impl User {
-    pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, DomainError> {
+    pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, Error> {
         let name = Name::try_new(name).map_err(|e| e.prefix("new user".to_string()))?;
         let password = Password::try_new(password).map_err(|e| e.prefix("new user".to_string()))?;
         

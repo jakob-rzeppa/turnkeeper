@@ -1,4 +1,4 @@
-use crate::error::DomainError;
+use crate::domain::error::Error;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Key {
@@ -6,9 +6,9 @@ pub struct Key {
 }
 
 impl Key {
-    pub fn try_new(key: String) -> Result<Self, DomainError> {
+    pub fn try_new(key: String) -> Result<Self, Error> {
         if key.is_empty() {
-            return Err(DomainError::InvalidParameter { msg: "key cannot be empty".into() });
+            return Err(Error::InvalidState { msg: "key cannot be empty".into() });
         }
 
         Ok(Self { key })
@@ -34,6 +34,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, DomainError::InvalidParameter { msg: "key cannot be empty".into() });
+        assert_eq!(res, Error::InvalidState { msg: "key cannot be empty".into() });
     }
 }
