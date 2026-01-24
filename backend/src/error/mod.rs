@@ -135,3 +135,13 @@ impl DomainError {
         }
     }
 }
+
+#[derive(Debug, PartialEq, Clone)]
+pub enum ApplicationError {
+    InvalidParameter {
+        msg: String,
+    },
+    AlreadyExists {
+        msg: String,
+    }
+}
