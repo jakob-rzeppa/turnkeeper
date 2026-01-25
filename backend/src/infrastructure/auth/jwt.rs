@@ -59,6 +59,12 @@ impl GmClaims {
 
 pub struct JwtGenerator {}
 
+impl JwtGenerator {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
+
 impl JwtGeneratorTrait for JwtGenerator {
     fn generate_user_token(&self, user_id: Uuid) -> Result<String, Error> {
         let header = Header::new(Algorithm::HS256);
@@ -85,6 +91,12 @@ impl JwtGeneratorTrait for JwtGenerator {
 }
 
 pub struct JwtValidator {}
+
+impl JwtValidator {
+    pub fn new() -> Self {
+        Self {}
+    }
+}
 
 impl JwtValidatorTrait for JwtValidator {
     fn validate_user_token(&self, bearer_token: BearerToken) -> Result<Uuid, Error> {

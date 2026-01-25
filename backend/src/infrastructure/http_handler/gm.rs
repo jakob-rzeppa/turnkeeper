@@ -19,7 +19,7 @@ pub struct LoginResponse {
 /// authenticates the gm via a secret set in the environment variables
 /// and returns a JSON WEB TOKEN
 pub async fn login(request: LoginRequest) -> Result<LoginResponse, HttpError> {
-    let gm_auth_handler = GmAuthHandler::new(JwtGenerator {}, JwtValidator {});
+    let gm_auth_handler = GmAuthHandler::new(JwtGenerator::new(), JwtValidator::new());
 
     let request_dto = LoginGmRequestDto { password: request.password };
     let response = gm_auth_handler.login(request_dto)?;
