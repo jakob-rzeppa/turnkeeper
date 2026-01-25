@@ -24,6 +24,12 @@ impl User {
     pub fn id(&self) -> &Uuid {
         &self.id
     }
+    pub fn name(&self) -> &str { 
+        self.name.as_str()
+    }
+    pub fn password(&self) -> &str {
+        self.password.as_str()
+    }
 
     pub fn check_password(&self, password: String) -> Result<(), Error> {
         let password = Password::try_new(password).map_err(|e| Error::InvalidCredentials {

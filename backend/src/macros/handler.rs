@@ -6,7 +6,7 @@
         match $db_pool.acquire().await {
             Ok(conn) => conn,
             Err(e) => {
-                return Err(crate::error::RepositoryError::Database(format!("Failed to acquire DB connection: {}", e)))
+                return Err(crate::domain::error::Error::DatabaseError { msg: format!("failed to acquire DB connection: {}", e) })
             }
         }
     };

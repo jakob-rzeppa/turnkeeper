@@ -61,6 +61,7 @@ impl From<Error> for HttpError {
         match e {
             Error::InvalidState { msg } => HttpError::BadRequest(msg),
             Error::InvalidCredentials { msg } => HttpError::Unauthorized(msg),
+            Error::NotFound { msg } => HttpError::NotFound(msg),
             Error::DatabaseError { .. } => HttpError::InternalServerError,
             Error::UnexpectedError { .. } => HttpError::InternalServerError,
             Error::NotImplemented => HttpError::NotImplemented,

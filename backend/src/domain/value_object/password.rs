@@ -16,6 +16,10 @@ impl Password {
 
         Ok(Self { value })
     }
+    
+    pub fn as_str(&self) -> &str {
+        self.value.as_str()
+    }
 }
 
 #[cfg(test)]
