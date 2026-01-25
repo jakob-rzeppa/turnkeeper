@@ -10,6 +10,11 @@ impl Identity {
     pub fn new(value: Uuid) -> Self {
         Self { value }
     }
+    
+    /// Creates a new Identity via the `Uuid::new_v4()` function
+    pub fn new_uuid_v4() -> Self {
+        Self::new(Uuid::new_v4())
+    }
 
     pub fn to_string(&self) -> String {
         self.value.to_string()

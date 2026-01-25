@@ -14,11 +14,12 @@ pub struct LoginGmRequestDto {
     pub password: String,
 }
 
+#[derive(Debug)]
 pub struct TokenResponseDto {
     pub token: String,
 }
 
-#[derive(Debug)]
+#[derive(Debug, PartialEq)]
 pub struct BearerToken {
     pub token: String,
 }

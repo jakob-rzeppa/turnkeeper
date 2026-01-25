@@ -57,7 +57,7 @@ impl GmClaims {
     }
 }
 
-struct JwtGenerator {}
+pub struct JwtGenerator {}
 
 impl JwtGeneratorTrait for JwtGenerator {
     fn generate_user_token(&self, user_id: Identity) -> Result<String, Error> {
@@ -84,7 +84,7 @@ impl JwtGeneratorTrait for JwtGenerator {
     }
 }
 
-struct JwtValidator {}
+pub struct JwtValidator {}
 
 impl JwtValidatorTrait for JwtValidator {
     fn validate_user_token(&self, bearer_token: BearerToken) -> Result<Identity, Error> {
