@@ -1,15 +1,15 @@
 use sqlx::SqlitePool;
+use uuid::Uuid;
 use crate::domain::entity::user::User;
 use crate::domain::error::Error;
 use crate::domain::repository::UserRepositoryTrait;
-use crate::domain::value_object::identity::Identity;
 
 struct SqliteUserRepository {
     db: SqlitePool,
 }
 
 impl UserRepositoryTrait for SqliteUserRepository {
-    async fn get_by_id(&self, id: Identity) -> Result<User, Error> {
+    async fn get_by_id(&self, id: Uuid) -> Result<User, Error> {
         Err(Error::NotImplemented)
     }
 

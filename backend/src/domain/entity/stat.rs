@@ -1,6 +1,5 @@
 use uuid::Uuid;
 use crate::domain::error::Error;
-use crate::domain::value_object::identity::Identity;
 use crate::domain::value_object::stat::key::Key;
 use crate::domain::value_object::stat::boolean_value::BooleanValue;
 use crate::domain::value_object::stat::number_value::NumberValue;
@@ -17,7 +16,7 @@ use crate::domain::value_object::stat::string_value::StringValue;
 /// Use `try_new_string_stat`, `new_number_stat` or `new_bool_stat` for instantiating the Stat.
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stat {
-    id: Identity,
+    id: Uuid,
     key: Key,
     kind: StatKind,
 }
@@ -36,7 +35,7 @@ enum StatKind {
 }
 
 impl Stat {
-    pub fn try_new_string_stat(id: Identity, key: String, value: String) -> Result<Self, Error> {
+    pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, Error> {
         let key = Key::try_new(key).map_err(|e| e.prefix("new string stat".to_string()))?;
         let value = StringValue::new(value);
 
@@ -47,7 +46,7 @@ impl Stat {
         })
     }
 
-    pub fn try_new_number_stat(id: Identity, key: String, value: i64) -> Result<Self, Error> {
+    pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, Error> {
         let key = Key::try_new(key).map_err(|e| e.prefix("new number stat".to_string()))?;
         let value = NumberValue::new(value);
 
@@ -58,7 +57,7 @@ impl Stat {
         })
     }
 
-    pub fn try_new_bool_stat(id: Identity, key: String, value: bool) -> Result<Self, Error> {
+    pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, Error> {
         let key = Key::try_new(key).map_err(|e| e.prefix("new bool stat".to_string()))?;
         let value = BooleanValue::new(value);
 

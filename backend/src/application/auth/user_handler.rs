@@ -1,9 +1,9 @@
+use uuid::Uuid;
 use crate::application::auth::dto::{BearerToken, LoginUserRequestDto, RegisterUserRequestDto, TokenResponseDto};
 use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::entity::user::User;
 use crate::domain::error::Error;
 use crate::domain::repository::UserRepositoryTrait;
-use crate::domain::value_object::identity::Identity;
 
 pub struct UserAuthHandler<UserRepo, JwtGenerator, JwtValidator>
 where
@@ -28,7 +28,7 @@ where
 
     pub async fn register(&self, request: RegisterUserRequestDto) -> Result<TokenResponseDto, Error> {
         let user = User::try_new(
-            Identity::new_uuid_v4(),
+            Uuid::new_v4(),
             request.name,
             request.password,
         )?;
@@ -64,13 +64,13 @@ where
 #[cfg(test)]
 mod tests {
     mod login {
+        use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
         use crate::domain::repository::MockUserRepositoryTrait;
         use crate::application::auth::dto::LoginUserRequestDto;
         use crate::domain::entity::user::User;
         use crate::domain::error::Error;
-        use crate::domain::value_object::identity::Identity;
 
         #[tokio::test]
         async fn test_valid_login_returns_token() {
@@ -82,7 +82,7 @@ mod tests {
             let password = "password".to_string();
             let request = LoginUserRequestDto { name: name.clone(), password: password.clone() };
 
-            let user_id = Identity::new_uuid_v4();
+            let user_id = Uuid::new_v4();
             let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
             user_repo
                 .expect_get_by_name()
@@ -111,7 +111,7 @@ mod tests {
             let password = "invalid-password".to_string();
             let request = LoginUserRequestDto { name: name.clone(), password: password.clone() };
 
-            let user_id = Identity::new_uuid_v4();
+            let user_id = Uuid::new_v4();
             let user = User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
             user_repo
                 .expect_get_by_name()
@@ -169,13 +169,13 @@ mod tests {
 
     mod authenticate {
         use mockall::predicate;
+        use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
         use crate::domain::repository::MockUserRepositoryTrait;
         use crate::application::auth::dto::BearerToken;
         use crate::domain::entity::user::User;
         use crate::domain::error::Error;
-        use crate::domain::value_object::identity::Identity;
 
         #[tokio::test]
         async fn test_valid_token_returns_user() {
@@ -183,7 +183,7 @@ mod tests {
             let jwt_generator = MockJwtGeneratorTrait::new();
             let mut jwt_validator = MockJwtValidatorTrait::new();
 
-            let user_id = Identity::new_uuid_v4();
+            let user_id = Uuid::new_v4();
             let user = User::try_new(user_id.clone(), "testuser".to_string(), "password".to_string()).unwrap();
             let token = BearerToken::new("valid-token".to_string());
 

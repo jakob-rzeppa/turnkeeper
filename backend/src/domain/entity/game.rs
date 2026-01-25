@@ -1,6 +1,5 @@
 use uuid::Uuid;
 use crate::domain::entity::player::Player;
-use crate::domain::value_object::identity::Identity;
 
 /// The representation of the game
 ///
@@ -9,7 +8,7 @@ use crate::domain::value_object::identity::Identity;
 /// - For a new Game use `Game::new(id: Uuid)`.
 /// - When instantiating a existing Game using `Game::builder()` is recommended.
 pub struct Game {
-    id: Identity,
+    id: Uuid,
 
     players: Vec<Player>,
 
@@ -18,7 +17,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(id: Identity) -> Self {
+    pub fn new(id: Uuid) -> Self {
         Self {
             id,
             players: Vec::new(),

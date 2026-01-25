@@ -93,10 +93,9 @@ mod tests {
 
     mod authenticate {
         use mockall::predicate;
-        use crate::application::auth::dto::{BearerToken, LoginGmRequestDto};
+        use crate::application::auth::dto::{BearerToken};
         use crate::application::auth::gm_handler::GmAuthHandler;
         use crate::domain::error::Error;
-        use crate::domain::value_object::identity::Identity;
 
         #[test]
         fn test_valid_token_returns_correct_response() {
@@ -122,8 +121,6 @@ mod tests {
         fn test_invalid_token_returns_correct_error() {
             let mock_jwt_generator = crate::domain::auth::jwt::MockJwtGeneratorTrait::new();
             let mut mock_jwt_validator = crate::domain::auth::jwt::MockJwtValidatorTrait::new();
-
-            let user_id = Identity::new_uuid_v4();
 
             mock_jwt_validator
                 .expect_validate_gm_token()
