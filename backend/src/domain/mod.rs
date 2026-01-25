@@ -1,5 +1,6 @@
 pub mod repository;
 pub mod error;
+pub mod auth;
 
 pub mod command {
     pub mod game;
@@ -13,6 +14,7 @@ pub mod entity {
 }
 
 pub mod value_object {
+    pub mod identity;
     pub mod name;
     pub mod password;
     pub mod stat {
