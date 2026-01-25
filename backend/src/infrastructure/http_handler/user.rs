@@ -1,15 +1,12 @@
 use axum::extract::{State};
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Serialize, Deserialize};
-use serde_valid::Validate;
 use crate::{AppState};
 use crate::infrastructure::error::HttpError;
 
-#[derive(Deserialize, Validate, JsonRequest, Debug)]
+#[derive(Deserialize, JsonRequest, Debug)]
 pub struct LoginRequest {
-    #[validate(min_length = 1)]
     name: String,
-    #[validate(min_length = 1)]
     password: String
 }
 
@@ -25,11 +22,9 @@ pub async fn login(State(state): State<AppState>, payload: LoginRequest) -> Resu
     Err(HttpError::NotImplemented)
 }
 
-#[derive(Deserialize, Validate, JsonRequest)]
+#[derive(Deserialize, JsonRequest)]
 pub struct RegisterRequest {
-    #[validate(min_length = 1)]
     name: String,
-    #[validate(min_length = 1)]
     password: String
 }
 

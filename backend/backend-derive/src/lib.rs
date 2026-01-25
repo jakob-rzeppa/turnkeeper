@@ -74,25 +74,9 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
                 }
 
                 // Extract JSON
-                let extracted = match axum::Json::<Self>::from_request(req, state).await {
-                    Ok(axum::Json(payload)) => payload,
-                    Err(e) => return Err(crate::infrastructure::error::HttpError::BadRequest(e.to_string())),
-                };
-
-                // Validate
-                match extracted.validate() {
-                    Ok(_) => Ok(extracted),
-                    Err(e) => {
-                        match crate::util::validation::convert_serde_valid_error(&e.to_string()) {
-                            Ok(validation_errors) => Err(crate::infrastructure::error::HttpError::ValidationError(
-                                format!("Validation failed: {0}", validation_errors),
-                            )),
-                            Err(e) => {
-                                eprintln!("Parsing serde_valid error failed: {}", e);
-                                Err(crate::infrastructure::error::HttpError::InternalServerError)
-                            },
-                        }
-                    }
+                match axum::Json::<Self>::from_request(req, state).await {
+                    Ok(axum::Json(payload)) => Ok(payload),
+                    Err(e) => Err(crate::infrastructure::error::HttpError::BadRequest(e.to_string())),
                 }
             }
         }

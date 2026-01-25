@@ -1,14 +1,12 @@
 use crate::infrastructure::error::HttpError;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
-use serde_valid::Validate;
 use crate::application::auth::dto::LoginGmRequestDto;
 use crate::application::auth::gm_handler::GmAuthHandler;
 use crate::infrastructure::auth::jwt::{JwtGenerator, JwtValidator};
 
-#[derive(Deserialize, Validate, JsonRequest, Debug)]
+#[derive(Deserialize, JsonRequest, Debug)]
 pub struct LoginRequest {
-    #[validate(min_length = 1)]
     password: String,
 }
 
