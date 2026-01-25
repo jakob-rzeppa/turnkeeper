@@ -1,5 +1,8 @@
 use crate::domain::error::Error;
 
+/// # Invalid States
+///
+/// - password has fewer characters than 4
 #[derive(Debug, Clone, PartialEq)]
 pub struct Password {
     value: String,

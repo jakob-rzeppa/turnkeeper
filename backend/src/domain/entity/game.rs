@@ -6,7 +6,12 @@ use crate::domain::entity::player::Player;
 /// # Creation
 ///
 /// - For a new Game use `Game::new(id: Uuid)`.
-/// - When instantiating a existing Game using `Game::builder()` is recommended.
+/// - When instantiating an existing Game using `Game::builder()` is recommended.
+/// 
+/// # Invalid States
+/// 
+/// - Two Players have the same ID
+/// - current_player_index is greater than length of players - 1
 pub struct Game {
     id: Uuid,
 

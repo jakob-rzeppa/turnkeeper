@@ -30,7 +30,7 @@ impl User {
             msg: "Wrong password".to_string()
         })?;
 
-        if (password != self.password) {
+        if password != self.password {
             return Err(Error::InvalidCredentials {
                 msg: "Wrong password".to_string(),
             })

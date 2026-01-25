@@ -1,5 +1,8 @@
 use crate::domain::error::Error;
 
+/// # Invalid States
+///
+/// - key is empty
 #[derive(Debug, Clone, PartialEq)]
 pub struct Key {
     key: String,
