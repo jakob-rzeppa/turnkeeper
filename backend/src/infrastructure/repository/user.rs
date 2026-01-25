@@ -9,19 +9,19 @@ struct SqliteUserRepository {
 }
 
 impl UserRepositoryTrait for SqliteUserRepository {
-    fn get_by_id(&self, user_id: Uuid) -> Result<User, Error> {
+    async fn get_by_id(&self, user_id: Uuid) -> Result<User, Error> {
         Err(Error::NotImplemented)
     }
 
-    fn save(&self, user: User) -> Result<(), Error> {
+    async fn save(&self, user: User) -> Result<(), Error> {
         Err(Error::NotImplemented)
     }
 
-    fn update(&self, user: User) -> Result<(), Error> {
+    async fn update(&self, user: User) -> Result<(), Error> {
         Err(Error::NotImplemented)
     }
 
-    fn delete(&self, user_id: Uuid) -> Result<(), Error> {
+    async fn delete(&self, user_id: Uuid) -> Result<(), Error> {
         Err(Error::NotImplemented)
     }
 }
