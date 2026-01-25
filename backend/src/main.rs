@@ -14,7 +14,7 @@ use tower::ServiceBuilder;
 use crate::infrastructure::db::create_pool;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
-use crate::infrastructure::handler::get_routes;
+use crate::infrastructure::http_handler::get_routes;
 
 #[derive(Clone)]
 pub struct AppState {
