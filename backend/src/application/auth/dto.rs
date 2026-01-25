@@ -24,8 +24,12 @@ pub struct BearerToken {
 }
 
 impl BearerToken {
+    pub fn new(token: String) -> BearerToken {
+        BearerToken { token }
+    }
+
     /// Extracts the token from a String in the form "Bearer <token>"
-    fn from_string(header: String) -> Result<Self, Error> {
+    pub fn from_header_string(header: String) -> Result<Self, Error> {
         if !header.contains("Bearer ") {
             return Err(Error::InvalidCredentials {
                 msg: "Invalid bearer header".to_string(),
@@ -46,7 +50,7 @@ mod tests {
     #[test]
     fn test_bearer_token_from_string() {
         let header = "Bearer 89afioh839hprauhfia";
-        let token = BearerToken::from_string(header.to_string());
+        let token = BearerToken::from_header_string(header.to_string());
 
         assert!(token.is_ok());
         let token = token.unwrap();
@@ -57,7 +61,7 @@ mod tests {
     fn test_bearer_token_from_string_no_bearer() {
         let header = "89afioh839hprauhfia";
 
-        let token = BearerToken::from_string(header.to_string());
+        let token = BearerToken::from_header_string(header.to_string());
 
         assert!(token.is_err());
         let err = token.unwrap_err();
@@ -68,7 +72,7 @@ mod tests {
     fn test_bearer_token_from_string_no_whitespace() {
         let header = "Bearer89afioh839hprauhfia";
 
-        let token = BearerToken::from_string(header.to_string());
+        let token = BearerToken::from_header_string(header.to_string());
 
         assert!(token.is_err());
         let err = token.unwrap_err();
