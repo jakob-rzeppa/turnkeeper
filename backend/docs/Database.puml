@@ -1,0 +1,8 @@
+@startuml
+entity user {
+	* id : UUID
+	--
+	name : VARCHAR
+	password : VARCHAR
+}
+@enduml
