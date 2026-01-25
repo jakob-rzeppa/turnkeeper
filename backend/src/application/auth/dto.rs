@@ -1,10 +1,14 @@
-pub struct RegisterRequestDto {
+pub struct RegisterUserRequestDto {
     pub name: String,
     pub password: String,
 }
 
-pub struct LoginRequestDto {
+pub struct LoginUserRequestDto {
     pub name: String,
+    pub password: String,
+}
+
+pub struct LoginGmRequestDto {
     pub password: String,
 }
 
