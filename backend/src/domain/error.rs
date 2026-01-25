@@ -6,9 +6,6 @@ pub enum Error {
     InvalidCredentials {
         msg: String,
     },
-    Unauthorized {
-        msg: String,
-    },
     DatabaseError {
         msg: String,
     },
@@ -27,7 +24,6 @@ impl Error {
         match self {
             Error::InvalidState { msg } => Error::InvalidState { msg: format!("{0}: {1}", prefix, msg) },
             Error::InvalidCredentials { msg } => Error::InvalidCredentials { msg: format!("{0}: {1}", prefix, msg) },
-            Error::Unauthorized { msg } => Error::Unauthorized { msg: format!("{0}: {1}", prefix, msg) },
             Error::DatabaseError { msg } => Error::DatabaseError { msg: format!("{0}: {1}", prefix, msg) },
             Error::UnexpectedError { msg } => Error::UnexpectedError { msg: format!("{0}: {1}", prefix, msg) },
             Error::NotImplemented => Error::NotImplemented,
