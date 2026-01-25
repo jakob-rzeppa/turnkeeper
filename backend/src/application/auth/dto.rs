@@ -15,3 +15,7 @@ pub struct LoginGmRequestDto {
 pub struct TokenResponseDto {
     pub token: String,
 }
+
+pub struct BearerToken {
+    pub token: String,
+}
