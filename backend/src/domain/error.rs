@@ -9,6 +9,9 @@ pub enum Error {
     Unauthorized {
         msg: String,
     },
+    DatabaseError {
+        msg: String,
+    },
     UnexpectedError {
         msg: String,
     },
@@ -25,6 +28,7 @@ impl Error {
             Error::InvalidState { msg } => Error::InvalidState { msg: format!("{0}: {1}", prefix, msg) },
             Error::InvalidCredentials { msg } => Error::InvalidCredentials { msg: format!("{0}: {1}", prefix, msg) },
             Error::Unauthorized { msg } => Error::Unauthorized { msg: format!("{0}: {1}", prefix, msg) },
+            Error::DatabaseError { msg } => Error::DatabaseError { msg: format!("{0}: {1}", prefix, msg) },
             Error::UnexpectedError { msg } => Error::UnexpectedError { msg: format!("{0}: {1}", prefix, msg) },
             Error::NotImplemented => Error::NotImplemented,
         }
