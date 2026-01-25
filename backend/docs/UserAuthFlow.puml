@@ -34,9 +34,9 @@ Cl -> Http: some route
 note over Http: Middleware
 Http -> Auth: login
 Auth -> JwtG: validate_user_jwt
-JwtG -> Repo: getById
-Repo --> JwtG: User
-JwtG --> Auth: User
+JwtG --> Auth: Identifier
+Auth -> Repo: getById
+Repo --> Auth: User
 Auth --> Http: User
 note over Http: Handle Request
 
