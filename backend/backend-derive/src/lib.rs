@@ -21,7 +21,7 @@ use syn::{parse_macro_input, DeriveInput};
 /// where
 ///     S: Send + Sync,
 /// {
-///     type Rejection = crate::error::HttpError;
+///     type Rejection = crate::infrastructure::error::HttpError;
 ///
 ///     async fn from_request(req: axum::extract::Request, state: &S) -> Result<Self, Self::Rejection> {
 ///         // Check content type
@@ -32,19 +32,19 @@ use syn::{parse_macro_input, DeriveInput};
 ///             .unwrap_or("");
 ///
 ///         if !content_type.starts_with("application/json") {
-///             return Err(crate::error::HttpError::UnsupportedMediaType);
+///             return Err(crate::infrastructure::error::HttpError::UnsupportedMediaType);
 ///         }
 ///
 ///         // Extract JSON
 ///         let extracted = match axum::Json::<Self>::from_request(req, state).await {
 ///             Ok(axum::Json(payload)) => payload,
-///             Err(e) => return Err(crate::error::HttpError::BadRequest(e.to_string())),
+///             Err(e) => return Err(crate::infrastructure::error::HttpError::BadRequest(e.to_string())),
 ///         };
 ///
 ///         // Validate
 ///         match extracted.validate() {
 ///             Ok(_) => Ok(extracted),
-///             Err(e) => Err(crate::error::HttpError::BadRequest(e.to_string())),
+///             Err(e) => Err(crate::infrastructure::error::HttpError::BadRequest(e.to_string())),
 ///         }
 ///     }
 /// }
@@ -59,7 +59,7 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
         where
             S: Send + Sync,
         {
-            type Rejection = crate::error::HttpError;
+            type Rejection = crate::infrastructure::error::HttpError;
 
             async fn from_request(req: axum::extract::Request, state: &S) -> Result<Self, Self::Rejection> {
                 // Check content type
@@ -70,13 +70,13 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
                     .unwrap_or("");
 
                 if !content_type.starts_with("application/json") {
-                    return Err(crate::error::HttpError::UnsupportedMediaType);
+                    return Err(crate::infrastructure::error::HttpError::UnsupportedMediaType);
                 }
 
                 // Extract JSON
                 let extracted = match axum::Json::<Self>::from_request(req, state).await {
                     Ok(axum::Json(payload)) => payload,
-                    Err(e) => return Err(crate::error::HttpError::BadRequest(e.to_string())),
+                    Err(e) => return Err(crate::infrastructure::error::HttpError::BadRequest(e.to_string())),
                 };
 
                 // Validate
@@ -84,12 +84,12 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
                     Ok(_) => Ok(extracted),
                     Err(e) => {
                         match crate::util::validation::convert_serde_valid_error(&e.to_string()) {
-                            Ok(validation_errors) => Err(crate::error::HttpError::ValidationError(
+                            Ok(validation_errors) => Err(crate::infrastructure::error::HttpError::ValidationError(
                                 format!("Validation failed: {0}", validation_errors),
                             )),
                             Err(e) => {
                                 eprintln!("Parsing serde_valid error failed: {}", e);
-                                Err(crate::error::HttpError::InternalServerError)
+                                Err(crate::infrastructure::error::HttpError::InternalServerError)
                             },
                         }
                     }

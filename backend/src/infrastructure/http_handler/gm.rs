@@ -1,8 +1,8 @@
+use crate::infrastructure::error::HttpError;
 use std::sync::LazyLock;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 use serde_valid::Validate;
-use crate::error::HttpError;
 
 const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {

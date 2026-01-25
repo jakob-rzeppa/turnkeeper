@@ -1,6 +1,6 @@
 use axum::Json;
 use serde_json::Value;
-use crate::error::HttpError;
+use crate::infrastructure::error::HttpError;
 
 /// GET /games
 ///

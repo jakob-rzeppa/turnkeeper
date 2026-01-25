@@ -2,8 +2,8 @@ use axum::extract::{State};
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Serialize, Deserialize};
 use serde_valid::Validate;
-use crate::error::{HttpError};
 use crate::{AppState};
+use crate::infrastructure::error::HttpError;
 
 #[derive(Deserialize, Validate, JsonRequest, Debug)]
 pub struct LoginRequest {

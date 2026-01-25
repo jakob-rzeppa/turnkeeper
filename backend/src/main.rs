@@ -1,4 +1,3 @@
-mod error;
 mod macros;
 mod util;
 mod domain;
