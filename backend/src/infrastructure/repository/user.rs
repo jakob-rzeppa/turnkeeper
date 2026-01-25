@@ -4,8 +4,14 @@ use crate::domain::entity::user::User;
 use crate::domain::error::Error;
 use crate::domain::repository::UserRepositoryTrait;
 
-struct SqliteUserRepository {
+pub struct SqliteUserRepository {
     db: SqlitePool,
+}
+
+impl SqliteUserRepository {
+    pub fn new(db: SqlitePool) -> Self {
+        Self { db }
+    }
 }
 
 impl UserRepositoryTrait for SqliteUserRepository {
