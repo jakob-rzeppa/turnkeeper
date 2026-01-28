@@ -1,9 +1,7 @@
 use uuid::Uuid;
 use crate::domain::error::Error;
-use crate::domain::value_object::stat::key::Key;
-use crate::domain::value_object::stat::boolean_value::BooleanValue;
-use crate::domain::value_object::stat::number_value::NumberValue;
-use crate::domain::value_object::stat::string_value::StringValue;
+use crate::domain::game::value_objects::stat_key::StatKey;
+use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberStatValue, StringStatValue};
 
 /// The representation of a stat
 ///
@@ -17,20 +15,20 @@ use crate::domain::value_object::stat::string_value::StringValue;
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stat {
     id: Uuid,
-    key: Key,
+    key: StatKey,
     kind: StatKind,
 }
 
 #[derive(Debug, Clone, PartialEq)]
 enum StatKind {
     Number {
-        value: NumberValue,
+        value: NumberStatValue,
     },
     String {
-        value: StringValue,
+        value: StringStatValue,
     },
     Boolean {
-        value: BooleanValue,
+        value: BooleanStatValue,
     },
 }
 
@@ -38,13 +36,13 @@ impl Stat {
     pub fn id(&self) -> &Uuid {
         &self.id
     }
-    pub fn key(&self) -> &Key {
+    pub fn key(&self) -> &StatKey {
         &self.key
     }
 
     pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, Error> {
-        let key = Key::try_new(key).map_err(|e| e.prefix("new string stat".to_string()))?;
-        let value = StringValue::new(value);
+        let key = StatKey::try_new(key).map_err(|e| e.prefix("new string stat".to_string()))?;
+        let value = StringStatValue::new(value);
 
         Ok(Self {
             id,
@@ -54,8 +52,8 @@ impl Stat {
     }
 
     pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, Error> {
-        let key = Key::try_new(key).map_err(|e| e.prefix("new number stat".to_string()))?;
-        let value = NumberValue::new(value);
+        let key = StatKey::try_new(key).map_err(|e| e.prefix("new number stat".to_string()))?;
+        let value = NumberStatValue::new(value);
 
         Ok(Self {
             id,
@@ -65,8 +63,8 @@ impl Stat {
     }
 
     pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, Error> {
-        let key = Key::try_new(key).map_err(|e| e.prefix("new bool stat".to_string()))?;
-        let value = BooleanValue::new(value);
+        let key = StatKey::try_new(key).map_err(|e| e.prefix("new bool stat".to_string()))?;
+        let value = BooleanStatValue::new(value);
 
         Ok(Self {
             id,
