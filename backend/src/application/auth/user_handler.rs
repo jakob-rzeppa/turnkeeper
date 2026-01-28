@@ -3,7 +3,7 @@ use crate::application::auth::dto::{BearerToken, LoginUserRequestDto, RegisterUs
 use crate::domain::auth::entities::User;
 use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::error::Error;
-use crate::domain::repository::UserRepositoryTrait;
+use crate::domain::auth::traits::UserRepositoryTrait;
 
 pub struct UserAuthHandler<UserRepo, JwtGenerator, JwtValidator>
 where
@@ -67,7 +67,7 @@ mod tests {
         use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::repository::MockUserRepositoryTrait;
+        use crate::domain::auth::traits::MockUserRepositoryTrait;
         use crate::application::auth::dto::LoginUserRequestDto;
         use crate::domain::auth::entities::User;
         use crate::domain::error::Error;
@@ -133,7 +133,7 @@ mod tests {
     mod register {
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::repository::MockUserRepositoryTrait;
+        use crate::domain::auth::traits::MockUserRepositoryTrait;
 
         #[tokio::test]
         async fn test_valid_call_save_and_return_token() {
@@ -171,7 +171,7 @@ mod tests {
         use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::repository::MockUserRepositoryTrait;
+        use crate::domain::auth::traits::MockUserRepositoryTrait;
         use crate::application::auth::dto::BearerToken;
         use crate::domain::auth::entities::User;
         use crate::domain::error::Error;

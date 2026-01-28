@@ -1,8 +1,8 @@
 use sqlx::{Acquire, SqlitePool};
 use uuid::Uuid;
 use crate::domain::auth::entities::User;
+use crate::domain::auth::traits::UserRepositoryTrait;
 use crate::domain::error::Error;
-use crate::domain::repository::UserRepositoryTrait;
 
 struct UserRow {
     id: String,
@@ -111,7 +111,7 @@ mod tests {
     use uuid::Uuid;
     use crate::domain::auth::entities::User;
     use crate::domain::error::Error;
-    use crate::domain::repository::UserRepositoryTrait;
+    use crate::domain::auth::traits::UserRepositoryTrait;
     use crate::infrastructure::db::create_test_pool;
     use crate::infrastructure::repository::user::SqliteUserRepository;
 
