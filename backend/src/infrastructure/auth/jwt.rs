@@ -4,7 +4,7 @@ use jsonwebtoken::{encode, decode, Algorithm, DecodingKey, EncodingKey, Header, 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::application::auth::dto::BearerToken;
-use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
+use crate::application::auth::traits::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::error::Error;
 
 const GM_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {

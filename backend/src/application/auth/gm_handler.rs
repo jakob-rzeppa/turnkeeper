@@ -1,6 +1,6 @@
 use std::sync::LazyLock;
 use crate::application::auth::dto::{BearerToken, LoginGmRequestDto, TokenResponseDto};
-use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
+use crate::application::auth::traits::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::error::Error;
 
 const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
@@ -57,8 +57,8 @@ mod tests {
 
         #[test]
         fn test_valid_password_returns_token() {
-            let mut mock_jwt_generator = crate::domain::auth::jwt::MockJwtGeneratorTrait::new();
-            let mock_jwt_validator = crate::domain::auth::jwt::MockJwtValidatorTrait::new();
+            let mut mock_jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mock_jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             mock_jwt_generator
                 .expect_generate_gm_token()
@@ -76,8 +76,8 @@ mod tests {
 
         #[test]
         fn test_invalid_password_does_not_call_jwt_generator_and_returns_error() {
-            let mut mock_jwt_generator = crate::domain::auth::jwt::MockJwtGeneratorTrait::new();
-            let mock_jwt_validator = crate::domain::auth::jwt::MockJwtValidatorTrait::new();
+            let mut mock_jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mock_jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             mock_jwt_generator.expect_generate_gm_token().never();
 
@@ -99,8 +99,8 @@ mod tests {
 
         #[test]
         fn test_valid_token_returns_correct_response() {
-            let mock_jwt_generator = crate::domain::auth::jwt::MockJwtGeneratorTrait::new();
-            let mut mock_jwt_validator = crate::domain::auth::jwt::MockJwtValidatorTrait::new();
+            let mock_jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mut mock_jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             let token = "test-token".to_string();
 
@@ -119,8 +119,8 @@ mod tests {
 
         #[test]
         fn test_invalid_token_returns_correct_error() {
-            let mock_jwt_generator = crate::domain::auth::jwt::MockJwtGeneratorTrait::new();
-            let mut mock_jwt_validator = crate::domain::auth::jwt::MockJwtValidatorTrait::new();
+            let mock_jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mut mock_jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             mock_jwt_validator
                 .expect_validate_gm_token()

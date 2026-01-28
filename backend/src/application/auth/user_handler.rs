@@ -1,9 +1,8 @@
 use uuid::Uuid;
 use crate::application::auth::dto::{BearerToken, LoginUserRequestDto, RegisterUserRequestDto, TokenResponseDto};
 use crate::domain::auth::entities::User;
-use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::error::Error;
-use crate::domain::auth::traits::UserRepositoryTrait;
+use crate::application::auth::traits::{UserRepositoryTrait, JwtGeneratorTrait, JwtValidatorTrait};
 
 pub struct UserAuthHandler<UserRepo, JwtGenerator, JwtValidator>
 where
@@ -66,17 +65,15 @@ mod tests {
     mod login {
         use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
-        use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::auth::traits::MockUserRepositoryTrait;
         use crate::application::auth::dto::LoginUserRequestDto;
         use crate::domain::auth::entities::User;
         use crate::domain::error::Error;
 
         #[tokio::test]
         async fn test_valid_login_returns_token() {
-            let mut user_repo = MockUserRepositoryTrait::new();
-            let mut jwt_generator = MockJwtGeneratorTrait::new();
-            let jwt_validator = MockJwtValidatorTrait::new();
+            let mut user_repo = crate::application::auth::traits::MockUserRepositoryTrait::new();
+            let mut jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             let name = "testuser".to_string();
             let password = "password".to_string();
@@ -103,9 +100,9 @@ mod tests {
 
         #[tokio::test]
         async fn test_invalid_password_login_returns_error() {
-            let mut user_repo = MockUserRepositoryTrait::new();
-            let mut jwt_generator = MockJwtGeneratorTrait::new();
-            let jwt_validator = MockJwtValidatorTrait::new();
+            let mut user_repo = crate::application::auth::traits::MockUserRepositoryTrait::new();
+            let mut jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             let name = "testuser".to_string();
             let password = "invalid-password".to_string();
@@ -132,16 +129,14 @@ mod tests {
 
     mod register {
         use crate::application::auth::user_handler::UserAuthHandler;
-        use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::auth::traits::MockUserRepositoryTrait;
 
         #[tokio::test]
         async fn test_valid_call_save_and_return_token() {
             use crate::application::auth::dto::RegisterUserRequestDto;
 
-            let mut user_repo = MockUserRepositoryTrait::new();
-            let mut jwt_generator = MockJwtGeneratorTrait::new();
-            let jwt_validator = MockJwtValidatorTrait::new();
+            let mut user_repo = crate::application::auth::traits::MockUserRepositoryTrait::new();
+            let mut jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             // Prepare test data
             let name = "testuser".to_string();
@@ -170,17 +165,15 @@ mod tests {
     mod authenticate {
         use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
-        use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
-        use crate::domain::auth::traits::MockUserRepositoryTrait;
         use crate::application::auth::dto::BearerToken;
         use crate::domain::auth::entities::User;
         use crate::domain::error::Error;
 
         #[tokio::test]
         async fn test_valid_token_returns_user() {
-            let mut user_repo = MockUserRepositoryTrait::new();
-            let jwt_generator = MockJwtGeneratorTrait::new();
-            let mut jwt_validator = MockJwtValidatorTrait::new();
+            let mut user_repo = crate::application::auth::traits::MockUserRepositoryTrait::new();
+            let jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mut jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             let user_id = Uuid::new_v4();
             let user = User::try_new(user_id.clone(), "testuser".to_string(), "password".to_string()).unwrap();
@@ -205,9 +198,9 @@ mod tests {
 
         #[tokio::test]
         async fn test_invalid_token_returns_error() {
-            let mut user_repo = MockUserRepositoryTrait::new();
-            let jwt_generator = MockJwtGeneratorTrait::new();
-            let mut jwt_validator = MockJwtValidatorTrait::new();
+            let mut user_repo = crate::application::auth::traits::MockUserRepositoryTrait::new();
+            let jwt_generator = crate::application::auth::traits::MockJwtGeneratorTrait::new();
+            let mut jwt_validator = crate::application::auth::traits::MockJwtValidatorTrait::new();
 
             let token = BearerToken::new("invalid-token".to_string());
 
