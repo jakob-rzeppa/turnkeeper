@@ -4,11 +4,11 @@ use crate::domain::error::Error;
 ///
 /// - value is empty
 #[derive(Debug, Clone, PartialEq)]
-pub struct Name {
+pub struct UserName {
     value: String,
 }
 
-impl Name {
+impl UserName {
     pub fn try_new(name: String) -> Result<Self, Error> {
         if name.is_empty() {
             return Err(Error::InvalidState { msg: "name cannot be empty".into() });
@@ -16,7 +16,7 @@ impl Name {
 
         Ok(Self { value: name })
     }
-    
+
     pub fn as_str(&self) -> &str {
         self.value.as_str()
     }
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn test_try_new_valid() {
-        let res = Name::try_new("test".to_string());
+        let res = UserName::try_new("test".to_string());
 
         assert!(res.is_ok());
         let res = res.unwrap();
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn test_try_new_empty() {
-        let res = Name::try_new("".to_string());
+        let res = UserName::try_new("".to_string());
 
         assert!(res.is_err());
         let res = res.unwrap_err();

@@ -4,11 +4,11 @@ use crate::domain::error::Error;
 ///
 /// - password has fewer characters than 4
 #[derive(Debug, Clone, PartialEq)]
-pub struct Password {
+pub struct UserPassword {
     value: String,
 }
 
-impl Password {
+impl UserPassword {
     pub fn try_new(value: String) -> Result<Self, Error> {
         if value.len() < 4 {
             return Err(Error::InvalidState { msg: "password value must contain at least four characters".to_string() });
@@ -16,7 +16,7 @@ impl Password {
 
         Ok(Self { value })
     }
-    
+
     pub fn as_str(&self) -> &str {
         self.value.as_str()
     }
@@ -28,7 +28,7 @@ mod tests {
 
     #[test]
     fn test_try_new_valid() {
-        let res = Password::try_new("password".to_string());
+        let res = UserPassword::try_new("password".to_string());
 
         assert!(res.is_ok());
         let res = res.unwrap();
@@ -37,7 +37,7 @@ mod tests {
 
     #[test]
     fn test_try_new_too_short() {
-        let res = Password::try_new("pas".to_string());
+        let res = UserPassword::try_new("pas".to_string());
 
         assert!(res.is_err());
         let res = res.unwrap_err();

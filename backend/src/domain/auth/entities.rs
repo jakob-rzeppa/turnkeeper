@@ -1,22 +1,22 @@
 use uuid::Uuid;
+use crate::domain::auth::value_objects::user_name::UserName;
+use crate::domain::auth::value_objects::user_password::UserPassword;
 use crate::domain::error::Error;
-use crate::domain::value_object::name::Name;
-use crate::domain::value_object::password::Password;
 
 /// The representation of a user
 #[derive(Debug, Clone, PartialEq)]
 pub struct User {
     id: Uuid,
-    name: Name,
+    name: UserName,
     // the password is stored in plain text,
     // so the gm can look up a password if a user forgot it
-    password: Password,
+    password: UserPassword,
 }
 
 impl User {
     pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, Error> {
-        let name = Name::try_new(name).map_err(|e| e.prefix("new user".to_string()))?;
-        let password = Password::try_new(password).map_err(|e| e.prefix("new user".to_string()))?;
+        let name = UserName::try_new(name).map_err(|e| e.prefix("new user".to_string()))?;
+        let password = UserPassword::try_new(password).map_err(|e| e.prefix("new user".to_string()))?;
 
         Ok(Self { id, name, password })
     }
@@ -32,7 +32,7 @@ impl User {
     }
 
     pub fn check_password(&self, password: String) -> Result<(), Error> {
-        let password = Password::try_new(password).map_err(|e| Error::InvalidCredentials {
+        let password = UserPassword::try_new(password).map_err(|e| Error::InvalidCredentials {
             msg: "Wrong password".to_string()
         })?;
 
