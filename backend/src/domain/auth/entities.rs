@@ -17,14 +17,14 @@ impl User {
     pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, Error> {
         let name = Name::try_new(name).map_err(|e| e.prefix("new user".to_string()))?;
         let password = Password::try_new(password).map_err(|e| e.prefix("new user".to_string()))?;
-        
+
         Ok(Self { id, name, password })
     }
 
     pub fn id(&self) -> &Uuid {
         &self.id
     }
-    pub fn name(&self) -> &str { 
+    pub fn name(&self) -> &str {
         self.name.as_str()
     }
     pub fn password(&self) -> &str {
@@ -50,8 +50,8 @@ impl User {
 mod tests {
     mod check_password {
         use uuid::Uuid;
-        use crate::domain::entity::user::User;
         use crate::domain::error::Error;
+        use super::super::*;
 
         #[test]
         fn test_valid_password() {

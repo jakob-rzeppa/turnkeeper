@@ -8,7 +8,6 @@ pub mod command {
 
 pub mod entity {
     pub mod game;
-    pub mod user;
     pub mod player;
     pub mod stat;
 }

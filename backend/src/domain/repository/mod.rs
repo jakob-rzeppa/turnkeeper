@@ -1,6 +1,6 @@
 use uuid::Uuid;
+use crate::domain::auth::entities::User;
 use crate::domain::entity::game::Game;
-use crate::domain::entity::user::User;
 use crate::domain::error::Error;
 
 #[mockall::automock]

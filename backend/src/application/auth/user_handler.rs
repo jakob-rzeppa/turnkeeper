@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use crate::application::auth::dto::{BearerToken, LoginUserRequestDto, RegisterUserRequestDto, TokenResponseDto};
+use crate::domain::auth::entities::User;
 use crate::domain::auth::jwt::{JwtGeneratorTrait, JwtValidatorTrait};
-use crate::domain::entity::user::User;
 use crate::domain::error::Error;
 use crate::domain::repository::UserRepositoryTrait;
 
@@ -69,7 +69,7 @@ mod tests {
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
         use crate::domain::repository::MockUserRepositoryTrait;
         use crate::application::auth::dto::LoginUserRequestDto;
-        use crate::domain::entity::user::User;
+        use crate::domain::auth::entities::User;
         use crate::domain::error::Error;
 
         #[tokio::test]
@@ -168,13 +168,12 @@ mod tests {
     }
 
     mod authenticate {
-        use mockall::predicate;
         use uuid::Uuid;
         use crate::application::auth::user_handler::UserAuthHandler;
         use crate::domain::auth::jwt::{MockJwtGeneratorTrait, MockJwtValidatorTrait};
         use crate::domain::repository::MockUserRepositoryTrait;
         use crate::application::auth::dto::BearerToken;
-        use crate::domain::entity::user::User;
+        use crate::domain::auth::entities::User;
         use crate::domain::error::Error;
 
         #[tokio::test]

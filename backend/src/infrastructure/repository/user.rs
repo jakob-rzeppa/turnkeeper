@@ -1,6 +1,6 @@
 use sqlx::{Acquire, SqlitePool};
 use uuid::Uuid;
-use crate::domain::entity::user::User;
+use crate::domain::auth::entities::User;
 use crate::domain::error::Error;
 use crate::domain::repository::UserRepositoryTrait;
 
@@ -109,7 +109,7 @@ impl UserRepositoryTrait for SqliteUserRepository {
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::domain::entity::user::User;
+    use crate::domain::auth::entities::User;
     use crate::domain::error::Error;
     use crate::domain::repository::UserRepositoryTrait;
     use crate::infrastructure::db::create_test_pool;
