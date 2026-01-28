@@ -1,7 +1,6 @@
 use uuid::Uuid;
-use crate::domain::auth::entities::User;
-use crate::domain::entity::game::Game;
 use crate::domain::error::Error;
+use crate::domain::game::entities::game::Game;
 
 #[mockall::automock]
 pub trait GameRepositoryTrait {

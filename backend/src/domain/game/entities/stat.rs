@@ -41,7 +41,7 @@ impl Stat {
     pub fn key(&self) -> &Key {
         &self.key
     }
-    
+
     pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, Error> {
         let key = Key::try_new(key).map_err(|e| e.prefix("new string stat".to_string()))?;
         let value = StringValue::new(value);

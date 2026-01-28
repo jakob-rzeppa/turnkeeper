@@ -1,15 +1,10 @@
 pub mod repository;
 pub mod error;
 pub mod auth;
+pub mod game;
 
 pub mod command {
     pub mod game;
-}
-
-pub mod entity {
-    pub mod game;
-    pub mod player;
-    pub mod stat;
 }
 
 pub mod value_object {

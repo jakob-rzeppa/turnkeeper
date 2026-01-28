@@ -1,4 +1,4 @@
-use crate::domain::entity::game::Game;
+use crate::domain::game::entities::game::Game;
 
 /// The GameHandler is the manager of the game during the game.
 ///

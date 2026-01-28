@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use crate::domain::auth::entities::User;
-use crate::domain::entity::stat::Stat;
 use crate::domain::error::Error;
+use crate::domain::game::entities::stat::Stat;
 
 /// The representation of a player
 ///
