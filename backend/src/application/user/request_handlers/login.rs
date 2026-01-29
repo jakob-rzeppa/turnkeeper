@@ -1,4 +1,4 @@
-use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryTrait};
+use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::UserLoginRequest;
 use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
@@ -6,7 +6,7 @@ use crate::domain::user::entities::User;
 
 pub struct LoginRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     repository: UserRepository,
@@ -15,7 +15,7 @@ where
 
 impl<UserRepository, JwtGenerator> LoginRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
@@ -37,7 +37,7 @@ where
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryTrait};
+    use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::login::LoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
     use crate::domain::error::Error;
@@ -45,7 +45,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_valid_login_returns_token() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_generator = MockUserJwtGeneratorContract::new();
 
         let name = "test-user".to_string();
@@ -73,7 +73,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_invalid_password_login_returns_error() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_generator = MockUserJwtGeneratorContract::new();
 
         let name = "test-user".to_string();

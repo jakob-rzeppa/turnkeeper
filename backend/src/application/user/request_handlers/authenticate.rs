@@ -1,11 +1,11 @@
-use crate::application::user::contracts::{UserJwtValidatorContract, UserRepositoryTrait};
+use crate::application::user::contracts::{UserJwtValidatorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserAuthenticateRequest};
 use crate::application::user::responses::{UserAuthenticationResponse};
 use crate::domain::error::Error;
 
 pub struct AuthenticateRequestHandler<UserRepository, JwtValidator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtValidator: UserJwtValidatorContract + 'static,
 {
     repository: UserRepository,
@@ -14,7 +14,7 @@ where
 
 impl<UserRepository, JwtValidator> AuthenticateRequestHandler<UserRepository, JwtValidator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtValidator: UserJwtValidatorContract + 'static,
 {
     pub fn new(repository: UserRepository, jwt: JwtValidator) -> Self {
@@ -38,14 +38,14 @@ where
 mod tests {
     use mockall::predicate;
     use uuid::Uuid;
-    use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryTrait};
+    use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::authenticate::AuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
     use crate::domain::error::Error;
 
     #[tokio::test]
     async fn test_valid_token_returns_user() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockUserJwtValidatorContract::new();
 
         let user_id = Uuid::new_v4();
@@ -73,7 +73,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_invalid_token_returns_error() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockUserJwtValidatorContract::new();
         let request = UserAuthenticateRequest {
             token: "invalid-token".to_string(),
@@ -97,7 +97,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_valid_token_no_matching_user_returns_error() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockUserJwtValidatorContract::new();
 
         let user_id = Uuid::new_v4();

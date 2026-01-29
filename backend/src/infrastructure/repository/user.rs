@@ -1,7 +1,7 @@
 use sqlx::{Acquire, SqlitePool};
 use uuid::Uuid;
 use crate::domain::user::entities::User;
-use crate::application::user::contracts::UserRepositoryTrait;
+use crate::application::user::contracts::UserRepositoryContract;
 use crate::domain::error::Error;
 
 struct UserRow {
@@ -43,7 +43,7 @@ impl SqliteUserRepository {
     }
 }
 
-impl UserRepositoryTrait for SqliteUserRepository {
+impl UserRepositoryContract for SqliteUserRepository {
     async fn check_if_exists(&self, id: &Uuid) -> Result<bool, Error> {
         let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
 
@@ -122,7 +122,7 @@ impl UserRepositoryTrait for SqliteUserRepository {
 mod tests {
     use uuid::Uuid;
     use crate::infrastructure::db::create_test_pool;
-    use crate::application::user::contracts::UserRepositoryTrait;
+    use crate::application::user::contracts::UserRepositoryContract;
     use super::*;
 
     #[tokio::test]

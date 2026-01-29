@@ -1,5 +1,5 @@
 use uuid::Uuid;
-use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryTrait};
+use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserRegisterRequest};
 use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
@@ -7,7 +7,7 @@ use crate::domain::user::entities::User;
 
 pub struct RegisterRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     repository: UserRepository,
@@ -16,7 +16,7 @@ where
 
 impl<UserRepository, JwtGenerator> RegisterRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryTrait + 'static,
+    UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
@@ -41,12 +41,12 @@ where
 
 #[cfg(test)]
 mod tests {
-    use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryTrait};
+    use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
     use super::*;
 
     #[tokio::test]
     async fn test_valid_call_save_and_return_token() {
-        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_generator = MockUserJwtGeneratorContract::new();
 
         // Prepare test data

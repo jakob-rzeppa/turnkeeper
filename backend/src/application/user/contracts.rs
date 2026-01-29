@@ -3,7 +3,7 @@ use crate::domain::user::entities::User;
 use crate::domain::error::Error;
 
 #[mockall::automock]
-pub trait UserRepositoryTrait {
+pub trait UserRepositoryContract {
     async fn check_if_exists(&self, id: &Uuid) -> Result<bool, Error>;
 
     async fn get_by_id(&self, id: &Uuid) -> Result<User, Error>;
