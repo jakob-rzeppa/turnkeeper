@@ -1,4 +1,4 @@
-use crate::application::user::contracts::{JwtGeneratorTrait, UserRepositoryTrait};
+use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryTrait};
 use crate::application::user::requests::UserLoginRequest;
 use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
@@ -7,7 +7,7 @@ use crate::domain::user::entities::User;
 pub struct LoginRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryTrait + 'static,
-    JwtGenerator: JwtGeneratorTrait + 'static,
+    JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     repository: UserRepository,
     jwt: JwtGenerator,
@@ -16,7 +16,7 @@ where
 impl<UserRepository, JwtGenerator> LoginRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryTrait + 'static,
-    JwtGenerator: JwtGeneratorTrait + 'static,
+    JwtGenerator: UserJwtGeneratorContract + 'static,
 {
     pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
         Self { repository, jwt }
@@ -27,7 +27,7 @@ where
 
         user.check_password(request.password)?;
 
-        let token = self.jwt.generate_user_token(user.id())?;
+        let token = self.jwt.generate_token(user.id())?;
         Ok(UserTokenResponse {
             token,
         })
@@ -37,7 +37,7 @@ where
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::application::user::contracts::{MockJwtGeneratorTrait, MockJwtValidatorTrait, MockUserRepositoryTrait};
+    use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryTrait};
     use crate::application::user::request_handlers::login::LoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
     use crate::domain::error::Error;
@@ -46,7 +46,7 @@ mod tests {
     #[tokio::test]
     async fn test_valid_login_returns_token() {
         let mut user_repo = MockUserRepositoryTrait::new();
-        let mut jwt_generator = MockJwtGeneratorTrait::new();
+        let mut jwt_generator = MockUserJwtGeneratorContract::new();
 
         let name = "test-user".to_string();
         let password = "password".to_string();
@@ -59,7 +59,7 @@ mod tests {
             .times(1)
             .returning(move |_| Ok(user.clone()));
 
-        jwt_generator.expect_generate_user_token()
+        jwt_generator.expect_generate_token()
             .times(1)
             .returning(|_| Ok("login-token".to_string()));
 
@@ -74,7 +74,7 @@ mod tests {
     #[tokio::test]
     async fn test_invalid_password_login_returns_error() {
         let mut user_repo = MockUserRepositoryTrait::new();
-        let mut jwt_generator = MockJwtGeneratorTrait::new();
+        let mut jwt_generator = MockUserJwtGeneratorContract::new();
 
         let name = "test-user".to_string();
         let password = "invalid-password".to_string();
@@ -87,7 +87,7 @@ mod tests {
             .times(1)
             .returning(move |_| Ok(user.clone()));
 
-        jwt_generator.expect_generate_user_token()
+        jwt_generator.expect_generate_token()
             .never();
 
         let handler = LoginRequestHandler::new(user_repo, jwt_generator);

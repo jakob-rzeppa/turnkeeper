@@ -15,13 +15,11 @@ pub trait UserRepositoryTrait {
 }
 
 #[mockall::automock]
-pub trait JwtGeneratorTrait {
-    fn generate_user_token(&self, user_id: &Uuid) -> Result<String, Error>;
-    fn generate_gm_token(&self) -> Result<String, Error>;
+pub trait UserJwtGeneratorContract {
+    fn generate_token(&self, user_id: &Uuid) -> Result<String, Error>;
 }
 
 #[mockall::automock]
-pub trait JwtValidatorTrait {
-    fn validate_user_token(&self, bearer_token: &str) -> Result<Uuid, Error>;
-    fn validate_gm_token(&self, bearer_token: &str) -> Result<(), Error>;
+pub trait UserJwtValidatorContract {
+    fn validate_token(&self, bearer_token: &str) -> Result<Uuid, Error>;
 }

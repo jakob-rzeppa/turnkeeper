@@ -5,7 +5,7 @@ use crate::{AppState};
 use crate::application::user::request_handlers::login::LoginRequestHandler;
 use crate::application::user::request_handlers::register::RegisterRequestHandler;
 use crate::application::user::requests::{UserLoginRequest, UserRegisterRequest};
-use crate::infrastructure::auth::jwt::{JwtGenerator, JwtValidator};
+use crate::infrastructure::auth::user_jwt::UserJwtGenerator;
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::repository::user::SqliteUserRepository;
 
@@ -26,7 +26,7 @@ pub struct LoginHttpResponse {
 pub async fn login(State(state): State<AppState>, payload: LoginHttpRequest) -> Result<LoginHttpResponse, HttpError> {
     let user_auth_handler = LoginRequestHandler::new(
         SqliteUserRepository::new(state.db.clone()),
-        JwtGenerator::new(),
+        UserJwtGenerator::new(),
     );
 
     let request_dto = UserLoginRequest { name: payload.name, password: payload.password };
@@ -54,7 +54,7 @@ pub struct RegisterHttpResponse {
 pub async fn register(State(state): State<AppState>, payload: RegisterHttpRequest) -> Result<RegisterHttpResponse, HttpError> {
     let user_auth_handler = RegisterRequestHandler::new(
         SqliteUserRepository::new(state.db.clone()),
-        JwtGenerator::new(),
+        UserJwtGenerator::new(),
     );
 
     let request_dto = UserRegisterRequest { name: payload.name, password: payload.password };
