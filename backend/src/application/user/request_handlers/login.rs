@@ -1,0 +1,100 @@
+use crate::application::user::contracts::{JwtGeneratorTrait, UserRepositoryTrait};
+use crate::application::user::requests::LoginRequest;
+use crate::application::user::responses::TokenResponse;
+use crate::domain::error::Error;
+use crate::domain::user::entities::User;
+
+pub struct LoginRequestHandler<UserRepository, JwtGenerator>
+where
+    UserRepository: UserRepositoryTrait + 'static,
+    JwtGenerator: JwtGeneratorTrait + 'static,
+{
+    repository: UserRepository,
+    jwt: JwtGenerator,
+}
+
+impl<UserRepository, JwtGenerator> LoginRequestHandler<UserRepository, JwtGenerator>
+where
+    UserRepository: UserRepositoryTrait + 'static,
+    JwtGenerator: JwtGeneratorTrait + 'static,
+{
+    pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
+        Self { repository, jwt }
+    }
+
+    pub async fn login(&self, request: LoginRequest) -> Result<TokenResponse, Error> {
+        let user: User = self.repository.get_by_name(&request.name).await?;
+
+        user.check_password(request.password)?;
+
+        let token = self.jwt.generate_user_token(user.id())?;
+        Ok(TokenResponse {
+            token,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use uuid::Uuid;
+    use crate::application::user::contracts::{MockJwtGeneratorTrait, MockJwtValidatorTrait, MockUserRepositoryTrait};
+    use crate::application::user::request_handlers::login::LoginRequestHandler;
+    use crate::application::user::requests::LoginRequest;
+    use crate::domain::error::Error;
+    use crate::domain::user::entities::User;
+
+    #[tokio::test]
+    async fn test_valid_login_returns_token() {
+        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut jwt_generator = MockJwtGeneratorTrait::new();
+
+        let name = "test-user".to_string();
+        let password = "password".to_string();
+        let request = LoginRequest { name: name.clone(), password: password.clone() };
+
+        let user_id = Uuid::new_v4();
+        let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
+        user_repo
+            .expect_get_by_name()
+            .times(1)
+            .returning(move |_| Ok(user.clone()));
+
+        jwt_generator.expect_generate_user_token()
+            .times(1)
+            .returning(|_| Ok("login-token".to_string()));
+
+        let handler = LoginRequestHandler::new(user_repo, jwt_generator);
+        let result = handler.login(request).await;
+
+        assert!(result.is_ok());
+        let token_response = result.unwrap();
+        assert_eq!(token_response.token, "login-token");
+    }
+
+    #[tokio::test]
+    async fn test_invalid_password_login_returns_error() {
+        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut jwt_generator = MockJwtGeneratorTrait::new();
+
+        let name = "test-user".to_string();
+        let password = "invalid-password".to_string();
+        let request = LoginRequest { name: name.clone(), password: password.clone() };
+
+        let user_id = Uuid::new_v4();
+        let user = User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
+        user_repo
+            .expect_get_by_name()
+            .times(1)
+            .returning(move |_| Ok(user.clone()));
+
+        jwt_generator.expect_generate_user_token()
+            .never();
+
+        let handler = LoginRequestHandler::new(user_repo, jwt_generator);
+        let result = handler.login(request).await;
+
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err, Error::InvalidCredentials { msg: "Wrong password".to_string() });
+    }
+}

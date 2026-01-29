@@ -1,6 +1,6 @@
 use uuid::Uuid;
-use crate::domain::auth::value_objects::user_name::UserName;
-use crate::domain::auth::value_objects::user_password::UserPassword;
+use crate::domain::user::value_objects::user_name::UserName;
+use crate::domain::user::value_objects::user_password::UserPassword;
 use crate::domain::error::Error;
 
 /// The representation of a user

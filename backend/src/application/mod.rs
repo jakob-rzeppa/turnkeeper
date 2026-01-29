@@ -1,2 +1,2 @@
 pub mod game;
-pub mod auth;
+pub mod user;

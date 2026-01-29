@@ -3,8 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use jsonwebtoken::{encode, decode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::application::auth::dto::BearerToken;
-use crate::application::auth::traits::{JwtGeneratorTrait, JwtValidatorTrait};
+use crate::application::user::contracts::{JwtGeneratorTrait, JwtValidatorTrait};
 use crate::domain::error::Error;
 
 const GM_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
@@ -66,11 +65,11 @@ impl JwtGenerator {
 }
 
 impl JwtGeneratorTrait for JwtGenerator {
-    fn generate_user_token(&self, user_id: Uuid) -> Result<String, Error> {
+    fn generate_user_token(&self, user_id: &Uuid) -> Result<String, Error> {
         let header = Header::new(Algorithm::HS256);
         let encoding_key = EncodingKey::from_secret(USER_JWT_SECRET.as_bytes());
 
-        let claims = UserClaims::from(user_id);
+        let claims = UserClaims::from(user_id.clone());
 
         Ok(encode(&header, &claims, &encoding_key)
             .map_err(|e| Error::UnexpectedError { msg: e.to_string() })?)
@@ -99,11 +98,9 @@ impl JwtValidator {
 }
 
 impl JwtValidatorTrait for JwtValidator {
-    fn validate_user_token(&self, bearer_token: BearerToken) -> Result<Uuid, Error> {
+    fn validate_user_token(&self, token: &str) -> Result<Uuid, Error> {
         let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
-
-        let token = bearer_token.token.as_str();
 
         let claims = decode::<UserClaims>(token, &decoding_key, &validation).map(|data| data.claims)
             .map_err(|e| Error::InvalidCredentials { msg: e.to_string() })?;
@@ -111,11 +108,9 @@ impl JwtValidatorTrait for JwtValidator {
         Ok(Uuid::try_from(claims.user_id).map_err(|_| Error::InvalidCredentials { msg: "Invalid user token: Invalid uuid".to_string() })?)
     }
 
-    fn validate_gm_token(&self, bearer_token: BearerToken) -> Result<(), Error> {
+    fn validate_gm_token(&self, token: &str) -> Result<(), Error> {
         let decoding_key = DecodingKey::from_secret(GM_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
-
-        let token = bearer_token.token.as_str();
 
         decode::<GmClaims>(token, &decoding_key, &validation).map(|data| data.claims)
             .map_err(|e| Error::InvalidCredentials { msg: e.to_string() })?;
@@ -127,7 +122,6 @@ impl JwtValidatorTrait for JwtValidator {
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::application::auth::dto::BearerToken;
     use super::*;
 
     const JWT_GENERATOR: JwtGenerator = JwtGenerator {};
@@ -137,57 +131,49 @@ mod tests {
     fn generate_and_validate_user_jwt() {
         let id = Uuid::new_v4();
 
-        let jwt = JWT_GENERATOR.generate_user_token(id.clone()).unwrap();
+        let token = JWT_GENERATOR.generate_user_token(&id).unwrap();
 
-        let bearer_token = BearerToken::new(jwt);
-
-        let user_id = JWT_VALIDATOR.validate_user_token(bearer_token).unwrap();
+        let user_id = JWT_VALIDATOR.validate_user_token(&token).unwrap();
 
         assert_eq!(user_id, id);
     }
 
     #[test]
     fn generate_and_validate_gm_jwt() {
-        let jwt = JWT_GENERATOR.generate_gm_token().unwrap();
+        let token = JWT_GENERATOR.generate_gm_token().unwrap();
 
-        let bearer_token = BearerToken::new(jwt);
-
-        assert!(JWT_VALIDATOR.validate_gm_token(bearer_token).is_ok());
+        assert!(JWT_VALIDATOR.validate_gm_token(&token).is_ok());
     }
 
     #[test]
     fn generate_user_and_validate_gm_jwt() {
         let id = Uuid::new_v4();
 
-        let jwt = JWT_GENERATOR.generate_user_token(id).unwrap();
+        let token = JWT_GENERATOR.generate_user_token(&id).unwrap();
 
-        let bearer_token = BearerToken::new(jwt);
-
-        assert_eq!(JWT_VALIDATOR.validate_gm_token(bearer_token), Err(Error::InvalidCredentials {
+        assert_eq!(JWT_VALIDATOR.validate_gm_token(&token), Err(Error::InvalidCredentials {
             msg: "InvalidSignature".to_string(),
         }));
     }
 
     #[test]
     fn generate_gm_and_validate_user_jwt() {
-        let jwt = JWT_GENERATOR.generate_gm_token().unwrap();
+        let token = JWT_GENERATOR.generate_gm_token().unwrap();
 
-        let bearer_token = BearerToken::new(jwt);
-
-        assert!(matches!(JWT_VALIDATOR.validate_user_token(bearer_token), Err(Error::InvalidCredentials { .. })));
+        assert!(matches!(JWT_VALIDATOR.validate_user_token(&token), Err(Error::InvalidCredentials { .. })));
     }
 
     #[test]
     fn invalid_gm_jwt() {
-        let bearer_token = BearerToken::new("invalid".to_string());
+        let token = "invalid".to_string();
 
-        assert!(matches!(JWT_VALIDATOR.validate_gm_token(bearer_token), Err(Error::InvalidCredentials { .. })));
+        assert!(matches!(JWT_VALIDATOR.validate_gm_token(&token), Err(Error::InvalidCredentials { .. })));
     }
 
     #[test]
     fn invalid_user_jwt() {
-        let bearer_token = BearerToken::new("invalid".to_string());
+        let token = "invalid".to_string();
 
-        assert!(matches!(JWT_VALIDATOR.validate_user_token(bearer_token), Err(Error::InvalidCredentials { .. })));
+        assert!(matches!(JWT_VALIDATOR.validate_user_token(&token), Err(Error::InvalidCredentials { .. })));
     }
 }

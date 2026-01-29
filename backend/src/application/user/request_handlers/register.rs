@@ -1,0 +1,74 @@
+use uuid::Uuid;
+use crate::application::user::contracts::{JwtGeneratorTrait, UserRepositoryTrait};
+use crate::application::user::requests::{RegisterRequest};
+use crate::application::user::responses::TokenResponse;
+use crate::domain::error::Error;
+use crate::domain::user::entities::User;
+
+pub struct RegisterRequestHandler<UserRepository, JwtGenerator>
+where
+    UserRepository: UserRepositoryTrait + 'static,
+    JwtGenerator: JwtGeneratorTrait + 'static,
+{
+    repository: UserRepository,
+    jwt: JwtGenerator,
+}
+
+impl<UserRepository, JwtGenerator> RegisterRequestHandler<UserRepository, JwtGenerator>
+where
+    UserRepository: UserRepositoryTrait + 'static,
+    JwtGenerator: JwtGeneratorTrait + 'static,
+{
+    pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
+        Self { repository, jwt }
+    }
+
+    pub async fn register(&self, request: RegisterRequest) -> Result<TokenResponse, Error> {
+        let user = User::try_new(
+            Uuid::new_v4(),
+            request.name,
+            request.password,
+        )?;
+
+        self.repository.save(&user).await?;
+
+        let token = self.jwt.generate_user_token(user.id())?;
+        Ok(TokenResponse {
+            token,
+        })
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use crate::application::user::contracts::{MockJwtGeneratorTrait, MockUserRepositoryTrait};
+    use super::*;
+
+    #[tokio::test]
+    async fn test_valid_call_save_and_return_token() {
+        let mut user_repo = MockUserRepositoryTrait::new();
+        let mut jwt_generator = MockJwtGeneratorTrait::new();
+
+        // Prepare test data
+        let name = "test-user".to_string();
+        let password = "password".to_string();
+        let request = RegisterRequest { name: name.clone(), password: password.clone() };
+
+        // We don't care about the actual user, so use any()
+        user_repo.expect_save()
+            .times(1)
+            .returning(|_| Ok(()) );
+
+        // The token we expect to be returned
+        jwt_generator.expect_generate_user_token()
+            .times(1)
+            .returning(|_| Ok("test-token".to_string()));
+
+        let handler = RegisterRequestHandler::new(user_repo, jwt_generator);
+        let result = handler.register(request).await;
+
+        assert!(result.is_ok());
+        let token_response = result.unwrap();
+        assert_eq!(token_response.token, "test-token");
+    }
+}

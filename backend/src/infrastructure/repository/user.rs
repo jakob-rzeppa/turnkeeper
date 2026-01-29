@@ -1,7 +1,7 @@
 use sqlx::{Acquire, SqlitePool};
 use uuid::Uuid;
-use crate::domain::auth::entities::User;
-use crate::application::auth::traits::UserRepositoryTrait;
+use crate::domain::user::entities::User;
+use crate::application::user::contracts::UserRepositoryTrait;
 use crate::domain::error::Error;
 
 struct UserRow {
@@ -10,8 +10,8 @@ struct UserRow {
     password: String,
 }
 
-impl From<User> for UserRow {
-    fn from(user: User) -> Self {
+impl From<&User> for UserRow {
+    fn from(user: &User) -> Self {
         Self {
             id: user.id().to_string(),
             name: user.name().to_string(),
@@ -44,7 +44,19 @@ impl SqliteUserRepository {
 }
 
 impl UserRepositoryTrait for SqliteUserRepository {
-    async fn get_by_id(&self, id: Uuid) -> Result<User, Error> {
+    async fn check_if_exists(&self, id: &Uuid) -> Result<bool, Error> {
+        let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
+
+        let id = id.to_string();
+        let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE id = $1", id)
+            .fetch_optional(&mut *conn)
+            .await
+            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+
+        Ok(res.is_some())
+    }
+
+    async fn get_by_id(&self, id: &Uuid) -> Result<User, Error> {
         let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
 
         let id = id.to_string();
@@ -60,7 +72,7 @@ impl UserRepositoryTrait for SqliteUserRepository {
         }
     }
 
-    async fn get_by_name(&self, name: String) -> Result<User, Error> {
+    async fn get_by_name(&self, name: &str) -> Result<User, Error> {
         let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
 
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE name = $1", name)
@@ -75,7 +87,7 @@ impl UserRepositoryTrait for SqliteUserRepository {
         }
     }
 
-    async fn save(&self, user: User) -> Result<(), Error> {
+    async fn save(&self, user: &User) -> Result<(), Error> {
         let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
         let mut transaction = conn.begin().await.map_err(|_| Error::DatabaseError { msg: "Error starting transaction".into() })?;
 
@@ -90,7 +102,7 @@ impl UserRepositoryTrait for SqliteUserRepository {
             return Err(Error::InvalidState { msg: format!("User with name {} already exists", user.name())});
         }
 
-        let user_insert_row: UserRow = UserRow::from(user);
+        let user_insert_row = UserRow::from(user);
         let res = sqlx::query_as!(
             UserRow,
             "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
@@ -109,11 +121,9 @@ impl UserRepositoryTrait for SqliteUserRepository {
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::domain::auth::entities::User;
-    use crate::domain::error::Error;
-    use crate::application::auth::traits::UserRepositoryTrait;
     use crate::infrastructure::db::create_test_pool;
-    use crate::infrastructure::repository::user::SqliteUserRepository;
+    use crate::application::user::contracts::UserRepositoryTrait;
+    use super::*;
 
     #[tokio::test]
     async fn test_save_and_get_by_id() {
@@ -126,10 +136,10 @@ mod tests {
 
         let repo = SqliteUserRepository::new(create_test_pool().await);
 
-        let result = repo.save(user).await;
+        let result = repo.save(&user).await;
         assert!(result.is_ok());
 
-        let user = repo.get_by_id(uuid).await.unwrap();
+        let user = repo.get_by_id(&uuid).await.unwrap();
         assert_eq!(user, user);
     }
 
@@ -143,10 +153,10 @@ mod tests {
 
         let repo = SqliteUserRepository::new(create_test_pool().await);
 
-        let result = repo.save(user).await;
+        let result = repo.save(&user).await;
         assert!(result.is_ok());
 
-        let user = repo.get_by_name("test-name".to_string()).await.unwrap();
+        let user = repo.get_by_name("test-name").await.unwrap();
         assert_eq!(user, user);
     }
 
@@ -155,7 +165,7 @@ mod tests {
         let repo = SqliteUserRepository::new(create_test_pool().await);
         let id = Uuid::new_v4();
 
-        let user = repo.get_by_id(id.clone()).await;
+        let user = repo.get_by_id(&id).await;
 
         assert!(user.is_err());
         let err = user.unwrap_err();
@@ -167,7 +177,7 @@ mod tests {
         let repo = SqliteUserRepository::new(create_test_pool().await);
         let name = "test-name".to_string();
 
-        let user = repo.get_by_name(name.clone()).await;
+        let user = repo.get_by_name(&name).await;
 
         assert!(user.is_err());
         let err = user.unwrap_err();
@@ -190,15 +200,15 @@ mod tests {
             "test-password-2".to_string(),
         ).unwrap();
 
-        let res = repo.save(user1.clone()).await;
+        let res = repo.save(&user1).await;
         assert!(res.is_ok());
 
-        let res = repo.save(user2).await;
+        let res = repo.save(&user2).await;
         assert!(res.is_err());
         let err = res.unwrap_err();
         assert_eq!(err, Error::InvalidState { msg: format!("User with name {} already exists", name) });
 
-        let res = repo.get_by_name(name.clone()).await;
+        let res = repo.get_by_name(&name).await;
         assert!(res.is_ok());
         let user = res.unwrap();
         assert_eq!(user, user1);
