@@ -10,10 +10,10 @@ use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tower::ServiceBuilder;
-use crate::infrastructure::db::create_pool;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
-use crate::infrastructure::http_handler::get_routes;
+use crate::infrastructure::http::get_routes;
+use crate::infrastructure::persistence::db::create_pool;
 
 #[derive(Clone)]
 pub struct AppState {

@@ -5,9 +5,9 @@ pub mod gm;
 use axum::Router;
 use axum::routing::{delete, get, post};
 use crate::AppState;
-use crate::infrastructure::http_handler::game::{games_create, games_delete, games_get, games_get_all};
-use crate::infrastructure::http_handler::gm::login as login_gm;
-use crate::infrastructure::http_handler::user::{login as login_user, register as register_user};
+use crate::infrastructure::http::game::{games_create, games_delete, games_get, games_get_all};
+use crate::infrastructure::http::gm::login as login_gm;
+use crate::infrastructure::http::user::{login as login_user, register as register_user};
 
 pub fn get_routes() -> Router<AppState> {
     Router::new()

@@ -1,6 +1,5 @@
-pub mod http_handler;
-pub mod repository;
+pub mod http;
 pub mod websocket;
-pub mod db;
 pub mod auth;
 pub mod error;
+pub mod persistence;

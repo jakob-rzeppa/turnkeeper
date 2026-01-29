@@ -121,7 +121,7 @@ impl UserRepositoryContract for SqliteUserRepository {
 #[cfg(test)]
 mod tests {
     use uuid::Uuid;
-    use crate::infrastructure::db::create_test_pool;
+    use crate::infrastructure::persistence::db::create_test_pool;
     use crate::application::user::contracts::UserRepositoryContract;
     use super::*;
 
