@@ -4,7 +4,7 @@ use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
 use crate::domain::user::entities::User;
 
-pub struct LoginRequestHandler<UserRepository, JwtGenerator>
+pub struct UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
@@ -13,7 +13,7 @@ where
     jwt: JwtGenerator,
 }
 
-impl<UserRepository, JwtGenerator> LoginRequestHandler<UserRepository, JwtGenerator>
+impl<UserRepository, JwtGenerator> UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
@@ -38,7 +38,7 @@ where
 mod tests {
     use uuid::Uuid;
     use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
-    use crate::application::user::request_handlers::login::LoginRequestHandler;
+    use crate::application::user::request_handlers::login::UserLoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
     use crate::domain::error::Error;
     use crate::domain::user::entities::User;
@@ -63,7 +63,7 @@ mod tests {
             .times(1)
             .returning(|_| Ok("login-token".to_string()));
 
-        let handler = LoginRequestHandler::new(user_repo, jwt_generator);
+        let handler = UserLoginRequestHandler::new(user_repo, jwt_generator);
         let result = handler.login(request).await;
 
         assert!(result.is_ok());
@@ -90,7 +90,7 @@ mod tests {
         jwt_generator.expect_generate_token()
             .never();
 
-        let handler = LoginRequestHandler::new(user_repo, jwt_generator);
+        let handler = UserLoginRequestHandler::new(user_repo, jwt_generator);
         let result = handler.login(request).await;
 
         assert!(result.is_err());

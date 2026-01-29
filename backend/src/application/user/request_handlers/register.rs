@@ -5,7 +5,7 @@ use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
 use crate::domain::user::entities::User;
 
-pub struct RegisterRequestHandler<UserRepository, JwtGenerator>
+pub struct UserRegisterRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
@@ -14,7 +14,7 @@ where
     jwt: JwtGenerator,
 }
 
-impl<UserRepository, JwtGenerator> RegisterRequestHandler<UserRepository, JwtGenerator>
+impl<UserRepository, JwtGenerator> UserRegisterRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtGenerator: UserJwtGeneratorContract + 'static,
@@ -64,7 +64,7 @@ mod tests {
             .times(1)
             .returning(|_| Ok("test-token".to_string()));
 
-        let handler = RegisterRequestHandler::new(user_repo, jwt_generator);
+        let handler = UserRegisterRequestHandler::new(user_repo, jwt_generator);
         let result = handler.register(request).await;
 
         assert!(result.is_ok());

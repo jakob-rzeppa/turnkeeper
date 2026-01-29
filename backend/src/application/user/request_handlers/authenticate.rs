@@ -3,7 +3,7 @@ use crate::application::user::requests::{UserAuthenticateRequest};
 use crate::application::user::responses::{UserAuthenticationResponse};
 use crate::domain::error::Error;
 
-pub struct AuthenticateRequestHandler<UserRepository, JwtValidator>
+pub struct UserAuthenticateRequestHandler<UserRepository, JwtValidator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtValidator: UserJwtValidatorContract + 'static,
@@ -12,7 +12,7 @@ where
     jwt: JwtValidator,
 }
 
-impl<UserRepository, JwtValidator> AuthenticateRequestHandler<UserRepository, JwtValidator>
+impl<UserRepository, JwtValidator> UserAuthenticateRequestHandler<UserRepository, JwtValidator>
 where
     UserRepository: UserRepositoryContract + 'static,
     JwtValidator: UserJwtValidatorContract + 'static,
@@ -39,7 +39,7 @@ mod tests {
     use mockall::predicate;
     use uuid::Uuid;
     use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryContract};
-    use crate::application::user::request_handlers::authenticate::AuthenticateRequestHandler;
+    use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
     use crate::domain::error::Error;
 
@@ -63,7 +63,7 @@ mod tests {
             .with(predicate::eq(user_id))
             .returning(move |_| Ok(true));
 
-        let handler = AuthenticateRequestHandler::new(user_repo, jwt_validator);
+        let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
 
         assert!(result.is_ok());
@@ -87,7 +87,7 @@ mod tests {
         user_repo.expect_get_by_id()
             .never();
 
-        let handler = AuthenticateRequestHandler::new(user_repo, jwt_validator);
+        let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
 
         assert!(result.is_err());
@@ -116,7 +116,7 @@ mod tests {
             .with(predicate::eq(user_id))
             .returning(move |_| Ok(false));
 
-        let handler = AuthenticateRequestHandler::new(user_repo, jwt_validator);
+        let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
 
         assert!(result.is_err());
