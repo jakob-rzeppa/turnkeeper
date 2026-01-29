@@ -1,6 +1,6 @@
 use crate::application::user::contracts::{JwtValidatorTrait, UserRepositoryTrait};
-use crate::application::user::requests::{AuthenticateRequest};
-use crate::application::user::responses::{AuthenticationResponse};
+use crate::application::user::requests::{UserAuthenticateRequest};
+use crate::application::user::responses::{UserAuthenticationResponse};
 use crate::domain::error::Error;
 
 pub struct AuthenticateRequestHandler<UserRepository, JwtValidator>
@@ -21,14 +21,14 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn authenticate(&self, request: AuthenticateRequest) -> Result<AuthenticationResponse, Error> {
+    pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<UserAuthenticationResponse, Error> {
         let user_id = self.jwt.validate_user_token(&request.token)?;
 
         if !self.repository.check_if_exists(&user_id).await? {
             return Err(Error::NotFound { msg: "User does not exist".to_string() });
         }
 
-        Ok(AuthenticationResponse {
+        Ok(UserAuthenticationResponse {
             user_id,
         })
     }
@@ -40,7 +40,7 @@ mod tests {
     use uuid::Uuid;
     use crate::application::user::contracts::{MockJwtValidatorTrait, MockUserRepositoryTrait};
     use crate::application::user::request_handlers::authenticate::AuthenticateRequestHandler;
-    use crate::application::user::requests::AuthenticateRequest;
+    use crate::application::user::requests::UserAuthenticateRequest;
     use crate::domain::error::Error;
 
     #[tokio::test]
@@ -49,7 +49,7 @@ mod tests {
         let mut jwt_validator = MockJwtValidatorTrait::new();
 
         let user_id = Uuid::new_v4();
-        let request = AuthenticateRequest {
+        let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
 
@@ -75,7 +75,7 @@ mod tests {
     async fn test_invalid_token_returns_error() {
         let mut user_repo = MockUserRepositoryTrait::new();
         let mut jwt_validator = MockJwtValidatorTrait::new();
-        let request = AuthenticateRequest {
+        let request = UserAuthenticateRequest {
             token: "invalid-token".to_string(),
         };
 
@@ -101,7 +101,7 @@ mod tests {
         let mut jwt_validator = MockJwtValidatorTrait::new();
 
         let user_id = Uuid::new_v4();
-        let request = AuthenticateRequest {
+        let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
 

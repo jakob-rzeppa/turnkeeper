@@ -4,7 +4,7 @@ use serde::{Serialize, Deserialize};
 use crate::{AppState};
 use crate::application::user::request_handlers::login::LoginRequestHandler;
 use crate::application::user::request_handlers::register::RegisterRequestHandler;
-use crate::application::user::requests::{LoginRequest, RegisterRequest};
+use crate::application::user::requests::{UserLoginRequest, UserRegisterRequest};
 use crate::infrastructure::auth::jwt::{JwtGenerator, JwtValidator};
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::repository::user::SqliteUserRepository;
@@ -29,7 +29,7 @@ pub async fn login(State(state): State<AppState>, payload: LoginHttpRequest) -> 
         JwtGenerator::new(),
     );
 
-    let request_dto = LoginRequest { name: payload.name, password: payload.password };
+    let request_dto = UserLoginRequest { name: payload.name, password: payload.password };
     let result = user_auth_handler.login(request_dto).await?;
 
     Ok(LoginHttpResponse {
@@ -57,7 +57,7 @@ pub async fn register(State(state): State<AppState>, payload: RegisterHttpReques
         JwtGenerator::new(),
     );
 
-    let request_dto = RegisterRequest { name: payload.name, password: payload.password };
+    let request_dto = UserRegisterRequest { name: payload.name, password: payload.password };
     let result = user_auth_handler.register(request_dto).await?;
 
     Ok(RegisterHttpResponse {

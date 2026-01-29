@@ -1,7 +1,7 @@
 use uuid::Uuid;
 use crate::application::user::contracts::{JwtGeneratorTrait, UserRepositoryTrait};
-use crate::application::user::requests::{RegisterRequest};
-use crate::application::user::responses::TokenResponse;
+use crate::application::user::requests::{UserRegisterRequest};
+use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
 use crate::domain::user::entities::User;
 
@@ -23,7 +23,7 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn register(&self, request: RegisterRequest) -> Result<TokenResponse, Error> {
+    pub async fn register(&self, request: UserRegisterRequest) -> Result<UserTokenResponse, Error> {
         let user = User::try_new(
             Uuid::new_v4(),
             request.name,
@@ -33,7 +33,7 @@ where
         self.repository.save(&user).await?;
 
         let token = self.jwt.generate_user_token(user.id())?;
-        Ok(TokenResponse {
+        Ok(UserTokenResponse {
             token,
         })
     }
@@ -52,7 +52,7 @@ mod tests {
         // Prepare test data
         let name = "test-user".to_string();
         let password = "password".to_string();
-        let request = RegisterRequest { name: name.clone(), password: password.clone() };
+        let request = UserRegisterRequest { name: name.clone(), password: password.clone() };
 
         // We don't care about the actual user, so use any()
         user_repo.expect_save()

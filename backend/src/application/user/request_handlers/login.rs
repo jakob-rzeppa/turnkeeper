@@ -1,6 +1,6 @@
 use crate::application::user::contracts::{JwtGeneratorTrait, UserRepositoryTrait};
-use crate::application::user::requests::LoginRequest;
-use crate::application::user::responses::TokenResponse;
+use crate::application::user::requests::UserLoginRequest;
+use crate::application::user::responses::UserTokenResponse;
 use crate::domain::error::Error;
 use crate::domain::user::entities::User;
 
@@ -22,13 +22,13 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn login(&self, request: LoginRequest) -> Result<TokenResponse, Error> {
+    pub async fn login(&self, request: UserLoginRequest) -> Result<UserTokenResponse, Error> {
         let user: User = self.repository.get_by_name(&request.name).await?;
 
         user.check_password(request.password)?;
 
         let token = self.jwt.generate_user_token(user.id())?;
-        Ok(TokenResponse {
+        Ok(UserTokenResponse {
             token,
         })
     }
@@ -39,7 +39,7 @@ mod tests {
     use uuid::Uuid;
     use crate::application::user::contracts::{MockJwtGeneratorTrait, MockJwtValidatorTrait, MockUserRepositoryTrait};
     use crate::application::user::request_handlers::login::LoginRequestHandler;
-    use crate::application::user::requests::LoginRequest;
+    use crate::application::user::requests::UserLoginRequest;
     use crate::domain::error::Error;
     use crate::domain::user::entities::User;
 
@@ -50,7 +50,7 @@ mod tests {
 
         let name = "test-user".to_string();
         let password = "password".to_string();
-        let request = LoginRequest { name: name.clone(), password: password.clone() };
+        let request = UserLoginRequest { name: name.clone(), password: password.clone() };
 
         let user_id = Uuid::new_v4();
         let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
@@ -78,7 +78,7 @@ mod tests {
 
         let name = "test-user".to_string();
         let password = "invalid-password".to_string();
-        let request = LoginRequest { name: name.clone(), password: password.clone() };
+        let request = UserLoginRequest { name: name.clone(), password: password.clone() };
 
         let user_id = Uuid::new_v4();
         let user = User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();

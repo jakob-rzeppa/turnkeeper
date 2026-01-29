@@ -1,11 +1,11 @@
 use uuid::Uuid;
 
 #[derive(Debug)]
-pub struct TokenResponse {
+pub struct UserTokenResponse {
     pub token: String,
 }
 
 #[derive(Debug)]
-pub struct AuthenticationResponse {
+pub struct UserAuthenticationResponse {
     pub user_id: Uuid,
 }
