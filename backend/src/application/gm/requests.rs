@@ -1,7 +1,3 @@
-pub struct GmRegisterRequest {
-    pub password: String,
-}
-
 pub struct GmLoginRequest {
     pub password: String,
 }
