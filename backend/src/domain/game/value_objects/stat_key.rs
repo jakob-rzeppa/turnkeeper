@@ -1,4 +1,4 @@
-use crate::domain::error::Error;
+use crate::domain::game::error::{GameError, GameErrorKind};
 
 /// # Invalid States
 ///
@@ -9,9 +9,9 @@ pub struct StatKey {
 }
 
 impl StatKey {
-    pub fn try_new(key: String) -> Result<Self, Error> {
+    pub fn try_new(key: String) -> Result<Self, GameError> {
         if key.is_empty() {
-            return Err(Error::InvalidState { msg: "key cannot be empty".into() });
+            return Err(GameError::new(GameErrorKind::EmptyStatKey));
         }
 
         Ok(Self { key })
@@ -37,6 +37,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, Error::InvalidState { msg: "key cannot be empty".into() });
+        assert_eq!(res, GameError::new(GameErrorKind::EmptyStatKey));
     }
 }

@@ -1,5 +1,5 @@
 use uuid::Uuid;
-use crate::domain::error::Error;
+use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::value_objects::stat_key::StatKey;
 use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberStatValue, StringStatValue};
 
@@ -40,8 +40,8 @@ impl Stat {
         &self.key
     }
 
-    pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, Error> {
-        let key = StatKey::try_new(key).map_err(|e| e.prefix("new string stat".to_string()))?;
+    pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, GameError> {
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
         let value = StringStatValue::new(value);
 
         Ok(Self {
@@ -51,8 +51,8 @@ impl Stat {
         })
     }
 
-    pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, Error> {
-        let key = StatKey::try_new(key).map_err(|e| e.prefix("new number stat".to_string()))?;
+    pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, GameError> {
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
         let value = NumberStatValue::new(value);
 
         Ok(Self {
@@ -62,8 +62,8 @@ impl Stat {
         })
     }
 
-    pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, Error> {
-        let key = StatKey::try_new(key).map_err(|e| e.prefix("new bool stat".to_string()))?;
+    pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, GameError> {
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
         let value = BooleanStatValue::new(value);
 
         Ok(Self {
