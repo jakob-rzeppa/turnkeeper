@@ -3,9 +3,9 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::application::gm::contracts::{GmJwtGeneratorContract, GmJwtValidatorContract};
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserJwtValidatorContract};
 use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {
@@ -41,14 +41,14 @@ impl UserJwtGenerator {
 }
 
 impl UserJwtGeneratorContract for UserJwtGenerator {
-    fn generate_token(&self, user_id: &Uuid) -> Result<String, Error> {
+    fn generate_token(&self, user_id: &Uuid) -> Result<String, UserError> {
         let header = Header::new(Algorithm::HS256);
         let encoding_key = EncodingKey::from_secret(USER_JWT_SECRET.as_bytes());
 
         let claims = UserClaims::from(user_id.clone());
 
         Ok(encode(&header, &claims, &encoding_key)
-            .map_err(|e| Error::UnexpectedError { msg: e.to_string() })?)
+            .map_err(|e| UserError::new(UserErrorKind::JwtGenerationError(e.to_string())))?)
     }
 }
 
@@ -61,14 +61,14 @@ impl UserJwtValidator {
 }
 
 impl UserJwtValidatorContract for UserJwtValidator {
-    fn validate_token(&self, token: &str) -> Result<Uuid, Error> {
+    fn validate_token(&self, token: &str) -> Result<Uuid, UserError> {
         let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
 
         let claims = decode::<UserClaims>(token, &decoding_key, &validation).map(|data| data.claims)
-            .map_err(|e| Error::InvalidCredentials { msg: e.to_string() })?;
+            .map_err(|e| UserError::new(UserErrorKind::InvalidCredentials))?;
 
-        Ok(Uuid::try_from(claims.user_id).map_err(|_| Error::InvalidCredentials { msg: "Invalid user token: Invalid uuid".to_string() })?)
+        Ok(Uuid::try_from(claims.user_id).map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
     }
 }
 
@@ -95,6 +95,9 @@ mod tests {
     fn invalid_gm_jwt() {
         let token = "invalid".to_string();
 
-        assert!(matches!(JWT_VALIDATOR.validate_token(&token), Err(Error::InvalidCredentials { .. })));
+        let result = JWT_VALIDATOR.validate_token(&token);
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials));
     }
 }

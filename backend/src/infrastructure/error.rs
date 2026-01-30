@@ -3,6 +3,7 @@ use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde_json::{json};
 use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 #[derive(Debug, PartialEq)]
 #[derive(Clone)]
@@ -65,6 +66,27 @@ impl From<Error> for HttpError {
             Error::DatabaseError { .. } => HttpError::InternalServerError,
             Error::UnexpectedError { .. } => HttpError::InternalServerError,
             Error::NotImplemented => HttpError::NotImplemented,
+        }
+    }
+}
+
+impl From<UserError> for HttpError {
+    fn from(e: UserError) -> Self {
+        match e.kind {
+            UserErrorKind::UserNotFound => HttpError::NotFound(e.to_string()),
+            UserErrorKind::InvalidCredentials => HttpError::Unauthorized(e.to_string()),
+            UserErrorKind::PasswordTooShort { .. } => HttpError::BadRequest(e.to_string()),
+            UserErrorKind::EmptyName => HttpError::BadRequest(e.to_string()),
+            UserErrorKind::InvalidUser => HttpError::BadRequest(e.to_string()),
+            UserErrorKind::UserAlreadyExists => HttpError::Conflict(e.to_string()),
+            UserErrorKind::JwtGenerationError(_) => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
+            UserErrorKind::DatabaseError(_) => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
         }
     }
 }

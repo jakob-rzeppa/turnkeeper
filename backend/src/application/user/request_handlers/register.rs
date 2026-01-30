@@ -2,8 +2,8 @@ use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserRegisterRequest};
 use crate::application::user::responses::UserTokenResponse;
-use crate::domain::error::Error;
 use crate::domain::user::entities::User;
+use crate::domain::user::error::UserError;
 
 pub struct UserRegisterRequestHandler<UserRepository, JwtGenerator>
 where
@@ -23,7 +23,7 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn register(&self, request: UserRegisterRequest) -> Result<UserTokenResponse, Error> {
+    pub async fn register(&self, request: UserRegisterRequest) -> Result<UserTokenResponse, UserError> {
         let user = User::try_new(
             Uuid::new_v4(),
             request.name,

@@ -2,7 +2,7 @@ use sqlx::{Acquire, SqlitePool};
 use uuid::Uuid;
 use crate::domain::user::entities::User;
 use crate::application::user::contracts::UserRepositoryContract;
-use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 struct UserRow {
     id: String,
@@ -21,10 +21,10 @@ impl From<&User> for UserRow {
 }
 
 impl TryInto<User> for UserRow {
-    type Error = Error;
+    type Error = UserError;
 
     fn try_into(self) -> Result<User, Self::Error> {
-        let id = Uuid::try_from(self.id).map_err(|_| Error::DatabaseError { msg: "Could not convert db Uuid to Uuid".to_string() })?;
+        let id = Uuid::try_from(self.id).map_err(|_| UserError::new(UserErrorKind::DatabaseError("Could not convert db Uuid to Uuid".to_string())))?;
         User::try_new(
             id,
             self.name.clone(),
@@ -44,62 +44,62 @@ impl SqliteUserRepository {
 }
 
 impl UserRepositoryContract for SqliteUserRepository {
-    async fn check_if_exists(&self, id: &Uuid) -> Result<bool, Error> {
-        let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
+    async fn check_if_exists(&self, id: &Uuid) -> Result<bool, UserError> {
+        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
 
         let id = id.to_string();
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
 
         Ok(res.is_some())
     }
 
-    async fn get_by_id(&self, id: &Uuid) -> Result<User, Error> {
-        let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
+    async fn get_by_id(&self, id: &Uuid) -> Result<User, UserError> {
+        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
 
         let id = id.to_string();
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
 
         if let Some(row) = res {
-            row.try_into().map_err(|_| Error::DatabaseError { msg: "Invalid db state".into() })
+            row.try_into().map_err(|_| UserError::new(UserErrorKind::DatabaseError("Invalid db state".into())))
         } else {
-            Err(Error::NotFound { msg: format!("User with id {} not found", id) })
+            Err(UserError::new(UserErrorKind::UserNotFound))
         }
     }
 
-    async fn get_by_name(&self, name: &str) -> Result<User, Error> {
-        let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
+    async fn get_by_name(&self, name: &str) -> Result<User, UserError> {
+        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
 
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE name = $1", name)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
 
         if let Some(row) = res {
-            row.try_into().map_err(|_| Error::DatabaseError { msg: "Invalid db state".into() })
+            row.try_into().map_err(|_| UserError::new(UserErrorKind::DatabaseError("Invalid db state".into())))
         } else {
-            Err(Error::NotFound { msg: format!("User with name {} not found", name) })
+            Err(UserError::new(UserErrorKind::UserNotFound))
         }
     }
 
-    async fn save(&self, user: &User) -> Result<(), Error> {
-        let mut conn = self.db.acquire().await.map_err(|_| Error::DatabaseError { msg: "Error acquiring connection".into() })?;
-        let mut transaction = conn.begin().await.map_err(|_| Error::DatabaseError { msg: "Error starting transaction".into() })?;
+    async fn save(&self, user: &User) -> Result<(), UserError> {
+        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
+        let mut transaction = conn.begin().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error starting transaction".into())))?;
 
         let name = user.name().to_string();
         let res = sqlx::query!("SELECT name FROM users WHERE name = $1", name)
             .fetch_optional(&mut *transaction)
             .await
-            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
 
         if let Some(row) = res {
-            transaction.rollback().await.map_err(|_| Error::DatabaseError { msg: "Error committing transaction".into() })?;
-            return Err(Error::InvalidState { msg: format!("User with name {} already exists", user.name())});
+            transaction.rollback().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error committing transaction".into())))?;
+            return Err(UserError::new(UserErrorKind::UserAlreadyExists));
         }
 
         let user_insert_row = UserRow::from(user);
@@ -110,9 +110,9 @@ impl UserRepositoryContract for SqliteUserRepository {
         )
             .execute(&mut *transaction)
             .await
-            .map_err(|_| Error::DatabaseError { msg: "Unexpected database error".into() })?;
+            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
 
-        transaction.commit().await.map_err(|_| Error::DatabaseError { msg: "Error committing transaction".into() })?;
+        transaction.commit().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error committing transaction".into())))?;
 
         Ok(())
     }
@@ -169,7 +169,7 @@ mod tests {
 
         assert!(user.is_err());
         let err = user.unwrap_err();
-        assert_eq!(err, Error::NotFound { msg: format!("User with id {} not found", id) });
+        assert_eq!(err, UserError::new(UserErrorKind::UserNotFound));
     }
 
     #[tokio::test]
@@ -181,7 +181,7 @@ mod tests {
 
         assert!(user.is_err());
         let err = user.unwrap_err();
-        assert_eq!(err, Error::NotFound { msg: format!("User with name {} not found", name) });
+        assert_eq!(err, UserError::new(UserErrorKind::UserNotFound));
     }
 
     #[tokio::test]
@@ -206,7 +206,7 @@ mod tests {
         let res = repo.save(&user2).await;
         assert!(res.is_err());
         let err = res.unwrap_err();
-        assert_eq!(err, Error::InvalidState { msg: format!("User with name {} already exists", name) });
+        assert_eq!(err, UserError::new(UserErrorKind::UserAlreadyExists));
 
         let res = repo.get_by_name(&name).await;
         assert!(res.is_ok());

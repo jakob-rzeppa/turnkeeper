@@ -1,7 +1,7 @@
 use uuid::Uuid;
+use crate::domain::user::error::{UserError, UserErrorKind};
 use crate::domain::user::value_objects::user_name::UserName;
 use crate::domain::user::value_objects::user_password::UserPassword;
-use crate::domain::error::Error;
 
 /// The representation of a user
 #[derive(Debug, Clone, PartialEq)]
@@ -14,9 +14,9 @@ pub struct User {
 }
 
 impl User {
-    pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, Error> {
-        let name = UserName::try_new(name).map_err(|e| e.prefix("new user".to_string()))?;
-        let password = UserPassword::try_new(password).map_err(|e| e.prefix("new user".to_string()))?;
+    pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, UserError> {
+        let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, e))?;
+        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, e))?;
 
         Ok(Self { id, name, password })
     }
@@ -31,15 +31,11 @@ impl User {
         self.password.as_str()
     }
 
-    pub fn check_password(&self, password: String) -> Result<(), Error> {
-        let password = UserPassword::try_new(password).map_err(|e| Error::InvalidCredentials {
-            msg: "Wrong password".to_string()
-        })?;
+    pub fn check_password(&self, password: String) -> Result<(), UserError> {
+        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, e))?;
 
         if password != self.password {
-            return Err(Error::InvalidCredentials {
-                msg: "Wrong password".to_string(),
-            })
+            return Err(UserError::new(UserErrorKind::InvalidCredentials))
         }
 
         Ok(())
@@ -50,7 +46,6 @@ impl User {
 mod tests {
     mod check_password {
         use uuid::Uuid;
-        use crate::domain::error::Error;
         use super::super::*;
 
         #[test]
@@ -78,9 +73,7 @@ mod tests {
 
             assert!(res.is_err());
             let err = res.unwrap_err();
-            assert_eq!(err, Error::InvalidCredentials {
-                msg: "Wrong password".to_string()
-            })
+            assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials))
         }
 
         #[test]
@@ -95,9 +88,7 @@ mod tests {
 
             assert!(res.is_err());
             let err = res.unwrap_err();
-            assert_eq!(err, Error::InvalidCredentials {
-                msg: "Wrong password".to_string()
-            })
+            assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials))
         }
     }
 }

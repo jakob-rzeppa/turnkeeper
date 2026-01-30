@@ -1,4 +1,4 @@
-use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 /// # Invalid States
 ///
@@ -9,9 +9,9 @@ pub struct UserPassword {
 }
 
 impl UserPassword {
-    pub fn try_new(value: String) -> Result<Self, Error> {
+    pub fn try_new(value: String) -> Result<Self, UserError> {
         if value.len() < 4 {
-            return Err(Error::InvalidState { msg: "password value must contain at least four characters".to_string() });
+            return Err(UserError::new(UserErrorKind::PasswordTooShort { required: 4, actual: value.len() }));
         }
 
         Ok(Self { value })
@@ -41,6 +41,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, Error::InvalidState { msg: "password value must contain at least four characters".into() });
+        assert_eq!(res, UserError::new(UserErrorKind::PasswordTooShort { required: 4, actual: 3 }));
     }
 }

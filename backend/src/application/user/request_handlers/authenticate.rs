@@ -1,7 +1,7 @@
 use crate::application::user::contracts::{UserJwtValidatorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserAuthenticateRequest};
 use crate::application::user::responses::{UserAuthenticationResponse};
-use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 pub struct UserAuthenticateRequestHandler<UserRepository, JwtValidator>
 where
@@ -21,11 +21,11 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<UserAuthenticationResponse, Error> {
+    pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<UserAuthenticationResponse, UserError> {
         let user_id = self.jwt.validate_token(&request.token)?;
 
         if !self.repository.check_if_exists(&user_id).await? {
-            return Err(Error::NotFound { msg: "User does not exist".to_string() });
+            return Err(UserError::new(UserErrorKind::UserNotFound));
         }
 
         Ok(UserAuthenticationResponse {
@@ -42,6 +42,7 @@ mod tests {
     use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
     use crate::domain::error::Error;
+    use crate::domain::user::error::{UserError, UserErrorKind};
 
     #[tokio::test]
     async fn test_valid_token_returns_user() {
@@ -82,7 +83,7 @@ mod tests {
         jwt_validator.expect_validate_token()
             .times(1)
             .with(predicate::eq("invalid-token"))
-            .returning(|_| Err(Error::InvalidCredentials { msg: "Invalid token".to_string() }));
+            .returning(|_| Err(UserError::new(UserErrorKind::InvalidCredentials)));
 
         user_repo.expect_get_by_id()
             .never();
@@ -92,7 +93,7 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert_eq!(err, Error::InvalidCredentials { msg: "Invalid token".to_string() });
+        assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials));
     }
 
     #[tokio::test]
@@ -121,6 +122,6 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert_eq!(err, Error::NotFound { msg: "User does not exist".to_string() });
+        assert_eq!(err, UserError::new(UserErrorKind::UserNotFound));
     }
 }

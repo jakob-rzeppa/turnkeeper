@@ -1,8 +1,8 @@
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::UserLoginRequest;
 use crate::application::user::responses::UserTokenResponse;
-use crate::domain::error::Error;
 use crate::domain::user::entities::User;
+use crate::domain::user::error::UserError;
 
 pub struct UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
@@ -22,7 +22,7 @@ where
         Self { repository, jwt }
     }
 
-    pub async fn login(&self, request: UserLoginRequest) -> Result<UserTokenResponse, Error> {
+    pub async fn login(&self, request: UserLoginRequest) -> Result<UserTokenResponse, UserError> {
         let user: User = self.repository.get_by_name(&request.name).await?;
 
         user.check_password(request.password)?;
@@ -42,6 +42,7 @@ mod tests {
     use crate::application::user::requests::UserLoginRequest;
     use crate::domain::error::Error;
     use crate::domain::user::entities::User;
+    use crate::domain::user::error::{UserError, UserErrorKind};
 
     #[tokio::test]
     async fn test_valid_login_returns_token() {
@@ -95,6 +96,6 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert_eq!(err, Error::InvalidCredentials { msg: "Wrong password".to_string() });
+        assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials));
     }
 }

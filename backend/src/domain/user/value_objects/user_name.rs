@@ -1,4 +1,4 @@
-use crate::domain::error::Error;
+use crate::domain::user::error::{UserError, UserErrorKind};
 
 /// # Invalid States
 ///
@@ -9,9 +9,9 @@ pub struct UserName {
 }
 
 impl UserName {
-    pub fn try_new(name: String) -> Result<Self, Error> {
+    pub fn try_new(name: String) -> Result<Self, UserError> {
         if name.is_empty() {
-            return Err(Error::InvalidState { msg: "name cannot be empty".into() });
+            return Err(UserError::new(UserErrorKind::EmptyName));
         }
 
         Ok(Self { value: name })
@@ -41,6 +41,6 @@ mod tests {
 
         assert!(res.is_err());
         let res = res.unwrap_err();
-        assert_eq!(res, Error::InvalidState { msg: "name cannot be empty".into() });
+        assert_eq!(res, UserError::new(UserErrorKind::EmptyName));
     }
 }
