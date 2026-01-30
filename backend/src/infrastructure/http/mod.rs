@@ -1,6 +1,6 @@
-pub mod game;
-pub mod user;
-pub mod gm;
+mod game;
+mod user;
+mod gm;
 
 use axum::Router;
 use axum::routing::{delete, get, post};
