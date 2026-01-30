@@ -14,6 +14,7 @@ use crate::domain::game::entities::player::Player;
 /// - current_player_index is greater than length of players - 1
 pub struct Game {
     id: Uuid,
+    name: String,
 
     players: Vec<Player>,
 
@@ -22,9 +23,10 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(id: Uuid) -> Self {
+    pub fn new(id: Uuid, name: String) -> Self {
         Self {
             id,
+            name,
             players: Vec::new(),
             round_number: 0,
             current_player_index: 0,
