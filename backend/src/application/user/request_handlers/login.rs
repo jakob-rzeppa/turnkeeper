@@ -40,7 +40,6 @@ mod tests {
     use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::login::UserLoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
-    use crate::domain::error::Error;
     use crate::domain::user::entities::User;
     use crate::domain::user::error::{UserError, UserErrorKind};
 

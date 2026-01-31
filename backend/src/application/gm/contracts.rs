@@ -1,11 +1,11 @@
-use crate::domain::error::Error;
+use crate::domain::gm::error::GmError;
 
 #[mockall::automock]
 pub trait GmJwtGeneratorContract {
-    fn generate_token(&self) -> Result<String, Error>;
+    fn generate_token(&self) -> Result<String, GmError>;
 }
 
 #[mockall::automock]
 pub trait GmJwtValidatorContract {
-    fn validate_token(&self, token: &str) -> Result<(), Error>;
+    fn validate_token(&self, token: &str) -> Result<(), GmError>;
 }

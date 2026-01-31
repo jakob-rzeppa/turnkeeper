@@ -24,7 +24,7 @@ impl TryInto<User> for UserRow {
     type Error = UserError;
 
     fn try_into(self) -> Result<User, Self::Error> {
-        let id = Uuid::try_from(self.id).map_err(|_| UserError::new(UserErrorKind::DatabaseError("Could not convert db Uuid to Uuid".to_string())))?;
+        let id = Uuid::try_from(self.id).map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
         User::try_new(
             id,
             self.name.clone(),
@@ -45,60 +45,60 @@ impl SqliteUserRepository {
 
 impl UserRepositoryContract for SqliteUserRepository {
     async fn check_if_exists(&self, id: &Uuid) -> Result<bool, UserError> {
-        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
+        let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let id = id.to_string();
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         Ok(res.is_some())
     }
 
     async fn get_by_id(&self, id: &Uuid) -> Result<User, UserError> {
-        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
+        let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let id = id.to_string();
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE id = $1", id)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         if let Some(row) = res {
-            row.try_into().map_err(|_| UserError::new(UserErrorKind::DatabaseError("Invalid db state".into())))
+            row.try_into().map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))
         } else {
             Err(UserError::new(UserErrorKind::UserNotFound))
         }
     }
 
     async fn get_by_name(&self, name: &str) -> Result<User, UserError> {
-        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
+        let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let res = sqlx::query_as!(UserRow, "SELECT * FROM users WHERE name = $1", name)
             .fetch_optional(&mut *conn)
             .await
-            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         if let Some(row) = res {
-            row.try_into().map_err(|_| UserError::new(UserErrorKind::DatabaseError("Invalid db state".into())))
+            row.try_into().map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))
         } else {
             Err(UserError::new(UserErrorKind::UserNotFound))
         }
     }
 
     async fn save(&self, user: &User) -> Result<(), UserError> {
-        let mut conn = self.db.acquire().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error acquiring connection".into())))?;
-        let mut transaction = conn.begin().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error starting transaction".into())))?;
+        let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
+        let mut transaction = conn.begin().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let name = user.name().to_string();
         let res = sqlx::query!("SELECT name FROM users WHERE name = $1", name)
             .fetch_optional(&mut *transaction)
             .await
-            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         if let Some(row) = res {
-            transaction.rollback().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error committing transaction".into())))?;
+            transaction.rollback().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
             return Err(UserError::new(UserErrorKind::UserAlreadyExists));
         }
 
@@ -110,9 +110,9 @@ impl UserRepositoryContract for SqliteUserRepository {
         )
             .execute(&mut *transaction)
             .await
-            .map_err(|_| UserError::new(UserErrorKind::DatabaseError("Unexpected database error".into())))?;
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
-        transaction.commit().await.map_err(|_| UserError::new(UserErrorKind::DatabaseError("Error committing transaction".into())))?;
+        transaction.commit().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         Ok(())
     }

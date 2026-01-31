@@ -57,7 +57,6 @@ impl Player {
 #[cfg(test)]
 mod tests {
     use super::*;
-    use crate::domain::error::Error;
 
     fn dummy_user() -> User {
         User::try_new(Uuid::new_v4(), "test-user".to_string(), "test-password".to_string()).unwrap()

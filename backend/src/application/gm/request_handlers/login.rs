@@ -2,7 +2,7 @@ use std::sync::LazyLock;
 use crate::application::gm::contracts::GmJwtGeneratorContract;
 use crate::application::gm::requests::GmLoginRequest;
 use crate::application::gm::responses::GmTokenResponse;
-use crate::domain::error::Error;
+use crate::domain::gm::error::{GmError, GmErrorKind};
 
 const GM_PASSWORD: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {
@@ -28,9 +28,9 @@ where
         Self { jwt }
     }
 
-    pub async fn login(&self, request: GmLoginRequest) -> Result<GmTokenResponse, Error> {
+    pub async fn login(&self, request: GmLoginRequest) -> Result<GmTokenResponse, GmError> {
         if *GM_PASSWORD != request.password {
-            return Err(Error::InvalidCredentials { msg: "Wrong password".to_string() });
+            return Err(GmError::new(GmErrorKind::InvalidCredentials));
         }
 
         let token = self.jwt.generate_token()?;
@@ -46,7 +46,7 @@ mod tests {
     use crate::application::gm::contracts::MockGmJwtGeneratorContract;
     use crate::application::gm::request_handlers::login::GmLoginRequestHandler;
     use crate::application::gm::requests::GmLoginRequest;
-    use crate::domain::error::Error;
+    use crate::domain::gm::error::{GmError, GmErrorKind};
 
     #[tokio::test]
     async fn test_valid_password_returns_token() {
@@ -78,6 +78,6 @@ mod tests {
 
         assert!(result.is_err());
         let err = result.unwrap_err();
-        assert_eq!(err, Error::InvalidCredentials { msg: "Wrong password".to_string() });
+        assert_eq!(err, GmError::new(GmErrorKind::InvalidCredentials));
     }
 }

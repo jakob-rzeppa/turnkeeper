@@ -41,7 +41,6 @@ mod tests {
     use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
-    use crate::domain::error::Error;
     use crate::domain::user::error::{UserError, UserErrorKind};
 
     #[tokio::test]

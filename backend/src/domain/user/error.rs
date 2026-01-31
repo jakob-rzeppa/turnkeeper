@@ -53,8 +53,8 @@ pub enum UserErrorKind {
     InvalidCredentials,
     UserNotFound,
     UserAlreadyExists,
-    JwtGenerationError(String),
-    DatabaseError(String),
+    JwtGenerationError,
+    DatabaseError,
 }
 
 impl UserErrorKind {
@@ -66,8 +66,8 @@ impl UserErrorKind {
             UserErrorKind::InvalidCredentials => "Invalid credentials".to_string(),
             UserErrorKind::UserNotFound => "User not found".to_string(),
             UserErrorKind::UserAlreadyExists => "User already exists".to_string(),
-            UserErrorKind::JwtGenerationError(e) => format!("JWT generation failed: {}", e),
-            UserErrorKind::DatabaseError(e) => format!("Unexpected database error: {}", e),
+            UserErrorKind::JwtGenerationError => "JWT generation failed".to_string(),
+            UserErrorKind::DatabaseError => "Unexpected database error".to_string(),
         }
     }
 }

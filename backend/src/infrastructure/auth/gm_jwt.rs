@@ -3,7 +3,7 @@ use std::time::{SystemTime, UNIX_EPOCH};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
 use crate::application::gm::contracts::{GmJwtGeneratorContract, GmJwtValidatorContract};
-use crate::domain::error::Error;
+use crate::domain::gm::error::{GmError, GmErrorKind};
 
 const GM_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {
@@ -38,17 +38,14 @@ impl GmJwtGenerator {
 }
 
 impl GmJwtGeneratorContract for GmJwtGenerator {
-    fn generate_token(&self) -> Result<String, Error> {
-        let exp = SystemTime::now().duration_since(UNIX_EPOCH)
-            .map_err(|e| Error::UnexpectedError { msg: e.to_string() })?
-            .as_secs() + 3600 * 5; // 5 hour expiration
-        let claims = GmClaims { exp: exp as usize };
-
+    fn generate_token(&self) -> Result<String, GmError> {
+        let claims = GmClaims::new();
+        
         let header = Header::new(Algorithm::HS256);
         let encoding_key = EncodingKey::from_secret(GM_JWT_SECRET.as_bytes());
 
         Ok(encode(&header, &claims, &encoding_key)
-            .map_err(|e| Error::UnexpectedError { msg: e.to_string() })?)
+            .map_err(|e| GmError::with_source(GmErrorKind::JwtGenerationError, Box::new(e)))?)
     }
 }
 
@@ -61,12 +58,12 @@ impl GmJwtValidator {
 }
 
 impl GmJwtValidatorContract for GmJwtValidator {
-    fn validate_token(&self, token: &str) -> Result<(), Error> {
+    fn validate_token(&self, token: &str) -> Result<(), GmError> {
         let decoding_key = DecodingKey::from_secret(GM_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
 
         decode::<GmClaims>(token, &decoding_key, &validation).map(|data| data.claims)
-            .map_err(|e| Error::InvalidCredentials { msg: e.to_string() })?;
+            .map_err(|e| GmError::new(GmErrorKind::InvalidCredentials))?;
 
         Ok(())
     }
@@ -74,7 +71,6 @@ impl GmJwtValidatorContract for GmJwtValidator {
 
 #[cfg(test)]
 mod tests {
-    use uuid::Uuid;
     use super::*;
 
     const JWT_GENERATOR: GmJwtGenerator = GmJwtGenerator {};
@@ -91,6 +87,10 @@ mod tests {
     fn invalid_gm_jwt() {
         let token = "invalid".to_string();
 
-        assert!(matches!(JWT_VALIDATOR.validate_token(&token), Err(Error::InvalidCredentials { .. })));
+        let result = JWT_VALIDATOR.validate_token(&token);
+        
+        assert!(result.is_err());
+        let err = result.unwrap_err();
+        assert_eq!(err, GmError::new(GmErrorKind::InvalidCredentials));
     }
 }

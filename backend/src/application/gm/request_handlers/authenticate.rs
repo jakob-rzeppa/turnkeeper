@@ -1,6 +1,6 @@
 use crate::application::gm::contracts::{GmJwtValidatorContract};
 use crate::application::gm::requests::{GmAuthenticateRequest};
-use crate::domain::error::Error;
+use crate::domain::gm::error::GmError;
 
 pub struct GmAuthenticateRequestHandler<JwtValidator>
 where
@@ -17,7 +17,7 @@ where
         Self { jwt }
     }
 
-    pub async fn authenticate(&self, request: GmAuthenticateRequest) -> Result<(), Error> {
+    pub async fn authenticate(&self, request: GmAuthenticateRequest) -> Result<(), GmError> {
         self.jwt.validate_token(&request.token)?;
         Ok(())
     }
@@ -29,7 +29,7 @@ mod tests {
     use crate::application::gm::contracts::MockGmJwtValidatorContract;
     use crate::application::gm::request_handlers::authenticate::GmAuthenticateRequestHandler;
     use crate::application::gm::requests::GmAuthenticateRequest;
-    use crate::domain::error::Error;
+    use crate::domain::gm::error::{GmError, GmErrorKind};
 
     #[tokio::test]
     async fn test_valid_token_returns_correct_response() {
@@ -58,7 +58,7 @@ mod tests {
             .expect_validate_token()
             .times(1)
             .with(predicate::eq("invalid-test-token".to_string()))
-            .returning(move |_| Err(Error::InvalidCredentials { msg: "Wrong password".to_string() }));
+            .returning(move |_| Err(GmError::new(GmErrorKind::InvalidCredentials)));
 
         let handler = GmAuthenticateRequestHandler::new(mock_jwt_validator);
         let request = GmAuthenticateRequest { token: "invalid-test-token".to_string() };
@@ -66,6 +66,6 @@ mod tests {
 
         assert!(res.is_err());
         let err = res.unwrap_err();
-        assert_eq!(err, Error::InvalidCredentials { msg: "Wrong password".to_string() });
+        assert_eq!(err, GmError::new(GmErrorKind::InvalidCredentials));
     }
 }

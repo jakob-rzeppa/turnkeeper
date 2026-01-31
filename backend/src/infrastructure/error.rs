@@ -2,7 +2,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde_json::{json};
-use crate::domain::error::Error;
+use crate::domain::gm::error::{GmError, GmErrorKind};
 use crate::domain::user::error::{UserError, UserErrorKind};
 
 #[derive(Debug, PartialEq)]
@@ -57,19 +57,6 @@ impl IntoResponse for HttpError {
     }
 }
 
-impl From<Error> for HttpError {
-    fn from(e: Error) -> Self {
-        match e {
-            Error::InvalidState { msg } => HttpError::BadRequest(msg),
-            Error::InvalidCredentials { msg } => HttpError::Unauthorized(msg),
-            Error::NotFound { msg } => HttpError::NotFound(msg),
-            Error::DatabaseError { .. } => HttpError::InternalServerError,
-            Error::UnexpectedError { .. } => HttpError::InternalServerError,
-            Error::NotImplemented => HttpError::NotImplemented,
-        }
-    }
-}
-
 impl From<UserError> for HttpError {
     fn from(e: UserError) -> Self {
         match e.kind {
@@ -79,11 +66,23 @@ impl From<UserError> for HttpError {
             UserErrorKind::EmptyName => HttpError::BadRequest(e.to_string()),
             UserErrorKind::InvalidUser => HttpError::BadRequest(e.to_string()),
             UserErrorKind::UserAlreadyExists => HttpError::Conflict(e.to_string()),
-            UserErrorKind::JwtGenerationError(_) => {
+            UserErrorKind::JwtGenerationError => {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },
-            UserErrorKind::DatabaseError(_) => {
+            UserErrorKind::DatabaseError => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
+        }
+    }
+}
+
+impl From<GmError> for HttpError {
+    fn from(e: GmError) -> Self {
+        match e.kind {
+            GmErrorKind::InvalidCredentials => HttpError::Unauthorized(e.to_string()),
+            GmErrorKind::JwtGenerationError => {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },

@@ -4,7 +4,6 @@ use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, 
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserJwtValidatorContract};
-use crate::domain::error::Error;
 use crate::domain::user::error::{UserError, UserErrorKind};
 
 const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
@@ -48,7 +47,7 @@ impl UserJwtGeneratorContract for UserJwtGenerator {
         let claims = UserClaims::from(user_id.clone());
 
         Ok(encode(&header, &claims, &encoding_key)
-            .map_err(|e| UserError::new(UserErrorKind::JwtGenerationError(e.to_string())))?)
+            .map_err(|e| UserError::with_source(UserErrorKind::JwtGenerationError, Box::new(e)))?)
     }
 }
 
@@ -96,6 +95,7 @@ mod tests {
         let token = "invalid".to_string();
 
         let result = JWT_VALIDATOR.validate_token(&token);
+        
         assert!(result.is_err());
         let err = result.unwrap_err();
         assert_eq!(err, UserError::new(UserErrorKind::InvalidCredentials));
