@@ -1,8 +1,44 @@
-use std::fmt;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
+#[derive(Debug)]
 pub struct GameError {
     pub kind: GameErrorKind,
-    pub source: Option<Box<GameError>>,
+    source: Option<Box<dyn Error + 'static>>,
+}
+
+impl GameError {
+    pub fn new(kind: GameErrorKind) -> Self {
+        GameError { kind, source: None }
+    }
+    pub fn with_source(kind: GameErrorKind, source: Box<dyn Error + 'static>) -> Self {
+        GameError { kind, source: Some(source) }
+    }
+}
+
+impl Error for GameError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_deref()
+    }
+}
+
+impl PartialEq for GameError {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+    }
+}
+
+impl Display for GameError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let msg = self.kind.message();
+        write!(f, "{}", msg)?;
+        let mut source = self.source();
+        while let Some(err) = source {
+            write!(f, ": {}", err)?;
+            source = err.source();
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -12,54 +48,12 @@ pub enum GameErrorKind {
     DuplicateStatKey,
 }
 
-impl GameError {
+impl GameErrorKind {
     pub fn message(&self) -> String {
-        match self.kind {
-            GameErrorKind::EmptyStatKey => "StatKey is empty".to_string(),
-            GameErrorKind::InvalidStat => "Invalid stat".to_string(),
-            GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
-        }
-    }
-}
-
-impl PartialEq for GameError {
-    // Only check the error kind, since errors are the same even if they have a different source
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
-    }
-}
-
-impl fmt::Debug for GameError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("GameError")
-            .field("kind", &self.message())
-            .field("source", &self.source.as_ref().map(|e| e.to_string()))
-            .finish()
-    }
-}
-
-impl fmt::Display for GameError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message())?;
-        let mut source = self.source.as_deref();
-        while let Some(err) = source {
-            write!(f, ": {}", err)?;
-            source = err.source.as_deref();
-        }
-        Ok(())
-    }
-}
-
-impl GameError {
-    pub fn new(kind: GameErrorKind) -> Self {
-        GameError { kind, source: None }
-    }
-
-    pub fn with_source(kind: GameErrorKind, source: GameError) -> Self
-    {
-        GameError {
-            kind,
-            source: Some(Box::new(source)),
+        match self {
+            GameErrorKind::EmptyStatKey { .. } => "StatKey is empty".to_string(),
+            GameErrorKind::InvalidStat { .. } => "Invalid stat".to_string(),
+            GameErrorKind::DuplicateStatKey { .. } => "Duplicate stat key".to_string(),
         }
     }
 }

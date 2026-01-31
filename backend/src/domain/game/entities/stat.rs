@@ -41,7 +41,7 @@ impl Stat {
     }
 
     pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, GameError> {
-        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, Box::new(e)) })?;
         let value = StringStatValue::new(value);
 
         Ok(Self {
@@ -52,7 +52,7 @@ impl Stat {
     }
 
     pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, GameError> {
-        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, Box::new(e)) })?;
         let value = NumberStatValue::new(value);
 
         Ok(Self {
@@ -63,7 +63,7 @@ impl Stat {
     }
 
     pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, GameError> {
-        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, e) })?;
+        let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, Box::new(e)) })?;
         let value = BooleanStatValue::new(value);
 
         Ok(Self {

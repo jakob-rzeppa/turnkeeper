@@ -1,8 +1,45 @@
-use std::fmt;
+use std::cmp::PartialEq;
+use std::error::Error;
+use std::fmt::{Display, Formatter};
 
+#[derive(Debug)]
 pub struct UserError {
     pub kind: UserErrorKind,
-    pub source: Option<Box<UserError>>,
+    source: Option<Box<dyn Error + 'static>>,
+}
+
+impl UserError {
+    pub fn new(kind: UserErrorKind) -> Self {
+        UserError { kind, source: None }
+    }
+    pub fn with_source(kind: UserErrorKind, source: Box<dyn Error + 'static>) -> Self {
+        UserError { kind, source: Some(source) }
+    }
+}
+
+impl Error for UserError {
+    fn source(&self) -> Option<&(dyn Error + 'static)> {
+        self.source.as_deref()
+    }
+}
+
+impl PartialEq for UserError {
+    fn eq(&self, other: &Self) -> bool {
+        self.kind == other.kind
+    }
+}
+
+impl Display for UserError {
+    fn fmt(&self, f: &mut Formatter<'_>) -> std::fmt::Result {
+        let msg = self.kind.message();
+        write!(f, "{}", msg)?;
+        let mut source = self.source();
+        while let Some(err) = source {
+            write!(f, ": {}", err)?;
+            source = err.source();
+        }
+        Ok(())
+    }
 }
 
 #[derive(Debug, PartialEq)]
@@ -20,9 +57,9 @@ pub enum UserErrorKind {
     DatabaseError(String),
 }
 
-impl UserError {
+impl UserErrorKind {
     pub fn message(&self) -> String {
-        match &self.kind {
+        match self {
             UserErrorKind::EmptyName => "Empty name".to_string(),
             UserErrorKind::PasswordTooShort { required, actual } => format!("Password too short: {required} > {actual}"),
             UserErrorKind::InvalidUser => "Invalid user".to_string(),
@@ -31,48 +68,6 @@ impl UserError {
             UserErrorKind::UserAlreadyExists => "User already exists".to_string(),
             UserErrorKind::JwtGenerationError(e) => format!("JWT generation failed: {}", e),
             UserErrorKind::DatabaseError(e) => format!("Unexpected database error: {}", e),
-        }
-    }
-}
-
-impl PartialEq for UserError {
-    // Only check the error kind, since errors are the same even if they have a different source
-    fn eq(&self, other: &Self) -> bool {
-        self.kind == other.kind
-    }
-}
-
-impl fmt::Debug for UserError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        f.debug_struct("UserError")
-            .field("message", &self.message())
-            .field("source", &self.source.as_ref().map(|e| e.to_string()))
-            .finish()
-    }
-}
-
-impl fmt::Display for UserError {
-    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}", self.message())?;
-        let mut source = self.source.as_deref();
-        while let Some(err) = source {
-            write!(f, ": {}", err)?;
-            source = err.source.as_deref();
-        }
-        Ok(())
-    }
-}
-
-impl UserError {
-    pub fn new(kind: UserErrorKind) -> Self {
-        UserError { kind, source: None }
-    }
-
-    pub fn with_source(kind: UserErrorKind, source: UserError) -> Self
-    {
-        UserError {
-            kind,
-            source: Some(Box::new(source)),
         }
     }
 }

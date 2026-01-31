@@ -15,8 +15,8 @@ pub struct User {
 
 impl User {
     pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, UserError> {
-        let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, e))?;
-        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, e))?;
+        let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
+        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
 
         Ok(Self { id, name, password })
     }
@@ -32,7 +32,7 @@ impl User {
     }
 
     pub fn check_password(&self, password: String) -> Result<(), UserError> {
-        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, e))?;
+        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
 
         if password != self.password {
             return Err(UserError::new(UserErrorKind::InvalidCredentials))
