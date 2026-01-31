@@ -40,7 +40,7 @@ impl fmt::Debug for GameError {
 
 impl fmt::Display for GameError {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{:}", self.message())?;
+        write!(f, "{}", self.message())?;
         let mut source = self.source.as_deref();
         while let Some(err) = source {
             write!(f, ": {}", err)?;
