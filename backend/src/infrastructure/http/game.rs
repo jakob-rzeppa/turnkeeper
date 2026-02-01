@@ -1,28 +1,13 @@
-use axum::extract::State;
-use axum::Json;
+use axum::extract::{Path, State};
+use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::AppState;
 use crate::domain::game::entities::game::Game;
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::persistence::repositories::game::InMemoryGameRepository;
-
-/// GET /games
-///
-/// returns a list of all available games
-pub async fn games_get_all() -> Result<Json<Value>, HttpError> {
-    Err(HttpError::NotImplemented)
-}
-
-/// GET /games/:id
-///
-/// returns the game state of the game with given id
-pub async fn games_get() -> Result<Json<Value>, HttpError> {
-    Err(HttpError::NotImplemented)
-}
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct GamesCreateHttpRequest {
@@ -50,9 +35,15 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
     })
 }
 
-/// DELETE /games
+/// DELETE /games/{game_id}
 ///
 /// deletes a game if no current connection to it
-pub async fn games_delete(State(state): State<AppState>) -> Result<Json<Value>, HttpError> {
-    Err(HttpError::NotImplemented)
+pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
+    let repo = InMemoryGameRepository::new(state.in_memory_game_db);
+
+    let id = Uuid::try_from(id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
+
+    repo.delete(id).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
