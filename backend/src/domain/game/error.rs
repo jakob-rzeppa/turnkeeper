@@ -46,14 +46,18 @@ pub enum GameErrorKind {
     EmptyStatKey,
     InvalidStat,
     DuplicateStatKey,
+    GameAlreadyExists,
+    GameNotFound,
 }
 
 impl GameErrorKind {
     pub fn message(&self) -> String {
         match self {
-            GameErrorKind::EmptyStatKey { .. } => "StatKey is empty".to_string(),
-            GameErrorKind::InvalidStat { .. } => "Invalid stat".to_string(),
-            GameErrorKind::DuplicateStatKey { .. } => "Duplicate stat key".to_string(),
+            GameErrorKind::EmptyStatKey => "StatKey is empty".to_string(),
+            GameErrorKind::InvalidStat=> "Invalid stat".to_string(),
+            GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
+            GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
+            GameErrorKind::GameNotFound => "Game not found".to_string(),
         }
     }
 }

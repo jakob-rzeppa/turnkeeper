@@ -6,18 +6,22 @@ mod infrastructure;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
+use std::sync::Arc;
 use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use tokio::sync::RwLock;
 use tower::ServiceBuilder;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
+use crate::domain::game::entities::game::Game;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: SqlitePool,
+    pub in_memory_game_db: Arc<RwLock<Vec<Game>>>,
 }
 
 #[tokio::main]
@@ -28,8 +32,10 @@ async fn main() {
         .expect("DATABASE_URL environment variable is not set");
 
     let db = create_pool(&database_url).await.expect("Failed to create database pool");
+    
+    let in_memory_game_db = Arc::new(RwLock::new(Vec::<Game>::new()));
 
-    let state = AppState { db };
+    let state = AppState { db, in_memory_game_db };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()

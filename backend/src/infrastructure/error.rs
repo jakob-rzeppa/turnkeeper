@@ -2,6 +2,7 @@ use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
 use serde_json::{json};
+use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::gm::error::{GmError, GmErrorKind};
 use crate::domain::user::error::{UserError, UserErrorKind};
 
@@ -86,6 +87,18 @@ impl From<GmError> for HttpError {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },
+        }
+    }
+}
+
+impl From<GameError> for HttpError {
+    fn from(e: GameError) -> Self {
+        match e.kind {
+            GameErrorKind::EmptyStatKey => HttpError::BadRequest(e.to_string()),
+            GameErrorKind::InvalidStat => HttpError::BadRequest(e.to_string()),
+            GameErrorKind::DuplicateStatKey => HttpError::Conflict(e.to_string()),
+            GameErrorKind::GameAlreadyExists => HttpError::Conflict(e.to_string()),
+            GameErrorKind::GameNotFound => HttpError::NotFound(e.to_string()),
         }
     }
 }

@@ -32,4 +32,12 @@ impl Game {
             current_player_index: 0,
         }
     }
+
+    pub fn id(&self) -> Uuid {
+        self.id
+    }
+    
+    pub fn name(&self) -> &str {
+        &self.name
+    }
 }
