@@ -4,11 +4,11 @@ use crate::application::game::requests::CreateGameRequest;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
 
-pub struct CreateRequestHandler<GameRepository: GameRepositoryContract + 'static> {
+pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract + 'static> {
     repository: GameRepository,
 }
 
-impl<GameRepository: GameRepositoryContract + 'static> CreateRequestHandler<GameRepository> {
+impl<GameRepository: GameRepositoryContract + 'static> CreateGameRequestHandler<GameRepository> {
     pub fn new(repository: GameRepository) -> Self { Self { repository } }
 
     pub async fn create_game(&self, request: CreateGameRequest) -> Result<(), GameError> {

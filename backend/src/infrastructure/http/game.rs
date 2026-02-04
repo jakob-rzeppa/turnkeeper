@@ -1,45 +1,39 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
+use axum::response;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
+use crate::application::game::request_handlers::create::{CreateGameRequestHandler};
+use crate::application::game::requests::CreateGameRequest;
 use crate::AppState;
-use crate::domain::game::entities::game::Game;
 use crate::infrastructure::error::HttpError;
-use crate::infrastructure::persistence::repositories::game::InMemoryGameRepository;
+use crate::infrastructure::persistence::repositories::game::{SqliteGameRepository};
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct GamesCreateHttpRequest {
     pub name: String,
 }
 
-#[derive(Serialize, JsonResponse, Debug)]
-pub struct GamesCreateHttpResponse {
-    pub game_id: String,
-}
-
 /// POST /games
 ///
 /// creates a game and returns the initial game state
-pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<GamesCreateHttpResponse, HttpError> {
-    let repo = InMemoryGameRepository::new(state.in_memory_game_db);
+pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<StatusCode, HttpError> {
+    let handler = CreateGameRequestHandler::new(SqliteGameRepository::new(state.db));
+
+    handler.create_game(CreateGameRequest {
+        name: request.name,
+    }).await?;
     
-    let id = Uuid::new_v4();
-    let game = Game::new(id.clone(), request.name);
-    
-    repo.save(game).await?;
-    
-    Ok(GamesCreateHttpResponse {
-        game_id: id.to_string(),
-    })
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// DELETE /games/{game_id}
 ///
 /// deletes a game if no current connection to it
 pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
-    let repo = InMemoryGameRepository::new(state.in_memory_game_db);
+    let repo = SqliteGameRepository::new(state.db);
 
     let id = Uuid::try_from(id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
 
