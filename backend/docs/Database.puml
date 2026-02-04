@@ -1,8 +1,41 @@
 @startuml
-entity user {
-	* id : UUID
+
+entity users {
+	* id : VARCHAR(36)
 	--
-	name : VARCHAR
-	password : VARCHAR
+	name : TEXT <<UNIQUE, NOT NULL>>
+	password : TEXT <<NOT NULL>>
 }
+
+entity games {
+	* id : VARCHAR(36)
+	--
+	name : TEXT
+	round_number : INTEGER
+	current_player_index : INTEGER
+}
+
+entity players {
+	* id : VARCHAR(36)
+	--
+	game_id : VARCHAR(36)
+	user_id : VARCHAR(36)
+	position : INTEGER
+}
+
+entity stats {
+	* id : VARCHAR(36)
+	--
+	player_id : VARCHAR(36)
+	key : TEXT
+	kind : VARCHAR(255)
+	number_value : INTEGER
+	string_value : TEXT
+	boolean_value : BOOLEAN
+}
+
+games ||--o{ players : "has\nON DELETE CASCADE\n(game -> player)"
+players ||--o{ stats : "has\nON DELETE CASCADE\n(player -> stat)"
+users ||--o{ players : "has\nON DELETE RESTRICT\n(user -> player)"
+
 @enduml
