@@ -14,7 +14,7 @@ impl<GameRepository: GameRepositoryContract + 'static> CreateRequestHandler<Game
     pub async fn create_game(&self, request: CreateGameRequest) -> Result<(), GameError> {
         let game = Game::new(Uuid::new_v4(), request.name);
 
-        self.repository.save(game).await?;
+        self.repository.save(&game).await?;
 
         Ok(())
     }
