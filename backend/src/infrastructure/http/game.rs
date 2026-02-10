@@ -16,17 +16,24 @@ pub struct GamesCreateHttpRequest {
     pub name: String,
 }
 
+#[derive(Serialize, JsonResponse, Debug)]
+pub struct GamesCreateHttpResponse {
+    pub id: String,
+}
+
 /// POST /games
 ///
 /// creates a game and returns the initial game state
-pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<StatusCode, HttpError> {
+pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<GamesCreateHttpResponse, HttpError> {
     let handler = CreateGameRequestHandler::new(SqliteGameRepository::new(state.db));
 
-    handler.create_game(CreateGameRequest {
+    let id = handler.create_game(CreateGameRequest {
         name: request.name,
     }).await?;
     
-    Ok(StatusCode::NO_CONTENT)
+    Ok(GamesCreateHttpResponse {
+        id: id.to_string()
+    })
 }
 
 /// DELETE /games/{game_id}

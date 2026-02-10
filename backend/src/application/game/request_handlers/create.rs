@@ -11,11 +11,11 @@ pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract + 'st
 impl<GameRepository: GameRepositoryContract + 'static> CreateGameRequestHandler<GameRepository> {
     pub fn new(repository: GameRepository) -> Self { Self { repository } }
 
-    pub async fn create_game(&self, request: CreateGameRequest) -> Result<(), GameError> {
+    pub async fn create_game(&self, request: CreateGameRequest) -> Result<Uuid, GameError> {
         let game = Game::new(Uuid::new_v4(), request.name);
 
         self.repository.save(&game).await?;
 
-        Ok(())
+        Ok(game.id())
     }
 }
