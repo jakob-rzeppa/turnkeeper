@@ -25,8 +25,12 @@ impl Player {
             stats: Vec::new()
         }
     }
+    
+    pub fn name(&self) -> &str {
+        self.user.name()
+    }
 
-    fn try_add_stat(&mut self, stat: Stat) -> Result<(), GameError> {
+    pub fn try_add_stat(&mut self, stat: Stat) -> Result<(), GameError> {
         if self.stats.iter().any(|s| s.key() == stat.key()) {
             return Err(GameError::new(GameErrorKind::DuplicateStatKey));
         }

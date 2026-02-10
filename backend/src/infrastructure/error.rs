@@ -99,6 +99,7 @@ impl From<GameError> for HttpError {
             GameErrorKind::DuplicateStatKey => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameAlreadyExists => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameNotFound => HttpError::NotFound(e.to_string()),
+            GameErrorKind::PlayerWithSameNameAlreadyExists => HttpError::Conflict(e.to_string()),
         }
     }
 }

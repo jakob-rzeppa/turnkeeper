@@ -48,6 +48,7 @@ pub enum GameErrorKind {
     DuplicateStatKey,
     GameAlreadyExists,
     GameNotFound,
+    PlayerWithSameNameAlreadyExists,
 }
 
 impl GameErrorKind {
@@ -58,6 +59,7 @@ impl GameErrorKind {
             GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
             GameErrorKind::GameNotFound => "Game not found".to_string(),
+            GameErrorKind::PlayerWithSameNameAlreadyExists => "Player with same name already exists".to_string(),
         }
     }
 }
