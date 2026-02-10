@@ -49,6 +49,8 @@ pub enum GameErrorKind {
     GameAlreadyExists,
     GameNotFound,
     PlayerWithSameNameAlreadyExists,
+    RepositoryError,
+    UserForPlayerNotFound,
 }
 
 impl GameErrorKind {
@@ -60,6 +62,8 @@ impl GameErrorKind {
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
             GameErrorKind::GameNotFound => "Game not found".to_string(),
             GameErrorKind::PlayerWithSameNameAlreadyExists => "Player with same name already exists".to_string(),
+            GameErrorKind::RepositoryError => "Unexpected repository error".to_string(),
+            GameErrorKind::UserForPlayerNotFound => "User not found in game".to_string(),
         }
     }
 }

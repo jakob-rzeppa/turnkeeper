@@ -100,6 +100,11 @@ impl From<GameError> for HttpError {
             GameErrorKind::GameAlreadyExists => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameNotFound => HttpError::NotFound(e.to_string()),
             GameErrorKind::PlayerWithSameNameAlreadyExists => HttpError::Conflict(e.to_string()),
+            GameErrorKind::RepositoryError => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
+            GameErrorKind::UserForPlayerNotFound => HttpError::NotFound(e.to_string()),
         }
     }
 }

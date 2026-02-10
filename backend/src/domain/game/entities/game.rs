@@ -13,6 +13,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 ///
 /// - Two Players have the same ID
 /// - current_player_index is greater than length of players - 1
+#[derive(Debug, PartialEq)]
 pub struct Game {
     id: Uuid,
     name: String,
@@ -44,6 +45,14 @@ impl Game {
 
     pub fn players(&self) -> &[Player] {
         &self.players
+    }
+
+    pub fn round_number(&self) -> u32 {
+        self.round_number
+    }
+
+    pub fn current_player_index(&self) -> usize {
+        self.current_player_index
     }
 
     pub fn add_player(&mut self, player: Player)-> Result<(), GameError> {

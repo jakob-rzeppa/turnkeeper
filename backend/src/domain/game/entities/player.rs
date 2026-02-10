@@ -10,6 +10,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 /// # Invalid States
 ///
 /// - Two stats have the same key
+#[derive(Debug, PartialEq)]
 pub struct Player {
     id: Uuid,
     user: User,
@@ -24,6 +25,18 @@ impl Player {
             user,
             stats: Vec::new()
         }
+    }
+
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
+    pub fn user(&self) -> &User {
+        &self.user
+    }
+
+    pub fn stats(&self) -> &[Stat] {
+        &self.stats
     }
     
     pub fn name(&self) -> &str {

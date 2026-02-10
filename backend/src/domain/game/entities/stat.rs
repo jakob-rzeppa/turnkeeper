@@ -40,6 +40,35 @@ impl Stat {
         &self.key
     }
 
+    pub fn as_number(&self) -> Option<i64> {
+        match &self.kind {
+            StatKind::Number { value } => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    pub fn as_string(&self) -> Option<&str> {
+        match &self.kind {
+            StatKind::String { value } => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    pub fn as_boolean(&self) -> Option<bool> {
+        match &self.kind {
+            StatKind::Boolean { value } => Some(value.value()),
+            _ => None,
+        }
+    }
+
+    pub fn kind_str(&self) -> &str {
+        match self.kind {
+            StatKind::Number { .. } => "number",
+            StatKind::String { .. } => "string",
+            StatKind::Boolean { .. } => "boolean",
+        }
+    }
+
     pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, GameError> {
         let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, Box::new(e)) })?;
         let value = StringStatValue::new(value);

@@ -16,6 +16,10 @@ impl StatKey {
 
         Ok(Self { key })
     }
+
+    pub fn as_str(&self) -> &str {
+        &self.key
+    }
 }
 
 #[cfg(test)]
