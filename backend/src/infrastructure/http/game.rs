@@ -1,6 +1,5 @@
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
-use axum::response;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
@@ -30,7 +29,7 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
     let id = handler.create_game(CreateGameRequest {
         name: request.name,
     }).await?;
-    
+
     Ok(GamesCreateHttpResponse {
         id: id.to_string()
     })
