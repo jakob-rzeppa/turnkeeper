@@ -9,7 +9,7 @@ pub struct DeleteGameRequestHandler<GameRepository: GameRepositoryContract + 'st
 impl<GameRepository: GameRepositoryContract + 'static> DeleteGameRequestHandler<GameRepository> {
     pub fn new(repository: GameRepository) -> Self { Self { repository } }
 
-    pub async fn create_game(&self, request: DeleteGameRequest) -> Result<(), GameError> {
+    pub async fn delete_game(&self, request: DeleteGameRequest) -> Result<(), GameError> {
         self.repository.delete(request.id).await?;
 
         Ok(())

@@ -5,7 +5,8 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::request_handlers::create::{CreateGameRequestHandler};
-use crate::application::game::requests::CreateGameRequest;
+use crate::application::game::request_handlers::delete::DeleteGameRequestHandler;
+use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
 use crate::AppState;
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::persistence::repositories::game::{SqliteGameRepository};
@@ -39,11 +40,11 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
 ///
 /// deletes a game if no current connection to it
 pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
-    let repo = SqliteGameRepository::new(state.db);
+    let handler = DeleteGameRequestHandler::new(SqliteGameRepository::new(state.db));
 
     let id = Uuid::try_from(id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
 
-    repo.delete(id).await?;
+    handler.delete_game(DeleteGameRequest { id }).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
