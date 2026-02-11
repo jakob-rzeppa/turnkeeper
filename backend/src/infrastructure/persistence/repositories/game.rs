@@ -9,6 +9,7 @@ use crate::domain::game::entities::game::Game;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::entities::stat::Stat;
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::projections::GameMetadata;
 use crate::domain::user::entities::User;
 
 /// SQLite-based implementation of the game repository.
@@ -410,6 +411,46 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(game)
     }
 
+    /// Retrieves the metadata for all the created games.
+    ///
+    /// This method queries all games and counts their players to construct lightweight
+    /// metadata objects. This is more efficient than loading full game entities when
+    /// you only need summary information.
+    async fn get_all_games_metadata(&self) -> Result<Vec<GameMetadata>, GameError> {
+        let rows = sqlx::query!(
+            r#"
+            SELECT 
+                g.id,
+                g.name,
+                g.round_number,
+                g.current_player_index,
+                COUNT(p.id) as number_of_players
+            FROM games g
+            LEFT JOIN players p ON g.id = p.game_id
+            GROUP BY g.id, g.name, g.round_number, g.current_player_index
+            "#
+        )
+        .fetch_all(&self.db)
+        .await
+        .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
+
+        let mut metadata = Vec::new();
+        for row in rows {
+            let id = Uuid::parse_str(&row.id)
+                .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
+            
+            metadata.push(GameMetadata {
+                id,
+                name: row.name,
+                number_of_players: row.number_of_players as usize,
+                round_number: row.round_number as u32,
+                current_player_index: row.current_player_index as usize,
+            });
+        }
+
+        Ok(metadata)
+    }
+
     /// Deletes a game and all its associated data from the database.
     ///
     /// This method removes the game record, which cascades to delete:
@@ -606,5 +647,110 @@ mod tests {
         assert!(res.is_err());
         let res = res.unwrap_err();
         assert_eq!(res, GameError::new(GameErrorKind::GameNotFound));
+    }
+
+    #[tokio::test]
+    async fn test_get_all_games_metadata_empty() {
+        let pool = create_test_pool().await;
+        let repo = SqliteGameRepository::new(pool);
+
+        let res = repo.get_all_games_metadata().await;
+        assert!(res.is_ok());
+        let metadata = res.unwrap();
+        assert_eq!(metadata.len(), 0);
+    }
+
+    #[tokio::test]
+    async fn test_get_all_games_metadata_single_game() {
+        let pool = create_test_pool().await;
+        let repo = SqliteGameRepository::new(pool.clone());
+
+        insert_users(pool).await;
+        let game = create_test_game();
+
+        repo.save(&game).await.unwrap();
+
+        let res = repo.get_all_games_metadata().await;
+        assert!(res.is_ok());
+        let metadata = res.unwrap();
+        assert_eq!(metadata.len(), 1);
+        
+        let meta = &metadata[0];
+        assert_eq!(meta.id, game.id());
+        assert_eq!(meta.name, game.name());
+        assert_eq!(meta.number_of_players, 3);
+        assert_eq!(meta.round_number, game.round_number());
+        assert_eq!(meta.current_player_index, game.current_player_index());
+    }
+
+    #[tokio::test]
+    async fn test_get_all_games_metadata_multiple_games() {
+        let pool = create_test_pool().await;
+        let repo = SqliteGameRepository::new(pool.clone());
+
+        insert_users(pool).await;
+
+        // Create game1 with 3 players
+        let mut game1 = Game::new(Uuid::new_v4(), "test-game-1".to_string());
+
+        let mut player = Player::new(
+            Uuid::new_v4(),
+            User::try_new("04b5b922-1f09-4132-be16-4aabe54d09d2".try_into().unwrap(), "test-user-name".to_string(), "test-user-password".to_string()).unwrap(),
+        );
+        player.try_add_bool_stat(Uuid::new_v4(), "bool-stat".to_string(), true).unwrap();
+        player.try_add_number_stat(Uuid::new_v4(), "number-stat".to_string(), 50).unwrap();
+        game1.add_player(player).unwrap();
+
+        let mut player2 = Player::new(
+            Uuid::new_v4(),
+            User::try_new("64338889-ef87-4aa5-b6a7-bc1ae91f2ef8".try_into().unwrap(), "test-user2-name".to_string(), "test-user2-password".to_string()).unwrap(),
+        );
+        player2.try_add_bool_stat(Uuid::new_v4(), "bool-stat".to_string(), false).unwrap();
+        player2.try_add_number_stat(Uuid::new_v4(), "number-stat".to_string(), 50).unwrap();
+        player2.try_add_string_stat(Uuid::new_v4(), "string-stat".to_string(), "string-value".to_string()).unwrap();
+        game1.add_player(player2).unwrap();
+
+        let player3 = Player::new(
+            Uuid::new_v4(),
+            User::try_new("58855217-ebcd-40ce-aebb-c30a235358e8".try_into().unwrap(), "test-user3-name".to_string(), "test-user3-password".to_string()).unwrap(),
+        );
+        game1.add_player(player3).unwrap();
+
+        repo.save(&game1).await.unwrap();
+
+        // Create game2 with one player
+        let mut game2 = Game::new(Uuid::new_v4(), "test-game-2".to_string());
+
+        let mut player = Player::new(
+            Uuid::new_v4(),
+            User::try_new("04b5b922-1f09-4132-be16-4aabe54d09d2".try_into().unwrap(), "test-user-name".to_string(), "test-user-password".to_string()).unwrap(),
+        );
+        player.try_add_bool_stat(Uuid::new_v4(), "bool-stat".to_string(), true).unwrap();
+        player.try_add_number_stat(Uuid::new_v4(), "number-stat".to_string(), 50).unwrap();
+        game2.add_player(player).unwrap();
+
+        repo.save(&game2).await.unwrap();
+
+        // Create game3 with no players
+        let mut game3 = Game::new(Uuid::new_v4(), "test-game-3".to_string());
+        repo.save(&game3).await.unwrap();
+
+        let res = repo.get_all_games_metadata().await;
+        assert!(res.is_ok());
+        let metadata = res.unwrap();
+        assert_eq!(metadata.len(), 3);
+
+        // Find each game in the metadata
+        let meta1 = metadata.iter().find(|m| m.id == game1.id()).unwrap();
+        assert_eq!(meta1.name, "test-game-1");
+        assert_eq!(meta1.number_of_players, 3);
+
+        let meta2 = metadata.iter().find(|m| m.id == game2.id()).unwrap();
+        assert_eq!(meta2.name, "test-game-2");
+        assert_eq!(meta2.number_of_players, 1);
+
+        let meta3 = metadata.iter().find(|m| m.id == game3.id()).unwrap();
+        assert_eq!(meta3.name, "test-game-3");
+        assert_eq!(meta3.number_of_players, 0);
     }
 }
