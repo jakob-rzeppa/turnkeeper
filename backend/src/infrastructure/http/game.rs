@@ -3,13 +3,53 @@ use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::request_handlers::create::{CreateGameRequestHandler};
 use crate::application::game::request_handlers::delete::DeleteGameRequestHandler;
+use crate::application::game::request_handlers::get_overview::GameGetOverviewRequestHandler;
 use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
 use crate::AppState;
+use crate::domain::game::projections::GameMetadata;
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::persistence::repositories::game::{SqliteGameRepository};
+
+#[derive(Serialize, Debug)]
+pub struct GamesGetResponseGameMetadata {
+    pub id: String,
+    pub name: String,
+    pub number_of_players: usize,
+    pub round_number: u32,
+    pub current_player_index: usize,
+}
+
+impl From<GameMetadata> for GamesGetResponseGameMetadata {
+    fn from(metadata: GameMetadata) -> Self {
+        Self {
+            id: metadata.id.to_string(),
+            name: metadata.name,
+            number_of_players: metadata.number_of_players,
+            current_player_index: metadata.current_player_index,
+            round_number: metadata.round_number,
+        }
+    }
+}
+
+#[derive(Serialize, JsonResponse, Debug)]
+pub struct GamesGetResponse {
+    pub games: Vec<GamesGetResponseGameMetadata>,
+}
+
+/// GET /games
+/// 
+/// Returns the metadata for all created games
+pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse, HttpError> {
+    let handler = GameGetOverviewRequestHandler::new(SqliteGameRepository::new(state.db));
+    
+    let games_overview = handler.get_overview().await?;
+    
+    Ok(GamesGetResponse {
+        games: games_overview.games_metadata.into_iter().map(|metadata| metadata.into()).collect(),
+    })
+}
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct GamesCreateHttpRequest {
@@ -23,7 +63,7 @@ pub struct GamesCreateHttpResponse {
 
 /// POST /games
 ///
-/// creates a game and returns the initial game state
+/// Creates a game and returns the initial game state
 pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<GamesCreateHttpResponse, HttpError> {
     let handler = CreateGameRequestHandler::new(SqliteGameRepository::new(state.db));
 
@@ -38,7 +78,7 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
 
 /// DELETE /games/{game_id}
 ///
-/// deletes a game if no current connection to it
+/// Deletes a game if no current connection to it
 pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
     let handler = DeleteGameRequestHandler::new(SqliteGameRepository::new(state.db));
 
