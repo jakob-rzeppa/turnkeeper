@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { API_BASE_URL } from '../api/httpApi';
-import axios, { AxiosError } from 'axios';
+import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
+import axios from 'axios';
 
 const emit = defineEmits<{
     (e: 'close'): void;
@@ -19,13 +19,7 @@ async function handleCreateGameClick() {
         emit('create');
         emit('close');
     } catch (e: unknown) {
-        error.value =
-            'Failed to create game: ' +
-            (e instanceof AxiosError
-                ? e.response?.data !== undefined
-                    ? e.response?.data?.error
-                    : e.message
-                : '');
+        error.value = 'Failed to create game: ' + apiErrorToMessage(e);
     }
 }
 </script>

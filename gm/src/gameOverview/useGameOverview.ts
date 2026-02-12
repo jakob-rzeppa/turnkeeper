@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import type { GameMetadata } from '../types/game';
-import { API_BASE_URL } from '../api/httpApi';
+import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
 import axios from 'axios';
 
 export const useGameOverview = () => {
@@ -16,7 +16,7 @@ export const useGameOverview = () => {
             const response = await axios.get<{ games: GameMetadata[] }>(API_BASE_URL + '/games');
             games.value = response.data.games;
         } catch (err: unknown) {
-            error.value = err instanceof Error ? err.message : 'Unknown error';
+            error.value = 'Failed to fetch games: ' + apiErrorToMessage(err);
         } finally {
             loading.value = false;
         }

@@ -1,6 +1,7 @@
-import { ref, watch } from 'vue';
-import { request } from '../api/httpApi';
+import { ref } from 'vue';
 import { useAuthStore } from './authStore';
+import axios from 'axios';
+import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
 
 export function useAuth() {
     const authStore = useAuthStore();
@@ -14,30 +15,24 @@ export function useAuth() {
     // the store will reflect that state and automatically consider the gm as logged in.
     authStore.syncWithCookie();
 
-    function handleSubmit() {
+    async function handleSubmit() {
         error.value = '';
-        const payload = { ...form.value };
-        const resultRef = request<{ token: string }>('POST', '/gm/login', payload);
         loading.value = true;
 
-        // Watch for changes in the resultRef
-        const stop = watch(
-            resultRef,
-            result => {
-                if (!result.loading) {
-                    if (result.payload) {
-                        authStore.setToken(result.payload.token);
-                        stop();
-                    } else if (result.error) {
-                        error.value = result.error.message || 'Unknown error';
-                        stop();
-                    }
-                }
+        const payload = { password: form.value.password };
 
-                loading.value = result.loading;
-            },
-            { immediate: true, deep: true }
-        );
+        try {
+            const response = await axios.post<{ token: string }>(
+                API_BASE_URL + '/gm/login',
+                payload
+            );
+
+            authStore.setToken(response.data.token);
+        } catch (err: unknown) {
+            error.value = 'Login failed: ' + apiErrorToMessage(err);
+        } finally {
+            loading.value = false;
+        }
     }
 
     return {
