@@ -13,9 +13,11 @@
         "test": "vitest"
     },
     "dependencies": {
+        "@tailwindcss/vite": "^4.1.18",
         "axios": "^1.13.2",
-        "bootstrap": "^5.3.8",
+        "daisyui": "^5.5.18",
         "pinia": "^3.0.4",
+        "tailwindcss": "^4.1.18",
         "vue": "^3.5.24"
     },
     "devDependencies": {
