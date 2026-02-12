@@ -1,5 +1,5 @@
 import { ref, watch } from 'vue';
-import { request } from './useHttpApi';
+import { request } from '../api/httpApi';
 import { useAuthStore } from '../stores/auth';
 
 export function useAuth() {

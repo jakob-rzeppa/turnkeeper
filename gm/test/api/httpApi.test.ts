@@ -5,11 +5,11 @@ globalThis.document = Object.defineProperty(globalThis.document || {}, 'cookie',
 });
 
 import { vi, describe, it, expect, afterEach } from 'vitest';
-import { request, api } from '../../src/composables/useHttpApi';
+import { request, api } from '../../src/api/httpApi';
 import AxiosMockAdapter from 'axios-mock-adapter';
 import { nextTick } from 'vue';
 
-describe('useHttpApi request', () => {
+describe('httpApi request', () => {
     const mock = new AxiosMockAdapter(api);
 
     afterEach(() => {
