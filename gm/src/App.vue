@@ -8,10 +8,7 @@ const authStore = useAuthStore();
 </script>
 
 <template>
-    <div class="container btn">
-        <h1 class="display-1 text-center">Turnkeeper user client</h1>
-        <GmAuth v-if="!authStore.isAuthenticated" />
-        <GameOverview v-else />
-    </div>
+    <GmAuth v-if="!authStore.isAuthenticated" />
+    <GameOverview v-else />
     <ModalController />
 </template>

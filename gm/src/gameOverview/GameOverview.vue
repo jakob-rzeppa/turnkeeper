@@ -2,48 +2,61 @@
 import { ref } from 'vue';
 import type { GameMetadata } from '../types/game';
 import { request } from '../api/httpApi';
+import { useModalStore } from '../modal/modalStore';
+import CreateGameModal from './CreateGameModal.vue';
+
+const modalStore = useModalStore();
 
 const response = ref(request<{ games: GameMetadata[] }>('GET', '/games'));
+
+function openCreateGameModal() {
+    modalStore.openModal(CreateGameModal);
+}
 </script>
 
 <template>
-    <div v-if="response.loading" class="d-flex justify-content-center align-items-center min-vh-50">
-        <div class="spinner-border text-primary" role="status">
-            <span class="visually-hidden">Loading games...</span>
+    <div v-if="response.loading" class="flex items-center justify-center h-48">
+        <span class="loading loading-spinner loading-lg" aria-hidden="true"></span>
+    </div>
+
+    <div v-else-if="response.error" class="flex items-center justify-center h-48">
+        <div class="alert alert-error">
+            <strong>Error!</strong>
+            <div>Failed to load games: {{ response.error.message || 'Unknown error' }}</div>
         </div>
     </div>
-    <div v-else-if="response.error" class="alert alert-danger" role="alert">
-        <strong>Error!</strong> Failed to load games:
-        {{ response.error.message || 'Unknown error' }}
-    </div>
-    <div v-else class="container mt-4">
-        <h2 class="mb-4 text-center">Games Overview</h2>
-        <div v-if="response.payload.games.length === 0" class="text-center text-muted">
+
+    <div v-else class="container mx-auto p-4 space-y-6">
+        <h2 class="text-4xl font-semibold text-center">Games Overview</h2>
+
+        <div v-if="response.payload.games.length === 0" class="text-center">
             No games available.
         </div>
-        <div v-else class="row">
+
+        <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
                 v-for="game in response.payload.games"
                 :key="game.id"
-                class="col-lg-4 col-md-6 mb-4"
+                class="card bg-base-200 shadow-md hover:shadow-xl transition-colors h-full"
             >
-                <div class="card h-100 shadow-sm border-0 bg-light">
-                    <div class="card-body d-flex flex-column">
-                        <h5 class="card-title text-primary fw-bold">{{ game.name }}</h5>
-                        <div class="mb-2">
-                            <span class="badge bg-primary me-2"
-                                >Players: {{ game.number_of_players }}</span
-                            >
-                            <span class="badge bg-secondary me-2"
-                                >Round: {{ game.round_number }}</span
-                            >
-                        </div>
-                        <div class="mt-auto">
-                            <button class="btn btn-outline-primary btn-sm w-100">Resume</button>
-                        </div>
+                <div class="card-body flex flex-col gap-3">
+                    <h3 class="card-title text-primary">{{ game.name }}</h3>
+
+                    <div class="space-x-2">
+                        <span class="badge badge-primary"
+                            >Players: {{ game.number_of_players }}</span
+                        >
+                        <span class="badge badge-ghost">Round: {{ game.round_number }}</span>
+                    </div>
+
+                    <div class="card-actions mt-auto">
+                        <button class="btn btn-outline btn-primary btn-sm w-full">Resume</button>
                     </div>
                 </div>
             </div>
         </div>
+        <button @click="openCreateGameModal" class="btn btn-accent btn-block w-full">
+            Create New Game
+        </button>
     </div>
 </template>
