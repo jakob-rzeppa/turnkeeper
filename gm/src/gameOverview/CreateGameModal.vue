@@ -1,10 +1,32 @@
 <script setup lang="ts">
+import { ref } from 'vue';
+import { API_BASE_URL } from '../api/httpApi';
+import axios, { AxiosError } from 'axios';
+
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'create'): void;
 }>();
 
-function handleCreateGameClick() {
-    emit('close');
+const error = ref('');
+const gameName = ref('');
+
+async function handleCreateGameClick() {
+    try {
+        await axios.post(API_BASE_URL + '/games', {
+            name: gameName.value,
+        });
+        emit('create');
+        emit('close');
+    } catch (e: unknown) {
+        error.value =
+            'Failed to create game: ' +
+            (e instanceof AxiosError
+                ? e.response?.data !== undefined
+                    ? e.response?.data?.error
+                    : e.message
+                : '');
+    }
 }
 </script>
 
@@ -14,8 +36,13 @@ function handleCreateGameClick() {
 
         <label class="input w-full">
             <span class="label">Game Name</span>
-            <input type="text" id="gameName" placeholder="Enter game name" />
+            <input type="text" id="gameName" placeholder="Enter game name" v-model="gameName" />
         </label>
+
+        <div v-if="error" class="alert alert-error">
+            <strong>Error!</strong>
+            <div>{{ error }}</div>
+        </div>
 
         <div class="flex gap-4 w-full">
             <button @click="handleCreateGameClick" class="btn btn-primary flex-1">

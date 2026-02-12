@@ -1,41 +1,43 @@
 <script setup lang="ts">
-import { ref } from 'vue';
-import type { GameMetadata } from '../types/game';
-import { request } from '../api/httpApi';
 import { useModalStore } from '../modal/modalStore';
 import CreateGameModal from './CreateGameModal.vue';
+import { useGameOverview } from './useGameOverview';
 
 const modalStore = useModalStore();
 
-const response = ref(request<{ games: GameMetadata[] }>('GET', '/games'));
+const gameOverview = useGameOverview();
 
 function openCreateGameModal() {
-    modalStore.openModal(CreateGameModal);
+    modalStore.openModal(CreateGameModal, undefined, {
+        create: () => {
+            gameOverview.fetchGames();
+        },
+    });
 }
 </script>
 
 <template>
-    <div v-if="response.loading" class="flex items-center justify-center h-48">
+    <div v-if="gameOverview.loading.value" class="flex items-center justify-center h-48">
         <span class="loading loading-spinner loading-lg" aria-hidden="true"></span>
     </div>
 
-    <div v-else-if="response.error" class="flex items-center justify-center h-48">
+    <div v-else-if="gameOverview.error.value" class="flex items-center justify-center h-48">
         <div class="alert alert-error">
             <strong>Error!</strong>
-            <div>Failed to load games: {{ response.error.message || 'Unknown error' }}</div>
+            <div>Failed to load games: {{ gameOverview.error.value }}</div>
         </div>
     </div>
 
     <div v-else class="container mx-auto p-4 space-y-6">
         <h2 class="text-4xl font-semibold text-center">Games Overview</h2>
 
-        <div v-if="response.payload.games.length === 0" class="text-center">
+        <div v-if="gameOverview.games.value.length === 0" class="text-center">
             No games available.
         </div>
 
         <div v-else class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
             <div
-                v-for="game in response.payload.games"
+                v-for="game in gameOverview.games.value"
                 :key="game.id"
                 class="card bg-base-200 shadow-md hover:shadow-xl transition-colors h-full"
             >

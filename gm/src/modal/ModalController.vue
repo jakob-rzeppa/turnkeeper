@@ -21,6 +21,7 @@ const modalStore = useModalStore();
             <component
                 :is="modalStore.topModal.component"
                 v-bind="modalStore.topModal.props"
+                v-on="modalStore.topModal.emits"
                 @close="modalStore.closeTopModal"
             />
         </BaseModal>

@@ -10,6 +10,7 @@ interface Modal {
     id: number;
     component: Component;
     props?: Record<string, unknown>;
+    emits?: Record<string, (...args: unknown[]) => void>;
     width: 'sm' | 'md' | 'lg' | 'xl' | '2xl' | '4xl' | '6xl' | '8xl';
 }
 
@@ -24,9 +25,10 @@ export const useModalStore = defineStore('modal', {
         openModal(
             component: Component,
             props: Modal['props'] = {},
+            emits: Modal['emits'] = {},
             width: Modal['width'] = '2xl'
         ): void {
-            this.modals.push({ id: ++id, component: markRaw(component), props, width });
+            this.modals.push({ id: ++id, component: markRaw(component), props, emits, width });
         },
         closeTopModal(): void {
             if (this.modals.length > 0) {

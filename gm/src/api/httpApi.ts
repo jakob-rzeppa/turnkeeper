@@ -1,8 +1,8 @@
 // Centralized HTTP API handler for Turnkeeper
-import { ref, type Ref } from '@vue/runtime-dom';
+import { type Ref } from '@vue/runtime-dom';
 import axios, { type AxiosRequestConfig, type AxiosResponse } from 'axios';
 
-const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
+export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
 export const api = axios.create({
     baseURL: API_BASE_URL,
@@ -50,19 +50,24 @@ api.interceptors.response.use(
 );
 
 // Result type for error-as-value handling
-export type RequestStatus<T, E = Error> =
+export type ResponseStatus<T> =
     | { loading: true; payload: null; error: null }
     | { loading: false; payload: T; error: null }
-    | { loading: false; payload: null; error: E };
+    | { loading: false; payload: null; error: Error };
+
+export function getDefaultResponseStatus<T>(): ResponseStatus<T> {
+    return { loading: true, payload: null, error: null };
+}
 
 // Generic request handler with Result type
 export function request<T = object>(
+    statusRef: Ref<ResponseStatus<T>>,
     method: AxiosRequestConfig['method'],
     url: string,
     data?: object,
     config?: AxiosRequestConfig
-): Ref<RequestStatus<T>> {
-    const response: Ref<RequestStatus<T>> = ref({ loading: true, payload: null, error: null });
+): void {
+    statusRef.value = { loading: true, payload: null, error: null };
 
     api({
         method,
@@ -71,11 +76,9 @@ export function request<T = object>(
         ...config,
     })
         .then((res: AxiosResponse<T>) => {
-            response.value = { loading: false, payload: res.data, error: null };
+            statusRef.value = { loading: false, payload: res.data, error: null };
         })
         .catch((err: Error) => {
-            response.value = { loading: false, payload: null, error: err };
+            statusRef.value = { loading: false, payload: null, error: err };
         });
-
-    return response;
 }
