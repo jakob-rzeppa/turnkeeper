@@ -1,7 +1,8 @@
 <script setup lang="ts">
-import GameOverview from './components/GameOverview.vue';
-import GmAuth from './components/GmAuth.vue';
-import { useAuthStore } from './stores/auth';
+import GameOverview from './gameOverview/GameOverview.vue';
+import GmAuth from './auth/GmAuth.vue';
+import ModalController from './modal/ModalController.vue';
+import { useAuthStore } from './auth/authStore';
 
 const authStore = useAuthStore();
 </script>
@@ -12,4 +13,5 @@ const authStore = useAuthStore();
         <GmAuth v-if="!authStore.isAuthenticated" />
         <GameOverview v-else />
     </div>
+    <ModalController />
 </template>

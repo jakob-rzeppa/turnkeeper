@@ -1,6 +1,6 @@
 import { ref, watch } from 'vue';
 import { request } from '../api/httpApi';
-import { useAuthStore } from '../stores/auth';
+import { useAuthStore } from './authStore';
 
 export function useAuth() {
     const authStore = useAuthStore();
