@@ -51,9 +51,9 @@ api.interceptors.response.use(
 
 // Result type for error-as-value handling
 export type RequestStatus<T, E = Error> =
-    | { loading: true; value: null; error: null }
-    | { loading: false; value: T; error: null }
-    | { loading: false; value: null; error: E };
+    | { loading: true; payload: null; error: null }
+    | { loading: false; payload: T; error: null }
+    | { loading: false; payload: null; error: E };
 
 // Generic request handler with Result type
 export function request<T = object>(
@@ -62,7 +62,7 @@ export function request<T = object>(
     data?: object,
     config?: AxiosRequestConfig
 ): Ref<RequestStatus<T>> {
-    const response: Ref<RequestStatus<T>> = ref({ loading: true, value: null, error: null });
+    const response: Ref<RequestStatus<T>> = ref({ loading: true, payload: null, error: null });
 
     api({
         method,
@@ -71,10 +71,10 @@ export function request<T = object>(
         ...config,
     })
         .then((res: AxiosResponse<T>) => {
-            response.value = { loading: false, value: res.data, error: null };
+            response.value = { loading: false, payload: res.data, error: null };
         })
         .catch((err: Error) => {
-            response.value = { loading: false, value: null, error: err };
+            response.value = { loading: false, payload: null, error: err };
         });
 
     return response;

@@ -32,8 +32,8 @@ export function useAuth() {
             resultRef,
             result => {
                 if (!result.loading) {
-                    if (result.value) {
-                        authStore.setToken(result.value.token);
+                    if (result.payload) {
+                        authStore.setToken(result.payload.token);
                         stop();
                     } else if (result.error) {
                         error.value = result.error.message || 'Unknown error';

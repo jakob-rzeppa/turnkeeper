@@ -21,7 +21,7 @@ describe('httpApi request', () => {
         const resultRef = request('GET', '/test-endpoint');
 
         expect(resultRef.value.loading).toBe(true);
-        expect(resultRef.value.value).toBeNull();
+        expect(resultRef.value.data).toBeNull();
         expect(resultRef.value.error).toBeNull();
     });
 
@@ -37,7 +37,7 @@ describe('httpApi request', () => {
 
         expect(resultRef.value.loading).toBe(false);
         expect(resultRef.value.error).toBeNull();
-        expect(resultRef.value.value).toEqual(mockData);
+        expect(resultRef.value.data).toEqual(mockData);
     });
 
     it('should handle failed request with axios error', async () => {
@@ -49,7 +49,7 @@ describe('httpApi request', () => {
         await nextTick();
 
         expect(resultRef.value.loading).toBe(false);
-        expect(resultRef.value.value).toBeNull();
+        expect(resultRef.value.data).toBeNull();
         expect(resultRef.value.error).toBeInstanceOf(Error);
         expect(resultRef.value.error!.message).toBe('Network Error');
     });
@@ -69,7 +69,7 @@ describe('httpApi request', () => {
         await nextTick();
 
         expect(resultRef.value.loading).toBe(false);
-        expect(resultRef.value.value).toBeNull();
+        expect(resultRef.value.data).toBeNull();
         expect(resultRef.value.error).toBeInstanceOf(Error);
         expect(resultRef.value.error!.message).toBe('Test Server Error');
     });
@@ -91,7 +91,7 @@ describe('httpApi request', () => {
 
         expect(resultRef.value.loading).toBe(false);
         expect(resultRef.value.error).toBeNull();
-        expect(resultRef.value.value).toEqual(mockData);
+        expect(resultRef.value.data).toEqual(mockData);
     });
 
     it('should not add Authorization header if no token exists', async () => {
@@ -111,7 +111,7 @@ describe('httpApi request', () => {
 
         expect(resultRef.value.loading).toBe(false);
         expect(resultRef.value.error).toBeNull();
-        expect(resultRef.value.value).toEqual(mockData);
+        expect(resultRef.value.data).toEqual(mockData);
     });
 
     it('should add a request body when provided', async () => {
@@ -130,6 +130,6 @@ describe('httpApi request', () => {
 
         expect(resultRef.value.loading).toBe(false);
         expect(resultRef.value.error).toBeNull();
-        expect(resultRef.value.value).toEqual(mockResponse);
+        expect(resultRef.value.data).toEqual(mockResponse);
     });
 });
