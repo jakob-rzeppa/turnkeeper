@@ -21,7 +21,7 @@ function handleCreateGameClick() {
             <button @click="handleCreateGameClick" class="btn btn-primary flex-1">
                 Create Game
             </button>
-            <button @click="$emit('close')" class="btn btn-ghost flex-1">Cancel</button>
+            <button @click="emit('close')" class="btn btn-ghost flex-1">Cancel</button>
         </div>
     </div>
 </template>

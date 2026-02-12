@@ -4,33 +4,32 @@ const { form, loading, error, handleSubmit } = useAuth();
 </script>
 
 <template>
-    <div class="container mt-5" style="max-width: 400px">
-        <div class="card shadow-sm">
+    <div class="max-w-md mx-auto">
+        <div class="card bg-base-100 shadow-md">
             <div class="card-body">
-                <h2 class="card-title text-center mb-4">Login</h2>
+                <h2 class="text-xl font-bold text-center">Login</h2>
 
-                <div v-if="loading" class="d-flex justify-content-center my-4">
-                    <div class="spinner-border" role="status">
-                        <span class="visually-hidden">Loading...</span>
-                    </div>
-                </div>
+                <template v-if="loading">
+                    <span class="mx-auto loading loading-spinner loading-lg"></span>
+                </template>
 
-                <div v-else>
-                    <form @submit.prevent="handleSubmit">
-                        <div class="mb-3">
-                            <label for="password" class="form-label">Password</label>
+                <template v-else>
+                    <form @submit.prevent="handleSubmit" novalidate class="space-y-4">
+                        <label class="input w-full">
+                            <span class="label">Password</span>
                             <input
                                 v-model="form.password"
-                                id="password"
                                 type="password"
-                                class="form-control"
-                                required
+                                id="password"
+                                placeholder="Enter password"
                             />
-                        </div>
-                        <div v-if="error" class="alert alert-danger py-2">{{ error }}</div>
-                        <button type="submit" class="btn btn-primary w-100 mb-2">Login</button>
+                        </label>
+
+                        <div v-if="error" class="alert alert-error py-2">{{ error }}</div>
+
+                        <button type="submit" class="btn btn-primary w-full mb-2">Login</button>
                     </form>
-                </div>
+                </template>
             </div>
         </div>
     </div>

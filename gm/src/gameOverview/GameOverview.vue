@@ -43,7 +43,7 @@ function openCreateGameModal() {
                     <h3 class="card-title text-primary">{{ game.name }}</h3>
 
                     <div class="space-x-2">
-                        <span class="badge badge-primary"
+                        <span class="badge badge-secondary"
                             >Players: {{ game.number_of_players }}</span
                         >
                         <span class="badge badge-ghost">Round: {{ game.round_number }}</span>
@@ -55,7 +55,7 @@ function openCreateGameModal() {
                 </div>
             </div>
         </div>
-        <button @click="openCreateGameModal" class="btn btn-accent btn-block w-full">
+        <button @click="openCreateGameModal" class="btn btn-primary btn-block w-full">
             Create New Game
         </button>
     </div>
