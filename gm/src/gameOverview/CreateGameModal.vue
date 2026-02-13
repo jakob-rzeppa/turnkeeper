@@ -5,28 +5,39 @@ import axios from 'axios';
 
 const emit = defineEmits<{
     (e: 'close'): void;
+    (e: 'lock'): void;
+    (e: 'unlock'): void;
     (e: 'create'): void;
 }>();
 
+const loading = ref(false);
 const error = ref('');
 const gameName = ref('');
 
 async function handleCreateGameClick() {
+    emit('lock');
+    loading.value = true;
     try {
         await axios.post(API_BASE_URL + '/games', {
             name: gameName.value,
         });
         emit('create');
+        emit('unlock');
         emit('close');
     } catch (e: unknown) {
         error.value = 'Failed to create game: ' + apiErrorToMessage(e);
+    } finally {
+        loading.value = false;
+        emit('unlock');
     }
 }
 </script>
 
 <template>
     <div class="p-4 space-y-4">
-        <h2 class="text-xl font-bold text-center">Create New Game</h2>
+        <h2 class="text-xl font-bold text-center">
+            Create New Game <span v-if="loading" class="loading loading-dots"></span>
+        </h2>
 
         <label class="input w-full">
             <span class="label">Game Name</span>
@@ -39,10 +50,16 @@ async function handleCreateGameClick() {
         </div>
 
         <div class="flex gap-4 w-full">
-            <button @click="handleCreateGameClick" class="btn btn-primary flex-1">
+            <button
+                @click="handleCreateGameClick"
+                class="btn btn-primary flex-1"
+                :disabled="loading"
+            >
                 Create Game
             </button>
-            <button @click="emit('close')" class="btn btn-ghost flex-1">Cancel</button>
+            <button @click="emit('close')" class="btn btn-ghost flex-1" :disabled="loading">
+                Cancel
+            </button>
         </div>
     </div>
 </template>
