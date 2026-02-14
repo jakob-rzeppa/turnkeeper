@@ -1,5 +1,1 @@
-pub enum GameEvent {
-    Create {
-        name: String,
-    },
-}
+pub enum GameEvent {}
