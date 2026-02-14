@@ -16,9 +16,6 @@ use crate::infrastructure::persistence::repositories::game::{SqliteGameRepositor
 pub struct GamesGetResponseGameMetadata {
     pub id: String,
     pub name: String,
-    pub number_of_players: usize,
-    pub round_number: u32,
-    pub current_player_index: usize,
 }
 
 impl From<GameMetadata> for GamesGetResponseGameMetadata {
@@ -26,9 +23,6 @@ impl From<GameMetadata> for GamesGetResponseGameMetadata {
         Self {
             id: metadata.id.to_string(),
             name: metadata.name,
-            number_of_players: metadata.number_of_players,
-            current_player_index: metadata.current_player_index,
-            round_number: metadata.round_number,
         }
     }
 }

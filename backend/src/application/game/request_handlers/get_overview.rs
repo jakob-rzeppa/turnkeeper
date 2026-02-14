@@ -11,7 +11,7 @@ impl<GameRepository: GameRepositoryContract + 'static> GameGetOverviewRequestHan
     
     pub async fn get_overview(&self) -> Result<OverviewGameResponse, GameError> {
         Ok(OverviewGameResponse {
-            games_metadata: self.repository.get_all_games_metadata().await?
+            games_metadata: self.repository.get_metadata_all_games().await?
         })
     }
 }

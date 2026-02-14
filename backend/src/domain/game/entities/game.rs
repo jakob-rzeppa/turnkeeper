@@ -4,11 +4,6 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 
 /// The representation of the game
 ///
-/// # Creation
-///
-/// - For a new Game use `Game::new(id: Uuid)`.
-/// - When instantiating an existing Game using `Game::builder()` is recommended.
-///
 /// # Invalid States
 ///
 /// - Two Players have the same ID
@@ -35,29 +30,9 @@ impl Game {
         }
     }
 
-    pub fn id(&self) -> Uuid {
-        self.id
-    }
-    
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn players(&self) -> &[Player] {
-        &self.players
-    }
-
-    pub fn round_number(&self) -> u32 {
-        self.round_number
-    }
-
-    pub fn current_player_index(&self) -> usize {
-        self.current_player_index
-    }
-
     pub fn add_player(&mut self, player: Player)-> Result<(), GameError> {
         if self.players.iter().any(|p| {
-            p.name() == player.name()
+            p.id() == player.id() || p.name() == player.name()
         }) {
             return Err(GameError::new(GameErrorKind::PlayerWithSameNameAlreadyExists));
         }
@@ -89,12 +64,36 @@ mod tests {
 
             assert!(res.is_ok());
 
-            assert_eq!(game.players().len(), 1);
-            assert_eq!(game.players()[0].name(), "test-user-name".to_string());
+            assert_eq!(game.players.len(), 1);
+            assert_eq!(game.players[0].name(), "test-user-name".to_string());
         }
 
         #[test]
-        fn test_add_player_duplicate() {
+        fn test_add_player_duplicate_id() {
+            let id = Uuid::new_v4();
+            let mut game = Game::new(Uuid::new_v4(), "test-game-name".to_string());
+
+            let player = Player::new(
+                id,
+                User::try_new(Uuid::new_v4(), "test-user-name".to_string(), "test-user-password".to_string()).unwrap(),
+            );
+            let player2 = Player::new(
+                id,
+                User::try_new(Uuid::new_v4(), "test-user2-name".to_string(), "test-user2-password".to_string()).unwrap(),
+            );
+
+            let res = game.add_player(player);
+            assert!(res.is_ok());
+
+            let res = game.add_player(player2);
+            assert!(res.is_err());
+
+            assert_eq!(game.players.len(), 1);
+            assert_eq!(game.players[0].name(), "test-user-name".to_string());
+        }
+
+        #[test]
+        fn test_add_player_duplicate_name() {
             let mut game = Game::new(Uuid::new_v4(), "test-game-name".to_string());
 
             let player = Player::new(
@@ -112,8 +111,8 @@ mod tests {
             let res = game.add_player(player2);
             assert!(res.is_err());
 
-            assert_eq!(game.players().len(), 1);
-            assert_eq!(game.players()[0].name(), "test-user-name".to_string());
+            assert_eq!(game.players.len(), 1);
+            assert_eq!(game.players[0].name(), "test-user-name".to_string());
         }
     }
 }

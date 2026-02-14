@@ -1,7 +1,6 @@
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::requests::CreateGameRequest;
-use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
 
 pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract + 'static> {
@@ -12,10 +11,10 @@ impl<GameRepository: GameRepositoryContract + 'static> CreateGameRequestHandler<
     pub fn new(repository: GameRepository) -> Self { Self { repository } }
 
     pub async fn create_game(&self, request: CreateGameRequest) -> Result<Uuid, GameError> {
-        let game = Game::new(Uuid::new_v4(), request.name);
+        let id = Uuid::new_v4();
 
-        self.repository.save(&game).await?;
+        self.repository.create(id.clone(), request.name).await?;
 
-        Ok(game.id())
+        Ok(id)
     }
 }
