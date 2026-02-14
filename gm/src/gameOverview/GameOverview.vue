@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { useWsConnection } from '../api/useWsConnection';
 import { useModalStore } from '../modal/modalStore';
 import CreateGameModal from './CreateGameModal.vue';
 import { useGameOverview } from './useGameOverview';
@@ -6,6 +7,12 @@ import { useGameOverview } from './useGameOverview';
 const modalStore = useModalStore();
 
 const gameOverview = useGameOverview();
+
+const wsConnection = useWsConnection();
+
+function connectToGame(gameId: string) {
+    wsConnection.connect(gameId);
+}
 
 function openCreateGameModal() {
     modalStore.openModal(CreateGameModal, undefined, {
@@ -52,7 +59,12 @@ function openCreateGameModal() {
                     </div>
 
                     <div class="card-actions mt-auto">
-                        <button class="btn btn-outline btn-primary btn-sm w-full">Resume</button>
+                        <button
+                            @click="connectToGame(game.id)"
+                            class="btn btn-outline btn-primary btn-sm w-full"
+                        >
+                            Resume
+                        </button>
                     </div>
                 </div>
             </div>

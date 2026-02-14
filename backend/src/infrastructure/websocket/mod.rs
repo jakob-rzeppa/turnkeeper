@@ -1,7 +1,9 @@
-use axum::extract::WebSocketUpgrade;
+use axum::extract::{Path, State, WebSocketUpgrade};
 use axum::extract::ws::{Message, Utf8Bytes, WebSocket};
+use axum::response::Response;
+use crate::AppState;
 
-pub async fn websocket_handler(ws: WebSocketUpgrade) -> impl axum::response::IntoResponse {
+pub async fn websocket_handler(State(state): State<AppState>, Path(id): Path<String>, ws: WebSocketUpgrade) -> Response {
     ws.on_upgrade(handle_socket)
 }
 

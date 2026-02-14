@@ -19,6 +19,17 @@ impl<GameRepository: GameRepositoryContract> GameEventHandler<GameRepository> {
         })
     }
 
-    pub fn handle(&mut self, event: GameEvent) {
+    pub async fn load_history(&mut self) -> Result<(), GameError> {
+        let history = self.repository.get_game_history(self.game.id().clone()).await?;
+
+        for event in history {
+            self.handle(event).await?;
+        }
+
+        Ok(())
+    }
+
+    pub async fn handle(&mut self, event: GameEvent) -> Result<(), GameError> {
+        Ok(())
     }
 }

@@ -30,6 +30,10 @@ impl Game {
         }
     }
 
+    pub fn id(&self) -> &Uuid {
+        &self.id
+    }
+
     pub fn add_player(&mut self, player: Player)-> Result<(), GameError> {
         if self.players.iter().any(|p| {
             p.id() == player.id() || p.name() == player.name()

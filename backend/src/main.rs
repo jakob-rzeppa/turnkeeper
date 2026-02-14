@@ -6,18 +6,23 @@ mod infrastructure;
 
 use axum::{routing::get, Router};
 use std::net::SocketAddr;
+use std::sync::Arc;
 use dotenv::dotenv;
 use sqlx::SqlitePool;
 use tokio::net::TcpListener;
+use tokio::sync::Mutex;
 use tower::ServiceBuilder;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
+use crate::application::game::event_handlers::GameEventHandler;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
+use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
 
 #[derive(Clone)]
 pub struct AppState {
     pub db: SqlitePool,
+    pub games: Arc<Mutex<Vec<Mutex<GameEventHandler<SqliteGameRepository>>>>>,
 }
 
 #[tokio::main]
@@ -29,7 +34,7 @@ async fn main() {
 
     let db = create_pool(&database_url).await.expect("Failed to create database pool");
 
-    let state = AppState { db };
+    let state = AppState { db, games: Arc::new(Mutex::new(Vec::new())) };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()
@@ -40,7 +45,7 @@ async fn main() {
     // Initialize the Axum router
     let app = Router::new()
         .merge(get_routes())
-        .route("/ws", get(websocket_handler))
+        .route("/gm/ws/{id}", get(websocket_handler))
         .with_state(state)
         .layer(ServiceBuilder::new().layer(cors_layer));
 
