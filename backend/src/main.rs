@@ -14,6 +14,7 @@ use tower::ServiceBuilder;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
 use crate::application::game::event_handlers::GameEventHandler;
+use crate::infrastructure::auth::AuthManager;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
@@ -22,6 +23,7 @@ use crate::infrastructure::persistence::repositories::RepositoryManager;
 #[derive(Clone)]
 pub struct AppState {
     pub repository_manager: RepositoryManager,
+    pub auth_manager: AuthManager,
     pub games: Arc<Mutex<Vec<Mutex<GameEventHandler<SqliteGameRepository>>>>>,
 }
 
@@ -36,8 +38,9 @@ async fn main() {
 
     // Create Managers
     let repository_manager = RepositoryManager::new(db.clone());
+    let auth_manager = AuthManager::new();
     
-    let state = AppState { repository_manager, games: Arc::new(Mutex::new(Vec::new())) };
+    let state = AppState { repository_manager, auth_manager, games: Arc::new(Mutex::new(Vec::new())) };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()

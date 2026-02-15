@@ -12,7 +12,7 @@ where
     JwtGenerator: UserJwtGeneratorContract,
 {
     repository: Arc<UserRepository>,
-    jwt: JwtGenerator,
+    jwt: Arc<JwtGenerator>,
 }
 
 impl<UserRepository, JwtGenerator> UserRegisterRequestHandler<UserRepository, JwtGenerator>
@@ -20,7 +20,7 @@ where
     UserRepository: UserRepositoryContract,
     JwtGenerator: UserJwtGeneratorContract,
 {
-    pub fn new(repository: Arc<UserRepository>, jwt: JwtGenerator) -> Self {
+    pub fn new(repository: Arc<UserRepository>, jwt: Arc<JwtGenerator>) -> Self {
         Self { repository, jwt }
     }
 
@@ -65,7 +65,7 @@ mod tests {
             .times(1)
             .returning(|_| Ok("test-token".to_string()));
 
-        let handler = UserRegisterRequestHandler::new(Arc::new(user_repo), jwt_generator);
+        let handler = UserRegisterRequestHandler::new(Arc::new(user_repo), Arc::new(jwt_generator));
         let result = handler.register(request).await;
 
         assert!(result.is_ok());

@@ -26,7 +26,7 @@ pub struct LoginHttpResponse {
 pub async fn login(State(state): State<AppState>, payload: LoginHttpRequest) -> Result<LoginHttpResponse, HttpError> {
     let user_auth_handler = UserLoginRequestHandler::new(
         state.repository_manager.user(),
-        UserJwtGenerator::new(),
+        state.auth_manager.user_jwt_generator(),
     );
 
     let request_dto = UserLoginRequest { name: payload.name, password: payload.password };
@@ -54,7 +54,7 @@ pub struct RegisterHttpResponse {
 pub async fn register(State(state): State<AppState>, payload: RegisterHttpRequest) -> Result<RegisterHttpResponse, HttpError> {
     let user_auth_handler = UserRegisterRequestHandler::new(
         state.repository_manager.user(),
-        UserJwtGenerator::new(),
+        state.auth_manager.user_jwt_generator(),
     );
 
     let request_dto = UserRegisterRequest { name: payload.name, password: payload.password };
