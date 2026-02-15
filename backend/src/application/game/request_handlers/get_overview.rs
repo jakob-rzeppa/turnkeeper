@@ -1,13 +1,14 @@
+use std::sync::Arc;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::requests::OverviewGameResponse;
 use crate::domain::game::error::GameError;
 
-pub struct GameGetOverviewRequestHandler<GameRepository: GameRepositoryContract + 'static> {
-    repository: GameRepository,
+pub struct GameGetOverviewRequestHandler<GameRepository: GameRepositoryContract> {
+    repository: Arc<GameRepository>,
 }
 
-impl<GameRepository: GameRepositoryContract + 'static> GameGetOverviewRequestHandler<GameRepository> {
-    pub fn new(repository: GameRepository) -> Self { Self { repository } }
+impl<GameRepository: GameRepositoryContract> GameGetOverviewRequestHandler<GameRepository> {
+    pub fn new(repository: Arc<GameRepository>) -> Self { Self { repository } }
     
     pub async fn get_overview(&self) -> Result<OverviewGameResponse, GameError> {
         Ok(OverviewGameResponse {

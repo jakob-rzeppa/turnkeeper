@@ -1,3 +1,4 @@
+use std::sync::Arc;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::UserLoginRequest;
 use crate::application::user::responses::UserTokenResponse;
@@ -6,19 +7,19 @@ use crate::domain::user::error::UserError;
 
 pub struct UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryContract + 'static,
-    JwtGenerator: UserJwtGeneratorContract + 'static,
+    UserRepository: UserRepositoryContract,
+    JwtGenerator: UserJwtGeneratorContract,
 {
-    repository: UserRepository,
+    repository: Arc<UserRepository>,
     jwt: JwtGenerator,
 }
 
 impl<UserRepository, JwtGenerator> UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
-    UserRepository: UserRepositoryContract + 'static,
-    JwtGenerator: UserJwtGeneratorContract + 'static,
+    UserRepository: UserRepositoryContract,
+    JwtGenerator: UserJwtGeneratorContract,
 {
-    pub fn new(repository: UserRepository, jwt: JwtGenerator) -> Self {
+    pub fn new(repository: Arc<UserRepository>, jwt: JwtGenerator) -> Self {
         Self { repository, jwt }
     }
 
@@ -36,6 +37,7 @@ where
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
     use uuid::Uuid;
     use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::login::UserLoginRequestHandler;
@@ -63,7 +65,7 @@ mod tests {
             .times(1)
             .returning(|_| Ok("login-token".to_string()));
 
-        let handler = UserLoginRequestHandler::new(user_repo, jwt_generator);
+        let handler = UserLoginRequestHandler::new(Arc::new(user_repo), jwt_generator);
         let result = handler.login(request).await;
 
         assert!(result.is_ok());
@@ -90,7 +92,7 @@ mod tests {
         jwt_generator.expect_generate_token()
             .never();
 
-        let handler = UserLoginRequestHandler::new(user_repo, jwt_generator);
+        let handler = UserLoginRequestHandler::new(Arc::new(user_repo), jwt_generator);
         let result = handler.login(request).await;
 
         assert!(result.is_err());

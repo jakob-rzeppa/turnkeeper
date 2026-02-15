@@ -25,7 +25,7 @@ pub struct LoginHttpResponse {
 /// authenticates a user via username and password and returns a JSON WEB TOKEN
 pub async fn login(State(state): State<AppState>, payload: LoginHttpRequest) -> Result<LoginHttpResponse, HttpError> {
     let user_auth_handler = UserLoginRequestHandler::new(
-        SqliteUserRepository::new(state.db.clone()),
+        state.repository_manager.user(),
         UserJwtGenerator::new(),
     );
 
@@ -53,7 +53,7 @@ pub struct RegisterHttpResponse {
 /// registers a new user via username and password
 pub async fn register(State(state): State<AppState>, payload: RegisterHttpRequest) -> Result<RegisterHttpResponse, HttpError> {
     let user_auth_handler = UserRegisterRequestHandler::new(
-        SqliteUserRepository::new(state.db.clone()),
+        state.repository_manager.user(),
         UserJwtGenerator::new(),
     );
 

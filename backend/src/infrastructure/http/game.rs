@@ -36,7 +36,7 @@ pub struct GamesGetResponse {
 /// 
 /// Returns the metadata for all created games
 pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse, HttpError> {
-    let handler = GameGetOverviewRequestHandler::new(SqliteGameRepository::new(state.db));
+    let handler = GameGetOverviewRequestHandler::new(state.repository_manager.game());
     
     let games_overview = handler.get_overview().await?;
     
@@ -59,7 +59,7 @@ pub struct GamesCreateHttpResponse {
 ///
 /// Creates a game and returns the initial game state
 pub async fn games_create(State(state): State<AppState>, request: GamesCreateHttpRequest) -> Result<GamesCreateHttpResponse, HttpError> {
-    let handler = CreateGameRequestHandler::new(SqliteGameRepository::new(state.db));
+    let handler = CreateGameRequestHandler::new(state.repository_manager.game());
 
     let id = handler.create_game(CreateGameRequest {
         name: request.name,
@@ -74,7 +74,7 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
 ///
 /// Deletes a game if no current connection to it
 pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
-    let handler = DeleteGameRequestHandler::new(SqliteGameRepository::new(state.db));
+    let handler = DeleteGameRequestHandler::new(state.repository_manager.game());
 
     let id = Uuid::try_from(id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
 

@@ -8,7 +8,6 @@ use axum::{routing::get, Router};
 use std::net::SocketAddr;
 use std::sync::Arc;
 use dotenv::dotenv;
-use sqlx::SqlitePool;
 use tokio::net::TcpListener;
 use tokio::sync::Mutex;
 use tower::ServiceBuilder;
@@ -18,10 +17,11 @@ use crate::application::game::event_handlers::GameEventHandler;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
+use crate::infrastructure::persistence::repositories::RepositoryManager;
 
 #[derive(Clone)]
 pub struct AppState {
-    pub db: SqlitePool,
+    pub repository_manager: RepositoryManager,
     pub games: Arc<Mutex<Vec<Mutex<GameEventHandler<SqliteGameRepository>>>>>,
 }
 
@@ -34,7 +34,10 @@ async fn main() {
 
     let db = create_pool(&database_url).await.expect("Failed to create database pool");
 
-    let state = AppState { db, games: Arc::new(Mutex::new(Vec::new())) };
+    // Create Managers
+    let repository_manager = RepositoryManager::new(db.clone());
+    
+    let state = AppState { repository_manager, games: Arc::new(Mutex::new(Vec::new())) };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()
