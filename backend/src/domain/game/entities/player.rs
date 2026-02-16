@@ -7,7 +7,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 ///
 /// Use the `Player::builder()` for instantiating the Player.
 ///
-/// # Invalid States
+/// # Invariants
 ///
 /// - Two stats have the same key
 #[derive(Debug, PartialEq)]

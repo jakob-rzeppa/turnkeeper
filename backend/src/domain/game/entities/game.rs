@@ -4,7 +4,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 
 /// The representation of the game
 ///
-/// # Invalid States
+/// # Invariants
 ///
 /// - Two Players have the same ID
 /// - current_player_index is greater than length of players - 1

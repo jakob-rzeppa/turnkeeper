@@ -1,9 +1,37 @@
+//! # User Entity
+//!
+//! Defines the User aggregate root.
+
 use uuid::Uuid;
 use crate::domain::user::error::{UserError, UserErrorKind};
 use crate::domain::user::value_objects::user_name::UserName;
 use crate::domain::user::value_objects::user_password::UserPassword;
 
-/// The representation of a user
+/// Represents a user who can participate in games.
+///
+/// # Fields
+///
+/// * `id` - Unique identifier (UUID)
+/// * `name` - User's display name (validated via [`UserName`])
+/// * `password` - User's password (validated via [`UserPassword`])
+///
+/// # Notes
+///
+/// The password is stored in plain text so GMs can look up passwords if users forget them.
+/// This is acceptable for the use case of a private game system.
+///
+/// # Examples
+///
+/// ```rust,ignore
+/// use uuid::Uuid;
+/// use crate::domain::user::entities::User;
+///
+/// let user = User::try_new(
+///     Uuid::new_v4(),
+///     "player1".to_string(),
+///     "secure_password".to_string()
+/// )?;
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct User {
     id: Uuid,
@@ -14,6 +42,29 @@ pub struct User {
 }
 
 impl User {
+    /// Creates a new user with validation.
+    ///
+    /// # Arguments
+    ///
+    /// * `id` - Unique identifier for the user
+    /// * `name` - Display name (will be validated)
+    /// * `password` - Password (will be validated)
+    ///
+    /// # Errors
+    ///
+    /// Returns [`UserError`] if:
+    /// - Name is empty or contains invalid characters
+    /// - Password doesn't meet requirements
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// let user = User::try_new(
+    ///     Uuid::new_v4(),
+    ///     "player1".to_string(),
+    ///     "password123".to_string()
+    /// )?;
+    /// ```
     pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, UserError> {
         let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
         let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
@@ -21,16 +72,42 @@ impl User {
         Ok(Self { id, name, password })
     }
 
+    /// Returns the user's unique identifier.
     pub fn id(&self) -> &Uuid {
         &self.id
     }
+    
+    /// Returns the user's display name.
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
+    
+    /// Returns the user's password.
+    ///
+    /// # Security Note
+    ///
+    /// Passwords are stored in plain text for this application's specific use case.
     pub fn password(&self) -> &str {
         self.password.as_str()
     }
 
+    /// Verifies if the provided password matches the user's password.
+    ///
+    /// # Arguments
+    ///
+    /// * `password` - The password to check
+    ///
+    /// # Errors
+    ///
+    /// Returns [`UserError`] with [`UserErrorKind::InvalidCredentials`] if:
+    /// - The password format is invalid
+    /// - The password doesn't match
+    ///
+    /// # Examples
+    ///
+    /// ```rust,ignore
+    /// user.check_password("password123".to_string())?;
+    /// ```
     pub fn check_password(&self, password: String) -> Result<(), UserError> {
         let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
 

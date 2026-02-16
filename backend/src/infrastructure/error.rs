@@ -1,3 +1,12 @@
+//! # HTTP Error Module
+//!
+//! Defines HTTP error types and their conversion to HTTP responses.
+//!
+//! ## Error Conversion
+//!
+//! Domain errors (UserError, GameError, GmError) are converted to appropriate
+//! HTTP status codes and JSON error responses via the `From` trait implementations.
+
 use axum::http::StatusCode;
 use axum::Json;
 use axum::response::{IntoResponse, Response};
@@ -6,6 +15,9 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::gm::error::{GmError, GmErrorKind};
 use crate::domain::user::error::{UserError, UserErrorKind};
 
+/// HTTP error types that can be returned from API endpoints.
+///
+/// Each variant maps to a specific HTTP status code and error message format.
 #[derive(Debug, PartialEq)]
 #[derive(Clone)]
 pub enum HttpError {

@@ -1,14 +1,29 @@
+//! # Stat Key Value Object
+//!
+//! Provides a validated wrapper for stat keys.
+
 use crate::domain::game::error::{GameError, GameErrorKind};
 
-/// # Invalid States
+/// A validated key for a player statistic.
 ///
-/// - key is empty
+/// # Invariants
+///
+/// - Key must not be empty
 #[derive(Debug, Clone, PartialEq)]
 pub struct StatKey {
     key: String,
 }
 
 impl StatKey {
+    /// Creates a new stat key with validation.
+    ///
+    /// # Arguments
+    ///
+    /// * `key` - The string to use as a stat key
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GameError`] with [`GameErrorKind::EmptyStatKey`] if the key is empty.
     pub fn try_new(key: String) -> Result<Self, GameError> {
         if key.is_empty() {
             return Err(GameError::new(GameErrorKind::EmptyStatKey));
@@ -17,6 +32,7 @@ impl StatKey {
         Ok(Self { key })
     }
 
+    /// Returns the key as a string slice.
     pub fn as_str(&self) -> &str {
         &self.key
     }

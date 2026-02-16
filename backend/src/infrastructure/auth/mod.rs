@@ -1,3 +1,17 @@
+//! # Authentication Module
+//!
+//! Handles JWT-based authentication for both Game Masters and Users.
+//!
+//! ## Components
+//!
+//! * [`user_jwt`] - User JWT generation and validation
+//! * [`gm_jwt`] - GM JWT generation and validation
+//!
+//! ## Usage
+//!
+//! The [`AuthManager`] provides a centralized access point to all JWT generators
+//! and validators. It is cloned into each request handler via the shared app state.
+
 use std::sync::Arc;
 use crate::infrastructure::auth::gm_jwt::{GmJwtGenerator, GmJwtValidator};
 use crate::infrastructure::auth::user_jwt::{UserJwtGenerator, UserJwtValidator};
@@ -5,6 +19,10 @@ use crate::infrastructure::auth::user_jwt::{UserJwtGenerator, UserJwtValidator};
 pub mod user_jwt;
 pub mod gm_jwt;
 
+/// Manages JWT authentication for both GMs and Users.
+///
+/// Provides access to JWT generators and validators through a unified interface.
+/// All fields use `Arc` for efficient cloning across request handlers.
 pub struct AuthManager {
     gm_jwt_generator: Arc<GmJwtGenerator>,
     gm_jwt_validator: Arc<GmJwtValidator>,
@@ -14,6 +32,9 @@ pub struct AuthManager {
 }
 
 impl AuthManager {
+    /// Creates a new authentication manager.
+    ///
+    /// Initializes all JWT generators and validators.
     pub fn new() -> Self {
         Self {
             gm_jwt_generator: Arc::new(GmJwtGenerator {}),

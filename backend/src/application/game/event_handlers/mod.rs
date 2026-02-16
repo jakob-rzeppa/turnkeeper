@@ -1,9 +1,24 @@
+//! # Game Event Handlers
+//!
+//! Manages active game sessions and handles game events via WebSocket connections.
+
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError};
 use crate::domain::game::events::GameEvent;
 
+/// Handles events for an active game session.
+///
+/// Each active game has its own event handler that:
+/// - Maintains the current game state
+/// - Processes game events
+/// - Persists state changes to the repository
+/// - Broadcasts changes to the clients
+///
+/// # Type Parameters
+///
+/// * `GameRepository` - Repository for game persistence
 pub struct GameEventHandler<GameRepository: GameRepositoryContract> {
     game: Game,
     repository: GameRepository
@@ -19,6 +34,15 @@ impl<GameRepository: GameRepositoryContract> GameEventHandler<GameRepository> {
         })
     }
 
+    /// Loads and replays the game's event history.
+    ///
+    /// This reconstructs the game state by applying all historical events in order.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GameError`] if:
+    /// - History cannot be loaded from the repository
+    /// - Any event fails to apply
     pub async fn load_history(&mut self) -> Result<(), GameError> {
         let history = self.repository.get_game_history(self.game.id().clone()).await?;
 

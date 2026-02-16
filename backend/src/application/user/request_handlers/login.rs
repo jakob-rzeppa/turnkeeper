@@ -1,3 +1,7 @@
+//! # User Login Request Handler
+//!
+//! Handles user authentication via username and password.
+
 use std::sync::Arc;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::UserLoginRequest;
@@ -5,6 +9,14 @@ use crate::application::user::responses::UserTokenResponse;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::UserError;
 
+/// Handler for user login requests.
+///
+/// Validates user credentials and generates a JWT token upon successful authentication.
+///
+/// # Type Parameters
+///
+/// * `UserRepository` - Repository for user data access
+/// * `JwtGenerator` - JWT token generator
 pub struct UserLoginRequestHandler<UserRepository, JwtGenerator>
 where
     UserRepository: UserRepositoryContract,

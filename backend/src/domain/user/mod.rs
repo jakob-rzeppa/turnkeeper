@@ -1,3 +1,17 @@
+//! # User Domain Module
+//!
+//! Contains user entity and authentication-related value objects.
+//!
+//! ## Core Concepts
+//!
+//! - **User Entity**: Represents a player who can join games
+//! - **Value Objects**: `UserName` and `UserPassword` are private value objects
+//!   that ensure valid user data at construction time
+//!
+//! ## Security
+//!
+//! Passwords are stored as bcrypt hashes. Validation happens at the domain level.
+
 pub mod entities;
 pub mod error;
 

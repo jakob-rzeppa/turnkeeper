@@ -1,17 +1,33 @@
+//! # Stat Entity
+//!
+//! Represents customizable stats attached to players in a game.
+
 use uuid::Uuid;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::value_objects::stat_key::StatKey;
 use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberStatValue, StringStatValue};
 
-/// The representation of a stat
+/// A customizable stat for a player.
 ///
-/// Stat kinds are
+/// Stats can be one of three types:
+/// - **Number**: Numeric values (e.g., health = 100)
+/// - **String**: Text values (e.g., class = "Warrior")
+/// - **Boolean**: True/false flags (e.g., is_active = true)
 ///
-/// 1. Number
-/// 2. String
-/// 3. Boolean
+/// Use the factory methods to create stats:
+/// - [`Stat::try_new_string_stat`]
+/// - [`Stat::try_new_number_stat`]
+/// - [`Stat::try_new_bool_stat`]
 ///
-/// Use `try_new_string_stat`, `new_number_stat` or `new_bool_stat` for instantiating the Stat.
+/// # Examples
+///
+/// ```rust,ignore
+/// let health = Stat::try_new_number_stat(
+///     Uuid::new_v4(),
+///     "health".to_string(),
+///     100
+/// )?;
+/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stat {
     id: Uuid,
