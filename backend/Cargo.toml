@@ -11,7 +11,7 @@ backend-derive = { path = "./backend-derive" }
 tokio = {  version = "1.49.0", features = ["full"] }
 
 # Http / Websocket
-axum = { version = "0.8.8", features = ["ws"] }
+axum = { version = "0.8.8", features = ["ws", "macros"] }
 jsonwebtoken = { version = "10.2.0", features = ["rust_crypto"] }
 tower = "0.5.3"
 tower-http = { version = "0.6.8", features = ["cors"] }
@@ -37,3 +37,4 @@ dotenv = "0.15.0"
 # Mocking
 mockall = "0.14.0"
 fnmock = { git = "https://github.com/jakob-rzeppa/fnmock.git", version = "0.1.0" }
+futures-util = "0.3.31"

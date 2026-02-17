@@ -117,6 +117,7 @@ impl From<GameError> for HttpError {
                 HttpError::InternalServerError
             },
             GameErrorKind::UserForPlayerNotFound => HttpError::NotFound(e.to_string()),
+            GameErrorKind::GameSessionCreationFailed => HttpError::InternalServerError,
         }
     }
 }

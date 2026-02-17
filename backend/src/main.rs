@@ -20,16 +20,17 @@ use std::net::SocketAddr;
 use std::sync::Arc;
 use dotenv::dotenv;
 use tokio::net::TcpListener;
-use tokio::sync::Mutex;
+use tokio::sync::{RwLock};
 use tower::ServiceBuilder;
 use crate::infrastructure::websocket::websocket_handler;
 use tower_http::cors::{Any, CorsLayer};
-use crate::application::game::event_handlers::GameEventHandler;
+use crate::application::game::session::GameSession;
 use crate::infrastructure::auth::AuthManager;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
 use crate::infrastructure::persistence::repositories::RepositoryManager;
+use crate::infrastructure::websocket::session::WebSocketGmConnection;
 
 /// Application state shared across all HTTP handlers and WebSocket connections.
 ///
@@ -53,6 +54,7 @@ pub struct AppState {
     pub repository_manager: RepositoryManager,
     /// Manager for JWT authentication and validation
     pub auth_manager: AuthManager,
+    pub game_session: Arc<RwLock<Option<GameSession<WebSocketGmConnection, SqliteGameRepository>>>>
 }
 
 /// Main entry point for the Turnkeeper backend server.
@@ -84,7 +86,7 @@ async fn main() {
     let repository_manager = RepositoryManager::new(db.clone());
     let auth_manager = AuthManager::new();
     
-    let state = AppState { repository_manager, auth_manager };
+    let state = AppState { repository_manager, auth_manager, game_session: Arc::new(RwLock::new(None) ) };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()

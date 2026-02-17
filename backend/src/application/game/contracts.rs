@@ -4,6 +4,7 @@
 
 use axum::response::sse::Event;
 use uuid::Uuid;
+use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::GameMetadata;
@@ -100,4 +101,10 @@ pub trait GameRepositoryContract {
     ///
     /// Ensure the game is not active (no WebSocket connections) before deletion.
     async fn delete(&self, game_id: Uuid) -> Result<(), GameError>;
+}
+
+pub trait GmConnectionContract {
+    async fn recv(&mut self) -> ConnectionMessageDto;
+
+    async fn send(&mut self, msg: String);
 }

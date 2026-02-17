@@ -31,6 +31,14 @@ export function useWsConnection() {
         };
     };
 
+    const send = (message: string) => {
+        if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
+            websocket.value.send(message);
+        } else {
+            console.warn('WebSocket is not connected. Cannot send message.');
+        }
+    };
+
     const isConnected = computed(() => websocket.value !== null);
 
     const disconnect = () => {
@@ -42,5 +50,5 @@ export function useWsConnection() {
         }
     };
 
-    return { connect, disconnect, isConnected };
+    return { connect, disconnect, isConnected, send };
 }

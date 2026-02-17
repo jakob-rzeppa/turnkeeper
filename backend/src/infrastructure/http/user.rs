@@ -5,9 +5,7 @@ use crate::{AppState};
 use crate::application::user::request_handlers::login::UserLoginRequestHandler;
 use crate::application::user::request_handlers::register::UserRegisterRequestHandler;
 use crate::application::user::requests::{UserLoginRequest, UserRegisterRequest};
-use crate::infrastructure::auth::user_jwt::UserJwtGenerator;
 use crate::infrastructure::error::HttpError;
-use crate::infrastructure::persistence::repositories::user::SqliteUserRepository;
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct LoginHttpRequest {

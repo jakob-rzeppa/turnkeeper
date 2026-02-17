@@ -8,23 +8,18 @@ use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError};
 use crate::domain::game::events::GameEvent;
 
-/// Handles events for an active game session.
+/// The Session of a Game.
 ///
-/// Each active game has its own event handler that:
-/// - Maintains the current game state
-/// - Processes game events
-/// - Persists state changes to the repository
-/// - Broadcasts changes to the clients
+/// Each active game has a Session.
+/// There may be no two Sessions for the same Game.
 ///
-/// # Type Parameters
 ///
-/// * `GameRepository` - Repository for game persistence
-pub struct GameEventHandler<GameRepository: GameRepositoryContract> {
+pub struct GameSession<GameRepository: GameRepositoryContract> {
     game: Game,
     repository: GameRepository
 }
 
-impl<GameRepository: GameRepositoryContract> GameEventHandler<GameRepository> {
+impl<GameRepository: GameRepositoryContract> GameSession<GameRepository> {
     pub async fn try_new(repository: GameRepository, game_id: Uuid) -> Result<Self, GameError> {
         let metadata = repository.get_metadata_by_id(game_id).await?;
 

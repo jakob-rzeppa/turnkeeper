@@ -2,45 +2,31 @@
 //!
 //! Handles WebSocket connections for real-time game events.
 
+pub mod session;
+
+use std::str::FromStr;
 use axum::extract::{Path, State, WebSocketUpgrade};
-use axum::extract::ws::{Message, Utf8Bytes, WebSocket};
 use axum::response::Response;
+use uuid::Uuid;
+use crate::application::game::session::{GameSession};
 use crate::AppState;
+use crate::infrastructure::error::HttpError;
+use crate::infrastructure::websocket::session::WebSocketGmConnection;
 
 /// Handles WebSocket upgrade requests.
-pub async fn websocket_handler(State(state): State<AppState>, Path(id): Path<String>, ws: WebSocketUpgrade) -> Response {
-    ws.on_upgrade(handle_socket)
-}
+#[axum::debug_handler]
+pub async fn websocket_handler(State(state): State<AppState>, Path(id): Path<String>, ws: WebSocketUpgrade) -> Result<Response, HttpError> {
+    let id = Uuid::from_str(&id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
 
-/// Handles an established WebSocket connection.
-///
-/// # Arguments
-///
-/// * `socket` - The WebSocket connection
-async fn handle_socket(mut socket: WebSocket) {
-    // Send a greeting message to the client
-    if let Err(e) = socket
-        .send(Message::Text(Utf8Bytes::from("Hello from the server!")))
-        .await
-    {
-        eprintln!("Error sending message: {}", e);
-        return;
+    if state.game_session.read().await.is_none() {
+        *state.game_session.write().await = Some(GameSession::try_new(id, state.repository_manager.game()).await.map_err(|_| HttpError::BadRequest("Game session could not be initialized".to_string()))?);
     }
 
-    // Loop to keep the connection alive
-    while let Some(Ok(msg)) = socket.recv().await {
-        match msg {
-            Message::Text(msg) => {
-                println!("Received message: {}", msg);
-                if let Err(e) = socket.send(Message::Text(Utf8Bytes::from(format!("Echo: {}", msg)))).await {
-                    eprintln!("Error sending message: {}", e);
-                }
-            }
-            Message::Close(_) => {
-                println!("Closing WebSocket connection.");
-                break;
-            }
-            _ => {}
+    Ok(ws.on_upgrade(|socket| async move {
+        let gm_conn = WebSocketGmConnection::new(socket);
+        let mut session_guard = state.game_session.write().await;
+        if let Some(session) = session_guard.as_mut() {
+            session.gm_connect(gm_conn).await;
         }
-    }
+    }))
 }

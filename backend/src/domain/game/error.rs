@@ -51,6 +51,7 @@ pub enum GameErrorKind {
     PlayerWithSameNameAlreadyExists,
     RepositoryError,
     UserForPlayerNotFound,
+    GameSessionCreationFailed,
 }
 
 impl GameErrorKind {
@@ -64,6 +65,7 @@ impl GameErrorKind {
             GameErrorKind::PlayerWithSameNameAlreadyExists => "Player with same name already exists".to_string(),
             GameErrorKind::RepositoryError => "Unexpected repository error".to_string(),
             GameErrorKind::UserForPlayerNotFound => "User not found in game".to_string(),
+            GameErrorKind::GameSessionCreationFailed => "Game session creation failed".to_string(),
         }
     }
 }

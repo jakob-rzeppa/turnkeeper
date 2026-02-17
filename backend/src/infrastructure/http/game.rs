@@ -10,7 +10,6 @@ use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
 use crate::AppState;
 use crate::domain::game::projections::GameMetadata;
 use crate::infrastructure::error::HttpError;
-use crate::infrastructure::persistence::repositories::game::{SqliteGameRepository};
 
 #[derive(Serialize, Debug)]
 pub struct GamesGetResponseGameMetadata {

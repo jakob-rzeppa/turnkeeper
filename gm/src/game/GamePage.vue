@@ -8,6 +8,7 @@ const wsConnection = useWsConnection();
     <div>
         <h1>Game Page</h1>
         <p>This is the game page.</p>
+        <button @click="wsConnection.send('Hi')" class="btn btn-primary">Send Message</button>
         <button @click="wsConnection.disconnect" class="btn btn-outline btn-secondary">
             Disconnect
         </button>
