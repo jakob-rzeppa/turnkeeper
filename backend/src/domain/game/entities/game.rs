@@ -1,6 +1,7 @@
 use uuid::Uuid;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::{GmGameInfo, GmPlayerInfo, GmStatInfo};
 
 /// The representation of the game
@@ -43,6 +44,16 @@ impl Game {
         }
 
         self.players.push(player);
+
+        Ok(())
+    }
+
+    pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
+        match event {
+            GameEvent::Debug(_) => {
+                println!("Debug event");
+            }
+        }
 
         Ok(())
     }
