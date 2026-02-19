@@ -48,5 +48,6 @@ where
         }
 
         println!("Closing GmWebSocket connection.");
+        self.gm_conn = None;
     }
 }
