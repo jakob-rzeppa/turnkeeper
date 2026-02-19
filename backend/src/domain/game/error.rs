@@ -4,21 +4,21 @@ use std::fmt::{Display, Formatter};
 #[derive(Debug)]
 pub struct GameError {
     pub kind: GameErrorKind,
-    source: Option<Box<dyn Error + 'static>>,
+    source: Option<Box<dyn Error + Send + 'static>>,
 }
 
 impl GameError {
     pub fn new(kind: GameErrorKind) -> Self {
         GameError { kind, source: None }
     }
-    pub fn with_source(kind: GameErrorKind, source: Box<dyn Error + 'static>) -> Self {
+    pub fn with_source(kind: GameErrorKind, source: Box<dyn Error + Send + 'static>) -> Self {
         GameError { kind, source: Some(source) }
     }
 }
 
 impl Error for GameError {
     fn source(&self) -> Option<&(dyn Error + 'static)> {
-        self.source.as_deref()
+        self.source.as_ref().map(|e| e.as_ref() as &(dyn Error + 'static))
     }
 }
 
