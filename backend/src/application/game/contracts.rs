@@ -2,7 +2,6 @@
 //!
 //! Defines traits (contracts) for game-related infrastructure dependencies.
 
-use axum::response::sse::Event;
 use uuid::Uuid;
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::error::GameError;
@@ -76,7 +75,7 @@ pub trait GameRepositoryContract {
     ///
     /// Events should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    async fn log_event(&self, event: Event) -> Result<(), GameError>;
+    async fn log_event(&self, event: GameEvent) -> Result<(), GameError>;
     
     /// Retrieves the complete event history for a game.
     ///

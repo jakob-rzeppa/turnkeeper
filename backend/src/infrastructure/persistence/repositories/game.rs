@@ -1,4 +1,3 @@
-use axum::response::sse::Event;
 use sqlx::SqlitePool;
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
@@ -98,7 +97,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         }
     }
 
-    async fn log_event(&self, event: Event) -> Result<(), GameError> {
+    async fn log_event(&self, event: GameEvent) -> Result<(), GameError> {
         todo!()
     }
 
