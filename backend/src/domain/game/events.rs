@@ -4,3 +4,11 @@ use serde::{Deserialize, Serialize};
 pub enum GameEvent {
     Debug(String),
 }
+
+impl GameEvent {
+    pub fn is_user_permitted(&self) -> bool {
+        match self {
+            GameEvent::Debug(_) => true,
+        }
+    }
+}
