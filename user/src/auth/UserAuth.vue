@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useAuth } from '../composables/useAuth';
+import { useAuth } from './useAuth';
 const { mode, form, loading, error, toggleMode, handleSubmit } = useAuth();
 </script>
 
