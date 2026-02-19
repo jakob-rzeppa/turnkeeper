@@ -1,5 +1,6 @@
 use serde::Serialize;
 use uuid::Uuid;
+use crate::domain::game::entities::game::Game;
 
 pub struct GameMetadata {
     pub id: Uuid,

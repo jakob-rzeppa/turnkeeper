@@ -4,6 +4,7 @@ use crate::application::game::contracts::{GameRepositoryContract, GmConnectionCo
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
+use crate::domain::game::projections::GmGameInfo;
 
 pub struct GameSession<GmConnection, GameRepository>
 where
@@ -36,9 +37,14 @@ where
         println!("Gm connection established");
         self.gm_conn = Some(gm_conn);
 
-        while let ConnectionMessageDto::Event(event) = self.gm_conn.as_mut().unwrap().recv().await {
+        while let ConnectionMessageDto::Event(event) = self.gm_conn.as_mut().expect("gm_conn is some").recv().await {
             //self.game.handle(event);
-            self.gm_conn.as_mut().unwrap().send(format!("Reply {:?}", event)).await;
+
+            // Send game to gm
+            match serde_json::to_string(&GmGameInfo::from(&self.game)) {
+                Ok(json) => self.gm_conn.as_mut().expect("gm_conn is some").send(json).await,
+                Err(e) => eprintln!("failed to serialize GmGameInfo: {}", e),
+            }
         }
 
         println!("Closing GmWebSocket connection.");
