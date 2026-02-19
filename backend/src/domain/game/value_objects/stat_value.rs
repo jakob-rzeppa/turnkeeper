@@ -42,17 +42,17 @@ impl BooleanStatValue {
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct NumberStatValue {
-    value: i64,
+    value: f64,
 }
 
 impl NumberStatValue {
     /// Creates a new numeric stat value.
-    pub fn new(value: i64) -> Self {
+    pub fn new(value: f64) -> Self {
         Self { value }
     }
 
     /// Returns the numeric value.
-    pub fn value(&self) -> i64 {
+    pub fn value(&self) -> f64 {
         self.value
     }
 }

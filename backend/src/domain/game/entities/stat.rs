@@ -56,7 +56,7 @@ impl Stat {
         &self.key
     }
 
-    pub fn as_number(&self) -> Option<i64> {
+    pub fn as_number(&self) -> Option<f64> {
         match &self.kind {
             StatKind::Number { value } => Some(value.value()),
             _ => None,
@@ -96,7 +96,7 @@ impl Stat {
         })
     }
 
-    pub fn try_new_number_stat(id: Uuid, key: String, value: i64) -> Result<Self, GameError> {
+    pub fn try_new_number_stat(id: Uuid, key: String, value: f64) -> Result<Self, GameError> {
         let key = StatKey::try_new(key).map_err(|e| { GameError::with_source(GameErrorKind::InvalidStat, Box::new(e)) })?;
         let value = NumberStatValue::new(value);
 

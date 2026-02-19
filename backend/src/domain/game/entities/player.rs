@@ -58,7 +58,7 @@ impl Player {
         Ok(())
     }
 
-    pub fn try_add_number_stat(&mut self, id: Uuid, key: String, value: i64) -> Result<(), GameError> {
+    pub fn try_add_number_stat(&mut self, id: Uuid, key: String, value: f64) -> Result<(), GameError> {
         let stat = Stat::try_new_number_stat(id, key, value)?;
         self.try_add_stat(stat)?;
         Ok(())
@@ -84,7 +84,7 @@ mod tests {
         let mut player = Player::new(Uuid::new_v4(), dummy_user());
         let stat_id = Uuid::new_v4();
         let key = "score".to_string();
-        let value = 42;
+        let value = 42.0;
 
         // Add first stat
         assert!(player.try_add_number_stat(stat_id, key.clone(), value).is_ok());
@@ -100,7 +100,7 @@ mod tests {
     #[test]
     fn test_add_different_stats_succeeds() {
         let mut player = Player::new(Uuid::new_v4(), dummy_user());
-        assert!(player.try_add_number_stat(Uuid::new_v4(), "score".to_string(), 42).is_ok());
+        assert!(player.try_add_number_stat(Uuid::new_v4(), "score".to_string(), 42.0).is_ok());
         assert!(player.try_add_string_stat(Uuid::new_v4(), "nickname".to_string(), "hero".to_string()).is_ok());
         assert!(player.try_add_bool_stat(Uuid::new_v4(), "active".to_string(), true).is_ok());
     }
