@@ -26,7 +26,7 @@ pub async fn websocket_handler(State(state): State<AppState>, Path(id): Path<Str
         let gm_conn = WebSocketGmConnection::new(socket);
         let mut session_guard = state.game_session.write().await;
         if let Some(session) = session_guard.as_mut() {
-            session.gm_connect(gm_conn).await;
+            let _ = session.gm_connect(gm_conn).await;
         }
     }))
 }

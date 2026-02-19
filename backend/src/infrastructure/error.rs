@@ -118,6 +118,7 @@ impl From<GameError> for HttpError {
             },
             GameErrorKind::UserForPlayerNotFound => HttpError::NotFound(e.to_string()),
             GameErrorKind::GameSessionCreationFailed => HttpError::InternalServerError,
+            GameErrorKind::GmAlreadyConnected => HttpError::Conflict(e.to_string()),
         }
     }
 }
