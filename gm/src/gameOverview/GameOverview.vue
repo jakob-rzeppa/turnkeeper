@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useWsConnection } from '../api/useWsConnection';
-import { useModalStore } from '../modal/modalStore';
+import { useModalStore } from '../common/modal/modalStore';
 import CreateGameModal from './CreateGameModal.vue';
 import { useGameOverview } from './useGameOverview';
 
