@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { computed, markRaw, ref, shallowRef, useTemplateRef, type Component } from 'vue';
+import { computed, markRaw, ref, shallowRef, type Component } from 'vue';
 
 /** A single entry in the sidebar activity bar. */
 interface SidebarView {
@@ -11,10 +11,17 @@ interface SidebarView {
     component: Component;
 }
 
-const props = defineProps<{
-    /** Ordered list of views to populate the activity bar. */
-    views: SidebarView[];
-}>();
+const props = withDefaults(
+    defineProps<{
+        /** Ordered list of views to populate the activity bar. */
+        views: SidebarView[];
+        /** Which side of the layout the sidebar is anchored to. */
+        side?: 'left' | 'right';
+        /** Classes applied to the side panel container. */
+        class?: string;
+    }>(),
+    { side: 'left' }
+);
 
 /** Maximum width of the side panel in pixels. */
 const MAX_WIDTH = 600;
@@ -23,7 +30,6 @@ const MIN_WIDTH = 150;
 
 const DEFAULT_WIDTH = 240;
 
-const sidePanelEl = useTemplateRef('sidePanel');
 const activeView = shallowRef<SidebarView | null>(props.views[0] ?? null);
 const isHidden = ref(false);
 const panelWidth = ref(DEFAULT_WIDTH);
@@ -63,14 +69,17 @@ const setActiveView = (view: SidebarView) => {
 /**
  * Begin a drag-resize interaction on the side panel.
  * Clamps the panel width between MIN_WIDTH and MAX_WIDTH, and auto-hides the
- * panel when the user drags past the left edge.
+ * panel when the user drags past the anchored edge.
  */
-const startResize = () => {
+const startResize = (startEvent: MouseEvent) => {
     isResizing.value = true;
+    const startX = startEvent.clientX;
+    // When the panel is hidden its rendered width is 0, so use 0 as the base.
+    const startWidth = isHidden.value ? 0 : panelWidth.value;
 
     const onMouseMove = (e: MouseEvent) => {
-        const panelLeft = sidePanelEl.value!.getBoundingClientRect().left;
-        const desiredWidth = e.clientX - panelLeft;
+        const delta = props.side === 'right' ? startX - e.clientX : e.clientX - startX;
+        const desiredWidth = startWidth + delta;
 
         panelWidth.value = Math.max(MIN_WIDTH, Math.min(MAX_WIDTH, desiredWidth));
 
@@ -93,23 +102,28 @@ const startResize = () => {
 </script>
 
 <template>
-    <div class="flex flex-row h-screen">
+    <div
+        class="flex flex-row h-screen"
+        :class="[props.class, { 'flex-row-reverse': side === 'right' }]"
+    >
         <!-- Activity Bar: one button per registered view -->
         <div class="flex flex-col items-center bg-base-300 w-14 shrink-0">
             <button
                 v-for="view in processedViews"
                 :key="view.name"
-                class="tooltip tooltip-right w-full items-center aspect-square relative hover:bg-base-content/10 transition-colors"
-                :class="
-                    activeView?.name === view.name ? 'text-base-content' : 'text-base-content/40'
-                "
+                class="w-full items-center aspect-square relative hover:bg-base-content/10 transition-colors"
+                :class="[
+                    activeView?.name === view.name ? 'text-base-content' : 'text-base-content/40',
+                    side === 'right' ? 'tooltip tooltip-left' : 'tooltip tooltip-right',
+                ]"
                 :data-tip="view.name"
                 @click="setActiveView(view)"
             >
-                <!-- Active indicator stripe -->
+                <!-- Active indicator stripe (inner edge of the activity bar) -->
                 <div
                     v-if="activeView?.name === view.name"
-                    class="absolute left-0 top-0 bottom-0 w-0.5 bg-primary"
+                    class="absolute top-0 bottom-0 w-0.5 bg-primary"
+                    :class="side === 'right' ? 'right-0' : 'left-0'"
                 />
                 <component :is="view.icon" />
             </button>
@@ -117,7 +131,6 @@ const startResize = () => {
 
         <!-- Side Panel: displays the active view's content -->
         <div
-            ref="sidePanel"
             v-show="!isHidden"
             class="bg-base-200 p-4 overflow-hidden"
             :style="{ width: `${panelWidth}px` }"
