@@ -96,7 +96,7 @@ async fn main() {
 
     // Initialize the Axum router
     let app = Router::new()
-        .merge(get_routes())
+        .merge(get_routes(state.clone()))
         .route("/gm/ws/{id}", get(websocket_handler))
         .with_state(state)
         .layer(ServiceBuilder::new().layer(cors_layer));

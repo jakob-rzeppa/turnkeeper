@@ -18,6 +18,7 @@ use crate::infrastructure::auth::user_jwt::{UserJwtGenerator, UserJwtValidator};
 
 pub mod user_jwt;
 pub mod gm_jwt;
+pub mod middleware;
 
 /// Manages JWT authentication for both GMs and Users.
 ///

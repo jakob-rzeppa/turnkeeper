@@ -45,6 +45,7 @@ impl Display for GmError {
 #[derive(Debug, PartialEq)]
 pub enum GmErrorKind {
     InvalidCredentials,
+    Unauthorized,
     JwtGenerationError,
 }
 
@@ -52,6 +53,7 @@ impl GmErrorKind {
     pub fn message(&self) -> String {
         match self {
             GmErrorKind::InvalidCredentials => "Invalid credentials".to_string(),
+            GmErrorKind::Unauthorized => "Unauthorized".to_string(),
             GmErrorKind::JwtGenerationError => "JWT generation failed".to_string(),
         }
     }
