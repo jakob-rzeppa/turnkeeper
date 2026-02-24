@@ -29,7 +29,9 @@ const activeView = shallowRef<TabView | null>(props.views[0] ?? null);
                 >
                     {{ view.name }}
                 </div>
-                <div class="tab-content bg-base-100 p-4 border-0 border-t rounded-none">
+                <div
+                    class="tab-content bg-base-100 p-4 border-0 border-t border-base-300 rounded-none"
+                >
                     <component :is="view.component" />
                 </div>
             </template>

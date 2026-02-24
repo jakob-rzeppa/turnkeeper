@@ -103,7 +103,7 @@ const startResize = (startEvent: MouseEvent) => {
 
 <template>
     <div
-        class="flex flex-row h-screen"
+        class="relative flex flex-row h-screen"
         :class="[props.class, { 'flex-row-reverse': side === 'right' }]"
     >
         <!-- Activity Bar: one button per registered view -->
@@ -147,8 +147,11 @@ const startResize = (startEvent: MouseEvent) => {
 
         <!-- Resize Handle: draggable divider between the panel and main content -->
         <div
-            class="w-1 cursor-col-resize transition-colors shrink-0"
-            :class="isResizing ? 'bg-primary/50' : 'bg-base-200 hover:bg-primary/50'"
+            class="absolute top-0 bottom-0 w-1 cursor-col-resize transition-colors z-10"
+            :class="[
+                side === 'right' ? 'left-0' : 'right-0',
+                isResizing ? 'bg-primary' : 'hover:bg-primary',
+            ]"
             @mousedown="startResize"
         />
     </div>
