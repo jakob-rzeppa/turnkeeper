@@ -148,7 +148,7 @@ const startResize = (startEvent: MouseEvent) => {
         <!-- Resize Handle: draggable divider between the panel and main content -->
         <div
             class="w-1 cursor-col-resize transition-colors shrink-0"
-            :class="isResizing ? 'bg-primary/50' : 'bg-transparent hover:bg-primary/50'"
+            :class="isResizing ? 'bg-primary/50' : 'bg-base-200 hover:bg-primary/50'"
             @mousedown="startResize"
         />
     </div>
