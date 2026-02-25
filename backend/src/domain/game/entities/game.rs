@@ -36,15 +36,20 @@ impl Game {
         &self.id
     }
 
+    pub fn add_player(&mut self) -> Result<(), GameError> {
+        let player = Player::new(Uuid::new_v4());
+        self.players.push(player);
+        Ok(())
+    }
 
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
+            GameEvent::AddPlayer => self.add_player(),
             GameEvent::Debug(_) => {
                 println!("Debug event");
+                Ok(())
             }
         }
-
-        Ok(())
     }
 }
 
