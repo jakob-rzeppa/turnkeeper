@@ -5,8 +5,7 @@ import TestView2 from './TestView2.vue';
 import TestIcon1 from './TestIcon1.vue';
 import TestIcon2 from './TestIcon2.vue';
 import TabsPanel from '../common/tabs/TabsPanel.vue';
-import TestMessageView from './mainViews/TestMessageView.vue';
-import TestMessageView2 from './mainViews/TestMessageView2.vue';
+import PlayerOrganisationView from './mainViews/PlayerOrganisationView.vue';
 </script>
 
 <template>
@@ -17,12 +16,7 @@ import TestMessageView2 from './mainViews/TestMessageView2.vue';
                 { icon: TestIcon2, name: 'Test View 2', component: TestView2 },
             ]"
         />
-        <TabsPanel
-            :views="[
-                { name: 'Tab 1', component: TestMessageView },
-                { name: 'Tab 2', component: TestMessageView2 },
-            ]"
-        />
+        <TabsPanel :views="[{ name: 'Player Organisation', component: PlayerOrganisationView }]" />
         <SidebarPanel
             class="ml-auto"
             :views="[
