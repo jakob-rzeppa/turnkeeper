@@ -21,9 +21,17 @@ pub struct GmGameInfo {
 #[derive(Serialize)]
 pub struct GmPlayerInfo {
     pub id: String,
+
     // The name of the player, which is inherited from the User entity. This is used for display purposes in the frontend.
-    pub name: String,
+    pub user: Option<GmPlayerUserInfo>,
+
     pub stats: Vec<GmStatInfo>,
+}
+
+#[derive(Serialize)]
+pub struct GmPlayerUserInfo {
+    pub id: String,
+    pub name: String,
 }
 
 #[derive(Serialize)]

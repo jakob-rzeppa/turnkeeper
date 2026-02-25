@@ -13,16 +13,16 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 #[derive(Debug, PartialEq)]
 pub struct Player {
     id: Uuid,
-    user: User,
+    user: Option<User>,
 
     stats: Vec<Stat>
 }
 
 impl Player {
-    pub fn new(id: Uuid, user: User) -> Self {
+    pub fn new(id: Uuid) -> Self {
         Self {
             id,
-            user,
+            user: None,
             stats: Vec::new()
         }
     }
@@ -31,16 +31,20 @@ impl Player {
         &self.id
     }
 
-    pub fn user(&self) -> &User {
-        &self.user
+    pub fn user(&self) -> Option<&User> {
+        self.user.as_ref()
     }
 
     pub fn stats(&self) -> &[Stat] {
         &self.stats
     }
     
-    pub fn name(&self) -> &str {
-        self.user.name()
+    pub fn name(&self) -> Option<&str> {
+        self.user.as_ref().map(|u| u.name())
+    }
+
+    pub fn add_user(&mut self, user: User) {
+        self.user = Some(user);
     }
 
     pub fn try_add_stat(&mut self, stat: Stat) -> Result<(), GameError> {
@@ -81,7 +85,7 @@ mod tests {
 
     #[test]
     fn test_add_duplicate_stat_fails() {
-        let mut player = Player::new(Uuid::new_v4(), dummy_user());
+        let mut player = Player::new(Uuid::new_v4());
         let stat_id = Uuid::new_v4();
         let key = "score".to_string();
         let value = 42.0;
@@ -99,7 +103,7 @@ mod tests {
 
     #[test]
     fn test_add_different_stats_succeeds() {
-        let mut player = Player::new(Uuid::new_v4(), dummy_user());
+        let mut player = Player::new(Uuid::new_v4());
         assert!(player.try_add_number_stat(Uuid::new_v4(), "score".to_string(), 42.0).is_ok());
         assert!(player.try_add_string_stat(Uuid::new_v4(), "nickname".to_string(), "hero".to_string()).is_ok());
         assert!(player.try_add_bool_stat(Uuid::new_v4(), "active".to_string(), true).is_ok());
