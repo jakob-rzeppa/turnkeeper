@@ -10,7 +10,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 /// # Invariants
 ///
 /// - Two stats have the same key
-#[derive(Debug, PartialEq)]
+#[derive(Debug, PartialEq, Clone)]
 pub struct Player {
     id: Uuid,
     user: Option<User>,

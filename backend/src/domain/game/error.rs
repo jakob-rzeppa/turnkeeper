@@ -53,6 +53,7 @@ pub enum GameErrorKind {
     UserForPlayerNotFound,
     GameSessionCreationFailed,
     GmAlreadyConnected,
+    InvalidPlayerOrder,
 }
 
 impl GameErrorKind {
@@ -68,6 +69,7 @@ impl GameErrorKind {
             GameErrorKind::UserForPlayerNotFound => "User not found in game".to_string(),
             GameErrorKind::GameSessionCreationFailed => "Game session creation failed".to_string(),
             GameErrorKind::GmAlreadyConnected => "GM connection already established for this session".to_string(),
+            GameErrorKind::InvalidPlayerOrder => "Invalid player order".to_string(),
         }
     }
 }

@@ -42,13 +42,37 @@ impl Game {
         Ok(())
     }
 
+    pub fn change_player_order(&mut self, ids_in_order: Vec<Uuid>) -> Result<(), GameError> {
+        if ids_in_order.len() != self.players.len() {
+            return Err(GameError::new(GameErrorKind::InvalidPlayerOrder));
+        }
+
+        let mut new_players = Vec::with_capacity(self.players.len());
+        for id in ids_in_order {
+            // Check for duplicate IDs in the input list
+            if new_players.iter().any(|p: &Player| p.id() == &id) {
+                return Err(GameError::new(GameErrorKind::InvalidPlayerOrder));
+            }
+
+            if let Some(player) = self.players.iter().find(|p| p.id() == &id) {
+                new_players.push(player.clone());
+            } else {
+                return Err(GameError::new(GameErrorKind::InvalidPlayerOrder));
+            }
+        }
+
+        self.players = new_players;
+        Ok(())
+    }
+
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
             GameEvent::AddPlayer => self.add_player(),
             GameEvent::ChangePlayerOrder(ids_in_order) => {
-                println!("Change player order event with new order: {:?}", ids_in_order);
-                Ok(())
-            }
+                let ids_in_order: Vec<Uuid> = ids_in_order.into_iter().map(|s| Uuid::parse_str(&s)).collect::<Result<_, _>>()
+                    .map_err(|_| GameError::new(GameErrorKind::InvalidPlayerOrder))?;
+                self.change_player_order(ids_in_order)
+            },
             GameEvent::Debug(msg) => {
                 println!("Debug event with message: {}", msg);
                 Ok(())
@@ -125,6 +149,74 @@ mod tests {
             // assert_eq!(gm_info.players[0].stats[0].number_value, Some(100.0));
             assert_eq!(gm_info.round_number, 0);
             assert_eq!(gm_info.current_player_index, 0);
+        }
+    }
+
+    mod change_player_order {
+        use super::*;
+
+        #[test]
+        fn test_change_player_order() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_ids: Vec<Uuid> = game.players.iter().map(|p| *p.id()).collect();
+            let reversed_ids: Vec<Uuid> = player_ids.iter().rev().cloned().collect();
+
+            game.change_player_order(reversed_ids.clone()).unwrap();
+
+            let new_order_ids: Vec<Uuid> = game.players.iter().map(|p| *p.id()).collect();
+            assert_eq!(new_order_ids, reversed_ids);
+        }
+
+        #[test]
+        fn test_change_player_order_with_invalid_ids() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let invalid_ids = vec![Uuid::new_v4(), Uuid::new_v4()];
+
+            let result = game.change_player_order(invalid_ids);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_change_player_order_with_duplicate_ids() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_ids: Vec<Uuid> = game.players.iter().map(|p| *p.id()).collect();
+            let duplicate_ids = vec![player_ids[0], player_ids[0]];
+
+            let result = game.change_player_order(duplicate_ids);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_change_player_order_with_too_many_ids() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+
+            let too_many_ids = vec![Uuid::new_v4(), Uuid::new_v4()];
+
+            let result = game.change_player_order(too_many_ids);
+            assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_change_player_order_with_too_few_ids() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let too_few_ids = vec![Uuid::new_v4()];
+
+            let result = game.change_player_order(too_few_ids);
+            assert!(result.is_err());
         }
     }
 }
