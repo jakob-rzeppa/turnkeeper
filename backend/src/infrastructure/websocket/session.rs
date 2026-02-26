@@ -22,9 +22,12 @@ impl GmConnectionContract for WebSocketGmConnection {
         while let Some(Ok(message)) = self.receiver.next().await {
             match message {
                 Message::Text(msg) => {
-                    match msg.as_str() {
-                        "ADD_PLAYER" => return ConnectionMessageDto::Event(GameEvent::AddPlayer),
-                        _ => println!("Received unknown event: {}", msg),
+                    let event = serde_json::from_str::<GameEvent>(&msg);
+
+                    if let Ok(event) = event {
+                        return ConnectionMessageDto::Event(event);
+                    } else {
+                        println!("Received unknown event: {}", msg);
                     }
                 }
                 Message::Close(_) => {

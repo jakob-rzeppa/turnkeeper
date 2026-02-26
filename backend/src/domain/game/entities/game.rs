@@ -45,8 +45,12 @@ impl Game {
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
             GameEvent::AddPlayer => self.add_player(),
-            GameEvent::Debug(_) => {
-                println!("Debug event");
+            GameEvent::ChangePlayerOrder(ids_in_order) => {
+                println!("Change player order event with new order: {:?}", ids_in_order);
+                Ok(())
+            }
+            GameEvent::Debug(msg) => {
+                println!("Debug event with message: {}", msg);
                 Ok(())
             }
         }
