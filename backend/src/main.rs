@@ -15,17 +15,20 @@ mod domain;
 mod application;
 mod infrastructure;
 
-use axum::{routing::get, Router};
+use axum::{middleware, routing::get, Router};
 use std::net::SocketAddr;
 use std::sync::Arc;
+use axum::routing::post;
 use dotenv::dotenv;
 use tokio::net::TcpListener;
 use tokio::sync::{RwLock};
 use tower::ServiceBuilder;
-use crate::infrastructure::websocket::websocket_handler;
+use crate::infrastructure::websocket::{websocket_handler, ws_ticket};
 use tower_http::cors::{Any, CorsLayer};
 use crate::application::game::session::GameSession;
 use crate::infrastructure::auth::AuthManager;
+use crate::infrastructure::auth::middleware::gm_auth_middleware;
+use crate::infrastructure::auth::ws_ticket::WsTicketStore;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
@@ -54,7 +57,9 @@ pub struct AppState {
     pub repository_manager: RepositoryManager,
     /// Manager for JWT authentication and validation
     pub auth_manager: AuthManager,
-    pub game_session: Arc<RwLock<Option<GameSession<WebSocketGmConnection, SqliteGameRepository>>>>
+    pub game_session: Arc<RwLock<Option<GameSession<WebSocketGmConnection, SqliteGameRepository>>>>,
+    /// Store for short-lived WebSocket authentication tickets
+    pub ws_ticket_store: WsTicketStore,
 }
 
 /// Main entry point for the Turnkeeper backend server.
@@ -85,8 +90,9 @@ async fn main() {
     // Create Managers
     let repository_manager = RepositoryManager::new(db.clone());
     let auth_manager = AuthManager::new();
-    
-    let state = AppState { repository_manager, auth_manager, game_session: Arc::new(RwLock::new(None) ) };
+    let ws_ticket_store = WsTicketStore::new();
+
+    let state = AppState { repository_manager, auth_manager, game_session: Arc::new(RwLock::new(None)), ws_ticket_store };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()
@@ -98,6 +104,7 @@ async fn main() {
     let app = Router::new()
         .merge(get_routes(state.clone()))
         .route("/gm/ws/{id}", get(websocket_handler))
+        .route("/gm/ws/ticket/{game_id}", post(ws_ticket).route_layer(middleware::from_fn_with_state(state.clone(), gm_auth_middleware)))
         .with_state(state)
         .layer(ServiceBuilder::new().layer(cors_layer));
 

@@ -1,5 +1,8 @@
 import { computed, ref } from 'vue';
 import { useGameStore, type Stat, type Player } from '../game/gameStore';
+import { useAuthStore } from '../auth/authStore';
+import axios from 'axios';
+import { API_BASE_URL } from './httpApi';
 
 type RawStat = {
     id: string;
@@ -19,20 +22,34 @@ type RawGame = {
     current_player_index: number;
 };
 
-const WS_BASE_URL = 'ws://localhost:8080/gm/ws';
-
 const websocket = ref<WebSocket | null>(null);
 
 export function useWsConnection() {
     const gameStore = useGameStore();
+    const authStore = useAuthStore();
 
-    const connect = (gameId: string) => {
+    const connect = async (gameId: string) => {
         if (websocket.value) {
             console.warn('WebSocket is already connected.');
             return;
         }
 
-        websocket.value = new WebSocket(WS_BASE_URL + '/' + gameId);
+        // Fetch a short-lived ticket URL from the authenticated HTTP endpoint
+        let wsUrl: string;
+        try {
+            const response = await axios.post<{ url: string }>(
+                `${API_BASE_URL}/ws/ticket/${gameId}`,
+                null,
+                { headers: { Authorization: `Bearer ${authStore.token}` } }
+            );
+            wsUrl = response.data.url;
+        } catch (err) {
+            console.error('Failed to obtain WebSocket ticket:', err);
+            return;
+        }
+
+        console.log('Connecting to WebSocket at:', wsUrl);
+        websocket.value = new WebSocket(wsUrl);
 
         websocket.value.onopen = () => {
             console.log('WebSocket connection established.');
