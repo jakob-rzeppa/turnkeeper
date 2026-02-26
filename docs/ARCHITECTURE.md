@@ -37,15 +37,21 @@ sequenceDiagram
     participant GM as GM Client
     participant Backend as Backend Server
 
-    GM->>+Backend: POST /login
+    GM->>+Backend: POST /gm/login
     note over Backend: Validate password
     Backend->>-GM: JSON web token
 
-    GM->>Backend: GET /games
+    GM->>Backend: GET /gm/games
     Backend->>GM: Saved Games
     note over GM: Choose save
 
-    GM->>Backend: WS /games/1/connect
+    GM->>+Backend: POST /gm/ws/ticket/{game_id}
+    note over Backend: Validate JWT, create ticket (30s TTL)
+    Backend->>-GM: { url: "ws://.../gm/ws/{id}?ticket=..." }
+
+    GM->>+Backend: WS connect to returned URL
+    note over Backend: Validate ticket (single-use)
+    Backend->>-GM: WebSocket connection established
 ```
 
 ## User Auth
@@ -94,10 +100,30 @@ Only Auth routes are accessible unauthorized.
 
 ## Websocket Connection
 
+### Authentication
+
+WebSocket connections are authenticated via a ticket-based flow, since the browser WebSocket API does not support custom headers.
+
+```mermaid
+sequenceDiagram
+    participant Client
+    participant Backend
+
+    Client->>+Backend: POST /gm/ws/ticket/{game_id}<br/>Authorization: Bearer <token>
+    note over Backend: Validate JWT
+    note over Backend: Generate single-use ticket<br/>(UUID v4, 30s TTL)
+    Backend->>-Client: { url: "ws://.../gm/ws/{id}?ticket=..." }
+
+    Client->>+Backend: GET /gm/ws/{id}?ticket=...<br/>(WebSocket upgrade)
+    note over Backend: Validate & consume ticket
+    note over Backend: Verify ticket game_id matches path
+    Backend->>-Client: 101 Switching Protocols
+```
+
 ### Entrypoints
 
--   GM: /gm/connect/:game_id
--   USER: /user/connect/:game_id
+-   GM: /gm/ws/:game_id?ticket=...
+-   USER: /user/connect/:game_id (not yet implemented)
 
 ## Websocket Events
 
