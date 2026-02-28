@@ -1,5 +1,4 @@
 use std::time::Instant;
-use sqlx::Connection;
 use crate::application::game::contracts::ConnectionContract;
 use crate::application::game::session::TICKET_TTL_SECS;
 use crate::domain::game::error::{GameError, GameErrorKind};

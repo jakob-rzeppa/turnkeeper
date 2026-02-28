@@ -18,20 +18,19 @@
 
 use std::collections::HashMap;
 use std::sync::Arc;
-use std::time::Instant;
 use tokio::sync::RwLock;
 use uuid::Uuid;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
-use crate::application::game::dto::ConnectionMessageDto;
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::domain::game::entities::game::Game;
-use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
-use crate::domain::user::entities::User;
 
 mod gm_connection_state;
+mod gm_lifecycle;
 mod user_connection_state;
+mod user_lifecycle;
 
 /// How long a ticket remains valid (in seconds).
 const TICKET_TTL_SECS: u64 = 30;
@@ -137,168 +136,6 @@ where
                 connection.send(json_game_state.clone()).await;
             }
         }
-    }
-
-    pub async fn gm_pre_connect(&self) -> Result<String, GameError> {
-        let mut gm_connection_guard = self.gm_connection.write().await;
-
-        // Opportunistically clean up expired pending connection
-        if let GmConnectionState::Pending { ref ticket_created_at, .. } = *gm_connection_guard {
-            if ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
-                *gm_connection_guard = GmConnectionState::None;
-            }
-        }
-
-        // Only allow a new pending connection if there is currently no active or pending connection
-        match *gm_connection_guard {
-            GmConnectionState::None => {
-                let ticket = Uuid::new_v4().to_string();
-                *gm_connection_guard = GmConnectionState::Pending {
-                    ticket: ticket.clone(),
-                    ticket_created_at: Instant::now(),
-                };
-                Ok(ticket)
-            },
-            GmConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
-            GmConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
-        }
-    }
-
-    /// Accepts a GM WebSocket connection and drives the session event loop.
-    ///
-    /// Stores the provided connection handle and then continuously reads
-    /// incoming messages:
-    ///
-    /// - [`ConnectionMessageDto::Event`] — forwarded to [`handle_event`](Self::handle_event).
-    /// - [`ConnectionMessageDto::Close`] — breaks the loop and clears the connection.
-    ///
-    /// This method returns only after the connection is closed. Only one GM
-    /// connection may be active per session at a time.
-    pub async fn gm_connect(&self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
-        let mut gm_connection_guard = self.gm_connection.write().await;
-
-        gm_connection_guard.upgrade_pending_connection(connection_ticket, connection)?;
-        println!("Gm connection established");
-
-        // Drop the gm_conn_guard to avoid holding the write lock while we await messages in the loop below
-        drop(gm_connection_guard);
-
-        // Broadcast the initial game state to the newly connected GM
-        self.broadcast_game_state().await;
-
-        // Handle incoming messages until the connection is closed.
-        // The write lock must be scoped so it is released before handle_event,
-        // which calls broadcast_game_state and re-acquires the lock.
-        loop {
-            let msg = {
-                let guard = self.gm_connection.read().await;
-                let conn = guard.connection().expect("gm_conn is some");
-                conn.recv().await
-            };
-            // guard dropped — lock released
-
-            match msg {
-                ConnectionMessageDto::Event(event) => self.handle_event(event).await,
-                _ => break,
-            }
-        }
-
-        let mut gm_connection_guard = self.gm_connection.write().await;
-        println!("Closing GmWebSocket connection.");
-        *gm_connection_guard = GmConnectionState::None;
-        Ok(())
-    }
-
-    pub async fn user_pre_connect(&self, user: User) -> Result<String, GameError> {
-        let user_connections_guard = self.user_connections.read().await;
-
-        if let Some(user_connection) = user_connections_guard.get(user.id()) {
-            let mut user_connection_guard = user_connection.write().await;
-            // Opportunistically clean up expired pending connection
-            if let UserConnectionState::Pending { ref ticket_created_at, .. } = *user_connection_guard {
-                if ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
-                    *user_connection.write().await = UserConnectionState::None;
-                }
-            }
-
-            // Only allow a new pending connection if there is currently no active or pending connection
-            match *user_connection_guard {
-                UserConnectionState::None => {
-                    let ticket = Uuid::new_v4().to_string();
-                    *user_connection_guard = UserConnectionState::Pending {
-                        ticket: ticket.clone(),
-                        ticket_created_at: Instant::now(),
-                        user,
-                    };
-                    Ok(ticket)
-                },
-                UserConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::UserAlreadyConnected)),
-                UserConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::UserAlreadyConnected)),
-            }
-        } else {
-            let ticket = Uuid::new_v4().to_string();
-            let user_connection_state = UserConnectionState::Pending {
-                ticket: ticket.clone(),
-                ticket_created_at: Instant::now(),
-                user: user.clone(),
-            };
-            drop(user_connections_guard);
-
-            let mut user_connections_guard = self.user_connections.write().await;
-            user_connections_guard.insert(*user.id(), Arc::new(RwLock::new(user_connection_state)));
-            Ok(ticket)
-        }
-    }
-
-    pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
-        let user_connections_guard = self.user_connections.read().await;
-
-        let user_connection = match user_connections_guard.get(&user_id) {
-            Some(conn) => conn,
-            None => {
-                eprintln!("No pending connection found for user_id {}. Rejecting connection.", user_id);
-                return Err(GameError::new(GameErrorKind::NoPendingConnection));
-            }
-        };
-
-        let mut user_connection_guard = user_connection.write().await;
-
-        user_connection_guard.upgrade_pending_connection(connection_ticket, connection).map_err(|err| {
-            eprintln!("No pending connection found for user_id {}. Rejecting connection.", user_id);
-            err
-        })?;
-        println!("Gm connection established");
-
-        // Drop the guards to avoid holding the locks while we await messages in the loop below
-        drop(user_connection_guard);
-        drop(user_connections_guard);
-
-        // Broadcast the initial game state to the newly connected GM
-        self.broadcast_game_state().await;
-
-        // Handle incoming messages until the connection is closed.
-        // The write lock must be scoped so it is released before handle_event,
-        // which calls broadcast_game_state and re-acquires the lock.
-        loop {
-            let msg = {
-                let user_connections_guard = self.user_connections.read().await;
-                let user_connection = user_connections_guard.get(&user_id).expect("user connection should exist");
-                let user_connection_guard = user_connection.read().await;
-                let conn = user_connection_guard.connection().expect("gm_conn is some");
-                conn.recv().await
-            };
-            // guard dropped — lock released
-
-            match msg {
-                ConnectionMessageDto::Event(event) => self.handle_event(event).await,
-                _ => break,
-            }
-        }
-
-        let mut user_connections_guard = self.user_connections.write().await;
-        println!("Closing GmWebSocket connection.");
-        user_connections_guard.remove(&user_id);
-        Ok(())
     }
 }
 
