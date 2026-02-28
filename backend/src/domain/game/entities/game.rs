@@ -2,7 +2,6 @@ use uuid::Uuid;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
-use crate::domain::game::projections::{GmGameInfo, GmPlayerInfo, GmPlayerUserInfo, GmStatInfo};
 
 /// The representation of the game
 ///
@@ -34,6 +33,22 @@ impl Game {
 
     pub fn id(&self) -> &Uuid {
         &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn players(&self) -> &[Player] {
+        &self.players
+    }
+
+    pub fn round_number(&self) -> u32 {
+        self.round_number
+    }
+
+    pub fn current_player_index(&self) -> usize {
+        self.current_player_index
     }
 
     pub fn add_player(&mut self) -> Result<(), GameError> {
@@ -80,29 +95,6 @@ impl Game {
         }
     }
 
-    pub fn get_game_info(&self) -> GmGameInfo {
-        GmGameInfo {
-            id: self.id.to_string(),
-            name: self.name.to_string(),
-            players: self.players.iter().map(|p| GmPlayerInfo {
-                id: p.id().to_string(),
-                user: p.user().map(|u| GmPlayerUserInfo {
-                    id: u.id().to_string(),
-                    name: u.name().to_string(),
-                }),
-                stats: p.stats().iter().map(|s| GmStatInfo {
-                    id: s.id().to_string(),
-                    key: s.key().as_str().to_string(),
-                    value_type: s.kind_str().to_string(),
-                    string_value: s.as_string().map(|s| s.to_string()),
-                    number_value: s.as_number(),
-                    boolean_value: s.as_boolean(),
-                }).collect(),
-            }).collect(),
-            round_number: self.round_number,
-            current_player_index: self.current_player_index,
-        }
-    }
 }
 
 #[cfg(test)]
@@ -111,6 +103,7 @@ mod tests {
 
     mod into_gm_game_info {
         use crate::domain::game::entities::stat::Stat;
+        use crate::domain::game::projections::GmGameInfo;
         use crate::domain::user::entities::User;
         use super::*;
 
@@ -134,7 +127,7 @@ mod tests {
             
             //game.add_player(player).unwrap();
 
-            let gm_info: GmGameInfo = game.get_game_info();
+            let gm_info = GmGameInfo::from(&game);
 
             assert_eq!(gm_info.id, game_id.to_string());
             assert_eq!(gm_info.name, "test-game");

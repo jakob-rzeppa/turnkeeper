@@ -26,6 +26,7 @@ use crate::application::game::session::user_connection_state::UserConnectionStat
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
+use crate::domain::game::projections::GmGameInfo;
 
 mod gm_connection_state;
 mod gm_lifecycle;
@@ -113,7 +114,7 @@ where
 
     async fn broadcast_game_state(&self) {
         let game_guard = self.game.read().await;
-        let game_state = game_guard.get_game_info();
+        let game_state = GmGameInfo::from(&*game_guard);
         drop(game_guard);
 
         let json_game_state = match serde_json::to_string(&game_state) {
