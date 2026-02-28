@@ -1,6 +1,7 @@
 # Turnkeeper - Architecture Documentation
 
 ## Table of Contents
+
 - [System Overview](#system-overview)
 - [Architecture Principles](#architecture-principles)
 - [Layer Architecture](#layer-architecture)
@@ -32,7 +33,7 @@ Dependencies flow inward: Infrastructure → Application → Domain. The domain 
 graph LR
     INFRA[Infrastructure<br/>HTTP, WS, DB, Auth] -->|depends on| APP[Application<br/>Handlers, DTOs]
     APP -->|depends on| DOM[Domain<br/>Entities, Value Objects]
-    
+
     style DOM fill:#e8f5e9
     style APP fill:#fff3e0
     style INFRA fill:#fce4ec
@@ -56,19 +57,20 @@ classDiagram
         +add_player(player) Result
         +id() Uuid
     }
-    
+
     class Player {
         -Uuid id
-        -User user
+        -Option~User~ user
         -Vec~Stat~ stats
-        +new(id, user) Player
+        +new(id) Player
+        +add_user(user) void
         +try_add_stat(stat) Result
         +try_add_string_stat() Result
         +try_add_number_stat() Result
         +try_add_bool_stat() Result
         +name() String
     }
-    
+
     class User {
         -Uuid id
         -UserName name
@@ -77,43 +79,43 @@ classDiagram
         +name() String
         +password() String
     }
-    
+
     class Stat {
         -Uuid id
         -StatKey key
-        -StatValue value
+        -StatKind kind
         +try_new_string_stat() Result
         +try_new_number_stat() Result
         +try_new_bool_stat() Result
     }
-    
+
     class StatKey {
         -String value
         +try_new(value) Result
     }
-    
-    class StatValue {
+
+    class StatKind {
         <<enum>>
-        String
-        Number
-        Boolean
+        Number(NumberStatValue)
+        String(StringStatValue)
+        Boolean(BooleanStatValue)
     }
-    
+
     class UserName {
         -String value
         +try_new(value) Result
     }
-    
+
     class UserPassword {
         -String value
         +try_new(value) Result
     }
-    
+
     Game "1" *-- "0..*" Player
-    Player "1" *-- "1" User
+    Player "1" *-- "0..1" User
     Player "1" *-- "0..*" Stat
     Stat "1" *-- "1" StatKey
-    Stat "1" *-- "1" StatValue
+    Stat "1" *-- "1" StatKind
     User "1" *-- "1" UserName
     User "1" *-- "1" UserPassword
 ```
@@ -134,11 +136,11 @@ graph TB
             GameDelete[DeleteGameRequestHandler]
             GameOverview[OverviewGamesRequestHandler]
         end
-        
+
         subgraph "Event Handlers"
-            GameEvents[GameEventHandler]
+            GameEvents[GameSession]
         end
-        
+
         subgraph "Contracts/Interfaces"
             UserRepo[UserRepositoryContract]
             GameRepo[GameRepositoryContract]
@@ -146,7 +148,7 @@ graph TB
             JwtVal[JwtValidatorContract]
         end
     end
-    
+
     ULogin --> UserRepo
     ULogin --> JwtGen
     URegister --> UserRepo
@@ -157,7 +159,7 @@ graph TB
     GameDelete --> GameRepo
     GameOverview --> GameRepo
     GameEvents --> GameRepo
-    
+
     style ULogin fill:#e1f5ff
     style URegister fill:#e1f5ff
     style UAuth fill:#e1f5ff
@@ -181,17 +183,17 @@ graph TB
             GmHttp[GM HTTP Handlers]
             GameHttp[Game HTTP Handlers]
         end
-        
+
         subgraph "WebSocket"
             WsHandler[WebSocket Handler]
         end
-        
+
         subgraph "Authentication"
             AuthMgr[AuthManager]
             UserJWT[UserJwtGenerator/Validator]
             GmJWT[GmJwtGenerator/Validator]
         end
-        
+
         subgraph "Persistence"
             RepoMgr[RepositoryManager]
             UserRepo[SqliteUserRepository]
@@ -199,20 +201,20 @@ graph TB
             DB[(SQLite Pool)]
         end
     end
-    
+
     Routes --> UserHttp
     Routes --> GmHttp
     Routes --> GameHttp
-    
+
     AuthMgr --> UserJWT
     AuthMgr --> GmJWT
-    
+
     RepoMgr --> UserRepo
     RepoMgr --> GameRepo
-    
+
     UserRepo --> DB
     GameRepo --> DB
-    
+
     style Routes fill:#fff3e0
     style AuthMgr fill:#e1f5ff
     style RepoMgr fill:#f1f8e9
@@ -228,25 +230,25 @@ erDiagram
     GAME ||--o{ PLAYER : contains
     PLAYER ||--|| USER : references
     PLAYER ||--o{ STAT : has
-    
+
     GAME {
         uuid id PK
         string name
         u32 round_number
         usize current_player_index
     }
-    
+
     PLAYER {
         uuid id PK
         uuid user_id FK
     }
-    
+
     USER {
         uuid id PK
         string name
-        string password_hash
+        string password
     }
-    
+
     STAT {
         uuid id PK
         uuid player_id FK
@@ -266,13 +268,13 @@ graph TB
         Game --> Players
         Players --> Stats
     end
-    
+
     subgraph "User Aggregate"
         User[User Entity<br/>Aggregate Root]
     end
-    
+
     Players -.->|References| User
-    
+
     style Game fill:#e8f5e9,stroke:#4caf50,stroke-width:3px
     style User fill:#e8f5e9,stroke:#4caf50,stroke-width:3px
 ```
@@ -282,7 +284,7 @@ graph TB
 Client connection is handled in two ways:
 
 1. REST Api - RequestHandlers
-2. Websockets - GameEventHandler
+2. Websockets - GameSession
 
 ```mermaid
 graph TB
@@ -292,7 +294,7 @@ graph TB
 
     subgraph "Backend Server"
         API[RequestHandlers]
-        WS[GameEventHandler]
+        WS[GameSession]
     end
 
     subgraph "User Devices"
@@ -304,11 +306,8 @@ graph TB
     GM <-->|HTTP| API
     GM <-->|WS| WS
     U1 <-->|HTTP| API
-    U1 <-->|WS| WS
     U2 <-->|HTTP| API
-    U2 <-->|WS| WS
     U3 <-->|HTTP| API
-    U3 <-->|WS| WS
 
     style GM fill:#e1f5ff
     style API fill:#fff3e0
@@ -328,7 +327,7 @@ sequenceDiagram
     participant API as HTTP API
     participant Handler as GmLoginHandler
     participant JWT as GmJwtGeneratorContract
-    
+
     GM->>+API: POST /gm/login<br/>{password}
     API->>+Handler: GmLoginRequest
     Handler->>Handler: Validate password<br/>against ENV variable
@@ -336,7 +335,7 @@ sequenceDiagram
     JWT-->>-Handler: JWT Token
     Handler-->>-API: GmLoginResponse
     API-->>-GM: 200 OK<br/>{token}
-    
+
     Note over GM: Store token in localStorage
 ```
 
@@ -350,7 +349,7 @@ sequenceDiagram
     participant RegisterH as UserRegisterHandler
     participant JWT as UserJwtGeneratorContract
     participant Repo as UserRepositoryContract
-    
+
     alt User Registration
         User->>+API: POST /user/register<br/>{name, password}
         API->>+RegisterH: UserRegisterRequest
@@ -371,7 +370,7 @@ sequenceDiagram
         LoginH-->>-API: UserTokenResponse
         API-->>-User: 200 OK<br/>{token}
     end
-    
+
     Note over User: Store token in cookies
 ```
 
@@ -390,7 +389,7 @@ graph LR
     GMCheck -->|No| Reject403[403 Forbidden]
     UserCheck -->|Yes| Allow
     UserCheck -->|No| Reject403
-    
+
     style Allow fill:#c8e6c9
     style Reject fill:#ffcdd2
     style Reject403 fill:#ffcdd2
@@ -407,7 +406,7 @@ sequenceDiagram
     participant HTTP as HTTP Handler
     participant Handler as Request Handler
     participant Repo as Repository
-    
+
     Client->>+Router: HTTP Request
     Router->>+HTTP: Extract & Validate
     HTTP->>+Handler: Call with Request DTO
@@ -429,20 +428,18 @@ sequenceDiagram
     participant Game as Game Entity
     participant Repo as Repository
     participant Clients as Connected Clients
-    
-    Client->>+WS: WebSocket Message<br/>(Game Command)
+
+    Client->>+WS: WebSocket Message<br/>(JSON GameEvent)
     WS->>+EventH: Parse Event
-    note over EventH: start transaction
-    EventH->>+Repo: Log Event
-    Repo-->>-EventH: Success
     EventH->>+Game: Apply Command
     Game->>Game: Update State
-    Game-->>-EventH: Game Event
-    note over EventH: end transaction
-    EventH->>+Clients: Broadcast Event
-    Clients-->>-Client: Update UI
-    EventH-->>-WS: Acknowledge
-    WS-->>-Client: Success Response
+    Game-->>-EventH: Updated Game
+    EventH->>+Repo: Persist Game State
+    Repo-->>-EventH: Success
+    EventH-->>-WS: Full GmGameInfo
+    WS-->>-Client: JSON Response
+
+    Note over EventH,Repo: Event logging (games_log) is defined<br/>but not yet implemented (todo!())
 ```
 
 ## Error Handling
@@ -453,9 +450,9 @@ sequenceDiagram
 graph BT
     DomainErr[Domain Errors<br/>UserError, GameError, GmError] -->|From| InfraErr[Infrastructure Errors<br/>HttpError]
     InfraErr -->|IntoResponse| Response[HTTP Response<br/>Status Code + JSON]
-    
+
     DomainErr -.->|Contains| Kind[ErrorKind Enum]
-    
+
     style DomainErr fill:#e8f5e9
     style InfraErr fill:#fce4ec
     style Response fill:#e1f5ff
@@ -464,10 +461,29 @@ graph BT
 ## Key Design Decisions
 
 ### 1. UUID as Primary Keys
+
 UUIDs are used for all entity IDs because:
+
 - Allows easy generation
 - No need for database round-trips to get IDs
 
 ### 2. Request/Response vs Event
+
 - **HTTP**: Request → Handler → Response (stateless)
-- **WebSocket**: Command → Handler → Event → Broadcast (stateful)
+- **WebSocket**: GameEvent → Handler → Apply to Game → Full State Response
+
+### 3. Current WebSocket Events
+
+The `GameEvent` enum currently supports:
+
+- `AddPlayer` — adds an anonymous player
+- `ChangePlayerOrder(Vec<String>)` — reorders players by UUID
+- `Debug(String)` — prints a debug message to the server console
+
+### 4. Unimplemented Features
+
+The following are defined in code but not yet functional:
+
+- `SqliteGameRepository::delete()` — will panic (`todo!()`)
+- `SqliteGameRepository::log_event()` / `get_game_history()` — event sourcing persistence (`todo!()`)
+- User WebSocket connections — no user WS handler exists

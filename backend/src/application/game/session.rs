@@ -50,7 +50,7 @@ where
     /// Creates a new `GameSession` for the given game.
     ///
     /// Fetches the game's metadata (ID and name) from the repository and
-    /// initialises the in-memory aggregate.  No GM connection is established
+    /// initializes the in-memory aggregate.  No GM connection is established
     /// at this point.
     ///
     /// # Errors
