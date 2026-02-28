@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::AppState;
 use crate::domain::user::entities::User;
 use crate::infrastructure::error::HttpError;
-use crate::infrastructure::websocket::user_connection::WebSocketUserConnection;
+use crate::infrastructure::websocket::gm_connection::WebSocketConnection;
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct UserWsTicketResponse {
@@ -66,7 +66,7 @@ pub async fn user_websocket_handler(
     ).map_err(|_| HttpError::BadRequest("Invalid user_id query parameter".to_string()))?;
 
     Ok(ws.on_upgrade(async move |socket| {
-        let user_connection = WebSocketUserConnection::new(socket);
+        let user_connection = WebSocketConnection::new(socket);
         let session = state.game_session_manager.get_session(id).await;
         if let Some(session) = session {
             let _ = session.user_connect(user_id, ticket, user_connection).await;

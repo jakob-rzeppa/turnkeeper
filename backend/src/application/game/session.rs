@@ -21,7 +21,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
 use uuid::Uuid;
-use crate::application::game::contracts::{GameRepositoryContract, GmConnectionContract, UserConnectionContract};
+use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError, GameErrorKind};
@@ -33,7 +33,7 @@ const TICKET_TTL_SECS: u64 = 30;
 
 pub enum GmConnectionState<Connection>
 where
-    Connection: GmConnectionContract
+    Connection: ConnectionContract
 {
     None,
     Pending {
@@ -47,7 +47,7 @@ where
 
 impl<Connection> GmConnectionState<Connection>
 where
-    Connection: GmConnectionContract
+    Connection: ConnectionContract
 {
     fn as_ref(&self) -> Option<&Connection> {
         if let GmConnectionState::Connected { connection } = self {
@@ -87,7 +87,7 @@ where
 
 pub enum UserConnectionState<Connection>
 where
-    Connection: UserConnectionContract
+    Connection: ConnectionContract
 {
     None,
     Pending {
@@ -103,7 +103,7 @@ where
 
 impl<Connection> UserConnectionState<Connection>
 where
-    Connection: UserConnectionContract
+    Connection: ConnectionContract
 {
     fn as_ref(&self) -> Option<&Connection> {
         if let UserConnectionState::Connected { connection, .. } = self {
@@ -148,26 +148,24 @@ where
 ///
 /// Owns the [`Game`] aggregate for one game and optionally holds an open
 /// connection to the GM.
-pub struct GameSession<GmConnection, UserConnection, GameRepository>
+pub struct GameSession<Connection, GameRepository>
 where
-    GmConnection: GmConnectionContract,
-    UserConnection: UserConnectionContract,
+    Connection: ConnectionContract,
     GameRepository: GameRepositoryContract
 {
     /// The live game aggregate that holds all current game state.
     game: Arc<RwLock<Game>>,
     /// The active GM WebSocket connection, if one is currently established.
-    gm_connections: Arc<RwLock<GmConnectionState<GmConnection>>>,
+    gm_connections: Arc<RwLock<GmConnectionState<Connection>>>,
     /// The active user connections, if any are currently established.
-    user_connections: Arc<RwLock<HashMap<Uuid, Arc<RwLock<UserConnectionState<UserConnection>>>>>>,
+    user_connections: Arc<RwLock<HashMap<Uuid, Arc<RwLock<UserConnectionState<Connection>>>>>>,
     /// Shared repository used for persistence operations.
     game_repo: Arc<GameRepository>,
 }
 
-impl<GmConnection, UserConnection, GameRepository> GameSession<GmConnection, UserConnection, GameRepository>
+impl<Connection, GameRepository> GameSession<Connection, GameRepository>
 where
-    GmConnection: GmConnectionContract,
-    UserConnection: UserConnectionContract,
+    Connection: ConnectionContract,
     GameRepository: GameRepositoryContract
 {
     /// Creates a new `GameSession` for the given game.
@@ -284,7 +282,7 @@ where
     ///
     /// This method returns only after the connection is closed. Only one GM
     /// connection may be active per session at a time.
-    pub async fn gm_connect(&self, connection_ticket: String, connection: GmConnection) -> Result<(), GameError> {
+    pub async fn gm_connect(&self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
         let mut gm_conn_guard = self.gm_connections.write().await;
 
         gm_conn_guard.upgrade_pending_connection(connection_ticket, connection)?;
@@ -360,7 +358,7 @@ where
         }
     }
 
-    pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: UserConnection) -> Result<(), GameError> {
+    pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
         let user_connections_guard = self.user_connections.read().await;
 
         let user_connection = match user_connections_guard.get(&user_id) {
@@ -412,10 +410,9 @@ where
     }
 }
 
-impl<GmConnection, UserConnection, GameRepository> Clone for GameSession<GmConnection, UserConnection, GameRepository>
+impl<Connection, GameRepository> Clone for GameSession<Connection, GameRepository>
 where
-    GmConnection: GmConnectionContract,
-    UserConnection: UserConnectionContract,
+    Connection: ConnectionContract,
     GameRepository: GameRepositoryContract
 {
     fn clone(&self) -> Self {

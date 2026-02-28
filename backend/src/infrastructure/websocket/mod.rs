@@ -4,7 +4,6 @@
 
 pub mod gm_connection;
 pub mod session_manager;
-mod user_connection;
 mod user;
 mod gm;
 

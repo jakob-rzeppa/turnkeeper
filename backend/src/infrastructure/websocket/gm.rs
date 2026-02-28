@@ -7,7 +7,7 @@ use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 use crate::AppState;
 use crate::infrastructure::error::HttpError;
-use crate::infrastructure::websocket::gm_connection::WebSocketGmConnection;
+use crate::infrastructure::websocket::gm_connection::WebSocketConnection;
 
 #[derive(Deserialize)]
 pub struct GmWsQueryParams {
@@ -28,7 +28,7 @@ pub async fn gm_websocket_handler(
     let ticket = params.ticket.ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
 
     Ok(ws.on_upgrade(async move |socket| {
-        let gm_conn = WebSocketGmConnection::new(socket);
+        let gm_conn = WebSocketConnection::new(socket);
         let session = state.game_session_manager.get_session(id).await;
         if let Some(session) = session {
             let _ = session.gm_connect(ticket, gm_conn).await;

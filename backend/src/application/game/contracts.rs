@@ -102,13 +102,7 @@ pub trait GameRepositoryContract {
     async fn delete(&self, game_id: Uuid) -> Result<(), GameError>;
 }
 
-pub trait GmConnectionContract {
-    async fn recv(&self) -> ConnectionMessageDto;
-
-    async fn send(&self, msg: String);
-}
-
-pub trait UserConnectionContract {
+pub trait ConnectionContract {
     async fn recv(&self) -> ConnectionMessageDto;
 
     async fn send(&self, msg: String);
