@@ -103,7 +103,13 @@ pub trait GameRepositoryContract {
 }
 
 pub trait GmConnectionContract {
-    async fn recv(&mut self) -> ConnectionMessageDto;
+    async fn recv(&self) -> ConnectionMessageDto;
 
-    async fn send(&mut self, msg: String);
+    async fn send(&self, msg: String);
+}
+
+pub trait UserConnectionContract {
+    async fn recv(&self) -> ConnectionMessageDto;
+
+    async fn send(&self, msg: String);
 }

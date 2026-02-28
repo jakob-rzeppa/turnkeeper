@@ -55,6 +55,7 @@ pub enum UserErrorKind {
     UserAlreadyExists,
     JwtGenerationError,
     DatabaseError,
+    InvalidToken,
 }
 
 impl UserErrorKind {
@@ -68,6 +69,7 @@ impl UserErrorKind {
             UserErrorKind::UserAlreadyExists => "User already exists".to_string(),
             UserErrorKind::JwtGenerationError => "JWT generation failed".to_string(),
             UserErrorKind::DatabaseError => "Unexpected database error".to_string(),
+            UserErrorKind::InvalidToken => "Invalid token".to_string(),
         }
     }
 }

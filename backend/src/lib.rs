@@ -10,16 +10,14 @@ pub mod domain;
 pub mod application;
 pub mod infrastructure;
 
-use axum::{middleware, routing::get, Router};
-use axum::routing::post;
+use axum::{Router};
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
-use crate::infrastructure::auth::middleware::gm_auth_middleware;
 use crate::infrastructure::auth::AuthManager;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::repositories::RepositoryManager;
 use crate::infrastructure::websocket::session_manager::GameSessionManager;
-use crate::infrastructure::websocket::{websocket_handler, ws_ticket};
+use crate::infrastructure::websocket::{get_websocket_routes};
 
 /// Application state shared across all HTTP handlers and WebSocket connections.
 #[derive(Clone)]
@@ -41,14 +39,7 @@ pub fn build_app(state: AppState) -> Router {
 
     Router::new()
         .merge(get_routes(state.clone()))
-        .route("/gm/ws/{id}", get(websocket_handler))
-        .route(
-            "/gm/ws/ticket/{game_id}",
-            post(ws_ticket).route_layer(middleware::from_fn_with_state(
-                state.clone(),
-                gm_auth_middleware,
-            )),
-        )
+        .merge(get_websocket_routes(state.clone()))
         .with_state(state)
         .layer(ServiceBuilder::new().layer(cors_layer))
 }

@@ -2,26 +2,26 @@ use axum::extract::ws::{Message, WebSocket};
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
-use crate::application::game::contracts::GmConnectionContract;
+use crate::application::game::contracts::{UserConnectionContract};
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::events::GameEvent;
 
-pub struct WebSocketGmConnection {
+pub struct WebSocketUserConnection {
     sender: Mutex<SplitSink<WebSocket, Message>>,
     receiver: Mutex<SplitStream<WebSocket>>,
 }
 
-impl WebSocketGmConnection {
+impl WebSocketUserConnection {
     pub fn new(socket: WebSocket) -> Self {
         let (sender, receiver) = socket.split();
         Self {
             sender: Mutex::new(sender),
-            receiver: Mutex::new(receiver)
+            receiver: Mutex::new(receiver),
         }
     }
 }
 
-impl GmConnectionContract for WebSocketGmConnection {
+impl UserConnectionContract for WebSocketUserConnection {
     async fn recv(&self) -> ConnectionMessageDto {
         let mut receiver = self.receiver.lock().await;
 

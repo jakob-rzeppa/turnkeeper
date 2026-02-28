@@ -7,9 +7,10 @@ use crate::AppState;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
 use crate::infrastructure::websocket::gm_connection::WebSocketGmConnection;
+use crate::infrastructure::websocket::user_connection::WebSocketUserConnection;
 
 pub struct GameSessionManager {
-    sessions: Arc<RwLock<HashMap<Uuid, GameSession<WebSocketGmConnection, SqliteGameRepository>>>>
+    sessions: Arc<RwLock<HashMap<Uuid, GameSession<WebSocketGmConnection, WebSocketUserConnection, SqliteGameRepository>>>>
 }
 
 impl GameSessionManager {
@@ -19,12 +20,12 @@ impl GameSessionManager {
         }
     }
 
-    pub async fn get_session(&self, game_id: Uuid) -> Option<GameSession<WebSocketGmConnection, SqliteGameRepository>> {
+    pub async fn get_session(&self, game_id: Uuid) -> Option<GameSession<WebSocketGmConnection, WebSocketUserConnection, SqliteGameRepository>> {
         let sessions = self.sessions.read().await;
         sessions.get(&game_id).cloned()
     }
 
-    pub async fn get_or_create_session(&self, game_id: Uuid, app_state: AppState) -> Result<GameSession<WebSocketGmConnection, SqliteGameRepository>, GameError> {
+    pub async fn get_or_create_session(&self, game_id: Uuid, app_state: AppState) -> Result<GameSession<WebSocketGmConnection, WebSocketUserConnection, SqliteGameRepository>, GameError> {
         if let Some(session) = self.get_session(game_id).await {
             return Ok(session);
         }

@@ -87,6 +87,7 @@ impl From<UserError> for HttpError {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },
+            UserErrorKind::InvalidToken => HttpError::Unauthorized(e.to_string()),
         }
     }
 }
@@ -118,6 +119,7 @@ impl From<GameError> for HttpError {
                 HttpError::InternalServerError
             },
             GameErrorKind::UserForPlayerNotFound => HttpError::NotFound(e.to_string()),
+            GameErrorKind::UserAlreadyConnected => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameSessionCreationFailed => HttpError::InternalServerError,
             GameErrorKind::GmAlreadyConnected => HttpError::Conflict(e.to_string()),
             GameErrorKind::InvalidPlayerOrder => HttpError::BadRequest(e.to_string()),

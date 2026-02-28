@@ -16,25 +16,24 @@
 //!    message (or the connection is otherwise dropped), at which point the
 //!    stored GM connection handle is cleared.
 
+use std::collections::HashMap;
 use std::sync::Arc;
 use std::time::Instant;
-use futures_util::SinkExt;
 use tokio::sync::RwLock;
 use uuid::Uuid;
-use crate::application::game::contracts::{GameRepositoryContract, GmConnectionContract};
+use crate::application::game::contracts::{GameRepositoryContract, GmConnectionContract, UserConnectionContract};
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
-use crate::domain::game::projections::GmGameInfo;
-use crate::infrastructure::websocket::gm_connection::WebSocketGmConnection;
+use crate::domain::user::entities::User;
 
 /// How long a ticket remains valid (in seconds).
 const TICKET_TTL_SECS: u64 = 30;
 
-pub enum ConnectionState<GmConnection>
+pub enum GmConnectionState<Connection>
 where
-    GmConnection: GmConnectionContract
+    Connection: GmConnectionContract
 {
     None,
     Pending {
@@ -42,19 +41,86 @@ where
         ticket_created_at: Instant,
     },
     Connected {
-        connection: GmConnection,
+        connection: Connection,
     }
 }
 
-impl<GmConnection> ConnectionState<GmConnection>
+impl<Connection> GmConnectionState<Connection>
 where
-    GmConnection: GmConnectionContract
+    Connection: GmConnectionContract
 {
-    fn as_mut(&mut self) -> Option<&mut GmConnection> {
-        if let ConnectionState::Connected { connection } = self {
+    fn as_ref(&self) -> Option<&Connection> {
+        if let GmConnectionState::Connected { connection } = self {
             Some(connection)
         } else {
             None
+        }
+    }
+}
+
+pub enum UserConnectionState<Connection>
+where
+    Connection: UserConnectionContract
+{
+    None,
+    Pending {
+        ticket: String,
+        ticket_created_at: Instant,
+        user: User,
+    },
+    Connected {
+        connection: Connection,
+        user: User,
+    }
+}
+
+impl<Connection> UserConnectionState<Connection>
+where
+    Connection: UserConnectionContract
+{
+    fn as_ref(&self) -> Option<&Connection> {
+        if let UserConnectionState::Connected { connection, .. } = self {
+            Some(connection)
+        } else {
+            None
+        }
+    }
+
+    fn user(&self) -> Option<&User> {
+        if let UserConnectionState::Connected { user, .. } = self {
+            Some(user)
+        } else {
+            None
+        }
+    }
+
+    fn upgrade_pending_connection(&mut self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
+        match self {
+            UserConnectionState::Connected { .. } => {
+                eprintln!("User connection already established for this session. Rejecting new connection.");
+                Err(GameError::new(GameErrorKind::UserAlreadyConnected))
+            },
+            UserConnectionState::Pending { ticket, ticket_created_at, user } => {
+                if connection_ticket.ne(ticket) || ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
+                    eprintln!("Invalid or expired ticket for user connection. Rejecting connection.");
+
+                    // Clear the pending state
+                    *self = UserConnectionState::None;
+
+                    Err(GameError::new(GameErrorKind::InvalidConnectionToken))
+                } else {
+                    *self = UserConnectionState::Connected {
+                        connection,
+                        user: user.clone(),
+                    };
+
+                    Ok(())
+                }
+            },
+            UserConnectionState::None => {
+                eprintln!("No pending user connection to upgrade. Rejecting connection.");
+                Err(GameError::new(GameErrorKind::NoPendingConnection))
+            }
         }
     }
 }
@@ -63,22 +129,26 @@ where
 ///
 /// Owns the [`Game`] aggregate for one game and optionally holds an open
 /// connection to the GM.
-pub struct GameSession<GmConnection, GameRepository>
+pub struct GameSession<GmConnection, UserConnection, GameRepository>
 where
     GmConnection: GmConnectionContract,
+    UserConnection: UserConnectionContract,
     GameRepository: GameRepositoryContract
 {
     /// The live game aggregate that holds all current game state.
     game: Arc<RwLock<Game>>,
     /// The active GM WebSocket connection, if one is currently established.
-    gm_conn: Arc<RwLock<ConnectionState<GmConnection>>>,
+    gm_connections: Arc<RwLock<GmConnectionState<GmConnection>>>,
+    /// The active user connections, if any are currently established.
+    user_connections: Arc<RwLock<HashMap<Uuid, Arc<RwLock<UserConnectionState<UserConnection>>>>>>,
     /// Shared repository used for persistence operations.
     game_repo: Arc<GameRepository>,
 }
 
-impl<GmConnection, GameRepository> GameSession<GmConnection, GameRepository>
+impl<GmConnection, UserConnection, GameRepository> GameSession<GmConnection, UserConnection, GameRepository>
 where
     GmConnection: GmConnectionContract,
+    UserConnection: UserConnectionContract,
     GameRepository: GameRepositoryContract
 {
     /// Creates a new `GameSession` for the given game.
@@ -98,7 +168,8 @@ where
 
         Ok(Self {
             game: Arc::new(RwLock::new(game)),
-            gm_conn: Arc::new(RwLock::new(ConnectionState::None)),
+            gm_connections: Arc::new(RwLock::new(GmConnectionState::None)),
+            user_connections: Arc::new(RwLock::new(HashMap::new())),
             game_repo: game_repository,
         })
     }
@@ -145,34 +216,42 @@ where
             }
         };
 
-        let mut gm_conn_guard = self.gm_conn.write().await;
-        if let ConnectionState::Connected { ref mut connection } = *gm_conn_guard {
-            connection.send(json_game_state).await;
+        let gm_conn_guard = self.gm_connections.read().await;
+        if let GmConnectionState::Connected { ref connection } = *gm_conn_guard {
+            connection.send(json_game_state.clone()).await;
+        }
+
+        let user_connections_guard = self.user_connections.read().await;
+        for user_connection in user_connections_guard.values() {
+            let user_connection_guard = user_connection.read().await;
+            if let UserConnectionState::Connected { ref connection, .. } = *user_connection_guard {
+                connection.send(json_game_state.clone()).await;
+            }
         }
     }
 
     pub async fn gm_pre_connect(&self) -> Result<String, GameError> {
-        let mut gm_conn_guard = self.gm_conn.write().await;
+        let mut gm_conn_guard = self.gm_connections.write().await;
 
         // Opportunistically clean up expired pending connection
-        if let ConnectionState::Pending { ref ticket_created_at, .. } = *gm_conn_guard {
+        if let GmConnectionState::Pending { ref ticket_created_at, .. } = *gm_conn_guard {
             if ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
-                *gm_conn_guard = ConnectionState::None;
+                *gm_conn_guard = GmConnectionState::None;
             }
         }
 
         // Only allow a new pending connection if there is currently no active or pending connection
         match *gm_conn_guard {
-            ConnectionState::None => {
+            GmConnectionState::None => {
                 let ticket = Uuid::new_v4().to_string();
-                *gm_conn_guard = ConnectionState::Pending {
+                *gm_conn_guard = GmConnectionState::Pending {
                     ticket: ticket.clone(),
                     ticket_created_at: Instant::now(),
                 };
                 Ok(ticket)
             },
-            ConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
-            ConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
+            GmConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
+            GmConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
         }
     }
 
@@ -187,31 +266,31 @@ where
     /// This method returns only after the connection is closed. Only one GM
     /// connection may be active per session at a time.
     pub async fn gm_connect(&self, connection_ticket: String, connection: GmConnection) -> Result<(), GameError> {
-        let mut gm_conn_guard = self.gm_conn.write().await;
+        let mut gm_conn_guard = self.gm_connections.write().await;
 
         match *gm_conn_guard {
-            ConnectionState::Connected { .. } => {
+            GmConnectionState::Connected { .. } => {
                 eprintln!("GM connection already established for this session. Rejecting new connection.");
                 return Err(GameError::new(GameErrorKind::GmAlreadyConnected));
             },
-            ConnectionState::Pending { ref ticket, ref ticket_created_at } => {
+            GmConnectionState::Pending { ref ticket, ref ticket_created_at } => {
                 if ticket.ne(&connection_ticket) || ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
                     eprintln!("Invalid or expired ticket for GM connection. Rejecting connection.");
 
                     // Clear the pending state
-                    *gm_conn_guard = ConnectionState::None;
+                    *gm_conn_guard = GmConnectionState::None;
 
                     return Err(GameError::new(GameErrorKind::InvalidConnectionToken));
                 }
             },
-            ConnectionState::None => {
+            GmConnectionState::None => {
                 eprintln!("No pending GM connection to upgrade. Rejecting connection.");
                 return Err(GameError::new(GameErrorKind::NoPendingConnection));
             }
         }
 
         // At this point we know the ticket is valid, so we can accept the connection
-        *gm_conn_guard = ConnectionState::Connected { connection };
+        *gm_conn_guard = GmConnectionState::Connected { connection };
         println!("Gm connection established");
 
         // Drop the gm_conn_guard to avoid holding the write lock while we await messages in the loop below
@@ -225,8 +304,8 @@ where
         // which calls broadcast_game_state and re-acquires the lock.
         loop {
             let msg = {
-                let mut guard = self.gm_conn.write().await;
-                let conn = guard.as_mut().expect("gm_conn is some");
+                let guard = self.gm_connections.read().await;
+                let conn = guard.as_ref().expect("gm_conn is some");
                 conn.recv().await
             };
             // guard dropped — lock released
@@ -237,22 +316,116 @@ where
             }
         }
 
-        let mut gm_conn_guard = self.gm_conn.write().await;
+        let mut gm_conn_guard = self.gm_connections.write().await;
         println!("Closing GmWebSocket connection.");
-        *gm_conn_guard = ConnectionState::None;
+        *gm_conn_guard = GmConnectionState::None;
+        Ok(())
+    }
+
+    pub async fn user_pre_connect(&self, user: User) -> Result<String, GameError> {
+        let user_connections_guard = self.user_connections.read().await;
+
+        if let Some(user_connection) = user_connections_guard.get(user.id()) {
+            let mut user_connection_guard = user_connection.write().await;
+            // Opportunistically clean up expired pending connection
+            if let UserConnectionState::Pending { ref ticket_created_at, .. } = *user_connection_guard {
+                if ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
+                    *user_connection.write().await = UserConnectionState::None;
+                }
+            }
+
+            // Only allow a new pending connection if there is currently no active or pending connection
+            match *user_connection_guard {
+                UserConnectionState::None => {
+                    let ticket = Uuid::new_v4().to_string();
+                    *user_connection_guard = UserConnectionState::Pending {
+                        ticket: ticket.clone(),
+                        ticket_created_at: Instant::now(),
+                        user,
+                    };
+                    Ok(ticket)
+                },
+                UserConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::UserAlreadyConnected)),
+                UserConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::UserAlreadyConnected)),
+            }
+        } else {
+            let ticket = Uuid::new_v4().to_string();
+            let user_connection_state = UserConnectionState::Pending {
+                ticket: ticket.clone(),
+                ticket_created_at: Instant::now(),
+                user: user.clone(),
+            };
+            drop(user_connections_guard);
+
+            let mut user_connections_guard = self.user_connections.write().await;
+            user_connections_guard.insert(*user.id(), Arc::new(RwLock::new(user_connection_state)));
+            Ok(ticket)
+        }
+    }
+
+    pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: UserConnection) -> Result<(), GameError> {
+        let user_connections_guard = self.user_connections.read().await;
+
+        let user_connection = match user_connections_guard.get(&user_id) {
+            Some(conn) => conn,
+            None => {
+                eprintln!("No pending connection found for user_id {}. Rejecting connection.", user_id);
+                return Err(GameError::new(GameErrorKind::NoPendingConnection));
+            }
+        };
+
+        let mut user_connection_guard = user_connection.write().await;
+
+        user_connection_guard.upgrade_pending_connection(connection_ticket, connection).map_err(|err| {
+            eprintln!("No pending connection found for user_id {}. Rejecting connection.", user_id);
+            err
+        })?;
+        println!("Gm connection established");
+
+        // Drop the guards to avoid holding the locks while we await messages in the loop below
+        drop(user_connection_guard);
+        drop(user_connections_guard);
+
+        // Broadcast the initial game state to the newly connected GM
+        self.broadcast_game_state().await;
+
+        // Handle incoming messages until the connection is closed.
+        // The write lock must be scoped so it is released before handle_event,
+        // which calls broadcast_game_state and re-acquires the lock.
+        loop {
+            let msg = {
+                let user_connections_guard = self.user_connections.read().await;
+                let user_connection = user_connections_guard.get(&user_id).expect("user connection should exist");
+                let user_connection_guard = user_connection.read().await;
+                let conn = user_connection_guard.as_ref().expect("gm_conn is some");
+                conn.recv().await
+            };
+            // guard dropped — lock released
+
+            match msg {
+                ConnectionMessageDto::Event(event) => self.handle_event(event).await,
+                _ => break,
+            }
+        }
+
+        let mut user_connections_guard = self.user_connections.write().await;
+        println!("Closing GmWebSocket connection.");
+        user_connections_guard.remove(&user_id);
         Ok(())
     }
 }
 
-impl<GmConnection, GameRepository> Clone for GameSession<GmConnection, GameRepository>
+impl<GmConnection, UserConnection, GameRepository> Clone for GameSession<GmConnection, UserConnection, GameRepository>
 where
     GmConnection: GmConnectionContract,
+    UserConnection: UserConnectionContract,
     GameRepository: GameRepositoryContract
 {
     fn clone(&self) -> Self {
         Self {
             game: Arc::clone(&self.game),
-            gm_conn: Arc::clone(&self.gm_conn),
+            gm_connections: Arc::clone(&self.gm_connections),
+            user_connections: Arc::clone(&self.user_connections),
             game_repo: Arc::clone(&self.game_repo),
         }
     }

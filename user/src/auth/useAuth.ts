@@ -28,10 +28,7 @@ export function useAuth() {
         const payload = { name: form.value.name, password: form.value.password };
 
         try {
-            const response = await axios.post<{ token: string }>(
-                API_BASE_URL + '/user/login',
-                payload
-            );
+            const response = await axios.post<{ token: string }>(API_BASE_URL + '/login', payload);
 
             authStore.setToken(response.data.token);
         } catch (err: unknown) {

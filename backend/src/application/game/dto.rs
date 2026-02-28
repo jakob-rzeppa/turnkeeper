@@ -9,5 +9,6 @@ pub struct GameOverviewDto {
 #[derive(Debug)]
 pub enum ConnectionMessageDto {
     Event(GameEvent),
+    Unknown,
     Close,
 }
