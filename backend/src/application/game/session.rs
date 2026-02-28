@@ -56,6 +56,33 @@ where
             None
         }
     }
+
+    fn upgrade_pending_connection(&mut self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
+        match self {
+            GmConnectionState::Connected { .. } => {
+                eprintln!("GM connection already established for this session. Rejecting new connection.");
+                Err(GameError::new(GameErrorKind::GmAlreadyConnected))
+            },
+            GmConnectionState::Pending { ticket, ticket_created_at } => {
+                if connection_ticket.ne(ticket) || ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
+                    eprintln!("Invalid or expired ticket for GM connection. Rejecting connection.");
+
+                    // Clear the pending state
+                    *self = GmConnectionState::None;
+
+                    Err(GameError::new(GameErrorKind::InvalidConnectionToken))
+                } else {
+                    *self = GmConnectionState::Connected { connection };
+
+                    Ok(())
+                }
+            },
+            GmConnectionState::None => {
+                eprintln!("No pending GM connection to upgrade. Rejecting connection.");
+                Err(GameError::new(GameErrorKind::NoPendingConnection))
+            }
+        }
+    }
 }
 
 pub enum UserConnectionState<Connection>
@@ -81,14 +108,6 @@ where
     fn as_ref(&self) -> Option<&Connection> {
         if let UserConnectionState::Connected { connection, .. } = self {
             Some(connection)
-        } else {
-            None
-        }
-    }
-
-    fn user(&self) -> Option<&User> {
-        if let UserConnectionState::Connected { user, .. } = self {
-            Some(user)
         } else {
             None
         }
@@ -268,29 +287,7 @@ where
     pub async fn gm_connect(&self, connection_ticket: String, connection: GmConnection) -> Result<(), GameError> {
         let mut gm_conn_guard = self.gm_connections.write().await;
 
-        match *gm_conn_guard {
-            GmConnectionState::Connected { .. } => {
-                eprintln!("GM connection already established for this session. Rejecting new connection.");
-                return Err(GameError::new(GameErrorKind::GmAlreadyConnected));
-            },
-            GmConnectionState::Pending { ref ticket, ref ticket_created_at } => {
-                if ticket.ne(&connection_ticket) || ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
-                    eprintln!("Invalid or expired ticket for GM connection. Rejecting connection.");
-
-                    // Clear the pending state
-                    *gm_conn_guard = GmConnectionState::None;
-
-                    return Err(GameError::new(GameErrorKind::InvalidConnectionToken));
-                }
-            },
-            GmConnectionState::None => {
-                eprintln!("No pending GM connection to upgrade. Rejecting connection.");
-                return Err(GameError::new(GameErrorKind::NoPendingConnection));
-            }
-        }
-
-        // At this point we know the ticket is valid, so we can accept the connection
-        *gm_conn_guard = GmConnectionState::Connected { connection };
+        gm_conn_guard.upgrade_pending_connection(connection_ticket, connection)?;
         println!("Gm connection established");
 
         // Drop the gm_conn_guard to avoid holding the write lock while we await messages in the loop below
