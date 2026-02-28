@@ -48,11 +48,15 @@ sequenceDiagram
     note over GM: Choose a game to resume
 
     GM->>+Backend: POST /gm/ws/ticket/{game_id}
-    note over Backend: Validate JWT, create ticket (30s TTL)
+    note over Backend: Validate JWT
+    note over Backend: Get or create GameSession via GameSessionManager
+    note over Backend: GameSession.gm_pre_connect() creates ticket (30s TTL)
+    note over Backend: ConnectionState: None → Pending
     Backend->>-GM: { url: "ws://.../gm/ws/{id}?ticket=..." }
 
     GM->>+Backend: WS connect to returned URL
-    note over Backend: Validate ticket (single-use)
+    note over Backend: GameSession.gm_connect() validates ticket
+    note over Backend: ConnectionState: Pending → Connected
     Backend->>-GM: WebSocket connection established
     note over Backend: Send full GmGameInfo state
 ```
@@ -91,34 +95,6 @@ sequenceDiagram
 ### WebSocket Tickets
 
 - `POST /gm/ws/ticket/:game_id` → Get single-use WS ticket URL (GM JWT required)
-
-## WebSocket Connection
-
-### Authentication
-
-WebSocket connections are authenticated via a ticket-based flow, since the browser WebSocket API does not support custom headers.
-
-```mermaid
-sequenceDiagram
-    participant Client
-    participant Backend
-
-    Client->>+Backend: POST /gm/ws/ticket/{game_id}<br/>Authorization: Bearer <token>
-    note over Backend: Validate JWT
-    note over Backend: Generate single-use ticket<br/>(UUID v4, 30s TTL)
-    Backend->>-Client: { url: "ws://.../gm/ws/{id}?ticket=..." }
-
-    Client->>+Backend: GET /gm/ws/{id}?ticket=...<br/>(WebSocket upgrade)
-    note over Backend: Validate & consume ticket
-    note over Backend: Verify ticket game_id matches path
-    Backend->>-Client: 101 Switching Protocols
-```
-
-### Entrypoints
-
-- GM: `/gm/ws/:game_id?ticket=...`
-
-> User WebSocket entrypoints are not yet implemented.
 
 ## WebSocket Events
 

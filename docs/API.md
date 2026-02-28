@@ -176,17 +176,17 @@ Obtain a WebSocket connection URL with an embedded authentication ticket.
 
 ### Ticket Properties
 
-| Property    | Value                                |
-| ----------- | ------------------------------------ |
-| Lifetime    | 30 seconds                           |
-| Usage       | Single-use (consumed on first check) |
-| Storage     | In-memory (server-side)              |
-| Format      | UUID v4                              |
-| Game scoped | Yes — ticket is bound to a game ID   |
+| Property    | Value                                                         |
+| ----------- | ------------------------------------------------------------- |
+| Lifetime    | 30 seconds                                                    |
+| Usage       | Single-use (consumed on connection)                           |
+| Storage     | In-memory, as `ConnectionState::Pending` inside `GameSession` |
+| Format      | UUID v4                                                       |
+| Game scoped | Yes — ticket is bound to the session for a specific game ID   |
 
 - Returns 401 if the GM token is missing or invalid.
-- The ticket is deleted after validation regardless of success.
-- Expired tickets that haven't been used are cleaned up automatically.
+- Returns an error if a GM connection or pending ticket already exists for this game session.
+- Expired pending tickets are cleaned up opportunistically on the next `gm_pre_connect()` call.
 
 ---
 
@@ -194,7 +194,10 @@ Obtain a WebSocket connection URL with an embedded authentication ticket.
 
 WebSocket upgrade endpoint. Requires a valid ticket obtained from `POST /gm/ws/ticket/{game_id}`.
 
-- Returns 401 if the ticket is missing, expired, already used, or does not match the game ID in the path.
+- Returns an error if:
+    - No pending ticket exists for this session (`NoPendingConnection`)
+    - The ticket doesn't match or has expired (`InvalidConnectionToken`)
+    - A GM is already connected (`GmAlreadyConnected`)
 
 ---
 

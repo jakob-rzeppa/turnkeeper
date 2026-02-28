@@ -137,13 +137,15 @@ graph TB
             GameOverview[OverviewGamesRequestHandler]
         end
 
-        subgraph "Event Handlers"
-            GameEvents[GameSession]
+        subgraph "Game Session"
+            GameSess[GameSession]
+            ConnState[ConnectionState<br/>None / Pending / Connected]
         end
 
         subgraph "Contracts/Interfaces"
             UserRepo[UserRepositoryContract]
             GameRepo[GameRepositoryContract]
+            GmConnContract[GmConnectionContract]
             JwtGen[JwtGeneratorContract]
             JwtVal[JwtValidatorContract]
         end
@@ -158,7 +160,9 @@ graph TB
     GameCreate --> GameRepo
     GameDelete --> GameRepo
     GameOverview --> GameRepo
-    GameEvents --> GameRepo
+    GameSess --> GameRepo
+    GameSess --> GmConnContract
+    GameSess --> ConnState
 
     style ULogin fill:#e1f5ff
     style URegister fill:#e1f5ff
@@ -167,7 +171,8 @@ graph TB
     style GameCreate fill:#f1f8e9
     style GameDelete fill:#f1f8e9
     style GameOverview fill:#f1f8e9
-    style GameEvents fill:#ffe0b2
+    style GameSess fill:#ffe0b2
+    style ConnState fill:#ffe0b2
 ```
 
 ### Infrastructure Layer
@@ -186,6 +191,8 @@ graph TB
 
         subgraph "WebSocket"
             WsHandler[WebSocket Handler]
+            SessionMgr[GameSessionManager]
+            GmConn[WebSocketGmConnection]
         end
 
         subgraph "Authentication"
@@ -206,6 +213,9 @@ graph TB
     Routes --> GmHttp
     Routes --> GameHttp
 
+    WsHandler --> SessionMgr
+    SessionMgr --> GmConn
+
     AuthMgr --> UserJWT
     AuthMgr --> GmJWT
 
@@ -218,6 +228,7 @@ graph TB
     style Routes fill:#fff3e0
     style AuthMgr fill:#e1f5ff
     style RepoMgr fill:#f1f8e9
+    style SessionMgr fill:#ffe0b2
     style DB fill:#f3e5f5
 ```
 
@@ -228,7 +239,7 @@ graph TB
 ```mermaid
 erDiagram
     GAME ||--o{ PLAYER : contains
-    PLAYER ||--|| USER : references
+    PLAYER ||--o| USER : references
     PLAYER ||--o{ STAT : has
 
     GAME {
@@ -418,28 +429,45 @@ sequenceDiagram
     Router-->>-Client: JSON Response
 ```
 
-### WebSocket Event Flow
+### WebSocket Connection & Event Flow
 
 ```mermaid
 sequenceDiagram
     participant Client
     participant WS as WebSocket Handler
-    participant EventH as Event Handler
-    participant Game as Game Entity
-    participant Repo as Repository
-    participant Clients as Connected Clients
+    participant SessionMgr as GameSessionManager
+    participant Session as GameSession
+    participant Game as Game Aggregate
 
-    Client->>+WS: WebSocket Message<br/>(JSON GameEvent)
-    WS->>+EventH: Parse Event
-    EventH->>+Game: Apply Command
-    Game->>Game: Update State
-    Game-->>-EventH: Updated Game
-    EventH->>+Repo: Persist Game State
-    Repo-->>-EventH: Success
-    EventH-->>-WS: Full GmGameInfo
-    WS-->>-Client: JSON Response
+    Client->>+WS: POST /gm/ws/ticket/{game_id}
+    WS->>+SessionMgr: get_or_create_session(game_id)
+    SessionMgr-->>-WS: GameSession
+    WS->>+Session: gm_pre_connect()
+    note over Session: ConnectionState: None → Pending
+    Session-->>-WS: ticket
+    WS-->>-Client: { url: "ws://.../gm/ws/{id}?ticket=..." }
 
-    Note over EventH,Repo: Event logging (games_log) is defined<br/>but not yet implemented (todo!())
+    Client->>+WS: GET /gm/ws/{id}?ticket=...
+    WS->>+Session: gm_connect(ticket, connection)
+    note over Session: Validate ticket, ConnectionState: Pending → Connected
+    Session->>Session: broadcast_game_state()
+    Session-->>Client: Full GmGameInfo (initial state)
+
+    loop Event Loop
+        Client->>Session: JSON GameEvent
+        Session->>+Game: handle_event(event)
+        Game->>Game: Update State
+        Game-->>-Session: Result
+        Session->>Session: broadcast_game_state()
+        Session-->>Client: Full GmGameInfo
+    end
+
+    Client->>Session: Close
+    note over Session: ConnectionState: Connected → None
+    Session-->>-WS: Ok
+    deactivate WS
+
+    Note over Session,Game: Event logging (games_log) is defined<br/>but not yet implemented (todo!())
 ```
 
 ## Error Handling
