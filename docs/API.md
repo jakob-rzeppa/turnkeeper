@@ -113,7 +113,7 @@ List all games. **Requires:** GM JWT.
 
 ### GET `/user/games`
 
-List all games. **No authentication required.**
+List all games. **Requires:** User JWT.
 
 **Response:** Same format as `GET /gm/games`.
 
@@ -148,7 +148,7 @@ Create a new game. **Requires:** GM JWT.
 
 Delete a game. **Requires:** GM JWT.
 
-> **Note:** This route exists but the repository implementation is not yet complete (`todo!()`). Calling it will cause a server panic.
+> **Warning:** The repository implementation for delete is not yet complete (`todo!()`). Calling this endpoint will cause a server panic.
 
 ---
 
@@ -201,11 +201,54 @@ WebSocket upgrade endpoint. Requires a valid ticket obtained from `POST /gm/ws/t
 
 ---
 
+### POST `/user/ws/ticket/{game_id}`
+
+Obtain a WebSocket connection URL with an embedded authentication ticket for a user.
+
+**Requires:** `Authorization: Bearer <user_token>`
+
+**Response:**
+
+```json
+{
+    "url": "ws://localhost:8080/user/ws/{game_id}?ticket=<ticket>&user_id=<user_id>"
+}
+```
+
+### Ticket Properties
+
+| Property    | Value                                                             |
+| ----------- | ----------------------------------------------------------------- |
+| Lifetime    | 30 seconds                                                        |
+| Usage       | Single-use (consumed on connection)                               |
+| Storage     | In-memory, as `UserConnectionState::Pending` inside `GameSession` |
+| Format      | UUID v4                                                           |
+| Game scoped | Yes — ticket is bound to the session for a specific game ID       |
+| User scoped | Yes — ticket is bound to the authenticated user                   |
+
+- Returns 401 if the user token is missing or invalid.
+- Multiple users can obtain tickets for the same game session simultaneously.
+
+---
+
+### GET `/user/ws/{id}?ticket=<ticket>&user_id=<user_id>`
+
+WebSocket upgrade endpoint for users. Requires a valid ticket obtained from `POST /user/ws/ticket/{game_id}`.
+
+- Returns an error if:
+    - No pending ticket exists for this user in this session (`NoPendingConnection`)
+    - The ticket doesn't match or has expired (`InvalidConnectionToken`)
+    - The user is already connected (`UserAlreadyConnected`)
+
+---
+
 ## WebSocket Events
 
 Once a WebSocket connection is established, the GM client sends JSON-serialized `GameEvent` messages. After each event, the server responds with the full game state as a `GmGameInfo` JSON object.
 
-### GM → Backend Events
+### Client → Backend Events
+
+Both GM and user clients send events over WebSocket. Events are JSON-serialized `GameEvent` enum variants.
 
 | Event             | JSON Format                                      | Description                                        |
 | ----------------- | ------------------------------------------------ | -------------------------------------------------- |
@@ -213,9 +256,11 @@ Once a WebSocket connection is established, the GM client sends JSON-serialized 
 | ChangePlayerOrder | `{"ChangePlayerOrder": ["uuid1", "uuid2", ...]}` | Reorders players by providing ordered player UUIDs |
 | Debug             | `{"Debug": "message"}`                           | Debug event — prints message to server console     |
 
-### Backend → GM Response (GmGameInfo)
+> **Note:** A `GameEvent::is_user_permitted()` method exists in the domain but is not currently enforced — user clients can send all events.
 
-After every event, the server sends the full game state:
+### Backend → Client Response (GmGameInfo)
+
+After every event, the server broadcasts the full game state to **all** connected clients (GM and users):
 
 ```json
 {
@@ -243,3 +288,5 @@ After every event, the server sends the full game state:
 ```
 
 > **Note:** Players can exist without an assigned user (`user: null`). Stats are defined in the domain but there are currently no WebSocket events to add, edit, or remove them.
+
+> **Note:** Event logging to the `games_log` table is defined in the schema and repository contract but the implementation is not yet active (commented out).

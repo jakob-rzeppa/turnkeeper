@@ -139,7 +139,8 @@ graph TB
 
         subgraph "Game Session"
             GameSess[GameSession]
-            ConnState[ConnectionState<br/>None / Pending / Connected]
+            GmConnState[GmConnectionState<br/>None / Pending / Connected]
+            UserConnState[UserConnectionState<br/>None / Pending / Connected<br/>Per User]
         end
 
         subgraph "Contracts/Interfaces"
@@ -162,7 +163,8 @@ graph TB
     GameOverview --> GameRepo
     GameSess --> GameRepo
     GameSess --> GmConnContract
-    GameSess --> ConnState
+    GameSess --> GmConnState
+    GameSess --> UserConnState
 
     style ULogin fill:#e1f5ff
     style URegister fill:#e1f5ff
@@ -172,7 +174,8 @@ graph TB
     style GameDelete fill:#f1f8e9
     style GameOverview fill:#f1f8e9
     style GameSess fill:#ffe0b2
-    style ConnState fill:#ffe0b2
+    style GmConnState fill:#ffe0b2
+    style UserConnState fill:#ffe0b2
 ```
 
 ### Infrastructure Layer
@@ -190,9 +193,10 @@ graph TB
         end
 
         subgraph "WebSocket"
-            WsHandler[WebSocket Handler]
+            WsHandler[WebSocket Handlers<br/>GM + User]
             SessionMgr[GameSessionManager]
             GmConn[WebSocketGmConnection]
+            UserConn[WebSocketUserConnection]
         end
 
         subgraph "Authentication"
@@ -215,6 +219,7 @@ graph TB
 
     WsHandler --> SessionMgr
     SessionMgr --> GmConn
+    SessionMgr --> UserConn
 
     AuthMgr --> UserJWT
     AuthMgr --> GmJWT
@@ -317,8 +322,11 @@ graph TB
     GM <-->|HTTP| API
     GM <-->|WS| WS
     U1 <-->|HTTP| API
+    U1 <-->|WS| WS
     U2 <-->|HTTP| API
+    U2 <-->|WS| WS
     U3 <-->|HTTP| API
+    U3 <-->|WS| WS
 
     style GM fill:#e1f5ff
     style API fill:#fff3e0
@@ -443,13 +451,13 @@ sequenceDiagram
     WS->>+SessionMgr: get_or_create_session(game_id)
     SessionMgr-->>-WS: GameSession
     WS->>+Session: gm_pre_connect()
-    note over Session: ConnectionState: None → Pending
+    note over Session: GmConnectionState: None → Pending
     Session-->>-WS: ticket
     WS-->>-Client: { url: "ws://.../gm/ws/{id}?ticket=..." }
 
     Client->>+WS: GET /gm/ws/{id}?ticket=...
     WS->>+Session: gm_connect(ticket, connection)
-    note over Session: Validate ticket, ConnectionState: Pending → Connected
+    note over Session: Validate ticket, GmConnectionState: Pending → Connected
     Session->>Session: broadcast_game_state()
     Session-->>Client: Full GmGameInfo (initial state)
 
@@ -459,15 +467,58 @@ sequenceDiagram
         Game->>Game: Update State
         Game-->>-Session: Result
         Session->>Session: broadcast_game_state()
+        note over Session: Broadcasts to GM + all connected users
         Session-->>Client: Full GmGameInfo
     end
 
     Client->>Session: Close
-    note over Session: ConnectionState: Connected → None
+    note over Session: GmConnectionState: Connected → None
     Session-->>-WS: Ok
     deactivate WS
 
-    Note over Session,Game: Event logging (games_log) is defined<br/>but not yet implemented (todo!())
+    Note over Session,Game: Event logging (games_log) is defined<br/>but not yet active (commented out)
+```
+
+### User WebSocket Connection Flow
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant WS as WebSocket Handler
+    participant SessionMgr as GameSessionManager
+    participant Session as GameSession
+    participant Game as Game Aggregate
+
+    User->>+WS: POST /user/ws/ticket/{game_id}
+    WS->>+SessionMgr: get_or_create_session(game_id)
+    SessionMgr-->>-WS: GameSession
+    WS->>+Session: user_pre_connect(user)
+    note over Session: UserConnectionState: None → Pending
+    Session-->>-WS: ticket
+    WS-->>-User: { url: "ws://.../user/ws/{id}?ticket=...&user_id=..." }
+
+    User->>+WS: GET /user/ws/{id}?ticket=...&user_id=...
+    WS->>+Session: user_connect(user_id, ticket, connection)
+    note over Session: Validate ticket, UserConnectionState: Pending → Connected
+    Session->>Session: broadcast_game_state()
+    Session-->>User: Full GmGameInfo (initial state)
+
+    loop Event Loop
+        User->>Session: JSON GameEvent
+        Session->>+Game: handle_event(event)
+        Game->>Game: Update State
+        Game-->>-Session: Result
+        Session->>Session: broadcast_game_state()
+        note over Session: Broadcasts to GM + all connected users
+        Session-->>User: Full GmGameInfo
+    end
+
+    User->>Session: Close
+    note over Session: UserConnectionState: Connected → None
+    Session-->>-WS: Ok
+    deactivate WS
+
+    Note over Session: Multiple users can connect<br/>to the same GameSession simultaneously
 ```
 
 ## Error Handling
@@ -508,10 +559,12 @@ The `GameEvent` enum currently supports:
 - `ChangePlayerOrder(Vec<String>)` — reorders players by UUID
 - `Debug(String)` — prints a debug message to the server console
 
-### 4. Unimplemented Features
+### 4. Unimplemented / Partial Features
 
-The following are defined in code but not yet functional:
+The following are defined in code but not yet fully functional:
 
 - `SqliteGameRepository::delete()` — will panic (`todo!()`)
 - `SqliteGameRepository::log_event()` / `get_game_history()` — event sourcing persistence (`todo!()`)
-- User WebSocket connections — no user WS handler exists
+- Event logging in `GameSession::handle_event()` — the `log_event()` call is commented out
+- `GameEvent::is_user_permitted()` — defined but never enforced; user clients can send all events
+- User frontend game view — WebSocket connection is established but no `GamePage` component exists to display game state after connecting

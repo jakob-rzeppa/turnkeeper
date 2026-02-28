@@ -19,9 +19,9 @@ graph TB
         User3[User 3<br/>Vue.js SPA]
     end
 
-    User1 <-->|HTTP| Backend
-    User2 <-->|HTTP| Backend
-    User3 <-->|HTTP| Backend
+    User1 <-->|HTTP + WS| Backend
+    User2 <-->|HTTP + WS| Backend
+    User3 <-->|HTTP + WS| Backend
 
     style GM fill:#e1f5ff
     style Backend fill:#fff3e0
@@ -29,8 +29,6 @@ graph TB
     style User2 fill:#f3e5f5
     style User3 fill:#f3e5f5
 ```
-
-> **Note:** User WebSocket connections are not yet implemented. Users currently only interact via HTTP (login/register).
 
 ## GM Auth / Game Start
 
@@ -61,21 +59,35 @@ sequenceDiagram
     note over Backend: Send full GmGameInfo state
 ```
 
-## User Auth
+## User Auth / Game Join
 
 ```mermaid
 sequenceDiagram
     participant User as User Client
     participant Backend as Backend Server
 
-    User->>+Backend: POST /user/login
+    User->>+Backend: POST /user/login or /user/register
     note over Backend: Validate user credentials
     Backend->>-User: JSON web token
 
-    note over User: User frontend currently only supports login.<br/>Game connectivity is not yet implemented.
+    User->>Backend: GET /user/games
+    Backend->>User: List of game metadata (id, name)
+    note over User: Choose a game to join
+
+    User->>+Backend: POST /user/ws/ticket/{game_id}
+    note over Backend: Validate User JWT, extract user_id
+    note over Backend: Get or create GameSession via GameSessionManager
+    note over Backend: GameSession.user_pre_connect() creates ticket (30s TTL)
+    Backend->>-User: { url: "ws://.../user/ws/{id}?ticket=...&user_id=..." }
+
+    User->>+Backend: WS connect to returned URL
+    note over Backend: GameSession.user_connect() validates ticket
+    note over Backend: ConnectionState: Pending → Connected
+    Backend->>-User: WebSocket connection established
+    note over Backend: Send full GmGameInfo state
 ```
 
-> **Note:** The user frontend currently only provides login functionality. There is no game view or WebSocket connection for users yet. User registration exists as a backend endpoint (`POST /user/register`) but the frontend always calls `/user/login`.
+> **Note:** The user frontend has WebSocket connection support and game overview, but does not yet display a game view after connecting — no `GamePage` component exists for the user client.
 
 ## API HTTP Endpoints
 
@@ -87,20 +99,21 @@ sequenceDiagram
 
 ### Games
 
-- `GET /user/games` → All game metadata (unauthenticated)
+- `GET /user/games` → All game metadata (User JWT required)
 - `GET /gm/games` → All game metadata (GM JWT required)
 - `POST /gm/games` → Create new game (GM JWT required)
-- `DELETE /gm/games/:id` → Delete game (GM JWT required, **not yet implemented in repository**)
+- `DELETE /gm/games/{id}` → Delete game (GM JWT required, **repository not yet implemented**)
 
 ### WebSocket Tickets
 
-- `POST /gm/ws/ticket/:game_id` → Get single-use WS ticket URL (GM JWT required)
+- `POST /gm/ws/ticket/{game_id}` → Get single-use WS ticket URL (GM JWT required)
+- `POST /user/ws/ticket/{game_id}` → Get single-use WS ticket URL (User JWT required)
 
 ## WebSocket Events
 
-Events are sent as JSON-serialized Rust enum variants. After each event, the server responds with the full `GmGameInfo` game state.
+Events are sent as JSON-serialized Rust enum variants. After each event, the server broadcasts the full `GmGameInfo` game state to **all** connected clients (GM and users).
 
-### GM → Backend Events
+### Client → Backend Events
 
 | Event               | JSON Payload                                 | Description                                        |
 | ------------------- | -------------------------------------------- | -------------------------------------------------- |
@@ -108,9 +121,11 @@ Events are sent as JSON-serialized Rust enum variants. After each event, the ser
 | `ChangePlayerOrder` | `{"ChangePlayerOrder": ["id1", "id2", ...]}` | Reorders players by providing ordered player UUIDs |
 | `Debug`             | `{"Debug": "message"}`                       | Debug event (prints to server console)             |
 
-### Backend → GM Response
+> **Note:** A `GameEvent::is_user_permitted()` method exists in the domain but is not currently enforced — users can send all events.
 
-After every event, the server sends the full game state:
+### Backend → Client Response
+
+After every event, the server broadcasts the full game state to all connected clients:
 
 ```json
 {
@@ -135,18 +150,4 @@ After every event, the server sends the full game state:
     "round_number": 0,
     "current_player_index": 0
 }
-```
-
-### Player Management Flow
-
-```mermaid
-sequenceDiagram
-    participant Gm as GM Client
-    participant Backend as Backend Server
-
-    Gm->>+Backend: "AddPlayer"
-    Backend->>-Gm: Full GmGameInfo state
-
-    Gm->>+Backend: {"ChangePlayerOrder": ["id1","id2",...]}
-    Backend->>-Gm: Full GmGameInfo state
 ```
