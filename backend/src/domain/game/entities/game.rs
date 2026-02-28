@@ -79,14 +79,12 @@ impl Game {
             }
         }
     }
-}
 
-impl From<&Game> for GmGameInfo {
-    fn from(value: &Game) -> Self {
-        Self {
-            id: value.id.to_string(),
-            name: value.name.to_string(),
-            players: value.players.iter().map(|p| GmPlayerInfo {
+    pub fn get_game_info(&self) -> GmGameInfo {
+        GmGameInfo {
+            id: self.id.to_string(),
+            name: self.name.to_string(),
+            players: self.players.iter().map(|p| GmPlayerInfo {
                 id: p.id().to_string(),
                 user: p.user().map(|u| GmPlayerUserInfo {
                     id: u.id().to_string(),
@@ -101,8 +99,8 @@ impl From<&Game> for GmGameInfo {
                     boolean_value: s.as_boolean(),
                 }).collect(),
             }).collect(),
-            round_number: value.round_number,
-            current_player_index: value.current_player_index,
+            round_number: self.round_number,
+            current_player_index: self.current_player_index,
         }
     }
 }
@@ -122,7 +120,7 @@ mod tests {
             let player_id = Uuid::new_v4();
             let user_id = Uuid::new_v4();
             
-            let mut game = Game::new(game_id, "test-game".to_string());
+            let game = Game::new(game_id, "test-game".to_string());
             
             let mut player = Player::new(player_id);
             player.add_user(User::try_new(user_id, "user1".to_string(), "password".to_string()).unwrap());
@@ -136,7 +134,7 @@ mod tests {
             
             //game.add_player(player).unwrap();
 
-            let gm_info: GmGameInfo = GmGameInfo::from(&game);
+            let gm_info: GmGameInfo = game.get_game_info();
 
             assert_eq!(gm_info.id, game_id.to_string());
             assert_eq!(gm_info.name, "test-game");

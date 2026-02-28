@@ -10,7 +10,6 @@ use axum::http::HeaderMap;
 use axum::response::Response;
 use backend_derive::JsonResponse;
 use serde::{Deserialize, Serialize};
-use tokio::sync::RwLockWriteGuard;
 use uuid::Uuid;
 use crate::application::game::session::{GameSession};
 use crate::AppState;
@@ -41,8 +40,8 @@ pub async fn websocket_handler(
 
     Ok(ws.on_upgrade(|socket| async move {
         let gm_conn = WebSocketGmConnection::new(socket);
-        let mut session_guard = state.game_session.write().await;
-        if let Some(session) = session_guard.as_mut() {
+        let session_guard = state.game_session.read().await;
+        if let Some(ref session) = *session_guard {
             let _ = session.gm_connect(ticket, gm_conn).await;
         }
     }))
@@ -69,9 +68,9 @@ pub async fn ws_ticket(
         *state.game_session.write().await = Some(GameSession::try_new(game_id, state.repository_manager.game()).await.map_err(|_| HttpError::BadRequest("Game session could not be initialized.".to_string()))?);
     }
 
-    let mut session_guard = state.game_session.write().await;
+    let session_guard = state.game_session.read().await;
 
-    if let Some(session) = session_guard.as_mut() {
+    if let Some(ref session) = *session_guard {
         let ticket = session.gm_pre_connect().await?;
 
         let host = headers
