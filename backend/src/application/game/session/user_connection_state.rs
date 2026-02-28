@@ -1,19 +1,30 @@
+//! # User Connection State
+//!
+//! State machine for a single user's WebSocket connection within a [`GameSession`](super::GameSession).
+
 use std::time::Instant;
 use crate::application::game::contracts::ConnectionContract;
 use crate::application::game::session::TICKET_TTL_SECS;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::user::entities::User;
 
+/// Tracks one user's connection lifecycle for a game session.
+///
+/// Transitions: `None` → `Pending` (ticket created) → `Connected` (ticket validated).
+/// Multiple users can be connected to the same session simultaneously.
 pub enum UserConnectionState<Connection>
 where
     Connection: ConnectionContract
 {
+    /// No connection or pending ticket for this user.
     None,
+    /// A ticket has been issued; awaiting WebSocket upgrade.
     Pending {
         ticket: String,
         ticket_created_at: Instant,
         user: User,
     },
+    /// A user WebSocket connection is active.
     Connected {
         connection: Connection,
         user: User,
@@ -24,6 +35,7 @@ impl<Connection> UserConnectionState<Connection>
 where
     Connection: ConnectionContract
 {
+    /// Returns a reference to the active connection, or `None`.
     pub fn connection(&self) -> Option<&Connection> {
         if let UserConnectionState::Connected { connection, .. } = self {
             Some(connection)
@@ -32,6 +44,13 @@ where
         }
     }
 
+    /// Validates the ticket and transitions from `Pending` to `Connected`.
+    ///
+    /// # Errors
+    ///
+    /// - [`GameErrorKind::UserAlreadyConnected`] — already connected
+    /// - [`GameErrorKind::InvalidConnectionToken`] — wrong or expired ticket
+    /// - [`GameErrorKind::NoPendingConnection`] — no pending ticket to upgrade
     pub fn upgrade_pending_connection(&mut self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
         match self {
             UserConnectionState::Connected { .. } => {

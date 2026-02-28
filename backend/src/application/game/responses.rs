@@ -1,3 +1,7 @@
+//! # Game Responses
+//!
+//! Response DTOs for game-related operations.
+
 use crate::domain::game::projections::game_metadata::GameMetadata;
 
 pub struct OverviewGameResponse {

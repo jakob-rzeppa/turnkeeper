@@ -1,3 +1,8 @@
+//! # GM Login Handler
+//!
+//! Authenticates the Game Master by comparing the provided password against
+//! the `GM_PASSWORD` environment variable.
+
 use std::sync::LazyLock;
 use crate::application::gm::contracts::GmJwtGeneratorContract;
 use crate::application::gm::requests::GmLoginRequest;
@@ -28,6 +33,7 @@ where
         Self { jwt }
     }
 
+    /// Validates the GM password and returns a JWT on success.
     pub async fn login(&self, request: GmLoginRequest) -> Result<GmTokenResponse, GmError> {
         if *GM_PASSWORD != request.password {
             return Err(GmError::new(GmErrorKind::InvalidCredentials));

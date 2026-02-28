@@ -2,7 +2,7 @@
 //!
 //! A `GameSession` represents an active, in-memory instance of a single game.
 //! It owns the live [`Game`] aggregate and manages real-time communication with
-//! the connected Game Master (GM) and Players over a WebSocket connection.
+//! the connected Game Master (GM) and user players over WebSocket connections.
 //!
 //! ## Lifecycle
 //!
@@ -11,10 +11,12 @@
 //! 2. When the GM opens a WebSocket connection, [`GameSession::gm_connect`] is
 //!    called.  The session loops, receiving [`GameEvent`]s from the GM,
 //!    applying them to the aggregate, and broadcasting the updated game state
-//!    back.
-//! 3. The loop exits when the connection sends a [`ConnectionMessageDto::Close`]
+//!    to all connected clients.
+//! 3. Users can connect via [`GameSession::user_connect`], which follows the
+//!    same ticket-based flow. Multiple users can be connected simultaneously.
+//! 4. The loop exits when the connection sends a [`ConnectionMessageDto::Close`]
 //!    message (or the connection is otherwise dropped), at which point the
-//!    stored GM connection handle is cleared.
+//!    stored connection handle is cleared.
 
 use std::collections::HashMap;
 use std::sync::Arc;
@@ -36,10 +38,10 @@ mod user_lifecycle;
 /// How long a ticket remains valid (in seconds).
 const TICKET_TTL_SECS: u64 = 30;
 
-/// An active in-memory game session.
+    /// An active in-memory game session.
 ///
-/// Owns the [`Game`] aggregate for one game and optionally holds an open
-/// connection to the GM.
+/// Owns the [`Game`] aggregate for one game and manages connections
+/// from the GM and multiple user players.
 pub struct GameSession<Connection, GameRepository>
 where
     Connection: ConnectionContract,
@@ -112,6 +114,7 @@ where
         self.broadcast_game_state().await;
     }
 
+    /// Sends the current [`GmGameInfo`] state to the GM and all connected users.
     async fn broadcast_game_state(&self) {
         let game_guard = self.game.read().await;
         let game_state = GmGameInfo::from(&*game_guard);

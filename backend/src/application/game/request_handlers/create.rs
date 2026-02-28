@@ -1,3 +1,7 @@
+//! # Create Game Handler
+//!
+//! Creates a new game and persists it via the repository.
+
 use std::sync::Arc;
 use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
@@ -11,6 +15,7 @@ pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract> {
 impl<GameRepository: GameRepositoryContract> CreateGameRequestHandler<GameRepository> {
     pub fn new(repository: Arc<GameRepository>) -> Self { Self { repository } }
 
+    /// Creates a game with a generated UUID and returns the new ID.
     pub async fn create_game(&self, request: CreateGameRequest) -> Result<Uuid, GameError> {
         let id = Uuid::new_v4();
 

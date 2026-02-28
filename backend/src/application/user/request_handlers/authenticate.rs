@@ -1,3 +1,7 @@
+//! # User Authentication Handler
+//!
+//! Validates a user JWT token and confirms the user exists.
+
 use crate::application::user::contracts::{UserJwtValidatorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserAuthenticateRequest};
 use crate::application::user::responses::{UserAuthenticationResponse};
@@ -21,6 +25,7 @@ where
         Self { repository, jwt }
     }
 
+    /// Validates a JWT and checks that the referenced user still exists.
     pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<UserAuthenticationResponse, UserError> {
         let user_id = self.jwt.validate_token(&request.token)?;
 

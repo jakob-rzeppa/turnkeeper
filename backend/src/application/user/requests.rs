@@ -1,3 +1,6 @@
+//! # User Requests
+//!
+//! Request DTOs for user authentication and registration.
 
 pub struct UserRegisterRequest {
     pub name: String,

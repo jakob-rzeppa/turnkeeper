@@ -1,6 +1,14 @@
+//! # Game Error
+//!
+//! Error types for game domain operations.
+
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+/// Domain error for game-related operations.
+///
+/// Wraps a [`GameErrorKind`] discriminant and an optional source error for
+/// chained error reporting.
 #[derive(Debug)]
 pub struct GameError {
     pub kind: GameErrorKind,
@@ -8,9 +16,11 @@ pub struct GameError {
 }
 
 impl GameError {
+    /// Creates a new `GameError` with the given kind and no source.
     pub fn new(kind: GameErrorKind) -> Self {
         GameError { kind, source: None }
     }
+    /// Creates a new `GameError` with a source error for chaining.
     pub fn with_source(kind: GameErrorKind, source: Box<dyn Error + Send + 'static>) -> Self {
         GameError { kind, source: Some(source) }
     }
@@ -41,6 +51,7 @@ impl Display for GameError {
     }
 }
 
+/// Discriminant for [`GameError`], indicating the category of failure.
 #[derive(Debug, PartialEq)]
 pub enum GameErrorKind {
     EmptyStatKey,

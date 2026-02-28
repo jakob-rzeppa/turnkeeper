@@ -25,7 +25,7 @@ use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberSta
 /// let health = Stat::try_new_number_stat(
 ///     Uuid::new_v4(),
 ///     "health".to_string(),
-///     100
+///     100.0,
 /// )?;
 /// ```
 #[derive(Debug, Clone, PartialEq)]

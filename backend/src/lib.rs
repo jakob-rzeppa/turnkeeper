@@ -20,8 +20,11 @@ use crate::infrastructure::websocket::{get_websocket_routes};
 /// Application state shared across all HTTP handlers and WebSocket connections.
 #[derive(Clone)]
 pub struct AppState {
+    /// Provides access to all data repositories (user, game).
     pub repository_manager: RepositoryManager,
+    /// Manages JWT generation and validation for GM and user auth.
     pub auth_manager: AuthManager,
+    /// Manages active in-memory game sessions.
     pub game_session_manager: GameSessionManager,
 }
 

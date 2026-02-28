@@ -1,3 +1,7 @@
+//! # GM Requests
+//!
+//! Request DTOs for GM authentication.
+
 pub struct GmLoginRequest {
     pub password: String,
 }

@@ -1,3 +1,7 @@
+//! # Game Requests
+//!
+//! Request DTOs for game-related operations.
+
 use uuid::Uuid;
 
 pub struct CreateGameRequest {

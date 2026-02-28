@@ -1,3 +1,7 @@
+//! # GM Authentication Handler
+//!
+//! Validates a GM JWT token.
+
 use crate::application::gm::contracts::{GmJwtValidatorContract};
 use crate::application::gm::requests::{GmAuthenticateRequest};
 use crate::domain::gm::error::GmError;
@@ -17,6 +21,7 @@ where
         Self { jwt }
     }
 
+    /// Validates the GM JWT token.
     pub async fn authenticate(&self, request: GmAuthenticateRequest) -> Result<(), GmError> {
         self.jwt.validate_token(&request.token)?;
         Ok(())

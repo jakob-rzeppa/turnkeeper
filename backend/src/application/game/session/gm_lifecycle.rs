@@ -1,3 +1,9 @@
+//! # GM Lifecycle
+//!
+//! Implements the GM connection lifecycle on [`GameSession`]:
+//! ticket creation ([`gm_pre_connect`](GameSession::gm_pre_connect)) and
+//! the event-loop ([`gm_connect`](GameSession::gm_connect)).
+
 use std::time::Instant;
 use uuid::Uuid;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
@@ -11,6 +17,15 @@ where
     Connection: ConnectionContract,
     GameRepository: GameRepositoryContract
 {
+    /// Creates a single-use GM connection ticket.
+    ///
+    /// Transitions the GM connection state from `None` to `Pending`.
+    /// The ticket expires after [`TICKET_TTL_SECS`] seconds.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GameErrorKind::GmAlreadyConnected`] if a GM connection
+    /// or pending ticket already exists.
     pub async fn gm_pre_connect(&self) -> Result<String, GameError> {
         let mut gm_connection_guard = self.gm_connection.write().await;
 

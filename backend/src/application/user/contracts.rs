@@ -126,11 +126,10 @@ pub trait UserJwtValidatorContract {
     ///
     /// # Errors
     ///
-    /// Returns [`UserErrorKind::Unauthorized`] if:
+    /// Returns [`UserErrorKind::InvalidToken`] if:
     /// - Token signature is invalid
     /// - Token has expired
     /// - Token format is malformed
-    /// - Bearer prefix is missing or incorrect
     ///
     /// # Examples
     ///

@@ -102,8 +102,14 @@ pub trait GameRepositoryContract {
     async fn delete(&self, game_id: Uuid) -> Result<(), GameError>;
 }
 
+/// Contract for a bidirectional WebSocket connection.
+///
+/// Abstracts the underlying transport so the session logic can be tested
+/// without a real WebSocket.
 pub trait ConnectionContract {
+    /// Receives the next message from the connection.
     async fn recv(&self) -> ConnectionMessageDto;
 
+    /// Sends a JSON string to the connected client.
     async fn send(&self, msg: String);
 }

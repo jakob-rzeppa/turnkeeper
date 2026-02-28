@@ -3,13 +3,14 @@ use crate::domain::user::entities::User;
 use crate::domain::game::entities::stat::Stat;
 use crate::domain::game::error::{GameError, GameErrorKind};
 
-/// The representation of a player
+/// A player within a game.
 ///
-/// Use the `Player::builder()` for instantiating the Player.
+/// Created via [`Player::new`]. A player may optionally be linked to a [`User`]
+/// and can hold any number of [`Stat`] entries.
 ///
 /// # Invariants
 ///
-/// - Two stats have the same key
+/// - No two stats have the same key
 #[derive(Debug, PartialEq, Clone)]
 pub struct Player {
     id: Uuid,
@@ -19,6 +20,7 @@ pub struct Player {
 }
 
 impl Player {
+    /// Creates a new anonymous player with no linked user and no stats.
     pub fn new(id: Uuid) -> Self {
         Self {
             id,

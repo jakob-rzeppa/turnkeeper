@@ -1,3 +1,7 @@
+//! # Game Overview Handler
+//!
+//! Returns metadata for all games.
+
 use std::sync::Arc;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::responses::OverviewGameResponse;

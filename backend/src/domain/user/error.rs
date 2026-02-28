@@ -1,7 +1,14 @@
+//! # User Error
+//!
+//! Error types for user domain operations.
+
 use std::cmp::PartialEq;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+/// Domain error for user-related operations.
+///
+/// Wraps a [`UserErrorKind`] discriminant and an optional source error.
 #[derive(Debug)]
 pub struct UserError {
     pub kind: UserErrorKind,
@@ -9,9 +16,11 @@ pub struct UserError {
 }
 
 impl UserError {
+    /// Creates a new `UserError` with the given kind and no source.
     pub fn new(kind: UserErrorKind) -> Self {
         UserError { kind, source: None }
     }
+    /// Creates a new `UserError` with a source error for chaining.
     pub fn with_source(kind: UserErrorKind, source: Box<dyn Error + 'static>) -> Self {
         UserError { kind, source: Some(source) }
     }
@@ -42,6 +51,7 @@ impl Display for UserError {
     }
 }
 
+/// Discriminant for [`UserError`], indicating the category of failure.
 #[derive(Debug, PartialEq)]
 pub enum UserErrorKind {
     EmptyName,
@@ -59,6 +69,7 @@ pub enum UserErrorKind {
 }
 
 impl UserErrorKind {
+    /// Returns a human-readable message for this error kind.
     pub fn message(&self) -> String {
         match self {
             UserErrorKind::EmptyName => "Empty name".to_string(),

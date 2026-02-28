@@ -1,3 +1,12 @@
+//! # User Lifecycle
+//!
+//! Implements the user connection lifecycle on [`GameSession`]:
+//! ticket creation ([`user_pre_connect`](GameSession::user_pre_connect)) and
+//! the event-loop ([`user_connect`](GameSession::user_connect)).
+//!
+//! Multiple users can be connected simultaneously, unlike the GM which
+//! is limited to a single connection.
+
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
@@ -14,6 +23,15 @@ where
     Connection: ConnectionContract,
     GameRepository: GameRepositoryContract
 {
+    /// Creates a single-use connection ticket for a user.
+    ///
+    /// If the user has no existing state in this session, a new entry is
+    /// created. Transitions the user's connection state to `Pending`.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GameErrorKind::UserAlreadyConnected`] if the user already
+    /// has a pending ticket or active connection.
     pub async fn user_pre_connect(&self, user: User) -> Result<String, GameError> {
         let user_connections_guard = self.user_connections.read().await;
 
@@ -55,6 +73,12 @@ where
         }
     }
 
+    /// Accepts a user WebSocket connection and drives the session event loop.
+    ///
+    /// Validates the ticket, transitions to `Connected`, broadcasts the
+    /// current game state, then enters a receive loop identical to
+    /// [`gm_connect`](Self::gm_connect). On disconnect the user entry is
+    /// removed from the session.
     pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
         let user_connections_guard = self.user_connections.read().await;
 
@@ -69,16 +93,16 @@ where
         let mut user_connection_guard = user_connection.write().await;
 
         user_connection_guard.upgrade_pending_connection(connection_ticket, connection).map_err(|err| {
-            eprintln!("No pending connection found for user_id {}. Rejecting connection.", user_id);
+            eprintln!("Failed to upgrade connection for user_id {}. Rejecting connection.", user_id);
             err
         })?;
-        println!("Gm connection established");
+        println!("User connection established");
 
         // Drop the guards to avoid holding the locks while we await messages in the loop below
         drop(user_connection_guard);
         drop(user_connections_guard);
 
-        // Broadcast the initial game state to the newly connected GM
+        // Broadcast the initial game state to the newly connected user
         self.broadcast_game_state().await;
 
         // Handle incoming messages until the connection is closed.
@@ -101,7 +125,7 @@ where
         }
 
         let mut user_connections_guard = self.user_connections.write().await;
-        println!("Closing GmWebSocket connection.");
+        println!("Closing user WebSocket connection.");
         user_connections_guard.remove(&user_id);
         Ok(())
     }

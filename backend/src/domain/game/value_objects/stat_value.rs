@@ -32,13 +32,13 @@ impl BooleanStatValue {
     }
 }
 
-/// A numeric stat value (signed 64-bit integer).
+/// A numeric stat value (64-bit floating-point).
 ///
 /// # Examples
 ///
 /// ```rust,ignore
-/// let health = NumberStatValue::new(100);
-/// assert_eq!(health.value(), 100);
+/// let health = NumberStatValue::new(100.0);
+/// assert_eq!(health.value(), 100.0);
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct NumberStatValue {

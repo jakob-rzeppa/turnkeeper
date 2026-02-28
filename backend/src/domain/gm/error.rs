@@ -1,7 +1,14 @@
+//! # GM Error
+//!
+//! Error types for Game Master domain operations.
+
 use std::cmp::PartialEq;
 use std::error::Error;
 use std::fmt::{Display, Formatter};
 
+/// Domain error for GM-related operations.
+///
+/// Wraps a [`GmErrorKind`] discriminant and an optional source error.
 #[derive(Debug)]
 pub struct GmError {
     pub kind: GmErrorKind,
@@ -9,9 +16,11 @@ pub struct GmError {
 }
 
 impl GmError {
+    /// Creates a new `GmError` with the given kind and no source.
     pub fn new(kind: GmErrorKind) -> Self {
         GmError { kind, source: None }
     }
+    /// Creates a new `GmError` with a source error for chaining.
     pub fn with_source(kind: GmErrorKind, source: Box<dyn Error + 'static>) -> Self {
         GmError { kind, source: Some(source) }
     }
@@ -42,6 +51,7 @@ impl Display for GmError {
     }
 }
 
+/// Discriminant for [`GmError`], indicating the category of failure.
 #[derive(Debug, PartialEq)]
 pub enum GmErrorKind {
     InvalidCredentials,
@@ -50,6 +60,7 @@ pub enum GmErrorKind {
 }
 
 impl GmErrorKind {
+    /// Returns a human-readable message for this error kind.
     pub fn message(&self) -> String {
         match self {
             GmErrorKind::InvalidCredentials => "Invalid credentials".to_string(),

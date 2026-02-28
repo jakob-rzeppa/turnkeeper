@@ -3,12 +3,12 @@ use crate::domain::game::entities::player::Player;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
 
-/// The representation of the game
+/// The aggregate root representing a game.
 ///
 /// # Invariants
 ///
-/// - Two Players have the same ID
-/// - current_player_index is greater than length of players - 1
+/// - No two players have the same ID
+/// - `current_player_index` does not exceed `players.len() - 1`
 #[derive(Debug, PartialEq)]
 pub struct Game {
     id: Uuid,
@@ -57,6 +57,13 @@ impl Game {
         Ok(())
     }
 
+    /// Reorders players to match the given list of UUIDs.
+    ///
+    /// # Errors
+    ///
+    /// Returns [`GameErrorKind::InvalidPlayerOrder`] if the list length differs
+    /// from the current player count, contains duplicates, or references
+    /// unknown player IDs.
     pub fn change_player_order(&mut self, ids_in_order: Vec<Uuid>) -> Result<(), GameError> {
         if ids_in_order.len() != self.players.len() {
             return Err(GameError::new(GameErrorKind::InvalidPlayerOrder));
@@ -80,6 +87,7 @@ impl Game {
         Ok(())
     }
 
+    /// Dispatches a [`GameEvent`] to the appropriate handler method.
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
             GameEvent::AddPlayer => self.add_player(),

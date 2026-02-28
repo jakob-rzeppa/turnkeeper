@@ -1,3 +1,7 @@
+//! # Delete Game Handler
+//!
+//! Deletes an existing game via the repository.
+
 use std::sync::Arc;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::requests::{DeleteGameRequest};

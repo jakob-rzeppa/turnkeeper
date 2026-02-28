@@ -10,7 +10,7 @@
 //!
 //! ## Security
 //!
-//! Passwords are stored as bcrypt hashes. Validation happens at the domain level.
+//! Passwords are stored in plain text. Validation happens at the domain level.
 
 pub mod entities;
 pub mod error;

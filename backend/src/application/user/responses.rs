@@ -1,3 +1,7 @@
+//! # User Responses
+//!
+//! Response DTOs for user authentication.
+
 use uuid::Uuid;
 
 #[derive(Debug)]

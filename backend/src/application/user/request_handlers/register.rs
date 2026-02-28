@@ -1,3 +1,7 @@
+//! # User Registration Handler
+//!
+//! Creates a new user and returns a JWT token.
+
 use std::sync::Arc;
 use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
@@ -24,6 +28,12 @@ where
         Self { repository, jwt }
     }
 
+    /// Registers a new user and returns a JWT token.
+    ///
+    /// # Errors
+    ///
+    /// - [`UserErrorKind::EmptyName`] / [`UserErrorKind::PasswordTooShort`] — invalid input
+    /// - [`UserErrorKind::UserAlreadyExists`] — duplicate username
     pub async fn register(&self, request: UserRegisterRequest) -> Result<UserTokenResponse, UserError> {
         let user = User::try_new(
             Uuid::new_v4(),
