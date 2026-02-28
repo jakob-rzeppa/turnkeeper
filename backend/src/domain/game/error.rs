@@ -53,6 +53,8 @@ pub enum GameErrorKind {
     UserForPlayerNotFound,
     GameSessionCreationFailed,
     GmAlreadyConnected,
+    NoPendingConnection,
+    InvalidConnectionToken,
     InvalidPlayerOrder,
 }
 
@@ -70,6 +72,8 @@ impl GameErrorKind {
             GameErrorKind::GameSessionCreationFailed => "Game session creation failed".to_string(),
             GameErrorKind::GmAlreadyConnected => "GM connection already established for this session".to_string(),
             GameErrorKind::InvalidPlayerOrder => "Invalid player order".to_string(),
+            GameErrorKind::NoPendingConnection => "No pending GM connection to upgrade".to_string(),
+            GameErrorKind::InvalidConnectionToken => "Invalid or expired token for GM connection".to_string(),
         }
     }
 }

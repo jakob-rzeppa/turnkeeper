@@ -28,12 +28,11 @@ use tower_http::cors::{Any, CorsLayer};
 use crate::application::game::session::GameSession;
 use crate::infrastructure::auth::AuthManager;
 use crate::infrastructure::auth::middleware::gm_auth_middleware;
-use crate::infrastructure::auth::ws_ticket::WsTicketStore;
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::db::create_pool;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
 use crate::infrastructure::persistence::repositories::RepositoryManager;
-use crate::infrastructure::websocket::session::WebSocketGmConnection;
+use crate::infrastructure::websocket::gm_connection::WebSocketGmConnection;
 
 /// Application state shared across all HTTP handlers and WebSocket connections.
 ///
@@ -58,8 +57,6 @@ pub struct AppState {
     /// Manager for JWT authentication and validation
     pub auth_manager: AuthManager,
     pub game_session: Arc<RwLock<Option<GameSession<WebSocketGmConnection, SqliteGameRepository>>>>,
-    /// Store for short-lived WebSocket authentication tickets
-    pub ws_ticket_store: WsTicketStore,
 }
 
 /// Main entry point for the Turnkeeper backend server.
@@ -90,9 +87,8 @@ async fn main() {
     // Create Managers
     let repository_manager = RepositoryManager::new(db.clone());
     let auth_manager = AuthManager::new();
-    let ws_ticket_store = WsTicketStore::new();
 
-    let state = AppState { repository_manager, auth_manager, game_session: Arc::new(RwLock::new(None)), ws_ticket_store };
+    let state = AppState { repository_manager, auth_manager, game_session: Arc::new(RwLock::new(None)) };
 
     // ONLY FOR DEVELOPMENT - change later
     let cors_layer = CorsLayer::new()
