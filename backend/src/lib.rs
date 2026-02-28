@@ -3,8 +3,6 @@
 //! Re-exports the core modules so they are accessible from integration tests
 //! and from the binary entry-point in `main.rs`.
 
-#[macro_use]
-pub mod macros;
 pub mod util;
 pub mod domain;
 pub mod application;
