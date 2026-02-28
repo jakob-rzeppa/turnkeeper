@@ -1,6 +1,6 @@
 use std::sync::Arc;
 use crate::application::game::contracts::GameRepositoryContract;
-use crate::application::game::requests::OverviewGameResponse;
+use crate::application::game::responses::OverviewGameResponse;
 use crate::domain::game::error::GameError;
 
 pub struct GameGetOverviewRequestHandler<GameRepository: GameRepositoryContract> {

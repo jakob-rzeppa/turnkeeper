@@ -1,11 +1,5 @@
 use serde::Serialize;
-use uuid::Uuid;
 use crate::domain::game::entities::game::Game;
-
-pub struct GameMetadata {
-    pub id: Uuid,
-    pub name: String,
-}
 
 #[derive(Serialize)]
 pub struct GmGameInfo {

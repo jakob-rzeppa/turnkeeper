@@ -26,7 +26,7 @@ use crate::application::game::session::user_connection_state::UserConnectionStat
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
-use crate::domain::game::projections::GmGameInfo;
+use crate::domain::game::projections::gm_game_info::GmGameInfo;
 
 mod gm_connection_state;
 mod gm_lifecycle;

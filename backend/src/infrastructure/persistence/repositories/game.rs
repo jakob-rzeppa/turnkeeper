@@ -3,7 +3,7 @@ use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
-use crate::domain::game::projections::GameMetadata;
+use crate::domain::game::projections::game_metadata::GameMetadata;
 
 pub struct SqliteGameRepository {
     db: SqlitePool

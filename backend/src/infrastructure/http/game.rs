@@ -8,7 +8,7 @@ use crate::application::game::request_handlers::delete::DeleteGameRequestHandler
 use crate::application::game::request_handlers::get_overview::GameGetOverviewRequestHandler;
 use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
 use crate::AppState;
-use crate::domain::game::projections::GameMetadata;
+use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::infrastructure::error::HttpError;
 
 #[derive(Serialize, Debug)]

@@ -103,7 +103,7 @@ mod tests {
 
     mod into_gm_game_info {
         use crate::domain::game::entities::stat::Stat;
-        use crate::domain::game::projections::GmGameInfo;
+        use crate::domain::game::projections::gm_game_info::GmGameInfo;
         use crate::domain::user::entities::User;
         use super::*;
 

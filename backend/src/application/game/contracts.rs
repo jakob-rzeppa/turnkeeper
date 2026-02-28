@@ -6,7 +6,7 @@ use uuid::Uuid;
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
-use crate::domain::game::projections::GameMetadata;
+use crate::domain::game::projections::game_metadata::GameMetadata;
 
 /// Repository contract for game data persistence and event sourcing.
 ///
