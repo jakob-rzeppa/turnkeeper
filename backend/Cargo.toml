@@ -38,3 +38,7 @@ dotenv = "0.15.0"
 mockall = "0.14.0"
 fnmock = { git = "https://github.com/jakob-rzeppa/fnmock.git", version = "0.1.0" }
 futures-util = "0.3.31"
+
+[dev-dependencies]
+tokio-tungstenite = "0.26"
+reqwest = { version = "0.12", features = ["json"] }

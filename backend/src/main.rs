@@ -1,63 +1,16 @@
 //! # Turnkeeper Backend Server
 //!
-//! A turn-based game management system that follows clean architecture principles.
-//!
-//! ## Architecture
-//!
-//! The application is organized into three main layers:
-//! - **Domain Layer**: Pure business logic with entities, value objects, and domain events
-//! - **Application Layer**: Use cases implemented via Request and Event Handlers
-//! - **Infrastructure Layer**: External concerns (HTTP, WebSockets, Database, Auth)
+//! Binary entry-point that boots the Axum server.
+//! All shared logic lives in the library crate (`lib.rs`).
 
-mod macros;
-mod util;
-mod domain;
-mod application;
-mod infrastructure;
-
-use axum::{middleware, routing::get, Router};
 use std::net::SocketAddr;
-use std::sync::Arc;
-use axum::routing::post;
 use dotenv::dotenv;
 use tokio::net::TcpListener;
-use tokio::sync::{RwLock};
-use tower::ServiceBuilder;
-use crate::infrastructure::websocket::{websocket_handler, ws_ticket};
-use tower_http::cors::{Any, CorsLayer};
-use crate::application::game::session::GameSession;
-use crate::infrastructure::auth::AuthManager;
-use crate::infrastructure::auth::middleware::gm_auth_middleware;
-use crate::infrastructure::http::get_routes;
-use crate::infrastructure::persistence::db::create_pool;
-use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
-use crate::infrastructure::persistence::repositories::RepositoryManager;
-use crate::infrastructure::websocket::gm_connection::WebSocketGmConnection;
-use crate::infrastructure::websocket::session_manager::GameSessionManager;
-
-/// Application state shared across all HTTP handlers and WebSocket connections.
-///
-/// This struct is cloned for each request/connection using [`Clone`], which is cheap
-/// because all fields use `Arc` internally for shared ownership.
-/// 
-/// # Managers
-/// 
-/// The Managers contain the services wrapped in an Arc.
-/// When handling a request / event the services are passed to the application layer - also in an Arc.
-/// This way the service objects stay in memory since they are referenced in
-/// the managers and won't get dropped / recreated each time a request is handled.
-///
-/// # Fields
-///
-/// * `repository_manager` - Provides access to data repositories (User, Game)
-/// * `auth_manager` - Handles JWT generation and validation for GMs and Users
-/// * `game_session_manager` - Manages active game sessions
-#[derive(Clone)]
-pub struct AppState {
-    pub repository_manager: RepositoryManager,
-    pub auth_manager: AuthManager,
-    pub game_session_manager: GameSessionManager,
-}
+use turnkeeper_backend::infrastructure::auth::AuthManager;
+use turnkeeper_backend::infrastructure::persistence::db::create_pool;
+use turnkeeper_backend::infrastructure::persistence::repositories::RepositoryManager;
+use turnkeeper_backend::infrastructure::websocket::session_manager::GameSessionManager;
+use turnkeeper_backend::{build_app, AppState};
 
 /// Main entry point for the Turnkeeper backend server.
 ///
@@ -90,19 +43,7 @@ async fn main() {
 
     let state = AppState { repository_manager, auth_manager, game_session_manager: GameSessionManager::new() };
 
-    // ONLY FOR DEVELOPMENT - change later
-    let cors_layer = CorsLayer::new()
-        .allow_origin(Any)
-        .allow_methods(Any)
-        .allow_headers(Any);
-
-    // Initialize the Axum router
-    let app = Router::new()
-        .merge(get_routes(state.clone()))
-        .route("/gm/ws/{id}", get(websocket_handler))
-        .route("/gm/ws/ticket/{game_id}", post(ws_ticket).route_layer(middleware::from_fn_with_state(state.clone(), gm_auth_middleware)))
-        .with_state(state)
-        .layer(ServiceBuilder::new().layer(cors_layer));
+    let app = build_app(state);
 
     // Specify the address to bind to
     let addr = SocketAddr::from(([127, 0, 0, 1], 8080));
