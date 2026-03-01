@@ -5,7 +5,7 @@ import ModalController from './common/modal/ModalController.vue';
 import { useAuthStore } from './auth/authStore';
 import { useWsConnection } from './api/useWsConnection';
 import GamePage from './game/GamePage.vue';
-import { useUsersStore } from './users/useUsers';
+import { useUsersStore } from './users/usersStore';
 
 const authStore = useAuthStore();
 const wsConnection = useWsConnection();
