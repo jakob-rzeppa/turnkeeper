@@ -39,6 +39,9 @@ pub trait UserRepositoryContract {
     /// Returns [`UserErrorKind::UserNotFound`] if no user exists with the given name.
     async fn get_by_name(&self, name: &str) -> Result<User, UserError>;
 
+    /// Retrieves all users from the database.
+    async fn get_all(&self) -> Result<Vec<User>, UserError>;
+
     /// Persists a new user to the database.
     ///
     /// # Errors

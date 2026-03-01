@@ -5,9 +5,14 @@ import ModalController from './common/modal/ModalController.vue';
 import { useAuthStore } from './auth/authStore';
 import { useWsConnection } from './api/useWsConnection';
 import GamePage from './game/GamePage.vue';
+import { useUsersStore } from './users/useUsers';
 
 const authStore = useAuthStore();
 const wsConnection = useWsConnection();
+
+// Load users on app startup
+const usersStore = useUsersStore();
+usersStore.loadUsers();
 </script>
 
 <template>

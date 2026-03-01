@@ -13,3 +13,8 @@ pub struct UserTokenResponse {
 pub struct UserAuthenticationResponse {
     pub user_id: Uuid,
 }
+
+#[derive(Debug)]
+pub struct UserListResponse {
+    pub users: Vec<String>,
+}

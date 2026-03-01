@@ -72,6 +72,19 @@ impl UserRepositoryContract for SqliteUserRepository {
         }
     }
 
+    async fn get_all(&self) -> Result<Vec<User>, UserError> {
+        let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
+
+        let res = sqlx::query_as!(UserRow, "SELECT * FROM users")
+            .fetch_all(&mut *conn)
+            .await
+            .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
+
+        let users: Vec<User> = res.into_iter()
+            .map(|row| row.try_into()).collect::<Result<_, UserError>>()?;
+        Ok(users)
+    }
+
     async fn get_by_name(&self, name: &str) -> Result<User, UserError> {
         let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
@@ -158,6 +171,32 @@ mod tests {
 
         let user = repo.get_by_name("test-name").await.unwrap();
         assert_eq!(user, user);
+    }
+
+    #[tokio::test]
+    async fn test_save_and_get_all() {
+        let user = User::try_new(
+            Uuid::new_v4(),
+            "test-name".to_string(),
+            "test-password".to_string(),
+        ).unwrap();
+        let user2 = User::try_new(
+            Uuid::new_v4(),
+            "test2-name".to_string(),
+            "test2-password".to_string(),
+        ).unwrap();
+
+        let repo = SqliteUserRepository::new(create_test_pool().await);
+
+        let result = repo.save(&user).await;
+        assert!(result.is_ok());
+        let result = repo.save(&user2).await;
+        assert!(result.is_ok());
+
+        let users = repo.get_all().await.unwrap();
+        assert_eq!(users.len(), 2);
+        assert!(users.contains(&user));
+        assert!(users.contains(&user2));
     }
 
     #[tokio::test]

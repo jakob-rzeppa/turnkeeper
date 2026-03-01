@@ -38,7 +38,7 @@ pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse
     let handler = GameGetOverviewRequestHandler::new(state.repository_manager.game());
     
     let games_overview = handler.get_overview().await?;
-    
+
     Ok(GamesGetResponse {
         games: games_overview.games_metadata.into_iter().map(|metadata| metadata.into()).collect(),
     })

@@ -14,6 +14,6 @@
 
 pub mod entities;
 pub mod error;
-
+pub mod projections;
 // Value objects should not be accessible outside the entities
 mod value_objects;
