@@ -6,6 +6,7 @@ import TestIcon1 from './TestIcon1.vue';
 import TestIcon2 from './TestIcon2.vue';
 import TabsPanel from '../common/tabs/TabsPanel.vue';
 import PlayerOrganisationView from './mainViews/PlayerOrganisationView.vue';
+import RoundOverview from './mainViews/RoundOverview.vue';
 </script>
 
 <template>
@@ -16,7 +17,12 @@ import PlayerOrganisationView from './mainViews/PlayerOrganisationView.vue';
                 { icon: TestIcon2, name: 'Test View 2', component: TestView2 },
             ]"
         />
-        <TabsPanel :views="[{ name: 'Player Organisation', component: PlayerOrganisationView }]" />
+        <TabsPanel
+            :views="[
+                { name: 'Round Overview', component: RoundOverview },
+                { name: 'Player Organisation', component: PlayerOrganisationView },
+            ]"
+        />
         <SidebarPanel
             class="ml-auto"
             :views="[
