@@ -79,50 +79,54 @@ const detachUserFromPlayer = (playerId: string) => {
             <li
                 v-for="(player, index) in localPlayers"
                 :key="player.id"
-                class="flex items-center gap-3"
+                class="relative flex items-center gap-2"
             >
-                <span class="text-sm font-medium text-gray-500 w-5 text-right">{{
+                <span class="text-sm font-bold text-base-content/40 w-6 text-center shrink-0">{{
                     index + 1
                 }}</span>
                 <div
                     draggable="true"
-                    class="flex items-center gap-3 p-3 rounded-lg border bg-base-200 cursor-grab active:cursor-grabbing select-none transition-opacity flex-1"
+                    class="flex items-center gap-3 flex-1 cursor-grab active:cursor-grabbing select-none transition-opacity relative bg-base-200 rounded-xl p-3"
                     :class="[
-                        index === currentPlayerIndex ? 'border-accent' : 'border-base-300',
-                        dragIndex === index ? 'opacity-50' : '',
+                        dragIndex === index ? 'opacity-40' : '',
+                        index === currentPlayerIndex ? 'ring-2 ring-accent' : '',
                     ]"
                     @dragstart="onDragStart(index)"
                     @dragover.prevent="onDragOver(index)"
                     @dragend="onDragEnd"
                 >
-                    <span class="mr-1 text-primary">⠿</span>
-                    <span class="flex-1">{{ player.id }}</span>
+                    <!-- Is active user -->
+                    <span
+                        v-if="index === currentPlayerIndex"
+                        class="absolute -top-3 left-3 text-xs px-2 py-0.5 rounded-full bg-accent text-accent-content font-semibold"
+                    >
+                        Active
+                    </span>
 
-                    <span v-if="player.userId" class="text-sm text-green-500">{{
-                        usersStore.getById(player.userId)?.value?.name ?? 'Attached User'
+                    <span class="text-base-content/30 text-lg leading-none">⠿</span>
+
+                    <!-- Player (User) Name -->
+                    <span class="flex-1 font-medium text-sm">{{
+                        player.userId
+                            ? (usersStore.getById(player.userId)?.value?.name ?? 'Name not found')
+                            : 'Unassigned Player'
                     }}</span>
+
+                    <!-- Attach/Detach User Button -->
                     <button
-                        v-else
-                        class="btn btn-sm btn-outline"
+                        v-if="!player.userId"
+                        class="btn btn-xs btn-outline"
                         @click="openAttachUserModal(player.id)"
                     >
                         Attach User
                     </button>
-
                     <button
-                        v-if="player.userId"
-                        class="btn btn-sm btn-outline btn-error"
+                        v-else
+                        class="btn btn-xs btn-outline text-error"
                         @click="detachUserFromPlayer(player.id)"
                     >
                         Detach User
                     </button>
-
-                    <span
-                        v-if="index === currentPlayerIndex"
-                        class="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-content"
-                    >
-                        Active
-                    </span>
                 </div>
             </li>
         </ul>
