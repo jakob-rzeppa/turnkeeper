@@ -117,4 +117,25 @@ impl Stat {
             kind: StatKind::Boolean { value }
         })
     }
+
+    pub fn change_value_string(&mut self, new_value: String) -> Result<(), GameError> {
+        self.kind = StatKind::String {
+            value: StringStatValue::new(new_value),
+        };
+        Ok(())
+    }
+
+    pub fn change_value_number(&mut self, new_value: f64) -> Result<(), GameError> {
+        self.kind = StatKind::Number {
+            value: NumberStatValue::new(new_value),
+        };
+        Ok(())
+    }
+
+    pub fn change_value_boolean(&mut self, new_value: bool) -> Result<(), GameError> {
+        self.kind = StatKind::Boolean {
+            value: BooleanStatValue::new(new_value),
+        };
+        Ok(())
+    }
 }

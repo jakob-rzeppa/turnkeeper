@@ -57,6 +57,7 @@ pub enum GameErrorKind {
     InvalidUuid,
     EmptyStatKey,
     InvalidStat,
+    StatNotFound,
     DuplicateStatKey,
     GameAlreadyExists,
     GameNotFound,
@@ -77,7 +78,8 @@ impl GameErrorKind {
         match self {
             GameErrorKind::InvalidUuid => "Invalid UUID format".to_string(),
             GameErrorKind::EmptyStatKey => "StatKey is empty".to_string(),
-            GameErrorKind::InvalidStat=> "Invalid stat".to_string(),
+            GameErrorKind::InvalidStat => "Invalid stat".to_string(),
+            GameErrorKind::StatNotFound => "Stat not found".to_string(),
             GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
             GameErrorKind::GameNotFound => "Game not found".to_string(),
