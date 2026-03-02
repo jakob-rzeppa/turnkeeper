@@ -1,3 +1,5 @@
+use std::str::FromStr;
+use futures_util::SinkExt;
 use uuid::Uuid;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::error::{GameError, GameErrorKind};
@@ -87,13 +89,54 @@ impl Game {
         Ok(())
     }
 
+    /// Attaches a user to a player by their IDs.
+    ///
+    /// # Invariants
+    ///
+    /// - A user can only be attached to one player at a time.
+    /// - The player must exist in the game.
+    /// - A user can only be attached if there is no other player already attached to that user.
+    ///
+    /// The user is not validated here. If a user doesn't exist, it will be displayed as "User not found" in the UI, but it won't cause an error at this stage, since we don't care about the user details.
+    fn attach_user_to_player(&mut self, user_id: Uuid, player_id: Uuid) -> Result<(), GameError> {
+        if self.players.iter().any(|p| p.user_id() == Some(user_id)) {
+            return Err(GameError::new(GameErrorKind::UserAlreadyAttachedToAnotherPlayer));
+        }
+
+        if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
+            player.attach_user(user_id);
+            Ok(())
+        } else {
+            Err(GameError::new(GameErrorKind::PlayerNotFound))
+        }
+    }
+
+    /// Detaches any user from the specified player.
+    fn detach_user_from_player(&mut self, player_id: Uuid) -> Result<(), GameError> {
+        if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
+            player.detach_user();
+            Ok(())
+        } else {
+            Err(GameError::new(GameErrorKind::PlayerNotFound))
+        }
+    }
+
     /// Dispatches a [`GameEvent`] to the appropriate handler method.
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
             GameEvent::AddPlayer => self.add_player(),
+            GameEvent::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
+                Uuid::from_str(&user_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+            ),
+            GameEvent::DetachUserFromPlayer { player_id } => self.detach_user_from_player(
+                Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+            ),
             GameEvent::ChangePlayerOrder(ids_in_order) => {
-                let ids_in_order: Vec<Uuid> = ids_in_order.into_iter().map(|s| Uuid::parse_str(&s)).collect::<Result<_, _>>()
-                    .map_err(|_| GameError::new(GameErrorKind::InvalidPlayerOrder))?;
+                let ids_in_order: Vec<Uuid> = ids_in_order.into_iter()
+                    .map(|s| Uuid::from_str(&s).map_err(|_| GameError::new(GameErrorKind::InvalidUuid)))
+                    .collect::<Result<Vec<Uuid>, GameError>>()?;
+
                 self.change_player_order(ids_in_order)
             },
             GameEvent::Debug(msg) => {
@@ -102,52 +145,53 @@ impl Game {
             }
         }
     }
-
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
-    mod into_gm_game_info {
-        use crate::domain::game::entities::stat::Stat;
-        use crate::domain::game::projections::gm_game_info::GmGameInfo;
-        use crate::domain::user::entities::User;
+    mod attach_detach_user {
         use super::*;
 
         #[test]
-        fn test_converts_game_to_gm_game_info() {
-            let game_id = Uuid::new_v4();
-            let player_id = Uuid::new_v4();
+        fn test_attach_and_detach_user() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+
+            let player_id = *game.players().first().unwrap().id();
             let user_id = Uuid::new_v4();
-            
-            let game = Game::new(game_id, "test-game".to_string());
-            
-            let mut player = Player::new(player_id);
-            player.add_user(User::try_new(user_id, "user1".to_string(), "password".to_string()).unwrap());
-            
-            let stat_id = Uuid::new_v4();
-            player.try_add_stat(Stat::try_new_number_stat(
-                stat_id,
-                "health".to_string(),
-                100.0,
-            ).unwrap()).unwrap();
-            
-            //game.add_player(player).unwrap();
 
-            let gm_info = GmGameInfo::from(&game);
+            // Attach user to player
+            let res = game.attach_user_to_player(user_id, player_id);
+            assert!(res.is_ok());
 
-            assert_eq!(gm_info.id, game_id.to_string());
-            assert_eq!(gm_info.name, "test-game");
-            // assert_eq!(gm_info.players.len(), 1);
-            // assert_eq!(gm_info.players[0].id, player_id.to_string());
-            // assert_eq!(gm_info.players[0].user.as_ref().unwrap().name, "user1");
-            // assert_eq!(gm_info.players[0].stats.len(), 1);
-            // assert_eq!(gm_info.players[0].stats[0].id, stat_id.to_string());
-            // assert_eq!(gm_info.players[0].stats[0].key, "health");
-            // assert_eq!(gm_info.players[0].stats[0].number_value, Some(100.0));
-            assert_eq!(gm_info.round_number, 0);
-            assert_eq!(gm_info.current_player_index, 0);
+            assert_eq!(game.players().first().unwrap().user_id(), Some(user_id));
+
+            // Detach user from player
+            let res = game.detach_user_from_player(player_id);
+            assert!(res.is_ok());
+
+            assert_eq!(game.players().first().unwrap().user_id(), None);
+        }
+
+        #[test]
+        fn test_attach_user_already_attached() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player1_id = *game.players().get(0).unwrap().id();
+            let player2_id = *game.players().get(1).unwrap().id();
+            let user_id = Uuid::new_v4();
+
+            // Attach user to first player
+            let res = game.attach_user_to_player(user_id, player1_id);
+            assert!(res.is_ok());
+
+            // Attempt to attach same user to second player should fail
+            let res = game.attach_user_to_player(user_id, player2_id);
+            assert!(res.is_err());
         }
     }
 

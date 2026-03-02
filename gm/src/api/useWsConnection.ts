@@ -12,8 +12,7 @@ type RawStat = {
     number_value: number | null;
     boolean_value: boolean | null;
 };
-type RawPlayerUser = { id: string; name: string } | null;
-type RawPlayer = { id: string; user: RawPlayerUser; stats: RawStat[] };
+type RawPlayer = { id: string; user_id: string | null; stats: RawStat[] };
 type RawGame = {
     id: string;
     name: string;
@@ -66,7 +65,7 @@ export function useWsConnection() {
                 players: message.players.map(
                     (p: RawPlayer): Player => ({
                         id: p.id,
-                        user: p.user ? { id: p.user.id, name: p.user.name } : null,
+                        userId: p.user_id,
                         stats: p.stats.map(
                             (s: RawStat): Stat => ({
                                 id: s.id,

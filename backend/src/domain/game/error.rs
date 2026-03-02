@@ -54,14 +54,16 @@ impl Display for GameError {
 /// Discriminant for [`GameError`], indicating the category of failure.
 #[derive(Debug, PartialEq)]
 pub enum GameErrorKind {
+    InvalidUuid,
     EmptyStatKey,
     InvalidStat,
     DuplicateStatKey,
     GameAlreadyExists,
     GameNotFound,
+    PlayerNotFound,
     PlayerWithSameNameAlreadyExists,
+    UserAlreadyAttachedToAnotherPlayer,
     RepositoryError,
-    UserForPlayerNotFound,
     UserAlreadyConnected,
     GameSessionCreationFailed,
     GmAlreadyConnected,
@@ -73,20 +75,22 @@ pub enum GameErrorKind {
 impl GameErrorKind {
     pub fn message(&self) -> String {
         match self {
+            GameErrorKind::InvalidUuid => "Invalid UUID format".to_string(),
             GameErrorKind::EmptyStatKey => "StatKey is empty".to_string(),
             GameErrorKind::InvalidStat=> "Invalid stat".to_string(),
             GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
             GameErrorKind::GameNotFound => "Game not found".to_string(),
+            GameErrorKind::PlayerNotFound => "Player not found".to_string(),
             GameErrorKind::PlayerWithSameNameAlreadyExists => "Player with same name already exists".to_string(),
             GameErrorKind::RepositoryError => "Unexpected repository error".to_string(),
-            GameErrorKind::UserForPlayerNotFound => "User not found in game".to_string(),
             GameErrorKind::UserAlreadyConnected => "User already connected to this game".to_string(),
             GameErrorKind::GameSessionCreationFailed => "Game session creation failed".to_string(),
             GameErrorKind::GmAlreadyConnected => "GM connection already established for this session".to_string(),
             GameErrorKind::InvalidPlayerOrder => "Invalid player order".to_string(),
             GameErrorKind::NoPendingConnection => "No pending GM connection to upgrade".to_string(),
             GameErrorKind::InvalidConnectionToken => "Invalid or expired token for GM connection".to_string(),
+            GameErrorKind::UserAlreadyAttachedToAnotherPlayer => "User is already attached to another player".to_string(),
         }
     }
 }

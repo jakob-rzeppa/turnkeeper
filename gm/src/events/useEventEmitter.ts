@@ -6,6 +6,7 @@ export function useEventEmitter() {
 
     const emit = (event: GameEvent) => {
         const payload = JSON.stringify(event);
+        console.log('Emitting event:', payload);
         wsConnection.send(payload);
     };
 

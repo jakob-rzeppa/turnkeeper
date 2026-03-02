@@ -27,10 +27,7 @@ impl From<&Game> for GmGameInfo {
             name: game.name().to_string(),
             players: game.players().iter().map(|p| GmPlayerInfo {
                 id: p.id().to_string(),
-                user: p.user().map(|u| GmPlayerUserInfo {
-                    id: u.id().to_string(),
-                    name: u.name().to_string(),
-                }),
+                user_id: p.user_id().map(|u| u.to_string()),
                 stats: p.stats().iter().map(|s| GmStatInfo {
                     id: s.id().to_string(),
                     key: s.key().as_str().to_string(),
@@ -51,15 +48,8 @@ impl From<&Game> for GmGameInfo {
 pub struct GmPlayerInfo {
     pub id: String,
     /// The linked user, if any. `None` for anonymous players.
-    pub user: Option<GmPlayerUserInfo>,
+    pub user_id: Option<String>,
     pub stats: Vec<GmStatInfo>,
-}
-
-/// Serializable user info attached to a player.
-#[derive(Serialize)]
-pub struct GmPlayerUserInfo {
-    pub id: String,
-    pub name: String,
 }
 
 /// Serializable stat info attached to a player.

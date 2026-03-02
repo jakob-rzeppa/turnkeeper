@@ -2,9 +2,14 @@
 import { computed, ref, watch } from 'vue';
 import { useGameStore, type Player } from '../../game/gameStore';
 import { useEventEmitter } from '../../events/useEventEmitter';
+import { useModalStore } from '../../common/modal/modalStore';
+import AttatchUserToPlayerModal from '../modals/AttatchUserToPlayerModal.vue';
+import { useUsersStore } from '../../users/usersStore';
 
-const { emit } = useEventEmitter();
+const eventEmitter = useEventEmitter();
 const gameStore = useGameStore();
+const modalStore = useModalStore();
+const usersStore = useUsersStore();
 const currentPlayerIndex = computed(() => gameStore.game?.currentPlayerIndex ?? -1);
 
 // Local reorderable copy of players
@@ -51,11 +56,19 @@ const onDragEnd = () => {
 
 const updateOrder = () => {
     const ids = localPlayers.value.map(p => p.id);
-    emit({ ChangePlayerOrder: ids });
+    eventEmitter.emit({ ChangePlayerOrder: ids });
 };
 
 const addPlayer = () => {
-    emit('AddPlayer');
+    eventEmitter.emit('AddPlayer');
+};
+
+const openAttachUserModal = (playerId: string) => {
+    modalStore.openModal(AttatchUserToPlayerModal, { playerId });
+};
+
+const detachUserFromPlayer = (playerId: string) => {
+    eventEmitter.emit({ DetachUserFromPlayer: { player_id: playerId } });
 };
 </script>
 
@@ -83,8 +96,27 @@ const addPlayer = () => {
                     @dragend="onDragEnd"
                 >
                     <span class="mr-1 text-primary">⠿</span>
-                    <span class="flex-1">{{ player.user?.name ?? 'Unassigned' }}</span>
-                    <span>{{ player.id }}</span>
+                    <span class="flex-1">{{ player.id }}</span>
+
+                    <span v-if="player.userId" class="text-sm text-green-500">{{
+                        usersStore.getById(player.userId)?.value?.name ?? 'Attached User'
+                    }}</span>
+                    <button
+                        v-else
+                        class="btn btn-sm btn-outline"
+                        @click="openAttachUserModal(player.id)"
+                    >
+                        Attach User
+                    </button>
+
+                    <button
+                        v-if="player.userId"
+                        class="btn btn-sm btn-outline btn-error"
+                        @click="detachUserFromPlayer(player.id)"
+                    >
+                        Detach User
+                    </button>
+
                     <span
                         v-if="index === currentPlayerIndex"
                         class="text-xs px-2 py-0.5 rounded-full bg-accent text-accent-content"

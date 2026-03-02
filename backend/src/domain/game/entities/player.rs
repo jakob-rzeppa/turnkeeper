@@ -14,7 +14,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 #[derive(Debug, PartialEq, Clone)]
 pub struct Player {
     id: Uuid,
-    user: Option<User>,
+    user_id: Option<Uuid>,
 
     stats: Vec<Stat>
 }
@@ -24,7 +24,7 @@ impl Player {
     pub fn new(id: Uuid) -> Self {
         Self {
             id,
-            user: None,
+            user_id: None,
             stats: Vec::new()
         }
     }
@@ -33,20 +33,20 @@ impl Player {
         &self.id
     }
 
-    pub fn user(&self) -> Option<&User> {
-        self.user.as_ref()
+    pub fn user_id(&self) -> Option<Uuid> {
+        self.user_id
     }
 
     pub fn stats(&self) -> &[Stat] {
         &self.stats
     }
-    
-    pub fn name(&self) -> Option<&str> {
-        self.user.as_ref().map(|u| u.name())
+
+    pub fn attach_user(&mut self, user_id: Uuid) {
+        self.user_id = Some(user_id);
     }
 
-    pub fn add_user(&mut self, user: User) {
-        self.user = Some(user);
+    pub fn detach_user(&mut self) {
+        self.user_id = None;
     }
 
     pub fn try_add_stat(&mut self, stat: Stat) -> Result<(), GameError> {

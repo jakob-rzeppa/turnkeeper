@@ -10,14 +10,9 @@ export type Stat = {
     booleanValue: boolean | null;
 };
 
-export type PlayerUser = {
-    id: string;
-    name: string;
-};
-
 export type Player = {
     id: string;
-    user: PlayerUser | null;
+    userId: string | null;
     stats: Stat[];
 };
 

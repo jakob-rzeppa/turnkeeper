@@ -17,6 +17,8 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GameEvent {
     AddPlayer,
+    AttachUserToPlayer { user_id: String, player_id: String },
+    DetachUserFromPlayer { player_id: String },
     ChangePlayerOrder(Vec<String>),
     Debug(String),
 }
@@ -29,9 +31,8 @@ impl GameEvent {
     /// **Note:** This check is defined but not yet enforced in the session event loop.
     pub fn is_user_permitted(&self) -> bool {
         match self {
-            GameEvent::AddPlayer => false,
-            GameEvent::ChangePlayerOrder(_) => false,
             GameEvent::Debug(_) => true,
+            _ => false
         }
     }
 }
