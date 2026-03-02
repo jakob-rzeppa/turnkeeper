@@ -16,10 +16,14 @@ use serde::{Deserialize, Serialize};
 /// currently enforced** by the session event loop.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GameEvent {
+    // Player
     AddPlayer,
-    AttachUserToPlayer { user_id: String, player_id: String },
-    DetachUserFromPlayer { player_id: String },
     ChangePlayerOrder(Vec<String>),
+    AddStatToPlayer { player_id: String, stat_key: String, stat_type: String, stat_value: String },
+    AttachUserToPlayer { player_id: String, user_id: String },
+    DetachUserFromPlayer { player_id: String },
+
+    // Debug
     Debug(String),
 }
 

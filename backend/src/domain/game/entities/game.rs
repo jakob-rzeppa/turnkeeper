@@ -89,6 +89,27 @@ impl Game {
         Ok(())
     }
 
+    fn add_stat_to_player(&mut self, player_id: Uuid, stat_key: String, stat_type: String, stat_value: String) -> Result<(), GameError> {
+        if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
+            match stat_type.as_str() {
+                "string" => player.try_add_string_stat(Uuid::new_v4(), stat_key, stat_value),
+                "number" => {
+                    let number_value = stat_value.parse::<f64>()
+                        .map_err(|_| GameError::new(GameErrorKind::InvalidStat))?;
+                    player.try_add_number_stat(Uuid::new_v4(), stat_key, number_value)
+                },
+                "boolean" => {
+                    let boolean_value = stat_value.parse::<bool>()
+                        .map_err(|_| GameError::new(GameErrorKind::InvalidStat))?;
+                    player.try_add_bool_stat(Uuid::new_v4(), stat_key, boolean_value)
+                },
+                _ => Err(GameError::new(GameErrorKind::InvalidStat))
+            }
+        } else {
+            Err(GameError::new(GameErrorKind::PlayerNotFound))
+        }
+    }
+
     /// Attaches a user to a player by their IDs.
     ///
     /// # Invariants
@@ -125,6 +146,13 @@ impl Game {
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
             GameEvent::AddPlayer => self.add_player(),
+            GameEvent::AddStatToPlayer { player_id, stat_key, stat_type, stat_value } => {
+                self.add_stat_to_player(
+                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    stat_key,
+                    stat_type,
+                    stat_value)
+            },
             GameEvent::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
                 Uuid::from_str(&user_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
                 Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
