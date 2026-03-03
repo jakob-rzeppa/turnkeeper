@@ -18,6 +18,9 @@ pub struct GmGameInfo {
 
     pub round_number: u32,
     pub current_player_index: usize,
+
+    pub notes: String,
+    pub hidden_notes: String,
 }
 
 impl From<&Game> for GmGameInfo {
@@ -39,6 +42,8 @@ impl From<&Game> for GmGameInfo {
             }).collect(),
             round_number: game.round_number(),
             current_player_index: game.current_player_index(),
+            notes: game.notes().to_string(),
+            hidden_notes: game.hidden_notes().to_string(),
         }
     }
 }

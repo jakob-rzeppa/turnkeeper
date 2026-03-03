@@ -4,6 +4,8 @@
 
 export type GameEvent =
     | 'AddPlayer'
+    | { SetNotes: string }
+    | { SetHiddenNotes: string }
     | {
           AddStatToPlayer: {
               player_id: string;

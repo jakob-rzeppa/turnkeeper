@@ -16,6 +16,9 @@ use serde::{Deserialize, Serialize};
 /// currently enforced** by the session event loop.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GameEvent {
+    SetNotes(String),
+    SetHiddenNotes(String),
+
     // Player
     AddPlayer,
     ChangePlayerOrder(Vec<String>),

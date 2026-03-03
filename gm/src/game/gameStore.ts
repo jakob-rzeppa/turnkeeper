@@ -24,6 +24,9 @@ export type Game = {
 
     roundNumber: number;
     currentPlayerIndex: number;
+
+    notes: string;
+    hiddenNotes: string;
 };
 
 export const useGameStore = defineStore('game', () => {

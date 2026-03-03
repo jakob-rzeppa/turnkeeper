@@ -20,6 +20,9 @@ pub struct Game {
 
     round_number: u32,
     current_player_index: usize,
+
+    notes: String,
+    hidden_notes: String,
 }
 
 impl Game {
@@ -30,6 +33,8 @@ impl Game {
             players: Vec::new(),
             round_number: 0,
             current_player_index: 0,
+            notes: String::new(),
+            hidden_notes: String::new(),
         }
     }
 
@@ -53,7 +58,15 @@ impl Game {
         self.current_player_index
     }
 
-    pub fn add_player(&mut self) -> Result<(), GameError> {
+    pub fn notes(&self) -> &str {
+        &self.notes
+    }
+
+    pub fn hidden_notes(&self) -> &str {
+        &self.hidden_notes
+    }
+
+    fn add_player(&mut self) -> Result<(), GameError> {
         let player = Player::new(Uuid::new_v4());
         self.players.push(player);
         Ok(())
@@ -66,7 +79,7 @@ impl Game {
     /// Returns [`GameErrorKind::InvalidPlayerOrder`] if the list length differs
     /// from the current player count, contains duplicates, or references
     /// unknown player IDs.
-    pub fn change_player_order(&mut self, ids_in_order: Vec<Uuid>) -> Result<(), GameError> {
+    fn change_player_order(&mut self, ids_in_order: Vec<Uuid>) -> Result<(), GameError> {
         if ids_in_order.len() != self.players.len() {
             return Err(GameError::new(GameErrorKind::InvalidPlayerOrder));
         }
@@ -171,9 +184,25 @@ impl Game {
         }
     }
 
+    fn set_notes(&mut self, notes: String) {
+        self.notes = notes;
+    }
+
+    fn set_hidden_notes(&mut self, hidden_notes: String) {
+        self.hidden_notes = hidden_notes;
+    }
+
     /// Dispatches a [`GameEvent`] to the appropriate handler method.
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
+            GameEvent::SetNotes(notes) => {
+                self.set_notes(notes);
+                Ok(())
+            },
+            GameEvent::SetHiddenNotes(hidden_notes) => {
+                self.set_hidden_notes(hidden_notes);
+                Ok(())
+            },
             GameEvent::AddPlayer => self.add_player(),
             GameEvent::AddStatToPlayer { player_id, stat_key, stat_type, stat_value } => {
                 self.add_stat_to_player(
