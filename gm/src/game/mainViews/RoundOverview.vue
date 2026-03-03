@@ -2,6 +2,7 @@
 import { computed } from 'vue';
 import { useGameStore } from '../gameStore';
 import { useUsersStore } from '../../users/usersStore';
+import PlayerStatsEditor from '../stats/PlayerStatsEditor.vue';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
@@ -28,5 +29,8 @@ const currentPlayerName = computed(() => {
             <p>Current Player Index: {{ gameStore.game?.currentPlayerIndex }}</p>
             <p>Current Player: {{ currentPlayerName }}</p>
         </div>
+
+        <h2 class="text-xl font-semibold mt-4">Edit current player stats</h2>
+        <PlayerStatsEditor v-if="currentPlayer" :player="currentPlayer" />
     </div>
 </template>
