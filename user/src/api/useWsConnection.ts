@@ -12,11 +12,12 @@ type RawStat = {
     number_value: number | null;
     boolean_value: boolean | null;
 };
-type RawPlayerUser = { id: string; name: string } | null;
-type RawPlayer = { id: string; user: RawPlayerUser; stats: RawStat[] };
+type RawOwnPlayer = { id: string; user_id: string; stats: RawStat[] };
+type RawPlayer = { id: string; user_id: string | null };
 type RawGame = {
     id: string;
     name: string;
+    own_player: RawOwnPlayer | null;
     players: RawPlayer[];
     round_number: number;
     current_player_index: number;
@@ -63,20 +64,26 @@ export function useWsConnection() {
             gameStore.setGame({
                 id: message.id,
                 name: message.name,
+                ownPlayer: message.own_player
+                    ? {
+                          id: message.own_player.id,
+                          userId: message.own_player.user_id,
+                          stats: message.own_player.stats.map(
+                              (s: RawStat): Stat => ({
+                                  id: s.id,
+                                  key: s.key,
+                                  valueType: s.value_type,
+                                  stringValue: s.string_value,
+                                  numberValue: s.number_value,
+                                  booleanValue: s.boolean_value,
+                              })
+                          ),
+                      }
+                    : null,
                 players: message.players.map(
                     (p: RawPlayer): Player => ({
                         id: p.id,
-                        user: p.user ? { id: p.user.id, name: p.user.name } : null,
-                        stats: p.stats.map(
-                            (s: RawStat): Stat => ({
-                                id: s.id,
-                                key: s.key,
-                                valueType: s.value_type,
-                                stringValue: s.string_value,
-                                numberValue: s.number_value,
-                                booleanValue: s.boolean_value,
-                            })
-                        ),
+                        userId: p.user_id,
                     })
                 ),
                 roundNumber: message.round_number,

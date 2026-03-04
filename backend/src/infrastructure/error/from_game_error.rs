@@ -18,6 +18,7 @@ impl From<GameError> for HttpError {
                 HttpError::InternalServerError
             },
             GameErrorKind::UserAlreadyConnected => HttpError::Conflict(e.to_string()),
+            GameErrorKind::UserNotInGame => HttpError::BadRequest(e.to_string()),
             GameErrorKind::GameSessionCreationFailed => HttpError::InternalServerError,
             GameErrorKind::GmAlreadyConnected => HttpError::Conflict(e.to_string()),
             GameErrorKind::InvalidPlayerOrder => HttpError::BadRequest(e.to_string()),

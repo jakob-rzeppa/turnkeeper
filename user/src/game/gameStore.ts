@@ -10,21 +10,22 @@ export type Stat = {
     booleanValue: boolean | null;
 };
 
-export type PlayerUser = {
+export type OwnPlayer = {
     id: string;
-    name: string;
+    userId: string;
+    stats: Stat[];
 };
 
 export type Player = {
     id: string;
-    user: PlayerUser | null;
-    stats: Stat[];
+    userId: string | null;
 };
 
 export type Game = {
     id: string;
     name: string;
 
+    ownPlayer: OwnPlayer | null;
     players: Player[];
 
     roundNumber: number;

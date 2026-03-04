@@ -1,14 +1,28 @@
-//! # GmGameInfo Projection
-//!
-//! Full game state projection that is serialized to JSON and broadcast to all
-//! connected clients (GM and users) after every [`GameEvent`](crate::domain::game::events::GameEvent).
-
 use serde::Serialize;
 use crate::domain::game::entities::game::Game;
 
-/// Full serializable game state broadcast over WebSocket.
-///
-/// Sent to all connected clients after each event and on initial connection.
+/// Serializable player info within the gm game info.
+#[derive(Serialize)]
+pub struct GmPlayerInfo {
+    pub id: String,
+    /// The linked user, if any. `None` for anonymous players.
+    pub user_id: Option<String>,
+    pub stats: Vec<GmStatInfo>,
+}
+
+/// Serializable stat info within the gm game info.
+#[derive(Serialize)]
+pub struct GmStatInfo {
+    pub id: String,
+    pub key: String,
+    /// The type discriminator: `"string"`, `"number"`, or `"boolean"`.
+    pub value_type: String,
+    pub string_value: Option<String>,
+    pub number_value: Option<f64>,
+    pub boolean_value: Option<bool>,
+}
+
+/// Full serializable game info send to the gm over WebSocket.
 #[derive(Serialize)]
 pub struct GmGameInfo {
     pub id: String,
@@ -46,25 +60,4 @@ impl From<&Game> for GmGameInfo {
             hidden_notes: game.hidden_notes().to_string(),
         }
     }
-}
-
-/// Serializable player info within a game state broadcast.
-#[derive(Serialize)]
-pub struct GmPlayerInfo {
-    pub id: String,
-    /// The linked user, if any. `None` for anonymous players.
-    pub user_id: Option<String>,
-    pub stats: Vec<GmStatInfo>,
-}
-
-/// Serializable stat info attached to a player.
-#[derive(Serialize)]
-pub struct GmStatInfo {
-    pub id: String,
-    pub key: String,
-    /// The type discriminator: `"string"`, `"number"`, or `"boolean"`.
-    pub value_type: String,
-    pub string_value: Option<String>,
-    pub number_value: Option<f64>,
-    pub boolean_value: Option<bool>,
 }

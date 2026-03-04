@@ -29,6 +29,7 @@ use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::gm_game_info::GmGameInfo;
+use crate::domain::game::projections::user_game_info::UserGameInfo;
 
 mod gm_connection_state;
 mod gm_lifecycle;
@@ -117,27 +118,25 @@ where
     /// Sends the current [`GmGameInfo`] state to the GM and all connected users.
     async fn broadcast_game_state(&self) {
         let game_guard = self.game.read().await;
-        let game_state = GmGameInfo::from(&*game_guard);
-        drop(game_guard);
-
-        let json_game_state = match serde_json::to_string(&game_state) {
-            Ok(json) => json,
-            Err(e) => {
-                eprintln!("Failed to serialize game state: {}", e);
-                return;
-            }
-        };
 
         let gm_conn_guard = self.gm_connection.read().await;
         if let GmConnectionState::Connected { ref connection } = *gm_conn_guard {
-            connection.send(json_game_state.clone()).await;
+            let gm_game_state = GmGameInfo::from(&*game_guard);
+            match serde_json::to_string(&gm_game_state) {
+                Ok(json_game_state) => connection.send(json_game_state).await,
+                Err(e) => eprintln!("Failed to serialize game state: {}", e),
+            }
         }
 
         let user_connections_guard = self.user_connections.read().await;
-        for user_connection in user_connections_guard.values() {
+        for (user_id, user_connection) in user_connections_guard.iter() {
             let user_connection_guard = user_connection.read().await;
             if let UserConnectionState::Connected { ref connection, .. } = *user_connection_guard {
-                connection.send(json_game_state.clone()).await;
+                let user_game_state = UserGameInfo::for_user(&*game_guard, user_id);
+                match serde_json::to_string(&user_game_state) {
+                    Ok(json_game_state) => connection.send(json_game_state).await,
+                    Err(e) => eprintln!("Failed to serialize game state: {}", e),
+                }
             }
         }
     }
