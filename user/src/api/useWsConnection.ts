@@ -21,6 +21,7 @@ type RawGame = {
     players: RawPlayer[];
     round_number: number;
     current_player_index: number;
+    notes: string;
 };
 
 const websocket = ref<WebSocket | null>(null);
@@ -88,6 +89,7 @@ export function useWsConnection() {
                 ),
                 roundNumber: message.round_number,
                 currentPlayerIndex: message.current_player_index,
+                notes: message.notes,
             });
         };
 
