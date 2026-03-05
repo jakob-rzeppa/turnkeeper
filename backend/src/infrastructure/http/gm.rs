@@ -7,12 +7,12 @@ use crate::infrastructure::auth::gm_jwt::GmJwtGenerator;
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct LoginRequest {
-    password: String,
+    pub password: String,
 }
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct LoginResponse {
-    token: String,
+    pub token: String,
 }
 
 /// POST /gm/login

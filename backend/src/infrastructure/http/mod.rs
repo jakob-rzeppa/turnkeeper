@@ -8,9 +8,9 @@
 //! * `user` - User authentication handlers
 //! * `gm` - GM authentication handlers
 
-mod game;
-mod user;
-mod gm;
+pub mod game;
+pub mod user;
+pub mod gm;
 
 use axum::{middleware, Router};
 use axum::routing::{delete, get, post};
