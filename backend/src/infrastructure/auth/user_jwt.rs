@@ -65,7 +65,7 @@ impl UserJwtValidatorContract for UserJwtValidator {
         let validation = Validation::new(Algorithm::HS256);
 
         let claims = decode::<UserClaims>(token, &decoding_key, &validation).map(|data| data.claims)
-            .map_err(|e| UserError::new(UserErrorKind::InvalidCredentials))?;
+            .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?;
 
         Ok(Uuid::try_from(claims.user_id).map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
     }

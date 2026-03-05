@@ -71,7 +71,10 @@ mod tests {
         user_repo
             .expect_get_by_name()
             .times(1)
-            .returning(move |_| Ok(user.clone()));
+            .returning(move |_| {
+                let user = user.clone();
+                Box::pin(async move { Ok(user) })
+            });
 
         jwt_generator.expect_generate_token()
             .times(1)
@@ -99,7 +102,10 @@ mod tests {
         user_repo
             .expect_get_by_name()
             .times(1)
-            .returning(move |_| Ok(user.clone()));
+            .returning(move |_| {
+                let user = user.clone();
+                Box::pin(async move { Ok(user) })
+            });
 
         jwt_generator.expect_generate_token()
             .never();

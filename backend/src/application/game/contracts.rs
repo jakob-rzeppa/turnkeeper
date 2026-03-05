@@ -39,7 +39,7 @@ pub trait GameRepositoryContract {
     /// - A game with the same Name already exists
     /// - Database connection fails
     /// - Constraint violations occur
-    async fn create(&self, id: Uuid, name: String) -> Result<(), GameError>;
+    fn create(&self, id: Uuid, name: String) -> impl Future<Output = Result<(), GameError>> + Send;
     
     /// Retrieves metadata for all games.
     ///
@@ -50,7 +50,7 @@ pub trait GameRepositoryContract {
     ///
     /// * `Ok(Vec<GameMetadata>)` - List of all games (may be empty)
     /// * `Err(GameError)` - Database query failed
-    async fn get_metadata_all_games(&self) -> Result<Vec<GameMetadata>, GameError>;
+    fn get_metadata_all_games(&self) -> impl Future<Output = Result<Vec<GameMetadata>, GameError>> + Send;
     
     /// Retrieves metadata for a specific game.
     ///
@@ -62,7 +62,7 @@ pub trait GameRepositoryContract {
     /// # Errors
     ///
     /// Returns [`GameErrorKind::GameNotFound`] if no game exists with the given ID.
-    async fn get_metadata_by_id(&self, id: Uuid) -> Result<GameMetadata, GameError>;
+    fn get_metadata_by_id(&self, id: Uuid) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
     
     /// Logs a game event for event sourcing.
     ///
@@ -75,7 +75,7 @@ pub trait GameRepositoryContract {
     ///
     /// Events should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    async fn log_event(&self, event: GameEvent) -> Result<(), GameError>;
+    fn log_event(&self, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
     
     /// Retrieves the complete event history for a game.
     ///
@@ -86,7 +86,7 @@ pub trait GameRepositoryContract {
     ///
     /// * `Ok(Vec<GameEvent>)` - Ordered list of all game events (may be empty for new games)
     /// * `Err(GameError)` - Game not found or database error
-    async fn get_game_history(&self, id: Uuid) -> Result<Vec<GameEvent>, GameError>;
+    fn get_game_history(&self, id: Uuid) -> impl Future<Output = Result<Vec<GameEvent>, GameError>> + Send;
     
     /// Deletes a game and all associated data.
     ///
@@ -99,7 +99,7 @@ pub trait GameRepositoryContract {
     /// # Important
     ///
     /// Ensure the game is not active (no WebSocket connections) before deletion.
-    async fn delete(&self, game_id: Uuid) -> Result<(), GameError>;
+    fn delete(&self, game_id: Uuid) -> impl Future<Output = Result<(), GameError>> + Send;
 }
 
 /// Contract for a bidirectional WebSocket connection.
@@ -108,8 +108,8 @@ pub trait GameRepositoryContract {
 /// without a real WebSocket.
 pub trait ConnectionContract {
     /// Receives the next message from the connection.
-    async fn recv(&self) -> ConnectionMessageDto;
+    fn recv(&self) -> impl Future<Output = ConnectionMessageDto> + Send;
 
     /// Sends a JSON string to the connected client.
-    async fn send(&self, msg: String);
+    fn send(&self, msg: String) -> impl Future<Output = ()> + Send;
 }

@@ -19,14 +19,14 @@ pub trait UserRepositoryContract {
     /// * `Ok(true)` - User exists
     /// * `Ok(false)` - User does not exist
     /// * `Err(UserError)` - Database error occurred
-    async fn check_if_exists(&self, id: &Uuid) -> Result<bool, UserError>;
+    fn check_if_exists(&self, id: &Uuid) -> impl Future<Output = Result<bool, UserError>> + Send;
 
     /// Retrieves a user by their unique ID.
     ///
     /// # Errors
     ///
     /// Returns [`UserErrorKind::UserNotFound`] if no user exists with the given ID.
-    async fn get_by_id(&self, id: &Uuid) -> Result<User, UserError>;
+    fn get_by_id(&self, id: &Uuid) -> impl Future<Output = Result<User, UserError>> + Send;
 
     /// Retrieves a user by their username.
     ///
@@ -37,10 +37,10 @@ pub trait UserRepositoryContract {
     /// # Errors
     ///
     /// Returns [`UserErrorKind::UserNotFound`] if no user exists with the given name.
-    async fn get_by_name(&self, name: &str) -> Result<User, UserError>;
+    fn get_by_name(&self, name: &str) -> impl Future<Output = Result<User, UserError>> + Send;
 
     /// Retrieves all users from the database.
-    async fn get_all(&self) -> Result<Vec<User>, UserError>;
+    fn get_all(&self) -> impl Future<Output = Result<Vec<User>, UserError>> + Send;
 
     /// Persists a new user to the database.
     ///
@@ -53,7 +53,7 @@ pub trait UserRepositoryContract {
     /// # Implementation Note
     ///
     /// Implementations must enforce username uniqueness.
-    async fn save(&self, user: &User) -> Result<(), UserError>;
+    fn save(&self, user: &User) -> impl Future<Output = Result<(), UserError>> + Send;
 }
 
 /// Contract for generating JWT tokens for authenticated users.

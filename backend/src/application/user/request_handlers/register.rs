@@ -68,7 +68,7 @@ mod tests {
         // We don't care about the actual user, so use any()
         user_repo.expect_save()
             .times(1)
-            .returning(|_| Ok(()) );
+            .returning(|_| Box::pin(async move { Ok(()) }) );
 
         // The token we expect to be returned
         jwt_generator.expect_generate_token()

@@ -63,7 +63,7 @@ impl GmJwtValidatorContract for GmJwtValidator {
         let validation = Validation::new(Algorithm::HS256);
 
         decode::<GmClaims>(token, &decoding_key, &validation).map(|data| data.claims)
-            .map_err(|e| GmError::new(GmErrorKind::InvalidCredentials))?;
+            .map_err(|_| GmError::new(GmErrorKind::InvalidCredentials))?;
 
         Ok(())
     }

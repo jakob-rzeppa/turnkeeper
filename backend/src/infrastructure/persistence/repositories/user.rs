@@ -110,13 +110,13 @@ impl UserRepositoryContract for SqliteUserRepository {
             .await
             .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
-        if let Some(row) = res {
+        if let Some(_) = res {
             transaction.rollback().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
             return Err(UserError::new(UserErrorKind::UserAlreadyExists));
         }
 
         let user_insert_row = UserRow::from(user);
-        let res = sqlx::query_as!(
+        sqlx::query_as!(
             UserRow,
             "INSERT INTO users (id, name, password) VALUES ($1, $2, $3)",
             user_insert_row.id, user_insert_row.name, user_insert_row.password

@@ -1,5 +1,4 @@
 use uuid::Uuid;
-use crate::domain::user::entities::User;
 use crate::domain::game::entities::stat::Stat;
 use crate::domain::game::error::{GameError, GameErrorKind};
 

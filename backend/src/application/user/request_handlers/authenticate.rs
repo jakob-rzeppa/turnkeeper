@@ -66,7 +66,7 @@ mod tests {
         user_repo.expect_check_if_exists()
             .times(1)
             .with(predicate::eq(user_id))
-            .returning(move |_| Ok(true));
+            .returning(move |_| Box::pin(async move { Ok(true) }));
 
         let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
@@ -119,7 +119,7 @@ mod tests {
         user_repo.expect_check_if_exists()
             .times(1)
             .with(predicate::eq(user_id))
-            .returning(move |_| Ok(false));
+            .returning(move |_| Box::pin(async move { Ok(false) }));
 
         let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
