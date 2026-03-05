@@ -18,16 +18,6 @@ use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberSta
 /// - [`Stat::try_new_string_stat`]
 /// - [`Stat::try_new_number_stat`]
 /// - [`Stat::try_new_bool_stat`]
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// let health = Stat::try_new_number_stat(
-///     Uuid::new_v4(),
-///     "health".to_string(),
-///     100.0,
-/// )?;
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stat {
     id: Uuid,

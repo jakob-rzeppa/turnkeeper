@@ -17,13 +17,7 @@ pub mod game;
 ///
 /// # Usage
 /// 
-/// The repositories are normally cloned (the Arc) and passed to the application layer.
-///
-/// ```rust,ignore
-/// let repo_manager = RepositoryManager::new(db_pool);
-/// let user_repo = repo_manager.user();
-/// let game_repo = repo_manager.game();
-/// ```
+/// The repositories are cloned (the Arc) and passed to the application layer.
 pub struct RepositoryManager {
     game: Arc<SqliteGameRepository>,
     user: Arc<SqliteUserRepository>,

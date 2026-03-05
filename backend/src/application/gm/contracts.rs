@@ -26,14 +26,6 @@ pub trait GmJwtGeneratorContract {
     ///
     /// * `Ok(String)` - A signed JWT token as a string
     /// * `Err(GmError)` - Token generation failed
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// // After validating GM password
-    /// let token = generator.generate_token()?;
-    /// // Send token to client: {"token": "eyJ0eXAi..."}
-    /// ```
     fn generate_token(&self) -> Result<String, GmError>;
 }
 
@@ -67,14 +59,5 @@ pub trait GmJwtValidatorContract {
     ///
     /// * `Ok(())` - Token is valid and grants GM privileges
     /// * `Err(GmError)` - Token is invalid, expired, or not a GM token
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// // In middleware protecting GM routes
-    /// let auth_header = "Bearer eyJ0eXAi...";
-    /// validator.validate_token(auth_header)?;
-    /// // If no error, proceed with GM operation
-    /// ```
     fn validate_token(&self, token: &str) -> Result<(), GmError>;
 }

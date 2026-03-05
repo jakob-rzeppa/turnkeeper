@@ -62,13 +62,6 @@ pub trait UserRepositoryContract {
 /// - Sign tokens with a secret key
 /// - Include user ID in the token payload
 /// - Set appropriate expiration times
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// let token = jwt_generator.generate_token(&user_id)?;
-/// // Token can now be sent to the client
-/// ```
 #[mockall::automock]
 pub trait UserJwtGeneratorContract {
     /// Generates a JWT token for a user.
@@ -84,13 +77,6 @@ pub trait UserJwtGeneratorContract {
     /// - User ID in the claims
     /// - Expiration timestamp
     /// - Signature using the secret key
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// let token = generator.generate_token(&user.id())?;
-    /// // Send token to client: {"token": "eyJ0eXAi..."}
-    /// ```
     fn generate_token(&self, user_id: &Uuid) -> Result<String, UserError>;
 }
 
@@ -107,13 +93,6 @@ pub trait UserJwtGeneratorContract {
 /// - The token was issued by this server (signature check)
 /// - The token hasn't expired
 /// - The token hasn't been tampered with
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// // Typically called from middleware
-/// let user_id = validator.validate_token("Bearer eyJ0eXAi...")?;
-/// ```
 #[mockall::automock]
 pub trait UserJwtValidatorContract {
     /// Validates a JWT token and extracts the user ID.
@@ -133,13 +112,5 @@ pub trait UserJwtValidatorContract {
     /// - Token signature is invalid
     /// - Token has expired
     /// - Token format is malformed
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// // Extract token from Authorization header
-    /// let auth_header = "eyJ0eXAi...";
-    /// let user_id = validator.validate_token(auth_header)?;
-    /// ```
     fn validate_token(&self, token: &str) -> Result<Uuid, UserError>;
 }

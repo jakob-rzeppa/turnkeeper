@@ -8,13 +8,6 @@
 //! - [`StringStatValue`] - Text values (e.g., character class)
 
 /// A boolean stat value.
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// let is_active = BooleanStatValue::new(true);
-/// assert_eq!(is_active.value(), true);
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct BooleanStatValue {
     value: bool,
@@ -33,13 +26,6 @@ impl BooleanStatValue {
 }
 
 /// A numeric stat value (64-bit floating-point).
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// let health = NumberStatValue::new(100.0);
-/// assert_eq!(health.value(), 100.0);
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct NumberStatValue {
     value: f64,
@@ -58,13 +44,6 @@ impl NumberStatValue {
 }
 
 /// A string stat value.
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// let class = StringStatValue::new("Warrior".to_string());
-/// assert_eq!(class.value(), "Warrior");
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct StringStatValue {
     value: String,

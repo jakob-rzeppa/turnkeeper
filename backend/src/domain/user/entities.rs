@@ -55,16 +55,6 @@ impl User {
     /// Returns [`UserError`] if:
     /// - Name is empty or contains invalid characters
     /// - Password doesn't meet requirements
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// let user = User::try_new(
-    ///     Uuid::new_v4(),
-    ///     "player1".to_string(),
-    ///     "password123".to_string()
-    /// )?;
-    /// ```
     pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, UserError> {
         let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
         let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
@@ -102,12 +92,6 @@ impl User {
     /// Returns [`UserError`] with [`UserErrorKind::InvalidCredentials`] if:
     /// - The password format is invalid
     /// - The password doesn't match
-    ///
-    /// # Examples
-    ///
-    /// ```rust,ignore
-    /// user.check_password("password123".to_string())?;
-    /// ```
     pub fn check_password(&self, password: String) -> Result<(), UserError> {
         let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
 
