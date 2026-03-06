@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
 import axios from 'axios';
+import { useAuthStore } from '../auth/authStore';
 
 const emit = defineEmits<{
     (e: 'close'): void;
@@ -9,6 +10,8 @@ const emit = defineEmits<{
     (e: 'unlock'): void;
     (e: 'create'): void;
 }>();
+
+const authStore = useAuthStore();
 
 const loading = ref(false);
 const error = ref('');
@@ -18,9 +21,17 @@ async function handleCreateGameClick() {
     emit('lock');
     loading.value = true;
     try {
-        await axios.post(API_BASE_URL + '/games', {
-            name: gameName.value,
-        });
+        await axios.post(
+            API_BASE_URL + '/games',
+            {
+                name: gameName.value,
+            },
+            {
+                headers: {
+                    Authorization: 'Bearer ' + authStore.token,
+                },
+            }
+        );
         emit('create');
         emit('unlock');
         emit('close');
