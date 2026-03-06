@@ -56,11 +56,11 @@ const onDragEnd = () => {
 
 const updateOrder = () => {
     const ids = localPlayers.value.map(p => p.id);
-    eventEmitter.emit({ ChangePlayerOrder: ids });
+    eventEmitter.changePlayerOrder(ids);
 };
 
 const addPlayer = () => {
-    eventEmitter.emit('AddPlayer');
+    eventEmitter.addPlayer();
 };
 
 const openAttachUserModal = (playerId: string) => {
@@ -68,7 +68,7 @@ const openAttachUserModal = (playerId: string) => {
 };
 
 const detachUserFromPlayer = (playerId: string) => {
-    eventEmitter.emit({ DetachUserFromPlayer: { player_id: playerId } });
+    eventEmitter.detachUserFromPlayer(playerId);
 };
 </script>
 

@@ -1,5 +1,33 @@
 import { useWsConnection } from '../api/useWsConnection';
-import type { GameEvent } from './events';
+
+/**
+ * Game events matching the Rust GameEvent enum.
+ */
+type GameEvent =
+    | { SetNotes: string }
+    | { SetHiddenNotes: string }
+    | { AddPlayer: { player_id: string } }
+    | {
+          AddStatToPlayer: {
+              player_id: string;
+              stat_key: string;
+              stat_type: 'string' | 'number' | 'boolean';
+              stat_value: string;
+          };
+      }
+    | {
+          ChangeStatOfPlayer: {
+              player_id: string;
+              stat_id: string;
+              stat_type: 'string' | 'number' | 'boolean';
+              stat_value: string;
+          };
+      }
+    | { RemoveStatFromPlayer: { player_id: string; stat_id: string } }
+    | { ChangePlayerOrder: string[] }
+    | { AttachUserToPlayer: { user_id: string; player_id: string } }
+    | { DetachUserFromPlayer: { player_id: string } }
+    | { Debug: string };
 
 export function useEventEmitter() {
     const wsConnection = useWsConnection();
@@ -10,5 +38,43 @@ export function useEventEmitter() {
         wsConnection.send(payload);
     };
 
-    return { emit };
+    const setNotes = (notes: string) => emit({ SetNotes: notes });
+    const setHiddenNotes = (notes: string) => emit({ SetHiddenNotes: notes });
+    const addPlayer = () => {
+        const player_id = crypto.randomUUID();
+        emit({ AddPlayer: { player_id } });
+    };
+    const addStatToPlayer = (
+        player_id: string,
+        stat_key: string,
+        stat_type: 'string' | 'number' | 'boolean',
+        stat_value: string
+    ) => emit({ AddStatToPlayer: { player_id, stat_key, stat_type, stat_value } });
+    const changeStatOfPlayer = (
+        player_id: string,
+        stat_id: string,
+        stat_type: 'string' | 'number' | 'boolean',
+        stat_value: string
+    ) => emit({ ChangeStatOfPlayer: { player_id, stat_id, stat_type, stat_value } });
+    const removeStatFromPlayer = (player_id: string, stat_id: string) =>
+        emit({ RemoveStatFromPlayer: { player_id, stat_id } });
+    const changePlayerOrder = (player_ids: string[]) => emit({ ChangePlayerOrder: player_ids });
+    const attachUserToPlayer = (user_id: string, player_id: string) =>
+        emit({ AttachUserToPlayer: { user_id, player_id } });
+    const detachUserFromPlayer = (player_id: string) =>
+        emit({ DetachUserFromPlayer: { player_id } });
+    const debug = (message: string) => emit({ Debug: message });
+
+    return {
+        setNotes,
+        setHiddenNotes,
+        addPlayer,
+        addStatToPlayer,
+        changeStatOfPlayer,
+        removeStatFromPlayer,
+        changePlayerOrder,
+        attachUserToPlayer,
+        detachUserFromPlayer,
+        debug,
+    };
 }

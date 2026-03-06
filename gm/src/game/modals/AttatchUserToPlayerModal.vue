@@ -29,9 +29,7 @@ const availableUsers = computed(() => {
 
 const attachUserToPlayer = () => {
     if (selectedUserId.value) {
-        eventEmitter.emit({
-            AttachUserToPlayer: { user_id: selectedUserId.value, player_id: props.playerId },
-        });
+        eventEmitter.attachUserToPlayer(selectedUserId.value, props.playerId);
         selectedUserId.value = null;
         emit('close');
     }

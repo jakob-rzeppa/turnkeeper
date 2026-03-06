@@ -20,12 +20,8 @@ const autosave = useAutosaveObject<{
         };
     },
     newObject => {
-        eventEmitter.emit({
-            SetNotes: newObject.notes,
-        });
-        eventEmitter.emit({
-            SetHiddenNotes: newObject.hiddenNotes,
-        });
+        eventEmitter.setNotes(newObject.notes);
+        eventEmitter.setHiddenNotes(newObject.hiddenNotes);
     }
 );
 </script>

@@ -41,14 +41,7 @@ export const usePlayerStatEditor = (player: Player) => {
         if (stat.valueType === 'number') parsedValue = parseFloat(editValueRaw.value) || 0;
         if (stat.valueType === 'boolean') parsedValue = editValueRaw.value === 'true';
 
-        eventEmitter.emit({
-            ChangeStatOfPlayer: {
-                player_id: player.id,
-                stat_id: stat.id,
-                stat_type: stat.valueType,
-                stat_value: parsedValue.toString(),
-            },
-        });
+        eventEmitter.changeStatOfPlayer(player.id, stat.id, stat.valueType, parsedValue.toString());
         cancelEditing();
     };
 
@@ -56,25 +49,13 @@ export const usePlayerStatEditor = (player: Player) => {
         if (stat.valueType !== 'boolean') return;
         if (!player) return;
 
-        eventEmitter.emit({
-            ChangeStatOfPlayer: {
-                player_id: player.id,
-                stat_id: stat.id,
-                stat_type: 'boolean',
-                stat_value: newValue.toString(),
-            },
-        });
+        eventEmitter.changeStatOfPlayer(player.id, stat.id, 'boolean', newValue.toString());
     };
 
     // --- Remove ---
     const removeStat = (stat: Stat) => {
         if (!player) return;
-        eventEmitter.emit({
-            RemoveStatFromPlayer: {
-                player_id: player.id,
-                stat_id: stat.id,
-            },
-        });
+        eventEmitter.removeStatFromPlayer(player.id, stat.id);
     };
 
     // --- Add stat ---
@@ -103,14 +84,7 @@ export const usePlayerStatEditor = (player: Player) => {
         if (newStatType.value === 'number') value = parseFloat(newStatValue.value) || 0;
         if (newStatType.value === 'boolean') value = newStatValue.value === 'true';
 
-        eventEmitter.emit({
-            AddStatToPlayer: {
-                player_id: player.id,
-                stat_key: trimmedKey,
-                stat_type: newStatType.value,
-                stat_value: value.toString(),
-            },
-        });
+        eventEmitter.addStatToPlayer(player.id, trimmedKey, newStatType.value, value.toString());
 
         newStatKey.value = '';
         newStatValue.value = '';
