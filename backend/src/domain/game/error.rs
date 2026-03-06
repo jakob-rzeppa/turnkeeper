@@ -61,9 +61,10 @@ pub enum GameErrorKind {
     DuplicateStatKey,
     GameAlreadyExists,
     GameSessionAlreadyExists,
+    GameHistoryInvalid,
     GameNotFound,
     PlayerNotFound,
-    PlayerWithSameNameAlreadyExists,
+    PlayerAlreadyExists,
     UserAlreadyAttachedToAnotherPlayer,
     UserNotInGame,
     RepositoryError,
@@ -86,7 +87,7 @@ impl GameErrorKind {
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),
             GameErrorKind::GameNotFound => "Game not found".to_string(),
             GameErrorKind::PlayerNotFound => "Player not found".to_string(),
-            GameErrorKind::PlayerWithSameNameAlreadyExists => "Player with same name already exists".to_string(),
+            GameErrorKind::PlayerAlreadyExists => "Player with same name already exists".to_string(),
             GameErrorKind::RepositoryError => "Unexpected repository error".to_string(),
             GameErrorKind::UserAlreadyConnected => "User already connected to this game".to_string(),
             GameErrorKind::UserNotInGame => "User not in game".to_string(),
@@ -97,6 +98,7 @@ impl GameErrorKind {
             GameErrorKind::InvalidConnectionToken => "Invalid or expired token for GM connection".to_string(),
             GameErrorKind::UserAlreadyAttachedToAnotherPlayer => "User is already attached to another player".to_string(),
             GameErrorKind::GameSessionAlreadyExists => "Game session already exists for this game".to_string(),
+            GameErrorKind::GameHistoryInvalid => "Game history is invalid".to_string(),
         }
     }
 }

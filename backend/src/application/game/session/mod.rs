@@ -26,7 +26,7 @@ use crate::application::game::contracts::{ConnectionContract, GameRepositoryCont
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::domain::game::entities::game::Game;
-use crate::domain::game::error::GameError;
+use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::gm_game_info::GmGameInfo;
 use crate::domain::game::projections::user_game_info::UserGameInfo;
@@ -76,7 +76,13 @@ where
     pub async fn try_new(game_id: Uuid, game_repository: Arc<GameRepository>) -> Result<Self, GameError> {
         let game_metadata = game_repository.get_metadata_by_id(game_id).await?;
 
-        let game = Game::new(game_metadata.id, game_metadata.name);
+        let mut game = Game::new(game_metadata.id, game_metadata.name);
+
+        // Apply all past events to reconstruct the current game state
+        let past_events = game_repository.get_game_history(game_id).await?;
+        for event in past_events {
+            game.handle_event(event).map_err(|e| GameError::with_source(GameErrorKind::GameHistoryInvalid, Box::new(e)))?;
+        }
 
         Ok(Self {
             game: Arc::new(RwLock::new(game)),
@@ -101,9 +107,9 @@ where
 
         if res.is_ok() {
             // Persist the game state only if the event was handled successfully
-            // if let Err(e) = self.game_repo.log_event(event).await {
-            //     eprintln!("Failed to save game state: {}", e);
-            // }
+            if let Err(e) = self.game_repo.log_event(*game_guard.id(), event).await {
+                eprintln!("Failed to save game state: {}", e);
+            }
         } else {
             // TODO: Revert the game state to the previous valid state if the event was rejected.
             // TODO: Send error to gm

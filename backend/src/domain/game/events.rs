@@ -20,7 +20,7 @@ pub enum GameEvent {
     SetHiddenNotes(String),
 
     // Player
-    AddPlayer,
+    AddPlayer { player_id: String },
     ChangePlayerOrder(Vec<String>),
     AddStatToPlayer { player_id: String, stat_key: String, stat_type: String, stat_value: String },
     ChangeStatOfPlayer { player_id: String, stat_id: String, stat_type: String, stat_value: String },

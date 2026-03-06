@@ -65,8 +65,12 @@ impl Game {
         &self.hidden_notes
     }
 
-    fn add_player(&mut self) -> Result<(), GameError> {
-        let player = Player::new(Uuid::new_v4());
+    fn add_player(&mut self, id: Uuid) -> Result<(), GameError> {
+        if self.players.iter().any(|p| p.id() == &id) {
+            return Err(GameError::new(GameErrorKind::PlayerAlreadyExists));
+        }
+
+        let player = Player::new(id);
         self.players.push(player);
         Ok(())
     }
@@ -202,7 +206,9 @@ impl Game {
                 self.set_hidden_notes(hidden_notes);
                 Ok(())
             },
-            GameEvent::AddPlayer => self.add_player(),
+            GameEvent::AddPlayer { player_id } => {
+                self.add_player(Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?)
+            },
             GameEvent::AddStatToPlayer { player_id, stat_key, stat_type, stat_value } => {
                 self.add_stat_to_player(
                     Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
@@ -250,13 +256,35 @@ impl Game {
 mod tests {
     use super::*;
 
+    mod add_player {
+        use super::*;
+
+        #[test]
+        fn test_add_player() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            let player_id = Uuid::new_v4();
+            assert!(game.add_player(player_id).is_ok());
+            assert_eq!(game.players().len(), 1);
+            assert_eq!(game.players().first().unwrap().id(), &player_id);
+        }
+
+        #[test]
+        fn test_add_duplicate_player() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            let player_id = Uuid::new_v4();
+            assert!(game.add_player(player_id).is_ok());
+            let result = game.add_player(player_id);
+            assert!(result.is_err());
+        }
+    }
+
     mod attach_detach_user {
         use super::*;
 
         #[test]
         fn test_attach_and_detach_user() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let player_id = *game.players().first().unwrap().id();
             let user_id = Uuid::new_v4();
@@ -277,8 +305,8 @@ mod tests {
         #[test]
         fn test_attach_user_already_attached() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let player1_id = *game.players().get(0).unwrap().id();
             let player2_id = *game.players().get(1).unwrap().id();
@@ -300,9 +328,9 @@ mod tests {
         #[test]
         fn test_change_player_order() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
-            game.add_player().unwrap();
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let player_ids: Vec<Uuid> = game.players.iter().map(|p| *p.id()).collect();
             let reversed_ids: Vec<Uuid> = player_ids.iter().rev().cloned().collect();
@@ -316,8 +344,8 @@ mod tests {
         #[test]
         fn test_change_player_order_with_invalid_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let invalid_ids = vec![Uuid::new_v4(), Uuid::new_v4()];
 
@@ -328,8 +356,8 @@ mod tests {
         #[test]
         fn test_change_player_order_with_duplicate_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let player_ids: Vec<Uuid> = game.players.iter().map(|p| *p.id()).collect();
             let duplicate_ids = vec![player_ids[0], player_ids[0]];
@@ -341,7 +369,7 @@ mod tests {
         #[test]
         fn test_change_player_order_with_too_many_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let too_many_ids = vec![Uuid::new_v4(), Uuid::new_v4()];
 
@@ -352,8 +380,8 @@ mod tests {
         #[test]
         fn test_change_player_order_with_too_few_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-            game.add_player().unwrap();
-            game.add_player().unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
+            game.add_player(Uuid::new_v4()).unwrap();
 
             let too_few_ids = vec![Uuid::new_v4()];
 

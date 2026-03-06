@@ -12,20 +12,27 @@ impl From<GameError> for HttpError {
             GameErrorKind::GameAlreadyExists => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameNotFound => HttpError::NotFound(e.to_string()),
             GameErrorKind::PlayerNotFound => HttpError::NotFound(e.to_string()),
-            GameErrorKind::PlayerWithSameNameAlreadyExists => HttpError::Conflict(e.to_string()),
+            GameErrorKind::PlayerAlreadyExists => HttpError::Conflict(e.to_string()),
             GameErrorKind::RepositoryError => {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },
             GameErrorKind::UserAlreadyConnected => HttpError::Conflict(e.to_string()),
             GameErrorKind::UserNotInGame => HttpError::BadRequest(e.to_string()),
-            GameErrorKind::GameSessionCreationFailed => HttpError::InternalServerError,
+            GameErrorKind::GameSessionCreationFailed => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
             GameErrorKind::GmAlreadyConnected => HttpError::Conflict(e.to_string()),
             GameErrorKind::InvalidPlayerOrder => HttpError::BadRequest(e.to_string()),
             GameErrorKind::NoPendingConnection => HttpError::Conflict(e.to_string()),
             GameErrorKind::InvalidConnectionToken => HttpError::Unauthorized(e.to_string()),
             GameErrorKind::UserAlreadyAttachedToAnotherPlayer => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameSessionAlreadyExists => HttpError::Conflict(e.to_string()),
+            GameErrorKind::GameHistoryInvalid => {
+                eprintln!("{}", e);
+                HttpError::InternalServerError
+            },
         }
     }
 }

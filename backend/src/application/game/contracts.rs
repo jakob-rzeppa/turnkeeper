@@ -64,7 +64,7 @@ pub trait GameRepositoryContract {
     /// Returns [`GameErrorKind::GameNotFound`] if no game exists with the given ID.
     fn get_metadata_by_id(&self, id: Uuid) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
     
-    /// Logs a game event for event sourcing.
+    /// Logs a game event.
     ///
     /// Events are appended to the game's event log and can be replayed later
     /// to reconstruct game state.
@@ -75,7 +75,7 @@ pub trait GameRepositoryContract {
     ///
     /// Events should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    fn log_event(&self, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn log_event(&self, game_id: Uuid, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
     
     /// Retrieves the complete event history for a game.
     ///
