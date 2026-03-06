@@ -60,6 +60,7 @@ pub enum GameErrorKind {
     StatNotFound,
     DuplicateStatKey,
     GameAlreadyExists,
+    GameSessionAlreadyExists,
     GameNotFound,
     PlayerNotFound,
     PlayerWithSameNameAlreadyExists,
@@ -95,6 +96,7 @@ impl GameErrorKind {
             GameErrorKind::NoPendingConnection => "No pending GM connection to upgrade".to_string(),
             GameErrorKind::InvalidConnectionToken => "Invalid or expired token for GM connection".to_string(),
             GameErrorKind::UserAlreadyAttachedToAnotherPlayer => "User is already attached to another player".to_string(),
+            GameErrorKind::GameSessionAlreadyExists => "Game session already exists for this game".to_string(),
         }
     }
 }

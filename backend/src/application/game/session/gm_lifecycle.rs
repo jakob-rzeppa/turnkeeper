@@ -77,12 +77,14 @@ where
         // The write lock must be scoped so it is released before handle_event,
         // which calls broadcast_game_state and re-acquires the lock.
         loop {
-            let msg = {
+            // Clone the Arc<Connection> so we can await recv() without holding the read lock
+            let conn = {
                 let guard = self.gm_connection.read().await;
-                let conn = guard.connection().expect("gm_conn is some");
-                conn.recv().await
+                guard.connection().expect("gm connection is some")
             };
-            // guard dropped — lock released
+            // Guard is dropped here, read lock released
+
+            let msg = conn.recv().await;
 
             match msg {
                 ConnectionMessageDto::Event(event) => self.handle_event(event).await,

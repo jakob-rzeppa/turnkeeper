@@ -18,7 +18,7 @@ use crate::infrastructure::websocket::gm_connection::{WebSocketConnection};
 /// Wraps a `HashMap` of game ID → [`GameSession`] behind an `Arc<RwLock<..>>`
 /// so it can be shared across Axum handlers.
 pub struct GameSessionManager {
-    sessions: Arc<RwLock<HashMap<Uuid, GameSession<WebSocketConnection, SqliteGameRepository>>>>
+    sessions: Arc<RwLock<HashMap<Uuid, Arc<GameSession<WebSocketConnection, SqliteGameRepository>>>>>
 }
 
 impl GameSessionManager {
@@ -29,7 +29,7 @@ impl GameSessionManager {
     }
 
     /// Returns an existing session for the given game, if one exists.
-    pub async fn get_session(&self, game_id: Uuid) -> Option<GameSession<WebSocketConnection, SqliteGameRepository>> {
+    pub async fn get_session(&self, game_id: Uuid) -> Option<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>> {
         let sessions = self.sessions.read().await;
         sessions.get(&game_id).cloned()
     }
@@ -40,7 +40,7 @@ impl GameSessionManager {
     ///
     /// Returns [`GameErrorKind::GameSessionCreationFailed`] if the game
     /// metadata cannot be loaded from the repository.
-    pub async fn get_or_create_session(&self, game_id: Uuid, app_state: AppState) -> Result<GameSession<WebSocketConnection, SqliteGameRepository>, GameError> {
+    pub async fn get_or_create_session(&self, game_id: Uuid, app_state: AppState) -> Result<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>, GameError> {
         if let Some(session) = self.get_session(game_id).await {
             return Ok(session);
         }
@@ -48,10 +48,10 @@ impl GameSessionManager {
         let mut sessions = self.sessions.write().await;
 
         if sessions.contains_key(&game_id) {
-            return Err(GameError::new(GameErrorKind::GameAlreadyExists));
+            return Err(GameError::new(GameErrorKind::GameSessionAlreadyExists));
         }
 
-        let session = GameSession::try_new(game_id, app_state.repository_manager.game()).await.map_err(|_| GameError::new(GameErrorKind::GameSessionCreationFailed))?;
+        let session = Arc::new(GameSession::try_new(game_id, app_state.repository_manager.game()).await?);
 
         sessions.insert(game_id, session.clone());
 

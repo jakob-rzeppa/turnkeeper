@@ -25,6 +25,7 @@ impl From<GameError> for HttpError {
             GameErrorKind::NoPendingConnection => HttpError::Conflict(e.to_string()),
             GameErrorKind::InvalidConnectionToken => HttpError::Unauthorized(e.to_string()),
             GameErrorKind::UserAlreadyAttachedToAnotherPlayer => HttpError::Conflict(e.to_string()),
+            GameErrorKind::GameSessionAlreadyExists => HttpError::Conflict(e.to_string()),
         }
     }
 }

@@ -2,6 +2,7 @@
 //!
 //! State machine for the GM WebSocket connection within a [`GameSession`](super::GameSession).
 
+use std::sync::Arc;
 use std::time::Instant;
 use crate::application::game::contracts::ConnectionContract;
 use crate::application::game::session::TICKET_TTL_SECS;
@@ -23,7 +24,7 @@ where
     },
     /// A GM WebSocket connection is active.
     Connected {
-        connection: Connection,
+        connection: Arc<Connection>,
     }
 }
 
@@ -31,10 +32,10 @@ impl<Connection> GmConnectionState<Connection>
 where
     Connection: ConnectionContract
 {
-    /// Returns a reference to the active connection, or `None`.
-    pub fn connection(&self) -> Option<&Connection> {
+    /// Returns a cloned Arc to the active connection, or `None`.
+    pub fn connection(&self) -> Option<Arc<Connection>> {
         if let GmConnectionState::Connected { connection } = self {
-            Some(connection)
+            Some(connection.clone())
         } else {
             None
         }
@@ -62,7 +63,7 @@ where
 
                     Err(GameError::new(GameErrorKind::InvalidConnectionToken))
                 } else {
-                    *self = GmConnectionState::Connected { connection };
+                    *self = GmConnectionState::Connected { connection: Arc::new(connection) };
 
                     Ok(())
                 }
