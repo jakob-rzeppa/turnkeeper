@@ -4,6 +4,7 @@
 //! via its `handle_event` method. Events are serialized as JSON over WebSocket.
 
 use serde::{Deserialize, Serialize};
+use uuid::Uuid;
 
 /// An event that mutates the game aggregate's state.
 ///
@@ -38,7 +39,7 @@ impl GameEvent {
     /// Currently only [`Debug`](GameEvent::Debug) is permitted for users.
     ///
     /// **Note:** This check is defined but not yet enforced in the session event loop.
-    pub fn is_user_permitted(&self) -> bool {
+    pub fn is_user_permitted(&self, user_id: Option<&Uuid>) -> bool {
         match self {
             GameEvent::Debug(_) => true,
             _ => false

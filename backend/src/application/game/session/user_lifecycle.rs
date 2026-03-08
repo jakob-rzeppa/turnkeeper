@@ -121,7 +121,9 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                ConnectionMessageDto::Event(event) => self.handle_event(event).await,
+                ConnectionMessageDto::Event(event) => {
+                    self.handle_event(event, Some(&user_id)).await
+                }
                 _ => break,
             }
         }

@@ -100,7 +100,15 @@ where
     ///
     /// Regardless of outcome the current game state is broadcast to all
     /// connected clients so they remain in sync.
-    async fn handle_event(&self, event: GameEvent) {
+    ///
+    /// If the event was triggered by a user action, the `user_id` of the triggering user is passed.
+    /// This is used to check if the user has permission to perform the action.
+    async fn handle_event(&self, event: GameEvent, user_id: Option<&Uuid>) {
+        if !event.is_user_permitted(user_id) {
+            eprintln!("User {:?} is not permitted to send event: {:?}", user_id, event);
+            return;
+        }
+
         let mut game_guard = self.game.write().await;
 
         let res = game_guard.handle_event(event.clone());
