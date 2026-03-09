@@ -17,6 +17,16 @@ pub struct UserOwnPlayerInfo {
     /// The linked user.
     pub user_id: String,
     pub stats: Vec<UserStatInfo>,
+    pub tradables: Vec<UserTradableInfo>,
+}
+
+
+/// Serializable tradable info within the user game info.
+#[derive(Serialize)]
+pub struct UserTradableInfo {
+    pub id: String,
+    pub name: String,
+    pub value: f64,
 }
 
 /// Serializable stat info within the gm game info.
@@ -63,6 +73,11 @@ impl UserGameInfo {
                         number_value: s.as_number(),
                         boolean_value: s.as_boolean(),
                     }).collect(),
+                    tradables: game.tradables().iter().map(|t| { UserTradableInfo {
+                        id: t.id().to_string(),
+                        name: t.name().to_string(),
+                        value: t.value_for_player(p.id().clone()).expect("there shall be no invalid state"),
+                    }}).collect(),
                 }
             });
 

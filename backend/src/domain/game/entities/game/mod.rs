@@ -1,12 +1,14 @@
 use std::str::FromStr;
 use uuid::Uuid;
 use crate::domain::game::entities::player::Player;
+use crate::domain::game::entities::tradable::Tradable;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
 
 mod player_events;
 mod notes_events;
 mod player_stat_events;
+mod tradables_events;
 
 /// The aggregate root representing a game.
 ///
@@ -14,12 +16,14 @@ mod player_stat_events;
 ///
 /// - No two players have the same ID
 /// - `current_player_index` does not exceed `players.len() - 1`
+/// - All players are represented in all tradable values (if a player is added, they should be added to all tradables with a default value, and if a player is removed, they should be removed from all tradables)
 #[derive(Debug, PartialEq)]
 pub struct Game {
     id: Uuid,
     name: String,
 
     players: Vec<Player>,
+    tradables: Vec<Tradable>,
 
     round_number: u32,
     current_player_index: usize,
@@ -34,6 +38,7 @@ impl Game {
             id,
             name,
             players: Vec::new(),
+            tradables: Vec::new(),
             round_number: 0,
             current_player_index: 0,
             notes: String::new(),
@@ -51,6 +56,10 @@ impl Game {
 
     pub fn players(&self) -> &[Player] {
         &self.players
+    }
+
+    pub fn tradables(&self) -> &[Tradable] {
+        &self.tradables
     }
 
     pub fn round_number(&self) -> u32 {
@@ -103,7 +112,29 @@ impl Game {
                     Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
                     Uuid::from_str(&stat_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
                 )
-            }
+            },
+            GameEvent::AddTradable { tradable_id, name, initial_value } => {
+                self.add_tradable(
+                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    name,
+                    initial_value)
+            },
+            GameEvent::RemoveTradable { tradable_id } => {
+                self.remove_tradable(Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?)
+            },
+            GameEvent::ChangePlayerTradableValue { player_id, tradable_id, new_value } => {
+                self.change_player_tradable_value(
+                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    new_value)
+            },
+            GameEvent::SendTradable {from_id, to_id, tradable_id, amount } => {
+                self.send_tradable(
+                    Uuid::from_str(&from_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    Uuid::from_str(&to_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    amount)
+            },
             GameEvent::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
                 Uuid::from_str(&user_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
                 Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,

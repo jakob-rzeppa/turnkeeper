@@ -74,6 +74,10 @@ pub enum GameErrorKind {
     NoPendingConnection,
     InvalidConnectionToken,
     InvalidPlayerOrder,
+    TradableAlreadyExists,
+    TradableNotFound,
+    TradablePlayerNotFound,
+    InsufficientTradableValue,
 }
 
 impl GameErrorKind {
@@ -99,6 +103,10 @@ impl GameErrorKind {
             GameErrorKind::UserAlreadyAttachedToAnotherPlayer => "User is already attached to another player".to_string(),
             GameErrorKind::GameSessionAlreadyExists => "Game session already exists for this game".to_string(),
             GameErrorKind::GameHistoryInvalid => "Game history is invalid".to_string(),
+            GameErrorKind::TradableAlreadyExists => "Tradable with same name already exists".to_string(),
+            GameErrorKind::TradableNotFound => "Tradable not found".to_string(),
+            GameErrorKind::TradablePlayerNotFound => "Player not found in tradable values".to_string(),
+            GameErrorKind::InsufficientTradableValue => "Player does not have enough value for this tradable".to_string(),
         }
     }
 }

@@ -33,6 +33,10 @@ impl From<GameError> for HttpError {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
             },
+            GameErrorKind::TradableAlreadyExists => HttpError::Conflict(e.to_string()),
+            GameErrorKind::TradableNotFound => HttpError::NotFound(e.to_string()),
+            GameErrorKind::TradablePlayerNotFound => HttpError::NotFound(e.to_string()),
+            GameErrorKind::InsufficientTradableValue => HttpError::BadRequest(e.to_string()),
         }
     }
 }

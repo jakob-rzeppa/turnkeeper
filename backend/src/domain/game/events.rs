@@ -23,9 +23,18 @@ pub enum GameEvent {
     // Player
     AddPlayer { player_id: String },
     ChangePlayerOrder(Vec<String>),
+
+    // Stats
     AddStatToPlayer { player_id: String, stat_key: String, stat_type: String, stat_value: String },
     ChangeStatOfPlayer { player_id: String, stat_id: String, stat_type: String, stat_value: String },
     RemoveStatFromPlayer { player_id: String, stat_id: String },
+
+    // Tradables
+    AddTradable { tradable_id: String, name: String, initial_value: f64 },
+    RemoveTradable { tradable_id: String },
+    ChangePlayerTradableValue { player_id: String, tradable_id: String, new_value: f64 },
+    SendTradable { from_id: String, to_id: String, tradable_id: String, amount: f64 },
+
     AttachUserToPlayer { player_id: String, user_id: String },
     DetachUserFromPlayer { player_id: String },
 
@@ -39,7 +48,7 @@ impl GameEvent {
     /// Currently only [`Debug`](GameEvent::Debug) is permitted for users.
     ///
     /// **Note:** This check is defined but not yet enforced in the session event loop.
-    pub fn is_user_permitted(&self, user_id: Option<&Uuid>) -> bool {
+    pub fn is_user_permitted(&self, _user_id: Option<&Uuid>) -> bool {
         match self {
             GameEvent::Debug(_) => true,
             _ => false

@@ -7,5 +7,6 @@
 //! - [`stat::Stat`] - Customizable statistics attached to players
 
 pub mod game;
-pub mod player;
-pub mod stat;
+mod player;
+mod stat;
+mod tradable;

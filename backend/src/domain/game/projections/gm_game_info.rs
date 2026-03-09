@@ -8,6 +8,15 @@ pub struct GmPlayerInfo {
     /// The linked user, if any. `None` for anonymous players.
     pub user_id: Option<String>,
     pub stats: Vec<GmStatInfo>,
+    pub tradables: Vec<GmTradableInfo>,
+}
+
+/// Serializable tradable info within the gm game info.
+#[derive(Serialize)]
+pub struct GmTradableInfo {
+    pub id: String,
+    pub name: String,
+    pub value: f64,
 }
 
 /// Serializable stat info within the gm game info.
@@ -52,6 +61,13 @@ impl From<&Game> for GmGameInfo {
                     string_value: s.as_string().map(|s| s.to_string()),
                     number_value: s.as_number(),
                     boolean_value: s.as_boolean(),
+                }).collect(),
+                tradables: game.tradables().iter().map(|t| {
+                    GmTradableInfo {
+                        id: t.id().to_string(),
+                        name: t.name().to_string(),
+                        value: t.value_for_player(p.id().clone()).expect("there shall never be an invalid state"),
+                    }
                 }).collect(),
             }).collect(),
             round_number: game.round_number(),

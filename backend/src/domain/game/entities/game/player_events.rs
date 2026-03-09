@@ -4,13 +4,23 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 use super::Game;
 
 impl Game {
+    /// Adds a new player to the game with the specified ID.
+    ///
+    /// # Invariants
+    ///
+    /// - The `id` must be unique among all players in the game.
+    /// - The new player should be added to all existing tradables with a default value.
     pub fn add_player(&mut self, id: Uuid) -> Result<(), GameError> {
         if self.players.iter().any(|p| p.id() == &id) {
             return Err(GameError::new(GameErrorKind::PlayerAlreadyExists));
         }
 
-        let player = Player::new(id);
+        let player = Player::new(id.clone());
         self.players.push(player);
+
+        // Update all tradables to include the new player with a default value
+        self.tradables.iter_mut().for_each(|t| t.add_player(id));
+
         Ok(())
     }
 
@@ -85,7 +95,7 @@ mod tests {
         use super::*;
 
         #[test]
-        pub fn test_add_player() {
+        fn test_add_player() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             let player_id = Uuid::new_v4();
             assert!(game.add_player(player_id).is_ok());
@@ -94,12 +104,32 @@ mod tests {
         }
 
         #[test]
-        pub fn test_add_duplicate_player() {
+        fn test_add_duplicate_player() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             let player_id = Uuid::new_v4();
             assert!(game.add_player(player_id).is_ok());
             let result = game.add_player(player_id);
             assert!(result.is_err());
+        }
+
+        #[test]
+        fn test_adding_player_updates_tradables() {
+            let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
+            let tradable_id1 = Uuid::new_v4();
+            let tradable_id2 = Uuid::new_v4();
+            game.add_tradable(tradable_id1, "Gold".to_string(), 100.0).unwrap();
+            game.add_tradable(tradable_id2, "Money".to_string(), 50.0).unwrap();
+
+            assert_eq!(game.tradables.len(), 2);
+
+            let player_id = Uuid::new_v4();
+            game.add_player(player_id).unwrap();
+
+            let tradable1 = &game.tradables[0];
+            assert_eq!(tradable1.values().get(&player_id.to_string()), Some(&100.0));
+
+            let tradable2 = &game.tradables[1];
+            assert_eq!(tradable2.values().get(&player_id.to_string()), Some(&50.0));
         }
     }
 
@@ -107,7 +137,7 @@ mod tests {
         use super::*;
 
         #[test]
-        pub fn test_attach_and_detach_user() {
+        fn test_attach_and_detach_user() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
 
@@ -128,7 +158,7 @@ mod tests {
         }
 
         #[test]
-        pub fn test_attach_user_already_attached() {
+        fn test_attach_user_already_attached() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
             game.add_player(Uuid::new_v4()).unwrap();
@@ -151,7 +181,7 @@ mod tests {
         use super::*;
 
         #[test]
-        pub fn test_change_player_order() {
+        fn test_change_player_order() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
             game.add_player(Uuid::new_v4()).unwrap();
@@ -167,7 +197,7 @@ mod tests {
         }
 
         #[test]
-        pub fn test_change_player_order_with_invalid_ids() {
+        fn test_change_player_order_with_invalid_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
             game.add_player(Uuid::new_v4()).unwrap();
@@ -179,7 +209,7 @@ mod tests {
         }
 
         #[test]
-        pub fn test_change_player_order_with_duplicate_ids() {
+        fn test_change_player_order_with_duplicate_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
             game.add_player(Uuid::new_v4()).unwrap();
@@ -192,7 +222,7 @@ mod tests {
         }
 
         #[test]
-        pub fn test_change_player_order_with_too_many_ids() {
+        fn test_change_player_order_with_too_many_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
 
@@ -203,7 +233,7 @@ mod tests {
         }
 
         #[test]
-        pub fn test_change_player_order_with_too_few_ids() {
+        fn test_change_player_order_with_too_few_ids() {
             let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
             game.add_player(Uuid::new_v4()).unwrap();
             game.add_player(Uuid::new_v4()).unwrap();
