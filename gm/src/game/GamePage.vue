@@ -5,11 +5,11 @@ import TestView2 from './TestView2.vue';
 import TestIcon1 from './TestIcon1.vue';
 import TestIcon2 from './TestIcon2.vue';
 import TabsPanel from '../common/tabs/TabsPanel.vue';
-import PlayerOrganisationView from './mainViews/PlayerOrganisationView.vue';
-import RoundOverview from './mainViews/RoundOverview.vue';
+import RoundOverview from './round/RoundOverview.vue';
 import NotesEditorSidebar from './notes/NotesEditorSidebar.vue';
 import NotesIcon from './notes/NotesIcon.vue';
 import TradablesView from './tradables/TradablesView.vue';
+import PlayerOrganisationView from './playerOrganisation/PlayerOrganisationView.vue';
 </script>
 
 <template>

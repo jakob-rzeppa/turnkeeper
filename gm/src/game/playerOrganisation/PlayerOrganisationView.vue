@@ -3,7 +3,7 @@ import { computed, ref, watch } from 'vue';
 import { useGameStore, type Player } from '../../game/gameStore';
 import { useEventEmitter } from '../../events/useEventEmitter';
 import { useModalStore } from '../../common/modal/modalStore';
-import AttatchUserToPlayerModal from '../modals/AttatchUserToPlayerModal.vue';
+import AttatchUserToPlayerModal from './AttatchUserToPlayerModal.vue';
 import { useUsersStore } from '../../users/usersStore';
 
 const eventEmitter = useEventEmitter();
