@@ -10,10 +10,17 @@ export type Stat = {
     booleanValue: boolean | null;
 };
 
+export type Tradable = {
+    id: string;
+    name: string;
+    value: number;
+};
+
 export type Player = {
     id: string;
     userId: string | null;
     stats: Stat[];
+    tradables: Tradable[];
 };
 
 export type Game = {

@@ -25,6 +25,10 @@ type GameEvent =
       }
     | { RemoveStatFromPlayer: { player_id: string; stat_id: string } }
     | { ChangePlayerOrder: string[] }
+    | { AddTradable: { tradable_id: string; name: string; initial_value: number } }
+    | { RemoveTradable: { tradable_id: string } }
+    | { ChangePlayerTradableValue: { player_id: string; tradable_id: string; new_value: number } }
+    | { SendTradable: { from_id: string; to_id: string; tradable_id: string; amount: number } }
     | { AttachUserToPlayer: { user_id: string; player_id: string } }
     | { DetachUserFromPlayer: { player_id: string } }
     | { Debug: string };
@@ -59,6 +63,15 @@ export function useEventEmitter() {
     const removeStatFromPlayer = (player_id: string, stat_id: string) =>
         emit({ RemoveStatFromPlayer: { player_id, stat_id } });
     const changePlayerOrder = (player_ids: string[]) => emit({ ChangePlayerOrder: player_ids });
+    const addTradable = (name: string, initial_value: number) => {
+        const tradable_id = crypto.randomUUID();
+        emit({ AddTradable: { tradable_id, name, initial_value } });
+    };
+    const removeTradable = (tradable_id: string) => emit({ RemoveTradable: { tradable_id } });
+    const changePlayerTradableValue = (player_id: string, tradable_id: string, new_value: number) =>
+        emit({ ChangePlayerTradableValue: { player_id, tradable_id, new_value } });
+    const sendTradable = (from_id: string, to_id: string, tradable_id: string, amount: number) =>
+        emit({ SendTradable: { from_id, to_id, tradable_id, amount } });
     const attachUserToPlayer = (user_id: string, player_id: string) =>
         emit({ AttachUserToPlayer: { user_id, player_id } });
     const detachUserFromPlayer = (player_id: string) =>
@@ -73,6 +86,10 @@ export function useEventEmitter() {
         changeStatOfPlayer,
         removeStatFromPlayer,
         changePlayerOrder,
+        addTradable,
+        removeTradable,
+        changePlayerTradableValue,
+        sendTradable,
         attachUserToPlayer,
         detachUserFromPlayer,
         debug,

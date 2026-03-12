@@ -1,5 +1,5 @@
 import { computed, ref } from 'vue';
-import { useGameStore, type Stat, type Player } from '../game/gameStore';
+import { useGameStore, type Stat, type Player, type Tradable } from '../game/gameStore';
 import { useAuthStore } from '../auth/authStore';
 import axios from 'axios';
 import { API_BASE_URL } from './httpApi';
@@ -12,7 +12,12 @@ type RawStat = {
     number_value: number | null;
     boolean_value: boolean | null;
 };
-type RawPlayer = { id: string; user_id: string | null; stats: RawStat[] };
+type RawTradable = {
+    id: string;
+    name: string;
+    value: number;
+};
+type RawPlayer = { id: string; user_id: string | null; stats: RawStat[]; tradables: RawTradable[] };
 type RawGame = {
     id: string;
     name: string;
@@ -76,6 +81,13 @@ export function useWsConnection() {
                                 stringValue: s.string_value,
                                 numberValue: s.number_value,
                                 booleanValue: s.boolean_value,
+                            })
+                        ),
+                        tradables: p.tradables.map(
+                            (t: RawTradable): Tradable => ({
+                                id: t.id,
+                                name: t.name,
+                                value: t.value,
                             })
                         ),
                     })

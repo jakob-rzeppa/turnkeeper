@@ -9,6 +9,7 @@ import PlayerOrganisationView from './mainViews/PlayerOrganisationView.vue';
 import RoundOverview from './mainViews/RoundOverview.vue';
 import NotesEditorSidebar from './notes/NotesEditorSidebar.vue';
 import NotesIcon from './notes/NotesIcon.vue';
+import TradablesView from './tradables/TradablesView.vue';
 </script>
 
 <template>
@@ -19,6 +20,7 @@ import NotesIcon from './notes/NotesIcon.vue';
         <TabsPanel
             :views="[
                 { name: 'Round Overview', component: RoundOverview },
+                { name: 'Tradables', component: TradablesView },
                 { name: 'Player Organisation', component: PlayerOrganisationView },
             ]"
         />
