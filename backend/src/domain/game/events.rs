@@ -46,9 +46,7 @@ impl GameEvent {
     /// Returns whether a user (non-GM) client is allowed to send this event.
     ///
     /// Currently only [`Debug`](GameEvent::Debug) is permitted for users.
-    ///
-    /// **Note:** This check is defined but not yet enforced in the session event loop.
-    pub fn is_user_permitted(&self, _user_id: Option<&Uuid>) -> bool {
+    pub fn is_user_permitted(&self, _user_id: &Uuid) -> bool {
         match self {
             GameEvent::Debug(_) => true,
             _ => false

@@ -76,7 +76,7 @@ where
     /// Accepts a user WebSocket connection and drives the session event loop.
     ///
     /// Validates the ticket, transitions to `Connected`, broadcasts the
-    /// current game state, then enters a receive loop identical to
+    /// current game state, then enters a loop to receive events identical to
     /// [`gm_connect`](Self::gm_connect). On disconnect the user entry is
     /// removed from the session.
     pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
@@ -122,7 +122,11 @@ where
 
             match msg {
                 ConnectionMessageDto::Event(event) => {
-                    self.handle_event(event, Some(&user_id)).await
+                    if event.is_user_permitted(&user_id) {
+                        self.handle_event(event, Some(&user_id)).await
+                    } else {
+                        eprintln!("User {} is not permitted to perform action: {:?}", user_id, event);
+                    }
                 }
                 _ => break,
             }
