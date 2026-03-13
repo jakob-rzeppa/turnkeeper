@@ -17,6 +17,12 @@ use uuid::Uuid;
 /// currently enforced** by the session event loop.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GameEvent {
+    // Turn / Round
+    NextTurn,
+    PreviousTurn,
+    SkipTurnToPlayer { player_id: String },
+
+    // Notes
     SetNotes(String),
     SetHiddenNotes(String),
 

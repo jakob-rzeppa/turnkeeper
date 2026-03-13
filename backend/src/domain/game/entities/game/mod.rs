@@ -9,6 +9,7 @@ mod player_events;
 mod notes_events;
 mod player_stat_events;
 mod tradables_events;
+mod turn_events;
 
 /// The aggregate root representing a game.
 ///
@@ -81,6 +82,13 @@ impl Game {
     /// Dispatches a [`GameEvent`] to the appropriate handler method.
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
         match event {
+            GameEvent::NextTurn => Ok(self.next_turn()),
+            GameEvent::PreviousTurn => Ok(self.prev_turn()),
+            GameEvent::SkipTurnToPlayer { player_id } => {
+                self.skip_turn_to_player(
+                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?
+                )
+            },
             GameEvent::SetNotes(notes) => {
                 self.set_notes(notes);
                 Ok(())
