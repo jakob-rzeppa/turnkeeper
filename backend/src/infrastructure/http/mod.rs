@@ -17,8 +17,8 @@ use axum::routing::{delete, get, post};
 use crate::AppState;
 use crate::infrastructure::auth::middleware::{gm_auth_middleware, user_auth_middleware};
 use crate::infrastructure::http::game::{games_create, games_delete, games_get};
-use crate::infrastructure::http::gm::login as login_gm;
-use crate::infrastructure::http::user::{list, login as login_user, register as register_user};
+use crate::infrastructure::http::gm::{list, login as login_gm};
+use crate::infrastructure::http::user::{login as login_user, register as register_user};
 
 /// Creates and configures the HTTP router with all API routes.
 ///
@@ -40,4 +40,5 @@ pub fn get_routes(state: AppState) -> Router<AppState> {
         .route("/user/register", post(register_user))
 
         .route("/user/games", get(games_get).route_layer(middleware::from_fn_with_state(state.clone(), user_auth_middleware)))
+        .route("/user/users", get(list).route_layer(middleware::from_fn_with_state(state.clone(), user_auth_middleware)))
 }

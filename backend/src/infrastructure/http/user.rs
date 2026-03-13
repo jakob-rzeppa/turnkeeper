@@ -4,7 +4,6 @@ use serde::{Serialize, Deserialize};
 use crate::{AppState};
 use crate::application::user::request_handlers::login::UserLoginRequestHandler;
 use crate::application::user::request_handlers::register::UserRegisterRequestHandler;
-use crate::application::user::request_handlers::user_list::UserListRequestHandler;
 use crate::application::user::requests::{UserLoginRequest, UserRegisterRequest};
 use crate::infrastructure::error::HttpError;
 
@@ -61,34 +60,5 @@ pub async fn register(State(state): State<AppState>, payload: RegisterHttpReques
 
     Ok(RegisterHttpResponse {
         token: result.token
-    })
-}
-
-#[derive(Serialize)]
-pub struct UserListHttpResponseUserListProjection {
-    id: String,
-    name: String,
-}
-
-#[derive(Serialize, JsonResponse)]
-pub struct UserListHttpResponse {
-    users: Vec<UserListHttpResponseUserListProjection>,
-}
-
-/// GET /gm/users
-///
-/// returns a list of all registered users
-pub async fn list(State(state): State<AppState>) -> Result<UserListHttpResponse, HttpError> {
-    let user_list_handler = UserListRequestHandler::new(
-        state.repository_manager.user(),
-    );
-
-    let result = user_list_handler.list().await?;
-
-    Ok(UserListHttpResponse {
-        users: result.into_iter().map(|user| UserListHttpResponseUserListProjection {
-            id: user.id.to_string(),
-            name: user.name,
-        }).collect()
     })
 }
