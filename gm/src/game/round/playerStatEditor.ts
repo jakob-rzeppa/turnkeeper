@@ -1,11 +1,11 @@
-import { ref } from 'vue';
+import { ref, type Ref } from 'vue';
 import { useEventEmitter } from '../../events/useEventEmitter';
 import { type Player, type Stat } from '../gameStore';
 
 /**
  * @param player The index of the player whose stats are being edited.
  */
-export const usePlayerStatEditor = (player: Player) => {
+export const usePlayerStatEditor = (player: Ref<Player>) => {
     const eventEmitter = useEventEmitter();
 
     const getStatValue = (stat: Stat): number | string | boolean => {
@@ -29,33 +29,38 @@ export const usePlayerStatEditor = (player: Player) => {
     };
 
     const saveEdit = () => {
-        const stat = player?.stats.find(s => s.id === editingStatId.value);
+        const stat = player.value?.stats.find(s => s.id === editingStatId.value);
         if (!stat) {
             cancelEditing();
             return;
         }
 
-        if (!player) return;
+        if (!player.value) return;
 
         let parsedValue: number | string | boolean = editValueRaw.value;
         if (stat.valueType === 'number') parsedValue = parseFloat(editValueRaw.value) || 0;
         if (stat.valueType === 'boolean') parsedValue = editValueRaw.value === 'true';
 
-        eventEmitter.changeStatOfPlayer(player.id, stat.id, stat.valueType, parsedValue.toString());
+        eventEmitter.changeStatOfPlayer(
+            player.value.id,
+            stat.id,
+            stat.valueType,
+            parsedValue.toString()
+        );
         cancelEditing();
     };
 
     const editBooleanStat = (stat: Stat, newValue: boolean) => {
         if (stat.valueType !== 'boolean') return;
-        if (!player) return;
+        if (!player.value) return;
 
-        eventEmitter.changeStatOfPlayer(player.id, stat.id, 'boolean', newValue.toString());
+        eventEmitter.changeStatOfPlayer(player.value.id, stat.id, 'boolean', newValue.toString());
     };
 
     // --- Remove ---
     const removeStat = (stat: Stat) => {
-        if (!player) return;
-        eventEmitter.removeStatFromPlayer(player.id, stat.id);
+        if (!player.value) return;
+        eventEmitter.removeStatFromPlayer(player.value.id, stat.id);
     };
 
     // --- Add stat ---
@@ -66,7 +71,7 @@ export const usePlayerStatEditor = (player: Player) => {
 
     const addStat = () => {
         addStatError.value = '';
-        if (!player) return;
+        if (!player.value) return;
 
         const trimmedKey = newStatKey.value.trim();
         if (!trimmedKey) {
@@ -74,7 +79,7 @@ export const usePlayerStatEditor = (player: Player) => {
             return;
         }
 
-        const duplicate = player.stats.some(s => s.key === trimmedKey);
+        const duplicate = player.value.stats.some(s => s.key === trimmedKey);
         if (duplicate) {
             addStatError.value = `A stat named "${trimmedKey}" already exists.`;
             return;
@@ -84,7 +89,12 @@ export const usePlayerStatEditor = (player: Player) => {
         if (newStatType.value === 'number') value = parseFloat(newStatValue.value) || 0;
         if (newStatType.value === 'boolean') value = newStatValue.value === 'true';
 
-        eventEmitter.addStatToPlayer(player.id, trimmedKey, newStatType.value, value.toString());
+        eventEmitter.addStatToPlayer(
+            player.value.id,
+            trimmedKey,
+            newStatType.value,
+            value.toString()
+        );
 
         newStatKey.value = '';
         newStatValue.value = '';

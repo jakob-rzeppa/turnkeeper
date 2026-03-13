@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { toRef } from 'vue';
 import { type Player } from '../gameStore';
 import { usePlayerStatEditor } from './playerStatEditor';
 
@@ -6,7 +7,7 @@ const props = defineProps<{
     player: Player;
 }>();
 
-const playerStatEditor = usePlayerStatEditor(props.player);
+const playerStatEditor = usePlayerStatEditor(toRef(props, 'player'));
 
 const typeBadgeClass = (type: string) => {
     switch (type) {

@@ -4,6 +4,9 @@ import { useWsConnection } from '../api/useWsConnection';
  * Game events matching the Rust GameEvent enum.
  */
 type GameEvent =
+    | 'NextTurn'
+    | 'PreviousTurn'
+    | { SkipTurnToPlayer: { player_id: string } }
     | { SetNotes: string }
     | { SetHiddenNotes: string }
     | { AddPlayer: { player_id: string } }
@@ -42,6 +45,9 @@ export function useEventEmitter() {
         wsConnection.send(payload);
     };
 
+    const nextTurn = () => emit('NextTurn');
+    const previousTurn = () => emit('PreviousTurn');
+    const skipTurnToPlayer = (player_id: string) => emit({ SkipTurnToPlayer: { player_id } });
     const setNotes = (notes: string) => emit({ SetNotes: notes });
     const setHiddenNotes = (notes: string) => emit({ SetHiddenNotes: notes });
     const addPlayer = () => {
@@ -79,6 +85,9 @@ export function useEventEmitter() {
     const debug = (message: string) => emit({ Debug: message });
 
     return {
+        nextTurn,
+        previousTurn,
+        skipTurnToPlayer,
         setNotes,
         setHiddenNotes,
         addPlayer,
