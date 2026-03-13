@@ -2,7 +2,8 @@
 import { computed } from 'vue';
 import { useGameStore } from '../gameStore';
 import { useUsersStore } from '../../users/usersStore';
-import PlayerStatsEditor from '../stats/PlayerStatsEditor.vue';
+import PlayerStatsEditor from './PlayerStatsEditor.vue';
+import PlayerTradablesEditor from './PlayerTradablesEditor.vue';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
@@ -31,6 +32,9 @@ const currentPlayerName = computed(() => {
         </div>
 
         <h2 class="text-xl font-semibold mt-4">Edit current player stats</h2>
+        <div class="divider">Tradables</div>
+        <PlayerTradablesEditor v-if="currentPlayer" :player="currentPlayer" />
+        <div class="divider">Stats</div>
         <PlayerStatsEditor v-if="currentPlayer" :player="currentPlayer" />
     </div>
 </template>

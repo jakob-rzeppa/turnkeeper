@@ -2,6 +2,7 @@ import { defineStore } from 'pinia';
 import { computed, ref, type ComputedRef } from 'vue';
 import { useAuthStore } from '../auth/authStore';
 import { API_BASE_URL } from '../api/httpApi';
+import { useGameStore } from '../game/gameStore';
 
 export type User = {
     id: string;
@@ -10,6 +11,7 @@ export type User = {
 
 export const useUsersStore = defineStore('users', () => {
     const authStore = useAuthStore();
+    const gameStore = useGameStore();
 
     const users = ref<User[]>([]);
 
@@ -36,5 +38,18 @@ export const useUsersStore = defineStore('users', () => {
         return computed(() => users.value.find(user => user.id === id));
     };
 
-    return { users, loadUsers, getById };
+    const getPlayerName = (playerId: string | null) => {
+        if (!playerId) {
+            return 'Unknown Player';
+        }
+
+        const player = gameStore.game?.players.find(p => p.id === playerId);
+        if (!player || !player.userId) {
+            return 'Unknown Player';
+        }
+
+        return getById(player.userId).value?.name || 'Unknown Player';
+    };
+
+    return { users, loadUsers, getById, getPlayerName };
 });

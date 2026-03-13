@@ -14,13 +14,6 @@ const modalStore = useModalStore();
 // Helper to get player names
 const usersStore = useUsersStore();
 
-const getPlayerName = (playerId: string | null) => {
-    if (!playerId) {
-        return 'Unknown Player';
-    }
-    return usersStore.getById(playerId).value?.name || 'Unknown Player';
-};
-
 // State for current tradable selection
 const currentTradableIndex = ref(0);
 
@@ -132,7 +125,7 @@ const sendTradableFromPlayerToPlayer = () => {
                                             v-for="player in gameStore.game?.players || []"
                                             :key="player.id"
                                         >
-                                            <td>{{ getPlayerName(player.userId) }}</td>
+                                            <td>{{ usersStore.getPlayerName(player.userId) }}</td>
                                             <td class="text-right">
                                                 <input
                                                     type="number"
@@ -177,7 +170,7 @@ const sendTradableFromPlayerToPlayer = () => {
                                             :key="player.id"
                                             :value="player.id"
                                         >
-                                            {{ getPlayerName(player.userId) }}
+                                            {{ usersStore.getPlayerName(player.userId) }}
                                         </option>
                                     </select>
                                 </label>
@@ -190,7 +183,7 @@ const sendTradableFromPlayerToPlayer = () => {
                                             :key="player.id"
                                             :value="player.id"
                                         >
-                                            {{ getPlayerName(player.userId) }}
+                                            {{ usersStore.getPlayerName(player.userId) }}
                                         </option>
                                     </select>
                                 </label>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
-import { usePlayerStatEditor } from './playerStatEditor';
 import { type Player } from '../gameStore';
+import { usePlayerStatEditor } from './playerStatEditor';
 
 const props = defineProps<{
     player: Player;
@@ -21,7 +21,7 @@ const typeBadgeClass = (type: string) => {
 </script>
 
 <template>
-    <div class="w-full h-full p-4 overflow-y-auto flex flex-col gap-4">
+    <div class="flex flex-col gap-4">
         <!-- No player -->
         <div v-if="!props.player" class="text-base-content/40 text-sm italic">
             No active player.
