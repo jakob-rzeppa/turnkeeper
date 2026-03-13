@@ -57,8 +57,8 @@ onBeforeUnmount(() => {
 </script>
 
 <template>
-    <div :class="['w-full h-full', props.class]">
-        <div role="tablist" class="tabs tabs-lift w-full bg-base-300">
+    <div :class="['w-full h-screen', props.class]">
+        <div role="tablist" class="tabs tabs-lift w-full h-full bg-base-300">
             <template v-for="view in props.views" :key="view.name">
                 <div
                     role="tab"
@@ -69,7 +69,7 @@ onBeforeUnmount(() => {
                     {{ view.name }}
                 </div>
                 <div
-                    class="tab-content bg-base-100 p-4 border-0 border-t border-base-300 rounded-none"
+                    class="tab-content bg-base-100 p-4 border-0 border-t border-base-300 rounded-none overflow-scroll"
                 >
                     <component :is="view.component" />
                 </div>
