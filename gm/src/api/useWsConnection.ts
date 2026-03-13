@@ -69,6 +69,7 @@ export function useWsConnection() {
             wsUrl = response.data.url;
         } catch (err) {
             console.error('Failed to obtain WebSocket ticket:', err);
+            removeGameIdFromUrl();
             return;
         }
 
