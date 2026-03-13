@@ -56,7 +56,7 @@ impl Display for GameError {
 pub enum GameErrorKind {
     InvalidUuid,
     EmptyStatKey,
-    InvalidStat,
+    InvalidStat(String),
     StatNotFound,
     DuplicateStatKey,
     GameAlreadyExists,
@@ -85,7 +85,7 @@ impl GameErrorKind {
         match self {
             GameErrorKind::InvalidUuid => "Invalid UUID format".to_string(),
             GameErrorKind::EmptyStatKey => "StatKey is empty".to_string(),
-            GameErrorKind::InvalidStat => "Invalid stat".to_string(),
+            GameErrorKind::InvalidStat(msg) => format!("Invalid stat: {}", msg),
             GameErrorKind::StatNotFound => "Stat not found".to_string(),
             GameErrorKind::DuplicateStatKey => "Duplicate stat key".to_string(),
             GameErrorKind::GameAlreadyExists => "Game already exists".to_string(),

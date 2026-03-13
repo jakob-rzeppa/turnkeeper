@@ -6,7 +6,7 @@ impl From<GameError> for HttpError {
         match e.kind {
             GameErrorKind::InvalidUuid => HttpError::BadRequest(e.to_string()),
             GameErrorKind::EmptyStatKey => HttpError::BadRequest(e.to_string()),
-            GameErrorKind::InvalidStat => HttpError::BadRequest(e.to_string()),
+            GameErrorKind::InvalidStat(_) => HttpError::BadRequest(e.to_string()),
             GameErrorKind::StatNotFound => HttpError::NotFound(e.to_string()),
             GameErrorKind::DuplicateStatKey => HttpError::Conflict(e.to_string()),
             GameErrorKind::GameAlreadyExists => HttpError::Conflict(e.to_string()),

@@ -77,28 +77,28 @@ impl Player {
 
     pub fn change_stat_string(&mut self, stat_id: &Uuid, new_value: String) -> Result<(), GameError> {
         let stat = self.stats.iter_mut().find(|s| s.id() == stat_id)
-            .ok_or_else(|| GameError::new(GameErrorKind::InvalidStat))?;
+            .ok_or_else(|| GameError::new(GameErrorKind::StatNotFound))?;
         stat.change_value_string(new_value)?;
         Ok(())
     }
 
     pub fn change_stat_number(&mut self, stat_id: &Uuid, new_value: f64) -> Result<(), GameError> {
         let stat = self.stats.iter_mut().find(|s| s.id() == stat_id)
-            .ok_or_else(|| GameError::new(GameErrorKind::InvalidStat))?;
+            .ok_or_else(|| GameError::new(GameErrorKind::StatNotFound))?;
         stat.change_value_number(new_value)?;
         Ok(())
     }
 
     pub fn change_stat_bool(&mut self, stat_id: &Uuid, new_value: bool) -> Result<(), GameError> {
         let stat = self.stats.iter_mut().find(|s| s.id() == stat_id)
-            .ok_or_else(|| GameError::new(GameErrorKind::InvalidStat))?;
+            .ok_or_else(|| GameError::new(GameErrorKind::StatNotFound))?;
         stat.change_value_boolean(new_value)?;
         Ok(())
     }
 
     pub fn remove_stat(&mut self, stat_id: &Uuid) -> Result<(), GameError> {
         let index = self.stats.iter().position(|s| s.id() == stat_id)
-            .ok_or_else(|| GameError::new(GameErrorKind::InvalidStat))?;
+            .ok_or_else(|| GameError::new(GameErrorKind::StatNotFound))?;
         self.stats.remove(index);
         Ok(())
     }

@@ -13,6 +13,7 @@ type GameEvent =
     | {
           AddStatToPlayer: {
               player_id: string;
+              stat_id: string;
               stat_key: string;
               stat_type: 'string' | 'number' | 'boolean';
               stat_value: string;
@@ -59,7 +60,10 @@ export function useEventEmitter() {
         stat_key: string,
         stat_type: 'string' | 'number' | 'boolean',
         stat_value: string
-    ) => emit({ AddStatToPlayer: { player_id, stat_key, stat_type, stat_value } });
+    ) => {
+        const stat_id = crypto.randomUUID();
+        emit({ AddStatToPlayer: { player_id, stat_id, stat_key, stat_type, stat_value } });
+    };
     const changeStatOfPlayer = (
         player_id: string,
         stat_id: string,

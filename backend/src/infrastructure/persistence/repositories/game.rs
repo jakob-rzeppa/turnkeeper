@@ -286,6 +286,7 @@ mod test {
 
         let event4 = GameEvent::AddStatToPlayer {
             player_id: Uuid::new_v4().to_string(),
+            stat_id: Uuid::new_v4().to_string(),
             stat_key: "Strength".to_string(),
             stat_type: "number".to_string(),
             stat_value: "10".to_string(),

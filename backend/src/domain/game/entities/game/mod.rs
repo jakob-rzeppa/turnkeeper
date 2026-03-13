@@ -81,6 +81,7 @@ impl Game {
 
     /// Dispatches a [`GameEvent`] to the appropriate handler method.
     pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
+        println!("Handling event: {:?}", event);
         match event {
             GameEvent::NextTurn => Ok(self.next_turn()),
             GameEvent::PreviousTurn => Ok(self.prev_turn()),
@@ -100,9 +101,10 @@ impl Game {
             GameEvent::AddPlayer { player_id } => {
                 self.add_player(Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?)
             },
-            GameEvent::AddStatToPlayer { player_id, stat_key, stat_type, stat_value } => {
+            GameEvent::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => {
                 self.add_stat_to_player(
                     Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    Uuid::from_str(&stat_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
                     stat_key,
                     stat_type,
                     stat_value)

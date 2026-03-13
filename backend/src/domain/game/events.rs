@@ -31,7 +31,7 @@ pub enum GameEvent {
     ChangePlayerOrder(Vec<String>),
 
     // Stats
-    AddStatToPlayer { player_id: String, stat_key: String, stat_type: String, stat_value: String },
+    AddStatToPlayer { player_id: String, stat_id: String, stat_key: String, stat_type: String, stat_value: String },
     ChangeStatOfPlayer { player_id: String, stat_id: String, stat_type: String, stat_value: String },
     RemoveStatFromPlayer { player_id: String, stat_id: String },
 
