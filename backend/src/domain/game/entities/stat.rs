@@ -2,8 +2,8 @@
 //!
 //! Represents customizable stats attached to players in a game.
 
-use uuid::Uuid;
-use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::error::{GameError};
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::game::value_objects::stat_key::StatKey;
 use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberStatValue, StringStatValue};
 
@@ -20,7 +20,7 @@ use crate::domain::game::value_objects::stat_value::{BooleanStatValue, NumberSta
 /// - [`Stat::try_new_bool_stat`]
 #[derive(Debug, Clone, PartialEq)]
 pub struct Stat {
-    id: Uuid,
+    id: Id,
     key: StatKey,
     kind: StatKind,
 }
@@ -39,7 +39,7 @@ enum StatKind {
 }
 
 impl Stat {
-    pub fn id(&self) -> &Uuid {
+    pub fn id(&self) -> &Id {
         &self.id
     }
     pub fn key(&self) -> &StatKey {
@@ -75,7 +75,7 @@ impl Stat {
         }
     }
 
-    pub fn try_new_string_stat(id: Uuid, key: String, value: String) -> Result<Self, GameError> {
+    pub fn try_new_string_stat(id: Id, key: String, value: String) -> Result<Self, GameError> {
         let key = StatKey::try_new(key)?;
         let value = StringStatValue::new(value);
 
@@ -86,7 +86,7 @@ impl Stat {
         })
     }
 
-    pub fn try_new_number_stat(id: Uuid, key: String, value: f64) -> Result<Self, GameError> {
+    pub fn try_new_number_stat(id: Id, key: String, value: f64) -> Result<Self, GameError> {
         let key = StatKey::try_new(key)?;
         let value = NumberStatValue::new(value);
 
@@ -97,7 +97,7 @@ impl Stat {
         })
     }
 
-    pub fn try_new_bool_stat(id: Uuid, key: String, value: bool) -> Result<Self, GameError> {
+    pub fn try_new_bool_stat(id: Id, key: String, value: bool) -> Result<Self, GameError> {
         let key = StatKey::try_new(key)?;
         let value = BooleanStatValue::new(value);
 

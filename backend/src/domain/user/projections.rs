@@ -1,8 +1,8 @@
-use uuid::Uuid;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::entities::User;
 
 pub struct UserListProjection {
-    pub id: Uuid,
+    pub id: Id,
     pub name: String,
 }
 

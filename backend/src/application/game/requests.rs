@@ -2,12 +2,12 @@
 //!
 //! Request DTOs for game-related operations.
 
-use uuid::Uuid;
+use crate::domain::game::value_objects::id::Id;
 
 pub struct CreateGameRequest {
     pub name: String,
 }
 
 pub struct DeleteGameRequest {
-    pub id: Uuid,
+    pub id: Id,
 }

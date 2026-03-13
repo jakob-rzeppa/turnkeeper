@@ -2,11 +2,11 @@
 //!
 //! Defines traits (contracts) for game-related infrastructure dependencies.
 
-use uuid::Uuid;
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::error::GameError;
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::game_metadata::GameMetadata;
+use crate::domain::game::value_objects::id::Id;
 
 /// Repository contract for game data persistence and event sourcing.
 ///
@@ -39,7 +39,7 @@ pub trait GameRepositoryContract {
     /// - A game with the same Name already exists
     /// - Database connection fails
     /// - Constraint violations occur
-    fn create(&self, id: Uuid, name: String) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn create(&self, id: Id, name: String) -> impl Future<Output = Result<(), GameError>> + Send;
     
     /// Retrieves metadata for all games.
     ///
@@ -62,7 +62,7 @@ pub trait GameRepositoryContract {
     /// # Errors
     ///
     /// Returns [`GameErrorKind::GameNotFound`] if no game exists with the given ID.
-    fn get_metadata_by_id(&self, id: Uuid) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
+    fn get_metadata_by_id(&self, id: Id) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
     
     /// Logs a game event.
     ///
@@ -75,7 +75,7 @@ pub trait GameRepositoryContract {
     ///
     /// Events should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    fn log_event(&self, game_id: Uuid, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn log_event(&self, game_id: Id, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
     
     /// Retrieves the complete event history for a game.
     ///
@@ -86,7 +86,7 @@ pub trait GameRepositoryContract {
     ///
     /// * `Ok(Vec<GameEvent>)` - Ordered list of all game events (may be empty for new games)
     /// * `Err(GameError)` - Game not found or database error
-    fn get_game_history(&self, id: Uuid) -> impl Future<Output = Result<Vec<GameEvent>, GameError>> + Send;
+    fn get_game_history(&self, id: Id) -> impl Future<Output = Result<Vec<GameEvent>, GameError>> + Send;
     
     /// Deletes a game and all associated data.
     ///
@@ -99,7 +99,7 @@ pub trait GameRepositoryContract {
     /// # Important
     ///
     /// Ensure the game is not active (no WebSocket connections) before deletion.
-    fn delete(&self, game_id: Uuid) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn delete(&self, game_id: Id) -> impl Future<Output = Result<(), GameError>> + Send;
 }
 
 /// Contract for a bidirectional WebSocket connection.

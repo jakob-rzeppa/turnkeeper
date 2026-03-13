@@ -6,10 +6,10 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 use crate::application::game::session::GameSession;
 use crate::AppState;
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::value_objects::id::Id;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
 use crate::infrastructure::websocket::gm_connection::{WebSocketConnection};
 
@@ -18,7 +18,7 @@ use crate::infrastructure::websocket::gm_connection::{WebSocketConnection};
 /// Wraps a `HashMap` of game ID → [`GameSession`] behind an `Arc<RwLock<..>>`
 /// so it can be shared across Axum handlers.
 pub struct GameSessionManager {
-    sessions: Arc<RwLock<HashMap<Uuid, Arc<GameSession<WebSocketConnection, SqliteGameRepository>>>>>
+    sessions: Arc<RwLock<HashMap<Id, Arc<GameSession<WebSocketConnection, SqliteGameRepository>>>>>
 }
 
 impl GameSessionManager {
@@ -29,7 +29,7 @@ impl GameSessionManager {
     }
 
     /// Returns an existing session for the given game, if one exists.
-    pub async fn get_session(&self, game_id: Uuid) -> Option<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>> {
+    pub async fn get_session(&self, game_id: Id) -> Option<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>> {
         let sessions = self.sessions.read().await;
         sessions.get(&game_id).cloned()
     }
@@ -40,7 +40,7 @@ impl GameSessionManager {
     ///
     /// Returns [`GameErrorKind::GameSessionCreationFailed`] if the game
     /// metadata cannot be loaded from the repository.
-    pub async fn get_or_create_session(&self, game_id: Uuid, app_state: AppState) -> Result<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>, GameError> {
+    pub async fn get_or_create_session(&self, game_id: Id, app_state: AppState) -> Result<Arc<GameSession<WebSocketConnection, SqliteGameRepository>>, GameError> {
         if let Some(session) = self.get_session(game_id).await {
             return Ok(session);
         }

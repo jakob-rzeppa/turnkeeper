@@ -42,10 +42,10 @@ where
 #[cfg(test)]
 mod tests {
     use mockall::predicate;
-    use uuid::Uuid;
     use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
+    use crate::domain::game::value_objects::id::Id;
     use crate::domain::user::error::{UserError, UserErrorKind};
 
     #[tokio::test]
@@ -53,7 +53,7 @@ mod tests {
         let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockUserJwtValidatorContract::new();
 
-        let user_id = Uuid::new_v4();
+        let user_id = Id::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
@@ -105,7 +105,7 @@ mod tests {
         let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockUserJwtValidatorContract::new();
 
-        let user_id = Uuid::new_v4();
+        let user_id = Id::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };

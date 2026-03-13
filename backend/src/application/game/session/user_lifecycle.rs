@@ -10,12 +10,12 @@
 use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::application::game::session::{GameSession, TICKET_TTL_SECS};
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::entities::User;
 
 impl<Connection, GameRepository> GameSession<Connection, GameRepository>
@@ -47,7 +47,7 @@ where
             // Only allow a new pending connection if there is currently no active or pending connection
             match *user_connection_guard {
                 UserConnectionState::None => {
-                    let ticket = Uuid::new_v4().to_string();
+                    let ticket = Id::new().to_string();
                     *user_connection_guard = UserConnectionState::Pending {
                         ticket: ticket.clone(),
                         ticket_created_at: Instant::now(),
@@ -59,7 +59,7 @@ where
                 UserConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::UserAlreadyConnected)),
             }
         } else {
-            let ticket = Uuid::new_v4().to_string();
+            let ticket = Id::new().to_string();
             let user_connection_state = UserConnectionState::Pending {
                 ticket: ticket.clone(),
                 ticket_created_at: Instant::now(),
@@ -79,7 +79,7 @@ where
     /// current game state, then enters a loop to receive events identical to
     /// [`gm_connect`](Self::gm_connect). On disconnect the user entry is
     /// removed from the session.
-    pub async fn user_connect(&self, user_id: Uuid, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
+    pub async fn user_connect(&self, user_id: Id, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
         let user_connections_guard = self.user_connections.read().await;
 
         let user_connection = match user_connections_guard.get(&user_id) {

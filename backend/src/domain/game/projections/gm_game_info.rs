@@ -1,12 +1,13 @@
 use serde::Serialize;
 use crate::domain::game::entities::game::Game;
+use crate::domain::game::value_objects::id::Id;
 
 /// Serializable player info within the gm game info.
 #[derive(Serialize)]
 pub struct GmPlayerInfo {
-    pub id: String,
+    pub id: Id,
     /// The linked user, if any. `None` for anonymous players.
-    pub user_id: Option<String>,
+    pub user_id: Option<Id>,
     pub stats: Vec<GmStatInfo>,
     pub tradables: Vec<GmTradableInfo>,
 }
@@ -14,7 +15,7 @@ pub struct GmPlayerInfo {
 /// Serializable tradable info within the gm game info.
 #[derive(Serialize)]
 pub struct GmTradableInfo {
-    pub id: String,
+    pub id: Id,
     pub name: String,
     pub value: f64,
 }
@@ -22,7 +23,7 @@ pub struct GmTradableInfo {
 /// Serializable stat info within the gm game info.
 #[derive(Serialize)]
 pub struct GmStatInfo {
-    pub id: String,
+    pub id: Id,
     pub key: String,
     /// The type discriminator: `"string"`, `"number"`, or `"boolean"`.
     pub value_type: String,
@@ -34,7 +35,7 @@ pub struct GmStatInfo {
 /// Full serializable game info send to the gm over WebSocket.
 #[derive(Serialize)]
 pub struct GmGameInfo {
-    pub id: String,
+    pub id: Id,
     pub name: String,
 
     pub players: Vec<GmPlayerInfo>,
@@ -49,13 +50,13 @@ pub struct GmGameInfo {
 impl From<&Game> for GmGameInfo {
     fn from(game: &Game) -> Self {
         Self {
-            id: game.id().to_string(),
+            id: *game.id(),
             name: game.name().to_string(),
             players: game.players().iter().map(|p| GmPlayerInfo {
-                id: p.id().to_string(),
-                user_id: p.user_id().map(|u| u.to_string()),
+                id: *p.id(),
+                user_id: p.user_id(),
                 stats: p.stats().iter().map(|s| GmStatInfo {
-                    id: s.id().to_string(),
+                    id: *s.id(),
                     key: s.key().as_str().to_string(),
                     value_type: s.kind_str().to_string(),
                     string_value: s.as_string().map(|s| s.to_string()),
@@ -64,7 +65,7 @@ impl From<&Game> for GmGameInfo {
                 }).collect(),
                 tradables: game.tradables().iter().map(|t| {
                     GmTradableInfo {
-                        id: t.id().to_string(),
+                        id: *t.id(),
                         name: t.name().to_string(),
                         value: t.value_for_player(p.id().clone()).expect("there shall never be an invalid state"),
                     }

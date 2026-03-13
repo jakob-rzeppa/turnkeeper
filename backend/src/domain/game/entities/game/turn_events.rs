@@ -1,5 +1,5 @@
-use uuid::Uuid;
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::value_objects::id::Id;
 use super::Game;
 
 impl Game {
@@ -30,7 +30,7 @@ impl Game {
         }
     }
 
-    pub fn skip_turn_to_player(&mut self, player_id: Uuid) -> Result<(), GameError> {
+    pub fn skip_turn_to_player(&mut self, player_id: Id) -> Result<(), GameError> {
         let new_index = self.players.iter().position(|p| p.id() == &player_id)
             .ok_or_else(|| GameError::new(GameErrorKind::PlayerNotFound))?;
 
@@ -50,12 +50,12 @@ mod tests {
 
     #[test]
     fn text_next_turn() {
-        let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-        let player_id_1 = Uuid::new_v4();
+        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
-        let player_id_2 = Uuid::new_v4();
+        let player_id_2 = Id::new();
         game.add_player(player_id_2).unwrap();
-        let player_id_3 = Uuid::new_v4();
+        let player_id_3 = Id::new();
         game.add_player(player_id_3).unwrap();
 
         assert_eq!(game.round_number, 0);
@@ -79,12 +79,12 @@ mod tests {
 
     #[test]
     fn text_prev_turn() {
-        let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-        let player_id_1 = Uuid::new_v4();
+        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
-        let player_id_2 = Uuid::new_v4();
+        let player_id_2 = Id::new();
         game.add_player(player_id_2).unwrap();
-        let player_id_3 = Uuid::new_v4();
+        let player_id_3 = Id::new();
         game.add_player(player_id_3).unwrap();
 
         game.next_turn();
@@ -124,12 +124,12 @@ mod tests {
 
     #[test]
     fn text_skip_turn() {
-        let mut game = Game::new(Uuid::new_v4(), "test-game".to_string());
-        let player_id_1 = Uuid::new_v4();
+        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
-        let player_id_2 = Uuid::new_v4();
+        let player_id_2 = Id::new();
         game.add_player(player_id_2).unwrap();
-        let player_id_3 = Uuid::new_v4();
+        let player_id_3 = Id::new();
         game.add_player(player_id_3).unwrap();
 
         assert_eq!(game.round_number, 0);

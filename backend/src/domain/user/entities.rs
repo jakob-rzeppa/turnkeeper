@@ -2,7 +2,7 @@
 //!
 //! Defines the User aggregate root.
 
-use uuid::Uuid;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::error::{UserError, UserErrorKind};
 use crate::domain::user::value_objects::user_name::UserName;
 use crate::domain::user::value_objects::user_password::UserPassword;
@@ -23,18 +23,18 @@ use crate::domain::user::value_objects::user_password::UserPassword;
 /// # Examples
 ///
 /// ```rust,ignore
-/// use uuid::Uuid;
+/// use uuid::Id;
 /// use crate::domain::user::entities::User;
 ///
 /// let user = User::try_new(
-///     Uuid::new_v4(),
+///     Id::new(),
 ///     "player1".to_string(),
 ///     "secure_password".to_string()
 /// )?;
 /// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct User {
-    id: Uuid,
+    id: Id,
     name: UserName,
     // the password is stored in plain text,
     // so the gm can look up a password if a user forgot it
@@ -55,7 +55,7 @@ impl User {
     /// Returns [`UserError`] if:
     /// - Name is empty or contains invalid characters
     /// - Password doesn't meet requirements
-    pub fn try_new(id: Uuid, name: String, password: String) -> Result<Self, UserError> {
+    pub fn try_new(id: Id, name: String, password: String) -> Result<Self, UserError> {
         let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
         let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
 
@@ -63,7 +63,7 @@ impl User {
     }
 
     /// Returns the user's unique identifier.
-    pub fn id(&self) -> &Uuid {
+    pub fn id(&self) -> &Id {
         &self.id
     }
     
@@ -106,13 +106,12 @@ impl User {
 #[cfg(test)]
 mod tests {
     mod check_password {
-        use uuid::Uuid;
         use super::super::*;
 
         #[test]
         fn test_valid_password() {
             let user = User::try_new(
-                Uuid::new_v4(),
+                Id::new(),
                 "name".to_string(),
                 "password".to_string(),
             ).unwrap();
@@ -125,7 +124,7 @@ mod tests {
         #[test]
         fn test_empty_password() {
             let user = User::try_new(
-                Uuid::new_v4(),
+                Id::new(),
                 "name".to_string(),
                 "password".to_string(),
             ).unwrap();
@@ -140,7 +139,7 @@ mod tests {
         #[test]
         fn test_invalid_password() {
             let user = User::try_new(
-                Uuid::new_v4(),
+                Id::new(),
                 "name".to_string(),
                 "password".to_string(),
             ).unwrap();

@@ -2,7 +2,7 @@
 //!
 //! Response DTOs for user authentication.
 
-use uuid::Uuid;
+use crate::domain::game::value_objects::id::Id;
 
 #[derive(Debug)]
 pub struct UserTokenResponse {
@@ -11,7 +11,7 @@ pub struct UserTokenResponse {
 
 #[derive(Debug)]
 pub struct UserAuthenticationResponse {
-    pub user_id: Uuid,
+    pub user_id: Id,
 }
 
 #[derive(Debug)]

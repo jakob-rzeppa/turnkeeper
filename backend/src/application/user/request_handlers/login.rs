@@ -50,10 +50,10 @@ where
 #[cfg(test)]
 mod tests {
     use std::sync::Arc;
-    use uuid::Uuid;
     use crate::application::user::contracts::{MockUserJwtGeneratorContract, MockUserRepositoryContract};
     use crate::application::user::request_handlers::login::UserLoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
+    use crate::domain::game::value_objects::id::Id;
     use crate::domain::user::entities::User;
     use crate::domain::user::error::{UserError, UserErrorKind};
 
@@ -66,7 +66,7 @@ mod tests {
         let password = "password".to_string();
         let request = UserLoginRequest { name: name.clone(), password: password.clone() };
 
-        let user_id = Uuid::new_v4();
+        let user_id = Id::new();
         let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
         user_repo
             .expect_get_by_name()
@@ -97,7 +97,7 @@ mod tests {
         let password = "invalid-password".to_string();
         let request = UserLoginRequest { name: name.clone(), password: password.clone() };
 
-        let user_id = Uuid::new_v4();
+        let user_id = Id::new();
         let user = User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
         user_repo
             .expect_get_by_name()

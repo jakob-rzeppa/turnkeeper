@@ -1,6 +1,7 @@
 use serde::Serialize;
 use uuid::Uuid;
 use crate::domain::game::entities::game::Game;
+use crate::domain::game::value_objects::id::Id;
 
 /// Serializable player info within the gm game info.
 #[derive(Serialize)]
@@ -58,7 +59,7 @@ pub struct UserGameInfo {
 }
 
 impl UserGameInfo {
-    pub fn for_user(game: &Game, user_id: &Uuid) -> Self {
+    pub fn for_user(game: &Game, user_id: &Id) -> Self {
         let own_player = game.players().iter()
             .find(|p| p.user_id() == Some(*user_id))
             .map(|p| {

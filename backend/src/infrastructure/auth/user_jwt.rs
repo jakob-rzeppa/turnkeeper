@@ -2,8 +2,8 @@ use std::sync::LazyLock;
 use std::time::{SystemTime, UNIX_EPOCH};
 use jsonwebtoken::{decode, encode, Algorithm, DecodingKey, EncodingKey, Header, Validation};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserJwtValidatorContract};
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::error::{UserError, UserErrorKind};
 
 const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
@@ -21,8 +21,8 @@ struct UserClaims {
     exp: usize,  // Expiration time
 }
 
-impl From<Uuid> for UserClaims {
-    fn from(id: Uuid) -> Self {
+impl From<Id> for UserClaims {
+    fn from(id: Id) -> Self {
         let exp = SystemTime::now().duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
             .as_secs() + 3600 * 5; // 5 hour expiration
@@ -40,7 +40,7 @@ impl UserJwtGenerator {
 }
 
 impl UserJwtGeneratorContract for UserJwtGenerator {
-    fn generate_token(&self, user_id: &Uuid) -> Result<String, UserError> {
+    fn generate_token(&self, user_id: &Id) -> Result<String, UserError> {
         let header = Header::new(Algorithm::HS256);
         let encoding_key = EncodingKey::from_secret(USER_JWT_SECRET.as_bytes());
 
@@ -60,20 +60,19 @@ impl UserJwtValidator {
 }
 
 impl UserJwtValidatorContract for UserJwtValidator {
-    fn validate_token(&self, token: &str) -> Result<Uuid, UserError> {
+    fn validate_token(&self, token: &str) -> Result<Id, UserError> {
         let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
 
         let claims = decode::<UserClaims>(token, &decoding_key, &validation).map(|data| data.claims)
             .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?;
 
-        Ok(Uuid::try_from(claims.user_id).map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
+        Ok(Id::parse_str(&claims.user_id).map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use uuid::Uuid;
     use super::*;
 
     const JWT_GENERATOR: UserJwtGenerator = UserJwtGenerator {};
@@ -81,7 +80,7 @@ mod tests {
 
     #[test]
     fn generate_and_validate_jwt() {
-        let id = Uuid::new_v4();
+        let id = Id::new();
 
         let token = JWT_GENERATOR.generate_token(&id).unwrap();
 

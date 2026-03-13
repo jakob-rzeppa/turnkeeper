@@ -1,9 +1,9 @@
-use uuid::Uuid;
 use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::value_objects::id::Id;
 use super::Game;
 
 impl Game {
-    pub fn add_stat_to_player(&mut self, player_id: Uuid, stat_id: Uuid, stat_key: String, stat_type: String, stat_value: String) -> Result<(), GameError> {
+    pub fn add_stat_to_player(&mut self, player_id: Id, stat_id: Id, stat_key: String, stat_type: String, stat_value: String) -> Result<(), GameError> {
         if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
             match stat_type.as_str() {
                 "string" => player.add_stat_string(stat_id, stat_key, stat_value),
@@ -24,7 +24,7 @@ impl Game {
         }
     }
 
-    pub fn change_stat_of_player(&mut self, player_id: Uuid, stat_id: Uuid, stat_type: String, stat_value: String) -> Result<(), GameError> {
+    pub fn change_stat_of_player(&mut self, player_id: Id, stat_id: Id, stat_type: String, stat_value: String) -> Result<(), GameError> {
         if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
             match stat_type.as_str() {
                 "string" => player.change_stat_string(&stat_id, stat_value),
@@ -45,7 +45,7 @@ impl Game {
         }
     }
 
-    pub fn remove_stat_from_player(&mut self, player_id: Uuid, stat_id: Uuid) -> Result<(), GameError> {
+    pub fn remove_stat_from_player(&mut self, player_id: Id, stat_id: Id) -> Result<(), GameError> {
         if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
             player.remove_stat(&stat_id)
         } else {

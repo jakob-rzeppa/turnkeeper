@@ -2,25 +2,25 @@ use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use crate::application::game::request_handlers::create::{CreateGameRequestHandler};
 use crate::application::game::request_handlers::delete::DeleteGameRequestHandler;
 use crate::application::game::request_handlers::get_overview::GameGetOverviewRequestHandler;
 use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
 use crate::AppState;
 use crate::domain::game::projections::game_metadata::GameMetadata;
+use crate::domain::game::value_objects::id::Id;
 use crate::infrastructure::error::HttpError;
 
 #[derive(Serialize, Debug)]
 pub struct GamesGetResponseGameMetadata {
-    pub id: String,
+    pub id: Id,
     pub name: String,
 }
 
 impl From<GameMetadata> for GamesGetResponseGameMetadata {
     fn from(metadata: GameMetadata) -> Self {
         Self {
-            id: metadata.id.to_string(),
+            id: metadata.id,
             name: metadata.name,
         }
     }
@@ -75,7 +75,7 @@ pub async fn games_create(State(state): State<AppState>, request: GamesCreateHtt
 pub async fn games_delete(State(state): State<AppState>, Path(id): Path<String>) -> Result<StatusCode, HttpError> {
     let handler = DeleteGameRequestHandler::new(state.repository_manager.game());
 
-    let id = Uuid::try_from(id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
+    let id = Id::parse_str(&id)?;
 
     handler.delete_game(DeleteGameRequest { id }).await?;
 

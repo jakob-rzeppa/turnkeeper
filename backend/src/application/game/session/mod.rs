@@ -21,7 +21,6 @@
 use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
-use uuid::Uuid;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
@@ -30,6 +29,7 @@ use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::gm_game_info::GmGameInfo;
 use crate::domain::game::projections::user_game_info::UserGameInfo;
+use crate::domain::game::value_objects::id::Id;
 
 mod gm_connection_state;
 mod gm_lifecycle;
@@ -53,7 +53,7 @@ where
     /// The active GM WebSocket connection, if one is currently established.
     gm_connection: Arc<RwLock<GmConnectionState<Connection>>>,
     /// The active user connections, if any are currently established.
-    user_connections: Arc<RwLock<HashMap<Uuid, Arc<RwLock<UserConnectionState<Connection>>>>>>,
+    user_connections: Arc<RwLock<HashMap<Id, Arc<RwLock<UserConnectionState<Connection>>>>>>,
     /// Shared repository used for persistence operations.
     game_repo: Arc<GameRepository>,
 }
@@ -73,7 +73,7 @@ where
     ///
     /// Returns a [`GameError`] if the game cannot be found or the repository
     /// call fails.
-    pub async fn try_new(game_id: Uuid, game_repository: Arc<GameRepository>) -> Result<Self, GameError> {
+    pub async fn try_new(game_id: Id, game_repository: Arc<GameRepository>) -> Result<Self, GameError> {
         let game_metadata = game_repository.get_metadata_by_id(game_id).await?;
 
         let mut game = Game::new(game_metadata.id, game_metadata.name);
@@ -103,7 +103,7 @@ where
     ///
     /// If the event was triggered by a user action, the `user_id` of the triggering user is passed.
     /// This is used to check if the user has permission to perform the action.
-    async fn handle_event(&self, event: GameEvent, user_id: Option<&Uuid>) {
+    async fn handle_event(&self, event: GameEvent, user_id: Option<&Id>) {
         let mut game_guard = self.game.write().await;
 
         let res = game_guard.handle_event(event.clone());

@@ -1,12 +1,11 @@
-use std::str::FromStr;
 use axum::Extension;
 use axum::extract::{Path, Query, State, WebSocketUpgrade};
 use axum::http::HeaderMap;
 use axum::response::Response;
 use backend_derive::JsonResponse;
 use serde::{Deserialize, Serialize};
-use uuid::Uuid;
 use crate::AppState;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::entities::User;
 use crate::infrastructure::error::HttpError;
 use crate::infrastructure::websocket::gm_connection::WebSocketConnection;
@@ -25,7 +24,7 @@ pub async fn user_websocket_ticket(
     headers: HeaderMap,
     Path(game_id): Path<String>,
 ) -> Result<UserWsTicketResponse, HttpError> {
-    let game_id = Uuid::from_str(&game_id)
+    let game_id = Id::parse_str(&game_id)
         .map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
     let user_id = user.id().clone();
 
@@ -59,9 +58,9 @@ pub async fn user_websocket_handler(
     Query(params): Query<UserWsQueryParams>,
     ws: WebSocketUpgrade,
 ) -> Result<Response, HttpError> {
-    let id = Uuid::from_str(&id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
+    let id = Id::parse_str(&id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
     let ticket = params.ticket.ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
-    let user_id = Uuid::from_str(
+    let user_id = Id::parse_str(
         &params.user_id.ok_or_else(|| HttpError::BadRequest("Missing user_id query parameter".to_string()))?
     ).map_err(|_| HttpError::BadRequest("Invalid user_id query parameter".to_string()))?;
 

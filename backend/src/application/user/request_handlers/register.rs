@@ -7,6 +7,7 @@ use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserRegisterRequest};
 use crate::application::user::responses::UserTokenResponse;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::UserError;
 
@@ -36,7 +37,7 @@ where
     /// - [`UserErrorKind::UserAlreadyExists`] — duplicate username
     pub async fn register(&self, request: UserRegisterRequest) -> Result<UserTokenResponse, UserError> {
         let user = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             request.name,
             request.password,
         )?;

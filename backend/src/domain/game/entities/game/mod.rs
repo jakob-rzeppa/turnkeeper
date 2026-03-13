@@ -1,9 +1,8 @@
-use std::str::FromStr;
-use uuid::Uuid;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::entities::tradable::Tradable;
-use crate::domain::game::error::{GameError, GameErrorKind};
+use crate::domain::game::error::{GameError};
 use crate::domain::game::events::GameEvent;
+use crate::domain::game::value_objects::id::Id;
 
 mod player_events;
 mod notes_events;
@@ -20,7 +19,7 @@ mod turn_events;
 /// - All players are represented in all tradable values (if a player is added, they should be added to all tradables with a default value, and if a player is removed, they should be removed from all tradables)
 #[derive(Debug, PartialEq)]
 pub struct Game {
-    id: Uuid,
+    id: Id,
     name: String,
 
     players: Vec<Player>,
@@ -34,7 +33,7 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(id: Uuid, name: String) -> Self {
+    pub fn new(id: Id, name: String) -> Self {
         Self {
             id,
             name,
@@ -47,7 +46,7 @@ impl Game {
         }
     }
 
-    pub fn id(&self) -> &Uuid {
+    pub fn id(&self) -> &Id {
         &self.id
     }
 
@@ -85,78 +84,52 @@ impl Game {
         match event {
             GameEvent::NextTurn => Ok(self.next_turn()),
             GameEvent::PreviousTurn => Ok(self.prev_turn()),
-            GameEvent::SkipTurnToPlayer { player_id } => {
-                self.skip_turn_to_player(
-                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?
-                )
-            },
-            GameEvent::SetNotes(notes) => {
-                self.set_notes(notes);
-                Ok(())
-            },
-            GameEvent::SetHiddenNotes(hidden_notes) => {
-                self.set_hidden_notes(hidden_notes);
-                Ok(())
-            },
-            GameEvent::AddPlayer { player_id } => {
-                self.add_player(Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?)
-            },
-            GameEvent::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => {
-                self.add_stat_to_player(
-                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&stat_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    stat_key,
-                    stat_type,
-                    stat_value)
-            },
-            GameEvent::ChangeStatOfPlayer { player_id, stat_id, stat_type, stat_value } => {
-                self.change_stat_of_player(
-                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&stat_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    stat_type,
-                    stat_value,
-                )
-            },
-            GameEvent::RemoveStatFromPlayer { player_id, stat_id } => {
-                self.remove_stat_from_player(
-                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&stat_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                )
-            },
+            GameEvent::SkipTurnToPlayer { player_id } => self.skip_turn_to_player(player_id),
+            GameEvent::SetNotes(notes) => Ok(self.set_notes(notes)),
+            GameEvent::SetHiddenNotes(hidden_notes) => Ok(self.set_hidden_notes(hidden_notes)),
+            GameEvent::AddPlayer { player_id } => self.add_player(player_id),
+            GameEvent::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => self.add_stat_to_player(
+                player_id,
+                stat_id,
+                stat_key,
+                stat_type,
+                stat_value
+            ),
+            GameEvent::ChangeStatOfPlayer { player_id, stat_id, stat_type, stat_value } => self.change_stat_of_player(
+                player_id,
+                stat_id,
+                stat_type,
+                stat_value,
+            ),
+            GameEvent::RemoveStatFromPlayer { player_id, stat_id } => self.remove_stat_from_player(player_id, stat_id),
             GameEvent::AddTradable { tradable_id, name, initial_value } => {
                 self.add_tradable(
-                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    tradable_id,
                     name,
                     initial_value)
             },
-            GameEvent::RemoveTradable { tradable_id } => {
-                self.remove_tradable(Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?)
-            },
+            GameEvent::RemoveTradable { tradable_id } => self.remove_tradable(tradable_id),
             GameEvent::ChangePlayerTradableValue { player_id, tradable_id, new_value } => {
                 self.change_player_tradable_value(
-                    Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    player_id,
+                    tradable_id,
                     new_value)
             },
             GameEvent::SendTradable {from_id, to_id, tradable_id, amount } => {
                 self.send_tradable(
-                    Uuid::from_str(&from_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&to_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                    Uuid::from_str(&tradable_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                    from_id,
+                    to_id,
+                    tradable_id,
                     amount)
             },
             GameEvent::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
-                Uuid::from_str(&user_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
-                Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                user_id,
+                player_id,
             ),
             GameEvent::DetachUserFromPlayer { player_id } => self.detach_user_from_player(
-                Uuid::from_str(&player_id).map_err(|_| GameError::new(GameErrorKind::InvalidUuid))?,
+                player_id,
             ),
             GameEvent::ChangePlayerOrder(ids_in_order) => {
-                let ids_in_order: Vec<Uuid> = ids_in_order.into_iter()
-                    .map(|s| Uuid::from_str(&s).map_err(|_| GameError::new(GameErrorKind::InvalidUuid)))
-                    .collect::<Result<Vec<Uuid>, GameError>>()?;
-
                 self.change_player_order(ids_in_order)
             },
             GameEvent::Debug(msg) => {

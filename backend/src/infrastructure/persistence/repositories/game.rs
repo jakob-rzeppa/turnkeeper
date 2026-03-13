@@ -1,9 +1,9 @@
 use sqlx::SqlitePool;
-use uuid::Uuid;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::events::GameEvent;
 use crate::domain::game::projections::game_metadata::GameMetadata;
+use crate::domain::game::value_objects::id::Id;
 
 pub struct SqliteGameRepository {
     db: SqlitePool
@@ -16,7 +16,7 @@ impl SqliteGameRepository {
 }
 
 impl GameRepositoryContract for SqliteGameRepository {
-    async fn create(&self, id: Uuid, name: String) -> Result<(), GameError> {
+    async fn create(&self, id: Id, name: String) -> Result<(), GameError> {
         let id_str = id.to_string();
 
         sqlx::query!(
@@ -57,7 +57,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         let games = rows
             .into_iter()
             .map(|row| {
-                let id = Uuid::parse_str(&row.id)
+                let id = Id::parse_str(&row.id)
                     .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
                 Ok(GameMetadata {
                     id,
@@ -69,7 +69,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(games)
     }
 
-    async fn get_metadata_by_id(&self, id: Uuid) -> Result<GameMetadata, GameError> {
+    async fn get_metadata_by_id(&self, id: Id) -> Result<GameMetadata, GameError> {
         let id_str = id.to_string();
 
         let row = sqlx::query!(
@@ -86,7 +86,7 @@ impl GameRepositoryContract for SqliteGameRepository {
 
         match row {
             Some(row) => {
-                let id = Uuid::parse_str(&row.id)
+                let id = Id::parse_str(&row.id)
                     .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
                 Ok(GameMetadata {
                     id,
@@ -97,7 +97,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         }
     }
 
-    async fn log_event(&self, game_id: Uuid, event: GameEvent) -> Result<(), GameError> {
+    async fn log_event(&self, game_id: Id, event: GameEvent) -> Result<(), GameError> {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
@@ -133,7 +133,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(())
     }
 
-    async fn get_game_history(&self, game_id: Uuid) -> Result<Vec<GameEvent>, GameError> {
+    async fn get_game_history(&self, game_id: Id) -> Result<Vec<GameEvent>, GameError> {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
@@ -175,7 +175,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(events)
     }
 
-    async fn delete(&self, game_id: Uuid) -> Result<(), GameError> {
+    async fn delete(&self, game_id: Id) -> Result<(), GameError> {
         todo!()
     }
 }
@@ -190,7 +190,7 @@ mod test {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let game_id = Uuid::new_v4();
+        let game_id = Id::new();
         let game_name = "Test Game".to_string();
 
         let res = repo.create(game_id.clone(), game_name.clone()).await;
@@ -210,10 +210,10 @@ mod test {
 
         let game_name = "Test Game".to_string();
 
-        let res1 = repo.create(Uuid::new_v4(), game_name.clone()).await;
+        let res1 = repo.create(Id::new(), game_name.clone()).await;
         assert!(res1.is_ok());
 
-        let res2 = repo.create(Uuid::new_v4(), game_name.clone()).await;
+        let res2 = repo.create(Id::new(), game_name.clone()).await;
         assert!(res2.is_err());
         let err = res2.err().unwrap();
         assert_eq!(err.kind, GameErrorKind::GameAlreadyExists);
@@ -224,7 +224,7 @@ mod test {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let res = repo.get_metadata_by_id(Uuid::new_v4()).await;
+        let res = repo.get_metadata_by_id(Id::new()).await;
         assert!(res.is_err());
         let err = res.err().unwrap();
         assert_eq!(err.kind, GameErrorKind::GameNotFound);
@@ -236,8 +236,8 @@ mod test {
         let repo = SqliteGameRepository::new(db);
 
         // Create some games
-        let game1_id = Uuid::new_v4();
-        let game2_id = Uuid::new_v4();
+        let game1_id = Id::new();
+        let game2_id = Id::new();
         repo.create(game1_id.clone(), "Game 1".to_string()).await.unwrap();
         repo.create(game2_id.clone(), "Game 2".to_string()).await.unwrap();
 
@@ -265,7 +265,7 @@ mod test {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let game_id = Uuid::new_v4();
+        let game_id = Id::new();
         repo.create(game_id.clone(), "Event Test Game".to_string()).await.unwrap();
 
         let event1 = GameEvent::SetNotes("test notes".to_string());
@@ -273,20 +273,20 @@ mod test {
         assert!(res.is_ok());
 
         let event2 = GameEvent::AddPlayer {
-            player_id: Uuid::new_v4().to_string(),
+            player_id: Id::new(),
         };
         let res = repo.log_event(game_id.clone(), event2.clone()).await;
         assert!(res.is_ok());
 
         let event3 = GameEvent::AddPlayer {
-            player_id: Uuid::new_v4().to_string(),
+            player_id: Id::new(),
         };
         let res = repo.log_event(game_id.clone(), event3.clone()).await;
         assert!(res.is_ok());
 
         let event4 = GameEvent::AddStatToPlayer {
-            player_id: Uuid::new_v4().to_string(),
-            stat_id: Uuid::new_v4().to_string(),
+            player_id: Id::new(),
+            stat_id: Id::new(),
             stat_key: "Strength".to_string(),
             stat_type: "number".to_string(),
             stat_value: "10".to_string(),
@@ -309,7 +309,7 @@ mod test {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let res = repo.get_game_history(Uuid::new_v4()).await;
+        let res = repo.get_game_history(Id::new()).await;
         assert!(res.is_err());
         let err = res.err().unwrap();
         assert_eq!(err.kind, GameErrorKind::GameNotFound);
@@ -320,7 +320,7 @@ mod test {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let game_id = Uuid::new_v4();
+        let game_id = Id::new();
         repo.create(game_id.clone(), "Empty History Game".to_string()).await.unwrap();
 
         let res = repo.get_game_history(game_id.clone()).await;
@@ -335,7 +335,7 @@ mod test {
         let repo = SqliteGameRepository::new(db);
 
         let event = GameEvent::SetNotes("test notes".to_string());
-        let res = repo.log_event(Uuid::new_v4(), event.clone()).await;
+        let res = repo.log_event(Id::new(), event.clone()).await;
         assert!(res.is_err());
         let err = res.err().unwrap();
         assert_eq!(err.kind, GameErrorKind::GameNotFound);

@@ -1,7 +1,7 @@
 use sqlx::{Acquire, SqlitePool};
-use uuid::Uuid;
 use crate::domain::user::entities::User;
 use crate::application::user::contracts::UserRepositoryContract;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::error::{UserError, UserErrorKind};
 
 struct UserRow {
@@ -24,11 +24,10 @@ impl TryInto<User> for UserRow {
     type Error = UserError;
 
     fn try_into(self) -> Result<User, Self::Error> {
-        let id = Uuid::try_from(self.id).map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
         User::try_new(
-            id,
-            self.name.clone(),
-            self.password.clone(),
+            Id::parse_str(&self.id).map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?,
+            self.name,
+            self.password,
         )
     }
 }
@@ -44,7 +43,7 @@ impl SqliteUserRepository {
 }
 
 impl UserRepositoryContract for SqliteUserRepository {
-    async fn check_if_exists(&self, id: &Uuid) -> Result<bool, UserError> {
+    async fn check_if_exists(&self, id: &Id) -> Result<bool, UserError> {
         let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let id = id.to_string();
@@ -56,7 +55,7 @@ impl UserRepositoryContract for SqliteUserRepository {
         Ok(res.is_some())
     }
 
-    async fn get_by_id(&self, id: &Uuid) -> Result<User, UserError> {
+    async fn get_by_id(&self, id: &Id) -> Result<User, UserError> {
         let mut conn = self.db.acquire().await.map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?;
 
         let id = id.to_string();
@@ -133,14 +132,13 @@ impl UserRepositoryContract for SqliteUserRepository {
 
 #[cfg(test)]
 mod tests {
-    use uuid::Uuid;
     use crate::infrastructure::persistence::db::create_test_pool;
     use crate::application::user::contracts::UserRepositoryContract;
     use super::*;
 
     #[tokio::test]
     async fn test_save_and_get_by_id() {
-        let uuid = Uuid::new_v4();
+        let uuid = Id::new();
         let user = User::try_new(
             uuid.clone(),
             "test-name".to_string(),
@@ -159,7 +157,7 @@ mod tests {
     #[tokio::test]
     async fn test_save_and_get_by_name() {
         let user = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             "test-name".to_string(),
             "test-password".to_string(),
         ).unwrap();
@@ -176,12 +174,12 @@ mod tests {
     #[tokio::test]
     async fn test_save_and_get_all() {
         let user = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             "test-name".to_string(),
             "test-password".to_string(),
         ).unwrap();
         let user2 = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             "test2-name".to_string(),
             "test2-password".to_string(),
         ).unwrap();
@@ -202,7 +200,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_by_id_no_user() {
         let repo = SqliteUserRepository::new(create_test_pool().await);
-        let id = Uuid::new_v4();
+        let id = Id::new();
 
         let user = repo.get_by_id(&id).await;
 
@@ -229,12 +227,12 @@ mod tests {
         let name = "test-name".to_string();
 
         let user1 = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             name.clone(),
             "test-password".to_string(),
         ).unwrap();
         let user2 = User::try_new(
-            Uuid::new_v4(),
+            Id::new(),
             name.clone(),
             "test-password-2".to_string(),
         ).unwrap();

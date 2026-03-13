@@ -2,7 +2,7 @@
 //!
 //! Defines traits (contracts) for user-related infrastructure dependencies.
 
-use uuid::Uuid;
+use crate::domain::game::value_objects::id::Id;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::UserError;
 
@@ -19,14 +19,14 @@ pub trait UserRepositoryContract {
     /// * `Ok(true)` - User exists
     /// * `Ok(false)` - User does not exist
     /// * `Err(UserError)` - Database error occurred
-    fn check_if_exists(&self, id: &Uuid) -> impl Future<Output = Result<bool, UserError>> + Send;
+    fn check_if_exists(&self, id: &Id) -> impl Future<Output = Result<bool, UserError>> + Send;
 
     /// Retrieves a user by their unique ID.
     ///
     /// # Errors
     ///
     /// Returns [`UserErrorKind::UserNotFound`] if no user exists with the given ID.
-    fn get_by_id(&self, id: &Uuid) -> impl Future<Output = Result<User, UserError>> + Send;
+    fn get_by_id(&self, id: &Id) -> impl Future<Output = Result<User, UserError>> + Send;
 
     /// Retrieves a user by their username.
     ///
@@ -77,7 +77,7 @@ pub trait UserJwtGeneratorContract {
     /// - User ID in the claims
     /// - Expiration timestamp
     /// - Signature using the secret key
-    fn generate_token(&self, user_id: &Uuid) -> Result<String, UserError>;
+    fn generate_token(&self, user_id: &Id) -> Result<String, UserError>;
 }
 
 /// Contract for validating JWT tokens and extracting user information.
@@ -103,7 +103,7 @@ pub trait UserJwtValidatorContract {
     ///
     /// # Returns
     ///
-    /// * `Ok(Uuid)` - The user ID extracted from the valid token
+    /// * `Ok(Id)` - The user ID extracted from the valid token
     /// * `Err(UserError)` - Token is invalid, expired, or malformed
     ///
     /// # Errors
@@ -112,5 +112,5 @@ pub trait UserJwtValidatorContract {
     /// - Token signature is invalid
     /// - Token has expired
     /// - Token format is malformed
-    fn validate_token(&self, token: &str) -> Result<Uuid, UserError>;
+    fn validate_token(&self, token: &str) -> Result<Id, UserError>;
 }
