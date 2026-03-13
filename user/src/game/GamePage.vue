@@ -1,9 +1,11 @@
 <script setup lang="ts">
+import { useWsConnection } from '../api/useWsConnection';
 import { useUsersStore } from '../users/usersStore';
 import { useGameStore } from './gameStore';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
+const wsConnection = useWsConnection();
 </script>
 
 <template>
@@ -126,13 +128,13 @@ const usersStore = useUsersStore();
                     Game Notes
                 </h2>
                 <pre
-                    class="bg-base-300 rounded p-3 md:p-4 text-base-content overflow-x-auto whitespace-pre-wrap break-words text-xs md:text-sm"
+                    class="bg-base-300 rounded p-3 md:p-4 text-base-content overflow-x-auto whitespace-pre-wrap wrap-break-words text-xs md:text-sm"
                     >{{ gameStore.game.notes }}</pre
                 >
             </div>
 
             <!-- All Players -->
-            <div class="bg-base-200 rounded-lg p-4 md:p-6 border border-base-300">
+            <div class="bg-base-200 rounded-lg p-4 md:p-6 mb-6 md:mb-8 border border-base-300">
                 <h2 class="text-xl md:text-2xl font-bold text-base-content mb-4 md:mb-6">
                     Players ({{ gameStore.game.players.length }})
                 </h2>
@@ -164,6 +166,7 @@ const usersStore = useUsersStore();
                     </div>
                 </div>
             </div>
+            <button @click="wsConnection.disconnect()" class="btn btn-error">Leave Game</button>
         </div>
     </div>
     <div v-else>

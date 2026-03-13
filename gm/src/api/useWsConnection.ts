@@ -30,6 +30,24 @@ type RawGame = {
 
 const websocket = ref<WebSocket | null>(null);
 
+// URL management helpers
+const saveGameIdToUrl = (gameId: string) => {
+    const url = new URL(window.location.href);
+    url.searchParams.set('gameId', gameId);
+    window.history.replaceState({}, '', url);
+};
+
+const removeGameIdFromUrl = () => {
+    const url = new URL(window.location.href);
+    url.searchParams.delete('gameId');
+    window.history.replaceState({}, '', url);
+};
+
+const getGameIdFromUrl = (): string | null => {
+    const url = new URL(window.location.href);
+    return url.searchParams.get('gameId');
+};
+
 export function useWsConnection() {
     const gameStore = useGameStore();
     const authStore = useAuthStore();
@@ -59,6 +77,7 @@ export function useWsConnection() {
 
         websocket.value.onopen = () => {
             console.log('WebSocket connection established.');
+            saveGameIdToUrl(gameId);
         };
 
         websocket.value.onmessage = event => {
@@ -102,10 +121,12 @@ export function useWsConnection() {
         websocket.value.onclose = () => {
             console.log('WebSocket connection closed.');
             websocket.value = null;
+            removeGameIdFromUrl();
         };
 
         websocket.value.onerror = error => {
             console.error('WebSocket error:', error);
+            removeGameIdFromUrl();
         };
     };
 
@@ -123,10 +144,18 @@ export function useWsConnection() {
         if (websocket.value) {
             websocket.value.close();
             websocket.value = null;
+            removeGameIdFromUrl();
         } else {
             console.warn('WebSocket is not connected.');
         }
     };
 
-    return { connect, disconnect, isConnected, send };
+    const autoConnect = async () => {
+        const gameId = getGameIdFromUrl();
+        if (gameId) {
+            await connect(gameId);
+        }
+    };
+
+    return { connect, disconnect, isConnected, send, autoConnect, getGameIdFromUrl };
 }

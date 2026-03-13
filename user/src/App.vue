@@ -1,4 +1,5 @@
 <script setup lang="ts">
+import { onMounted } from 'vue';
 import { useWsConnection } from './api/useWsConnection';
 import { useAuthStore } from './auth/authStore';
 import UserAuth from './auth/UserAuth.vue';
@@ -8,10 +9,12 @@ import { useUsersStore } from './users/usersStore';
 
 const authStore = useAuthStore();
 const wsConnection = useWsConnection();
-
-// Load users on app startup
 const usersStore = useUsersStore();
-usersStore.loadUsers();
+
+onMounted(() => {
+    wsConnection.autoConnect();
+    usersStore.loadUsers();
+});
 </script>
 
 <template>
