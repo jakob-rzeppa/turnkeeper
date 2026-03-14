@@ -14,8 +14,8 @@ RUN cargo build --release
 RUN rm -rf src
 
 # Create var directory and .env file for the build process
-RUN mkdir -p var
-RUN echo "DATABASE_URL=sqlite:/build/var/turnkeeper.db" > .env && \
+RUN mkdir -p var/db
+RUN echo "DATABASE_URL=sqlite:/build/var/db/turnkeeper.db" > .env && \
     echo "GM_JWT_SECRET=dev-gm-secret-key-change-in-production" >> .env && \
     echo "USER_JWT_SECRET=dev-user-secret-key-change-in-production" >> .env && \
     echo "GM_PASSWORD=dev-password" >> .env
@@ -37,16 +37,19 @@ FROM debian:bookworm-slim
 WORKDIR /app
 
 # Create var directory
-RUN mkdir -p var
+RUN mkdir -p var/db
 
 # Copy the compiled binary from builder
 COPY --from=builder /build/target/release/turnkeeper_backend ./
 
 # Copy the initialized database from builder
-COPY --from=builder /build/var/turnkeeper.db var/
+COPY --from=builder /build/var/db/turnkeeper.db var/db/
 
-# Copy the .env file
-COPY .env ./
+# Copy the .env.local file
+COPY .env.local .env
+
+# Set environment variables for the application
+ENV DATABASE_URL=sqlite:var/db/turnkeeper.db
 
 # Expose the port the application listens on
 EXPOSE 8080

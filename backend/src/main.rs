@@ -34,8 +34,7 @@ async fn main() {
     dotenv::dotenv().expect("Failed to load .env file");
     println!("[STARTUP] .env file loaded");
 
-    let database_url = std::env::var("DATABASE_URL")
-        .expect("DATABASE_URL environment variable is not set");
+    let database_url = std::env::var("DATABASE_URL").unwrap_or("sqlite:var/db/turnkeeper.db".to_string());
 
     println!("[STARTUP] Connecting to database: {}", database_url);
     let db = create_pool(&database_url).await.expect(format!("Failed to create database pool: {}", database_url).as_str());
