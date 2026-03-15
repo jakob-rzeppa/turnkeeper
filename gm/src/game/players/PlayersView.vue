@@ -1,11 +1,18 @@
 <script setup lang="ts">
+import { useModalStore } from '../../common/modal/modalStore';
 import { useUsersStore } from '../../users/usersStore';
 import { useGameStore } from '../gameStore';
+import AddStatModal from '../stats/AddStatModal.vue';
 import InlineStatsEditor from '../stats/InlineStatsEditor.vue';
 import InlineTradableEditor from '../tradables/InlineTradableEditor.vue';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
+const modalStore = useModalStore();
+
+const openAddStatModal = (playerId: string) => {
+    modalStore.openModal(AddStatModal, { playerId });
+};
 </script>
 
 <template>
@@ -34,6 +41,13 @@ const usersStore = useUsersStore();
                     :stat="stat"
                 />
             </div>
+            <button
+                class="btn btn-sm btn-circle btn-primary mx-auto"
+                title="Add Stat"
+                @click="openAddStatModal(player.id)"
+            >
+                +
+            </button>
         </fieldset>
     </div>
 </template>
