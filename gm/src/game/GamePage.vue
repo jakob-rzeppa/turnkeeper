@@ -8,6 +8,7 @@ import TradablesView from './tradables/TradablesView.vue';
 import PlayerOrganisationView from './playerOrganisation/PlayerOrganisationView.vue';
 import DisconnectSidebar from './disconnect/DisconnectSidebar.vue';
 import DisconnectIcon from './disconnect/DisconnectIcon.vue';
+import PlayersView from './players/PlayersView.vue';
 </script>
 
 <template>
@@ -26,6 +27,7 @@ import DisconnectIcon from './disconnect/DisconnectIcon.vue';
             :views="[
                 { name: 'Round Overview', component: RoundOverview },
                 { name: 'Tradables', component: TradablesView },
+                { name: 'Players', component: PlayersView },
                 { name: 'Player Organisation', component: PlayerOrganisationView },
             ]"
         />
