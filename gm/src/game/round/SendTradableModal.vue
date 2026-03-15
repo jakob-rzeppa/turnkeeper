@@ -65,7 +65,7 @@ const sendTradableFromPlayerToPlayer = () => {
                         :key="player.id"
                         :value="player.id"
                     >
-                        {{ usersStore.getPlayerName(player.userId) }}
+                        {{ usersStore.getPlayerName(player.id) }}
                     </option>
                 </select>
             </label>

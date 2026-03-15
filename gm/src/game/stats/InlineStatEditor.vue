@@ -5,6 +5,7 @@ import type { Stat } from '../gameStore';
 const props = defineProps<{
     playerId: string;
     stat: Stat;
+    size?: 'sm' | 'md' | 'lg';
 }>();
 
 const eventEmitter = useEventEmitter();
@@ -25,18 +26,28 @@ const deleteStat = () => {
 </script>
 
 <template>
-    <div class="flex flex-row gap-2 justify-between items-center">
-        <div v-if="stat.valueType === 'boolean'" class="flex flex-row gap-2 pl-3">
-            <label class="label">{{ stat.key }}</label>
+    <div class="flex flex-row gap-2 items-center w-full">
+        <div
+            v-if="stat.valueType === 'boolean'"
+            class="flex flex-row gap-2 pl-3 flex-1 items-center"
+        >
+            <label :class="`label text-${props.size || 'md'}`">{{ stat.key }}</label>
             <input
                 type="checkbox"
-                class="toggle toggle-sm toggle-primary"
+                :class="`toggle toggle-${props.size || 'md'} toggle-accent`"
                 :checked="stat.booleanValue!"
                 @change="event => editStatBoolean((event.target as HTMLInputElement).checked)"
             />
         </div>
-        <label v-else class="input input-sm">
-            <span class="label">{{ stat.key }}</span>
+        <label v-else :class="`input input-${props.size || 'md'} flex-1`">
+            <span class="label">
+                {{ stat.key }}
+                <span
+                    :class="`badge badge-outline badge-${props.size || 'md'} badge-${stat.valueType === 'string' ? 'primary' : stat.valueType === 'number' ? 'secondary' : 'accent'}`"
+                >
+                    {{ stat.valueType }}
+                </span>
+            </span>
             <input
                 v-if="stat.valueType === 'string'"
                 :value="stat.stringValue"
@@ -50,7 +61,10 @@ const deleteStat = () => {
                 "
             />
         </label>
-        <button @click="deleteStat" class="btn btn-error btn-xs btn-circle">
+        <button
+            @click="deleteStat"
+            :class="`btn btn-error btn-ghost btn-${props.size || 'md'} btn-circle`"
+        >
             <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
                 <path
                     fill-rule="evenodd"

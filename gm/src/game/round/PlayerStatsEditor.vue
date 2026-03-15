@@ -2,23 +2,13 @@
 import { toRef } from 'vue';
 import { type Player } from '../gameStore';
 import { usePlayerStatEditor } from './playerStatEditor';
+import InlineStatEditor from '../stats/InlineStatEditor.vue';
 
 const props = defineProps<{
     player: Player;
 }>();
 
 const playerStatEditor = usePlayerStatEditor(toRef(props, 'player'));
-
-const typeBadgeClass = (type: string) => {
-    switch (type) {
-        case 'number':
-            return 'badge badge-secondary badge-sm';
-        case 'boolean':
-            return 'badge badge-accent badge-sm';
-        default:
-            return 'badge badge-primary badge-sm';
-    }
-};
 </script>
 
 <template>
@@ -34,113 +24,15 @@ const typeBadgeClass = (type: string) => {
                 This player has no stats yet.
             </div>
 
-            <ul v-else class="flex flex-col gap-2">
-                <li
+            <div v-else class="flex flex-col gap-2">
+                <InlineStatEditor
                     v-for="stat in props.player.stats"
                     :key="stat.id"
-                    class="bg-base-200 rounded-xl px-4 py-3 flex items-center gap-3"
-                >
-                    <!-- Key + type badge -->
-                    <div class="flex flex-col min-w-0 flex-1">
-                        <div class="flex items-center gap-2">
-                            <span class="font-medium text-sm truncate">{{ stat.key }}</span>
-                            <span :class="typeBadgeClass(stat.valueType)">{{
-                                stat.valueType
-                            }}</span>
-                        </div>
-
-                        <!-- Viewing mode -->
-                        <div
-                            v-if="playerStatEditor.editingStatId.value !== stat.id"
-                            class="flex items-center gap-2 mt-1"
-                        >
-                            <template v-if="stat.valueType === 'boolean'">
-                                <input
-                                    type="checkbox"
-                                    class="toggle toggle-sm toggle-primary"
-                                    :checked="stat.booleanValue ?? false"
-                                    @change="
-                                        event =>
-                                            playerStatEditor.editBooleanStat(
-                                                stat,
-                                                (event.target as HTMLInputElement).checked
-                                            )
-                                    "
-                                />
-                                <span class="text-sm text-base-content/70">
-                                    {{ stat.booleanValue ? 'true' : 'false' }}
-                                </span>
-                            </template>
-                            <span v-else class="text-sm text-base-content/70">
-                                {{ playerStatEditor.getStatValue(stat) }}
-                            </span>
-                        </div>
-
-                        <!-- Editing mode -->
-                        <div v-else class="flex items-center gap-2 mt-1">
-                            <input
-                                v-if="stat.valueType === 'number'"
-                                v-model="playerStatEditor.editValueRaw.value"
-                                type="number"
-                                class="input input-sm input-bordered w-32"
-                                @keyup.enter="playerStatEditor.saveEdit()"
-                                @keyup.escape="playerStatEditor.cancelEditing()"
-                                autofocus
-                            />
-                            <select
-                                v-else-if="stat.valueType === 'boolean'"
-                                v-model="playerStatEditor.editValueRaw.value"
-                                class="select select-sm select-bordered"
-                                @keyup.escape="playerStatEditor.cancelEditing()"
-                            >
-                                <option value="true">true</option>
-                                <option value="false">false</option>
-                            </select>
-                            <input
-                                v-else
-                                v-model="playerStatEditor.editValueRaw.value"
-                                type="text"
-                                class="input input-sm input-bordered w-40"
-                                @keyup.enter="playerStatEditor.saveEdit()"
-                                @keyup.escape="playerStatEditor.cancelEditing()"
-                                autofocus
-                            />
-                            <button
-                                class="btn btn-xs btn-primary"
-                                @click="playerStatEditor.saveEdit()"
-                            >
-                                Save
-                            </button>
-                            <button
-                                class="btn btn-xs btn-ghost"
-                                @click="playerStatEditor.cancelEditing()"
-                            >
-                                Cancel
-                            </button>
-                        </div>
-                    </div>
-
-                    <!-- Action buttons (not shown for boolean – edited via toggle) -->
-                    <div class="flex gap-1 shrink-0">
-                        <button
-                            v-if="
-                                stat.valueType !== 'boolean' &&
-                                playerStatEditor.editingStatId.value !== stat.id
-                            "
-                            class="btn btn-xs btn-outline"
-                            @click="playerStatEditor.startEditing(stat)"
-                        >
-                            Edit
-                        </button>
-                        <button
-                            class="btn btn-xs btn-error btn-outline"
-                            @click="playerStatEditor.removeStat(stat)"
-                        >
-                            Remove
-                        </button>
-                    </div>
-                </li>
-            </ul>
+                    :playerId="props.player.id"
+                    :stat="stat"
+                    size="lg"
+                />
+            </div>
 
             <!-- Divider -->
             <div class="divider my-0"></div>

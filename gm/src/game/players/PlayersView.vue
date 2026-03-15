@@ -16,7 +16,7 @@ const openAddStatModal = (playerId: string) => {
 </script>
 
 <template>
-    <div v-if="gameStore.game" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+    <div v-if="gameStore.game" class="grid grid-cols-1 lg:grid-cols-2 gap-4">
         <fieldset
             v-for="player in gameStore.game.players"
             :key="player.id"
@@ -30,6 +30,7 @@ const openAddStatModal = (playerId: string) => {
                     :key="tradable.id"
                     :playerId="player.id"
                     :tradable="tradable"
+                    size="sm"
                 />
             </div>
             <h5 class="text-lg font-bold">Stats</h5>
@@ -39,6 +40,7 @@ const openAddStatModal = (playerId: string) => {
                     :key="stat.id"
                     :playerId="player.id"
                     :stat="stat"
+                    size="sm"
                 />
             </div>
             <button
