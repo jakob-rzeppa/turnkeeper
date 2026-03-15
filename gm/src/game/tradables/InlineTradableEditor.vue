@@ -2,7 +2,7 @@
 import { useModalStore } from '../../common/modal/modalStore';
 import { useEventEmitter } from '../../events/useEventEmitter';
 import type { Tradable } from '../gameStore';
-import SendTradableModal from '../round/SendTradableModal.vue';
+import SendTradableModal from './SendTradableModal.vue';
 
 const props = defineProps<{
     playerId: string;
