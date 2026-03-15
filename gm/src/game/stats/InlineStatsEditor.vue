@@ -18,29 +18,46 @@ const editStatNumber = (newValue: number) => {
 const editStatBoolean = (newValue: boolean) => {
     eventEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'boolean', newValue.toString());
 };
+
+const deleteStat = () => {
+    eventEmitter.removeStatFromPlayer(props.playerId, props.stat.id);
+};
 </script>
 
 <template>
-    <div v-if="stat.valueType === 'boolean'" class="flex flex-row gap-2 pl-3">
-        <label class="label">{{ stat.key }}</label>
-        <input
-            type="checkbox"
-            class="toggle toggle-sm toggle-primary"
-            :checked="stat.booleanValue!"
-            @change="event => editStatBoolean((event.target as HTMLInputElement).checked)"
-        />
+    <div class="flex flex-row gap-2 justify-between items-center">
+        <div v-if="stat.valueType === 'boolean'" class="flex flex-row gap-2 pl-3">
+            <label class="label">{{ stat.key }}</label>
+            <input
+                type="checkbox"
+                class="toggle toggle-sm toggle-primary"
+                :checked="stat.booleanValue!"
+                @change="event => editStatBoolean((event.target as HTMLInputElement).checked)"
+            />
+        </div>
+        <label v-else class="input input-sm">
+            <span class="label">{{ stat.key }}</span>
+            <input
+                v-if="stat.valueType === 'string'"
+                :value="stat.stringValue"
+                @change="event => editStatString((event.target as HTMLInputElement).value)"
+            />
+            <input
+                v-else-if="stat.valueType === 'number'"
+                :value="stat.numberValue"
+                @change="
+                    event => editStatNumber(parseFloat((event.target as HTMLInputElement).value))
+                "
+            />
+        </label>
+        <button @click="deleteStat" class="btn btn-error btn-xs btn-circle">
+            <svg class="w-4 h-4" fill="currentColor" viewBox="0 0 20 20">
+                <path
+                    fill-rule="evenodd"
+                    d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z"
+                    clip-rule="evenodd"
+                />
+            </svg>
+        </button>
     </div>
-    <label v-else class="input input-sm">
-        <span class="label">{{ stat.key }}</span>
-        <input
-            v-if="stat.valueType === 'string'"
-            :value="stat.stringValue"
-            @change="event => editStatString((event.target as HTMLInputElement).value)"
-        />
-        <input
-            v-else-if="stat.valueType === 'number'"
-            :value="stat.numberValue"
-            @change="event => editStatNumber(parseFloat((event.target as HTMLInputElement).value))"
-        />
-    </label>
 </template>
