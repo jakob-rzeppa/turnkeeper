@@ -2,13 +2,16 @@
 import { computed } from 'vue';
 import { useGameStore } from '../gameStore';
 import { useUsersStore } from '../../users/usersStore';
-import PlayerStatsEditor from './PlayerStatsEditor.vue';
-import PlayerTradablesEditor from './PlayerTradablesEditor.vue';
 import { useEventEmitter } from '../../events/useEventEmitter';
+import InlineStatEditor from '../stats/InlineStatEditor.vue';
+import AddStatModal from '../stats/AddStatModal.vue';
+import { useModalStore } from '../../common/modal/modalStore';
+import InlineTradableEditor from '../tradables/InlineTradableEditor.vue';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
 const eventEmitter = useEventEmitter();
+const modalStore = useModalStore();
 
 const currentPlayer = computed(() => {
     const index = gameStore.game?.currentPlayerIndex;
@@ -47,8 +50,35 @@ const currentPlayer = computed(() => {
         </div>
     </div>
 
-    <div class="divider">Tradables</div>
-    <PlayerTradablesEditor v-if="currentPlayer" :player="currentPlayer" />
-    <div class="divider">Stats</div>
-    <PlayerStatsEditor v-if="currentPlayer" :player="currentPlayer" />
+    <div v-if="!currentPlayer">
+        <p class="text-base-content/40 italic">No active player.</p>
+    </div>
+    <div v-else>
+        <div class="divider">Tradables</div>
+        <InlineTradableEditor
+            v-for="tradable in currentPlayer.tradables"
+            :key="tradable.id"
+            :playerId="currentPlayer.id"
+            :tradable="tradable"
+            size="lg"
+        />
+        <div class="divider">Stats</div>
+        <div class="flex flex-col gap-2 items-center">
+            <InlineStatEditor
+                v-for="stat in currentPlayer.stats"
+                :key="stat.id"
+                :playerId="currentPlayer.id"
+                :stat="stat"
+                size="lg"
+            />
+
+            <button
+                class="btn btn-lg btn-circle btn-primary"
+                title="Add Stat"
+                @click="modalStore.openModal(AddStatModal, { playerId: currentPlayer.id })"
+            >
+                +
+            </button>
+        </div>
+    </div>
 </template>
