@@ -1,0 +1,15 @@
+services:
+    backend:
+        build:
+            context: ./backend
+            dockerfile: Dockerfile
+        ports:
+            - "8080:8080"
+        environment:
+            DATABASE_URL: sqlite:var/db/turnkeeper.db
+        volumes:
+            - db_data:/app/var/db
+        restart: unless-stopped
+
+volumes:
+    db_data:
