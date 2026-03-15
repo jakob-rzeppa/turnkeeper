@@ -3,7 +3,7 @@ import { useModalStore } from '../../common/modal/modalStore';
 import { useUsersStore } from '../../users/usersStore';
 import { useGameStore } from '../gameStore';
 import AddStatModal from '../stats/AddStatModal.vue';
-import InlineStatsEditor from '../stats/InlineStatsEditor.vue';
+import InlineStatEditor from '../stats/InlineStatEditor.vue';
 import InlineTradableEditor from '../tradables/InlineTradableEditor.vue';
 
 const gameStore = useGameStore();
@@ -34,7 +34,7 @@ const openAddStatModal = (playerId: string) => {
             </div>
             <h5 class="text-lg font-bold">Stats</h5>
             <div class="flex flex-col gap-2">
-                <InlineStatsEditor
+                <InlineStatEditor
                     v-for="stat in player.stats"
                     :key="stat.id"
                     :playerId="player.id"
