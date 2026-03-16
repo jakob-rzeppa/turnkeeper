@@ -53,7 +53,7 @@ impl Stat {
         }
     }
 
-    pub fn as_string(&self) -> Option<&str> {
+    pub fn as_str(&self) -> Option<&str> {
         match &self.kind {
             StatKind::String { value } => Some(value.value()),
             _ => None,

@@ -70,7 +70,7 @@ impl UserGameInfo {
                         id: s.id().to_string(),
                         key: s.key().as_str().to_string(),
                         value_type: s.kind_str().to_string(),
-                        string_value: s.as_string().map(|s| s.to_string()),
+                        string_value: s.as_str().map(|s| s.to_string()),
                         number_value: s.as_number(),
                         boolean_value: s.as_boolean(),
                     }).collect(),
