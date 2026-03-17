@@ -82,9 +82,14 @@ export function useWsConnection() {
         };
 
         websocket.value.onmessage = event => {
+            if (!event.data.startsWith('GameInfo ')) {
+                console.warn('Received unknown message type:', event.data);
+                return;
+            }
+
             console.log('Received message:', event.data);
 
-            const message = JSON.parse(event.data) as RawGame;
+            const message = JSON.parse(event.data.slice(9)) as RawGame;
 
             gameStore.setGame({
                 id: message.id,

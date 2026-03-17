@@ -6,7 +6,7 @@ use std::sync::Arc;
 use std::time::Instant;
 use tokio::sync::RwLock;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
-use crate::application::game::dto::ConnectionMessageDto;
+use crate::application::game::dto::IncomingConnectionMessageDto;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::application::game::session::{GameSession, TICKET_TTL_SECS};
 use crate::domain::game::error::{GameError, GameErrorKind};
@@ -116,7 +116,7 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                ConnectionMessageDto::Command(command) => {
+                IncomingConnectionMessageDto::Command(command) => {
                     if command.is_user_permitted(&user_id) {
                         self.handle_command(command, Some(&user_id)).await
                     } else {

@@ -5,7 +5,7 @@
 use std::time::Instant;
 use uuid::Uuid;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
-use crate::application::game::dto::ConnectionMessageDto;
+use crate::application::game::dto::IncomingConnectionMessageDto;
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::{GameSession, TICKET_TTL_SECS};
 use crate::domain::game::error::{GameError, GameErrorKind};
@@ -85,7 +85,7 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                ConnectionMessageDto::Command(command) => self.handle_command(command, None).await,
+                IncomingConnectionMessageDto::Command(command) => self.handle_command(command, None).await,
                 _ => break,
             }
         }

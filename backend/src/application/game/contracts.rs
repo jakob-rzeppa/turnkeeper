@@ -2,7 +2,7 @@
 //!
 //! Defines traits (contracts) for game-related infrastructure dependencies.
 
-use crate::application::game::dto::ConnectionMessageDto;
+use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::domain::game::error::GameError;
 use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_metadata::GameMetadata;
@@ -108,8 +108,8 @@ pub trait GameRepositoryContract {
 /// without a real WebSocket.
 pub trait ConnectionContract {
     /// Receives the next message from the connection.
-    fn recv(&self) -> impl Future<Output = ConnectionMessageDto> + Send;
+    fn recv(&self) -> impl Future<Output = IncomingConnectionMessageDto> + Send;
 
     /// Sends a JSON string to the connected client.
-    fn send(&self, msg: String) -> impl Future<Output = ()> + Send;
+    fn send(&self, msg: OutgoingConnectionMessageDto) -> impl Future<Output = ()> + Send;
 }

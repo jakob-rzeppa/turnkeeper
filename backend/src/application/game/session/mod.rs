@@ -22,11 +22,13 @@ use std::collections::HashMap;
 use std::sync::Arc;
 use tokio::sync::RwLock;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
+use crate::application::game::dto::OutgoingConnectionMessageDto;
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::commands::GameCommand;
+use crate::domain::game::projections::game_error::GameErrorProjection;
 use crate::domain::game::projections::gm_game_info::GmGameInfo;
 use crate::domain::game::projections::user_game_info::UserGameInfo;
 use crate::domain::game::value_objects::id::Id;
@@ -39,7 +41,7 @@ mod user_lifecycle;
 /// How long a ticket remains valid (in seconds).
 const TICKET_TTL_SECS: u64 = 30;
 
-    /// An active in-memory game session.
+/// An active in-memory game session.
 ///
 /// Owns the [`Game`] aggregate for one game and manages connections
 /// from the GM and multiple user players.
@@ -108,20 +110,31 @@ where
 
         let res = game_guard.handle_command(command.clone());
 
-        if res.is_ok() {
-            // Persist the game state only if the command was handled successfully
-            if let Err(e) = self.game_repo.log_command(*game_guard.id(), command).await {
-                eprintln!("Failed to save game state: {}", e);
-            }
-        } else {
-            // TODO: Revert the game state to the previous valid state if the command was rejected.
-            // TODO: Send error to gm
-            eprintln!("Failed to handle command: {}", res.err().unwrap());
-        }
+        match res {
+            Ok(_) => {
+                // Persist the game state only if the command was handled successfully
+                if let Err(e) = self.game_repo.log_command(*game_guard.id(), command).await {
+                    eprintln!("Failed to save game state: {}", e);
+                }
+            },
+            Err(e) => {
+                eprintln!("Failed to handle command: {}", e);
+                self.send_error_to_gm(e).await;
+            },
+        };
 
         drop(game_guard);
 
         self.broadcast_game_state().await;
+    }
+
+    async fn send_error_to_gm(&self, error: GameError) {
+        let gm_conn_guard = self.gm_connection.read().await;
+        if let GmConnectionState::Connected { ref connection } = *gm_conn_guard {
+            let error_projection = GameErrorProjection::from(error);
+            let message = OutgoingConnectionMessageDto::GameError(error_projection);
+            connection.send(message).await;
+        }
     }
 
     /// Sends the current [`GmGameInfo`] state to the GM and all connected users.
@@ -131,10 +144,8 @@ where
         let gm_conn_guard = self.gm_connection.read().await;
         if let GmConnectionState::Connected { ref connection } = *gm_conn_guard {
             let gm_game_state = GmGameInfo::from(&*game_guard);
-            match serde_json::to_string(&gm_game_state) {
-                Ok(json_game_state) => connection.send(json_game_state).await,
-                Err(e) => eprintln!("Failed to serialize game state: {}", e),
-            }
+            let message = OutgoingConnectionMessageDto::GmGameState(gm_game_state);
+            connection.send(message).await;
         }
 
         let user_connections_guard = self.user_connections.read().await;
@@ -142,10 +153,8 @@ where
             let user_connection_guard = user_connection.read().await;
             if let UserConnectionState::Connected { ref connection, .. } = *user_connection_guard {
                 let user_game_state = UserGameInfo::for_user(&*game_guard, user_id);
-                match serde_json::to_string(&user_game_state) {
-                    Ok(json_game_state) => connection.send(json_game_state).await,
-                    Err(e) => eprintln!("Failed to serialize game state: {}", e),
-                }
+                let message = OutgoingConnectionMessageDto::UserGameInfo(user_game_state);
+                connection.send(message).await;
             }
         }
     }

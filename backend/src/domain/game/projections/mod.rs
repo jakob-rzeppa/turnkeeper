@@ -9,3 +9,4 @@
 pub mod game_metadata;
 pub mod gm_game_info;
 pub mod user_game_info;
+pub mod game_error;

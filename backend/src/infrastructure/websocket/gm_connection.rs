@@ -8,7 +8,7 @@ use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
 use crate::application::game::contracts::{ConnectionContract};
-use crate::application::game::dto::ConnectionMessageDto;
+use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::domain::game::commands::GameCommand;
 
 /// A WebSocket connection implementing [`ConnectionContract`].
@@ -31,7 +31,7 @@ impl WebSocketConnection {
 }
 
 impl ConnectionContract for WebSocketConnection {
-    async fn recv(&self) -> ConnectionMessageDto {
+    async fn recv(&self) -> IncomingConnectionMessageDto {
         let mut receiver = self.receiver.lock().await;
 
         match receiver.next().await {
@@ -39,22 +39,22 @@ impl ConnectionContract for WebSocketConnection {
                 let command = serde_json::from_str::<GameCommand>(&msg);
 
                 if let Ok(command) = command {
-                    ConnectionMessageDto::Command(command)
+                    IncomingConnectionMessageDto::Command(command)
                 } else {
                     println!("Received unknown command: {}", msg);
-                    ConnectionMessageDto::Unknown
+                    IncomingConnectionMessageDto::Unknown
                 }
             }
             Some(Ok(Message::Close(_))) => {
-                ConnectionMessageDto::Close
+                IncomingConnectionMessageDto::Close
             }
-            _ => ConnectionMessageDto::Unknown,
+            _ => IncomingConnectionMessageDto::Unknown,
         }
     }
 
-    async fn send(&self, msg: String) {
+    async fn send(&self, msg: OutgoingConnectionMessageDto) {
         let mut sender = self.sender.lock().await;
 
-        sender.send(msg.into()).await.unwrap()
+        sender.send(msg.to_string().into()).await.unwrap()
     }
 }
