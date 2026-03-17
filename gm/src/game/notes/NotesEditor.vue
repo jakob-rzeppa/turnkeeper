@@ -1,13 +1,13 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { type Game } from '../gameStore';
 
 const props = defineProps<{
     game: Game;
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const notes = ref<string>(props.game.notes);
 const hiddenNotes = ref<string>(props.game.hiddenNotes);
@@ -25,7 +25,7 @@ const hiddenNotes = ref<string>(props.game.hiddenNotes);
                     v-model="notes"
                     class="textarea textarea-bordered h-[40vh] w-full"
                     placeholder="Enter your notes here..."
-                    @change="() => eventEmitter.setNotes(notes)"
+                    @change="() => commandEmitter.setNotes(notes)"
                 ></textarea>
             </fieldset>
 
@@ -35,7 +35,7 @@ const hiddenNotes = ref<string>(props.game.hiddenNotes);
                     v-model="hiddenNotes"
                     class="textarea textarea-bordered h-[30vh] w-full"
                     placeholder="Enter your hidden notes here..."
-                    @change="() => eventEmitter.setHiddenNotes(hiddenNotes)"
+                    @change="() => commandEmitter.setHiddenNotes(hiddenNotes)"
                 ></textarea>
             </fieldset>
         </div>

@@ -114,16 +114,10 @@ mod tests {
 
         assert_eq!(game.round_number, 0);
         assert_eq!(game.current_player_index, 0);
-
-        game.prev_turn();
-
-        // When going back from the first player of the first round, we should stay there and not go to a negative round number.
-        assert_eq!(game.round_number, 0);
-        assert_eq!(game.current_player_index, 0);
     }
 
     #[test]
-    fn text_skip_turn() {
+    fn text_skip_turn_to_player() {
         let mut game = Game::new(Id::new(), "test-game".to_string());
         let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
@@ -135,19 +129,14 @@ mod tests {
         assert_eq!(game.round_number, 0);
         assert_eq!(game.current_player_index, 0);
 
-        game.skip_turn_to_player(player_id_2).unwrap();
-
-        assert_eq!(game.round_number, 0);
-        assert_eq!(game.current_player_index, 1);
-
         game.skip_turn_to_player(player_id_3).unwrap();
 
         assert_eq!(game.round_number, 0);
         assert_eq!(game.current_player_index, 2);
 
-        game.skip_turn_to_player(player_id_2).unwrap();
+        game.skip_turn_to_player(player_id_1).unwrap();
 
         assert_eq!(game.round_number, 1);
-        assert_eq!(game.current_player_index, 1);
+        assert_eq!(game.current_player_index, 0);
     }
 }

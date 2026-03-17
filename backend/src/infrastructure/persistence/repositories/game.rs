@@ -1,7 +1,7 @@
 use sqlx::SqlitePool;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::domain::game::error::{GameError, GameErrorKind};
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::domain::game::value_objects::id::Id;
 
@@ -97,7 +97,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         }
     }
 
-    async fn log_event(&self, game_id: Id, event: GameEvent) -> Result<(), GameError> {
+    async fn log_command(&self, game_id: Id, command: GameCommand) -> Result<(), GameError> {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
@@ -113,18 +113,18 @@ impl GameRepositoryContract for SqliteGameRepository {
             return Err(GameError::new(GameErrorKind::GameNotFound));
         }
 
-        // Serialize event to JSON
-        let event_json = serde_json::to_string(&event)
+        // Serialize command to JSON
+        let command_json = serde_json::to_string(&command)
             .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
 
-        // Insert event into games_log
+        // Insert command into games_log
         sqlx::query!(
             r#"
-            INSERT INTO games_log (game_id, event)
+            INSERT INTO games_log (game_id, command)
             VALUES (?, ?)
             "#,
             game_id_str,
-            event_json
+            command_json
         )
         .execute(&self.db)
         .await
@@ -133,7 +133,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(())
     }
 
-    async fn get_game_history(&self, game_id: Id) -> Result<Vec<GameEvent>, GameError> {
+    async fn get_game_history(&self, game_id: Id) -> Result<Vec<GameCommand>, GameError> {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
@@ -149,10 +149,10 @@ impl GameRepositoryContract for SqliteGameRepository {
             return Err(GameError::new(GameErrorKind::GameNotFound));
         }
 
-        // Fetch all events for this game
+        // Fetch all commands for this game
         let rows = sqlx::query!(
             r#"
-            SELECT event
+            SELECT command
             FROM games_log
             WHERE game_id = ?
             ORDER BY timestamp ASC
@@ -163,16 +163,16 @@ impl GameRepositoryContract for SqliteGameRepository {
         .await
         .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
 
-        // Deserialize events from JSON
-        let events = rows
+        // Deserialize commands from JSON
+        let commands = rows
             .into_iter()
             .map(|row| {
-                serde_json::from_str(&row.event)
+                serde_json::from_str(&row.command)
                     .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))
             })
-            .collect::<Result<Vec<GameEvent>, GameError>>()?;
+            .collect::<Result<Vec<GameCommand>, GameError>>()?;
 
-        Ok(events)
+        Ok(commands)
     }
 
     async fn delete(&self, _game_id: Id) -> Result<(), GameError> {
@@ -261,47 +261,47 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_log_events_and_get_game_history() {
+    async fn test_log_commands_and_get_game_history() {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
         let game_id = Id::new();
-        repo.create(game_id.clone(), "Event Test Game".to_string()).await.unwrap();
+        repo.create(game_id.clone(), "Command Test Game".to_string()).await.unwrap();
 
-        let event1 = GameEvent::SetNotes("test notes".to_string());
-        let res = repo.log_event(game_id.clone(), event1.clone()).await;
+        let command1 = GameCommand::SetNotes("test notes".to_string());
+        let res = repo.log_command(game_id.clone(), command1.clone()).await;
         assert!(res.is_ok());
 
-        let event2 = GameEvent::AddPlayer {
+        let command2 = GameCommand::AddPlayer {
             player_id: Id::new(),
         };
-        let res = repo.log_event(game_id.clone(), event2.clone()).await;
+        let res = repo.log_command(game_id.clone(), command2.clone()).await;
         assert!(res.is_ok());
 
-        let event3 = GameEvent::AddPlayer {
+        let command3 = GameCommand::AddPlayer {
             player_id: Id::new(),
         };
-        let res = repo.log_event(game_id.clone(), event3.clone()).await;
+        let res = repo.log_command(game_id.clone(), command3.clone()).await;
         assert!(res.is_ok());
 
-        let event4 = GameEvent::AddStatToPlayer {
+        let command4 = GameCommand::AddStatToPlayer {
             player_id: Id::new(),
             stat_id: Id::new(),
             stat_key: "Strength".to_string(),
             stat_type: "number".to_string(),
             stat_value: "10".to_string(),
         };
-        let res = repo.log_event(game_id.clone(), event4.clone()).await;
+        let res = repo.log_command(game_id.clone(), command4.clone()).await;
         assert!(res.is_ok());
 
         let history_res = repo.get_game_history(game_id.clone()).await;
         assert!(history_res.is_ok());
         let history = history_res.unwrap();
         assert_eq!(history.len(), 4);
-        assert_eq!(history[0], event1);
-        assert_eq!(history[1], event2);
-        assert_eq!(history[2], event3);
-        assert_eq!(history[3], event4);
+        assert_eq!(history[0], command1);
+        assert_eq!(history[1], command2);
+        assert_eq!(history[2], command3);
+        assert_eq!(history[3], command4);
     }
 
     #[tokio::test]
@@ -330,12 +330,12 @@ mod test {
     }
 
     #[tokio::test]
-    async fn test_log_event_invalid_game() {
+    async fn test_log_command_invalid_game() {
         let db = create_test_pool().await;
         let repo = SqliteGameRepository::new(db);
 
-        let event = GameEvent::SetNotes("test notes".to_string());
-        let res = repo.log_event(Id::new(), event.clone()).await;
+        let command = GameCommand::SetNotes("test notes".to_string());
+        let res = repo.log_command(Id::new(), command.clone()).await;
         assert!(res.is_err());
         let err = res.err().unwrap();
         assert_eq!(err.kind, GameErrorKind::GameNotFound);

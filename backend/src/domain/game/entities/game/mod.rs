@@ -1,14 +1,14 @@
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::entities::tradable::Tradable;
 use crate::domain::game::error::{GameError};
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 use crate::domain::game::value_objects::id::Id;
 
-mod player_events;
-mod notes_events;
-mod player_stat_events;
-mod tradables_events;
-mod turn_events;
+mod player_commands;
+mod notes_commands;
+mod player_stat_commands;
+mod tradables_commands;
+mod turn_commands;
 
 /// The aggregate root representing a game.
 ///
@@ -78,62 +78,62 @@ impl Game {
         &self.hidden_notes
     }
 
-    /// Dispatches a [`GameEvent`] to the appropriate handler method.
-    pub fn handle_event(&mut self, event: GameEvent) -> Result<(), GameError> {
-        println!("Handling event: {:?}", event);
-        match event {
-            GameEvent::NextTurn => Ok(self.next_turn()),
-            GameEvent::PreviousTurn => Ok(self.prev_turn()),
-            GameEvent::SkipTurnToPlayer { player_id } => self.skip_turn_to_player(player_id),
-            GameEvent::SetNotes(notes) => Ok(self.set_notes(notes)),
-            GameEvent::SetHiddenNotes(hidden_notes) => Ok(self.set_hidden_notes(hidden_notes)),
-            GameEvent::AddPlayer { player_id } => self.add_player(player_id),
-            GameEvent::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => self.add_stat_to_player(
+    /// Dispatches a [`GameCommand`] to the appropriate handler method.
+    pub fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
+        println!("Handling command: {:?}", command);
+        match command {
+            GameCommand::NextTurn => Ok(self.next_turn()),
+            GameCommand::PreviousTurn => Ok(self.prev_turn()),
+            GameCommand::SkipTurnToPlayer { player_id } => self.skip_turn_to_player(player_id),
+            GameCommand::SetNotes(notes) => Ok(self.set_notes(notes)),
+            GameCommand::SetHiddenNotes(hidden_notes) => Ok(self.set_hidden_notes(hidden_notes)),
+            GameCommand::AddPlayer { player_id } => self.add_player(player_id),
+            GameCommand::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => self.add_stat_to_player(
                 player_id,
                 stat_id,
                 stat_key,
                 stat_type,
                 stat_value
             ),
-            GameEvent::ChangeStatOfPlayer { player_id, stat_id, stat_type, stat_value } => self.change_stat_of_player(
+            GameCommand::ChangeStatOfPlayer { player_id, stat_id, stat_type, stat_value } => self.change_stat_of_player(
                 player_id,
                 stat_id,
                 stat_type,
                 stat_value,
             ),
-            GameEvent::RemoveStatFromPlayer { player_id, stat_id } => self.remove_stat_from_player(player_id, stat_id),
-            GameEvent::AddTradable { tradable_id, name, initial_value } => {
+            GameCommand::RemoveStatFromPlayer { player_id, stat_id } => self.remove_stat_from_player(player_id, stat_id),
+            GameCommand::AddTradable { tradable_id, name, initial_value } => {
                 self.add_tradable(
                     tradable_id,
                     name,
                     initial_value)
             },
-            GameEvent::RemoveTradable { tradable_id } => self.remove_tradable(tradable_id),
-            GameEvent::ChangePlayerTradableValue { player_id, tradable_id, new_value } => {
+            GameCommand::RemoveTradable { tradable_id } => self.remove_tradable(tradable_id),
+            GameCommand::ChangePlayerTradableValue { player_id, tradable_id, new_value } => {
                 self.change_player_tradable_value(
                     player_id,
                     tradable_id,
                     new_value)
             },
-            GameEvent::SendTradable {from_id, to_id, tradable_id, amount } => {
+            GameCommand::SendTradable {from_id, to_id, tradable_id, amount } => {
                 self.send_tradable(
                     from_id,
                     to_id,
                     tradable_id,
                     amount)
             },
-            GameEvent::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
+            GameCommand::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
                 user_id,
                 player_id,
             ),
-            GameEvent::DetachUserFromPlayer { player_id } => self.detach_user_from_player(
+            GameCommand::DetachUserFromPlayer { player_id } => self.detach_user_from_player(
                 player_id,
             ),
-            GameEvent::ChangePlayerOrder(ids_in_order) => {
+            GameCommand::ChangePlayerOrder(ids_in_order) => {
                 self.change_player_order(ids_in_order)
             },
-            GameEvent::Debug(msg) => {
-                println!("Debug event with message: {}", msg);
+            GameCommand::Debug(msg) => {
+                println!("Debug command with message: {}", msg);
                 Ok(())
             }
         }

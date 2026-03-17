@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 
 const props = defineProps<{
     playerId: string;
@@ -10,7 +10,7 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const newStatKey = ref('');
 const newStatValueType = ref<'string' | 'number' | 'boolean'>('string');
@@ -20,7 +20,7 @@ const addStat = () => {
     if (newStatKey.value.trim() === '') {
         return;
     }
-    eventEmitter.addStatToPlayer(
+    commandEmitter.addStatToPlayer(
         props.playerId,
         newStatKey.value,
         newStatValueType.value,

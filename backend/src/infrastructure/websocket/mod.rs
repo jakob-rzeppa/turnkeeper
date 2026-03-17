@@ -1,6 +1,6 @@
 //! # WebSocket Module
 //!
-//! Handles WebSocket connections for real-time game events.
+//! Handles WebSocket connections for real-time game commands.
 
 pub mod gm_connection;
 pub mod session_manager;

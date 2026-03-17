@@ -1,6 +1,6 @@
 //! # Game Domain Module
 //!
-//! Contains the game aggregate with entities, value objects, and domain events.
+//! Contains the game aggregate with entities, value objects, and domain commands.
 //!
 //! ## Core Concepts
 //!
@@ -17,4 +17,4 @@ pub mod entities;
 pub mod value_objects;
 pub mod error;
 pub mod projections;
-pub mod events;
+pub mod commands;

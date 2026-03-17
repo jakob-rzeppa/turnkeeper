@@ -9,7 +9,7 @@ use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
 use crate::application::game::contracts::{ConnectionContract};
 use crate::application::game::dto::ConnectionMessageDto;
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 
 /// A WebSocket connection implementing [`ConnectionContract`].
 ///
@@ -36,12 +36,12 @@ impl ConnectionContract for WebSocketConnection {
 
         match receiver.next().await {
             Some(Ok(Message::Text(msg))) => {
-                let event = serde_json::from_str::<GameEvent>(&msg);
+                let command = serde_json::from_str::<GameCommand>(&msg);
 
-                if let Ok(event) = event {
-                    ConnectionMessageDto::Event(event)
+                if let Ok(command) = command {
+                    ConnectionMessageDto::Command(command)
                 } else {
-                    println!("Received unknown event: {}", msg);
+                    println!("Received unknown command: {}", msg);
                     ConnectionMessageDto::Unknown
                 }
             }

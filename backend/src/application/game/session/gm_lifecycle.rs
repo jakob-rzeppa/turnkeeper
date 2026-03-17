@@ -1,8 +1,6 @@
 //! # GM Lifecycle
 //!
-//! Implements the GM connection lifecycle on [`GameSession`]:
-//! ticket creation ([`gm_pre_connect`](GameSession::gm_pre_connect)) and
-//! the event-loop ([`gm_connect`](GameSession::gm_connect)).
+//! Implements the GM connection lifecycle on [`GameSession`]
 
 use std::time::Instant;
 use uuid::Uuid;
@@ -51,12 +49,12 @@ where
         }
     }
 
-    /// Accepts a GM WebSocket connection and drives the session event loop.
+    /// Accepts a GM WebSocket connection and drives the session command loop.
     ///
     /// Stores the provided connection handle and then continuously reads
     /// incoming messages:
     ///
-    /// - [`ConnectionMessageDto::Event`] — forwarded to [`handle_event`](Self::handle_event).
+    /// - [`ConnectionMessageDto::Command`] — forwarded to [`handle_command`](Self::handle_command).
     /// - [`ConnectionMessageDto::Close`] — breaks the loop and clears the connection.
     ///
     /// This method returns only after the connection is closed. Only one GM
@@ -74,7 +72,7 @@ where
         self.broadcast_game_state().await;
 
         // Handle incoming messages until the connection is closed.
-        // The write lock must be scoped so it is released before handle_event,
+        // The write lock must be scoped so it is released before handle_command,
         // which calls broadcast_game_state and re-acquires the lock.
         loop {
             // Clone the Arc<Connection> so we can await recv() without holding the read lock
@@ -87,7 +85,7 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                ConnectionMessageDto::Event(event) => self.handle_event(event, None).await,
+                ConnectionMessageDto::Command(command) => self.handle_command(command, None).await,
                 _ => break,
             }
         }

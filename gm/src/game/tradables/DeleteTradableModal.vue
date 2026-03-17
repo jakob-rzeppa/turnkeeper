@@ -1,19 +1,19 @@
 <script setup lang="ts">
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 
 const props = defineProps<{
     tradableId: string;
     tradableName: string;
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const emit = defineEmits<{
     close: [];
 }>();
 
 const handleDelete = () => {
-    eventEmitter.removeTradable(props.tradableId);
+    commandEmitter.removeTradable(props.tradableId);
     emit('close');
 };
 </script>

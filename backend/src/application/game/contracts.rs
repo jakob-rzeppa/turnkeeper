@@ -4,16 +4,16 @@
 
 use crate::application::game::dto::ConnectionMessageDto;
 use crate::domain::game::error::GameError;
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::domain::game::value_objects::id::Id;
 
-/// Repository contract for game data persistence and event sourcing.
+/// Repository contract for game data persistence.
 ///
 /// This repository supports:
 /// - Game lifecycle management (create, delete)
 /// - Metadata queries for game lists
-/// - Event sourcing for game state reconstruction
+/// - Command logging for game state reconstruction
 #[mockall::automock]
 pub trait GameRepositoryContract {
     /// Creates a new game in the database.
@@ -64,29 +64,29 @@ pub trait GameRepositoryContract {
     /// Returns [`GameErrorKind::GameNotFound`] if no game exists with the given ID.
     fn get_metadata_by_id(&self, id: Id) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
     
-    /// Logs a game event.
+    /// Logs a game command.
     ///
-    /// Events are appended to the game's event log and can be replayed later
+    /// Commands are appended to the game's command log and can be replayed later
     /// to reconstruct game state.
     /// 
-    /// **Important** this function should be called after the event handling in the game succeeded.
+    /// **Important** this function should be called after the command handling in the game succeeded.
     ///
-    /// # Event Sourcing
+    /// # Command Sourcing
     ///
-    /// Events should be immutable once logged. They form an append-only log
+    /// Commands should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    fn log_event(&self, game_id: Id, event: GameEvent) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn log_command(&self, game_id: Id, command: GameCommand) -> impl Future<Output = Result<(), GameError>> + Send;
     
-    /// Retrieves the complete event history for a game.
+    /// Retrieves the complete command history for a game.
     ///
-    /// Returns all events in chronological order, which can be replayed
+    /// Returns all commands in chronological order, which can be replayed
     /// to reconstruct the current game state.
     ///
     /// # Returns
     ///
-    /// * `Ok(Vec<GameEvent>)` - Ordered list of all game events (may be empty for new games)
+    /// * `Ok(Vec<GameCommand>)` - Ordered list of all game commands (may be empty for new games)
     /// * `Err(GameError)` - Game not found or database error
-    fn get_game_history(&self, id: Id) -> impl Future<Output = Result<Vec<GameEvent>, GameError>> + Send;
+    fn get_game_history(&self, id: Id) -> impl Future<Output = Result<Vec<GameCommand>, GameError>> + Send;
     
     /// Deletes a game and all associated data.
     ///
@@ -94,7 +94,7 @@ pub trait GameRepositoryContract {
     ///
     /// Implementations should delete:
     /// - The game metadata
-    /// - All event log entries for this game
+    /// - All command log entries for this game
     ///
     /// # Important
     ///

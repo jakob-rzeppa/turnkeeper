@@ -1,22 +1,22 @@
-//! # Game Events
+//! # Game Commands
 //!
-//! Domain events that can be applied to a [`Game`](super::entities::game::Game) aggregate
-//! via its `handle_event` method. Events are serialized as JSON over WebSocket.
+//! Domain commands that can be applied to a [`Game`](super::entities::game::Game) aggregate
+//! via its `handle_command` method. Commands are serialized as JSON over WebSocket.
 
 use serde::{Deserialize, Serialize};
 use crate::domain::game::value_objects::id::Id;
 
-/// An event that mutates the game aggregate's state.
+/// A command that mutates the game aggregate's state.
 ///
 /// Serialized as JSON and sent over WebSocket by both GM and user clients.
 ///
 /// # Note
 ///
-/// [`is_user_permitted`](GameEvent::is_user_permitted) indicates whether a user
-/// (non-GM) client should be allowed to send this event, but it is **not
-/// currently enforced** by the session event loop.
+/// [`is_user_permitted`](GameCommand::is_user_permitted) indicates whether a user
+/// (non-GM) client should be allowed to send this command, but it is **not
+/// currently enforced** by the session command loop.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
-pub enum GameEvent {
+pub enum GameCommand {
     // Turn / Round
     NextTurn,
     PreviousTurn,
@@ -48,13 +48,13 @@ pub enum GameEvent {
     Debug(String),
 }
 
-impl GameEvent {
-    /// Returns whether a user (non-GM) client is allowed to send this event.
+impl GameCommand {
+    /// Returns whether a user (non-GM) client is allowed to send this command.
     ///
-    /// Currently only [`Debug`](GameEvent::Debug) is permitted for users.
+    /// Currently only [`Debug`](GameCommand::Debug) is permitted for users.
     pub fn is_user_permitted(&self, _user_id: &Id) -> bool {
         match self {
-            GameEvent::Debug(_) => true,
+            GameCommand::Debug(_) => true,
             _ => false
         }
     }

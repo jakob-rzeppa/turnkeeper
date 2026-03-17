@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useUsersStore } from '../../users/usersStore';
 import { useGameStore } from '../gameStore';
 
@@ -12,7 +12,7 @@ const emit = defineEmits<{
     (e: 'close'): void;
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
 
@@ -29,7 +29,7 @@ const availableUsers = computed(() => {
 
 const attachUserToPlayer = () => {
     if (selectedUserId.value) {
-        eventEmitter.attachUserToPlayer(selectedUserId.value, props.playerId);
+        commandEmitter.attachUserToPlayer(selectedUserId.value, props.playerId);
         selectedUserId.value = null;
         emit('close');
     }

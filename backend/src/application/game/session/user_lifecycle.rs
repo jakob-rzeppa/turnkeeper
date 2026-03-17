@@ -1,11 +1,6 @@
 //! # User Lifecycle
 //!
-//! Implements the user connection lifecycle on [`GameSession`]:
-//! ticket creation ([`user_pre_connect`](GameSession::user_pre_connect)) and
-//! the event-loop ([`user_connect`](GameSession::user_connect)).
-//!
-//! Multiple users can be connected simultaneously, unlike the GM which
-//! is limited to a single connection.
+//! Implements the user connection lifecycle on [`GameSession`]
 
 use std::sync::Arc;
 use std::time::Instant;
@@ -73,10 +68,10 @@ where
         }
     }
 
-    /// Accepts a user WebSocket connection and drives the session event loop.
+    /// Accepts a user WebSocket connection and drives the session command loop.
     ///
     /// Validates the ticket, transitions to `Connected`, broadcasts the
-    /// current game state, then enters a loop to receive events identical to
+    /// current game state, then enters a loop to receive commands identical to
     /// [`gm_connect`](Self::gm_connect). On disconnect the user entry is
     /// removed from the session.
     pub async fn user_connect(&self, user_id: Id, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
@@ -106,7 +101,7 @@ where
         self.broadcast_game_state().await;
 
         // Handle incoming messages until the connection is closed.
-        // The write lock must be scoped so it is released before handle_event,
+        // The write lock must be scoped so it is released before handle_command,
         // which calls broadcast_game_state and re-acquires the lock.
         loop {
             // Clone the Arc<Connection> so we can await recv() without holding the read lock
@@ -121,11 +116,11 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                ConnectionMessageDto::Event(event) => {
-                    if event.is_user_permitted(&user_id) {
-                        self.handle_event(event, Some(&user_id)).await
+                ConnectionMessageDto::Command(command) => {
+                    if command.is_user_permitted(&user_id) {
+                        self.handle_command(command, Some(&user_id)).await
                     } else {
-                        eprintln!("User {} is not permitted to perform action: {:?}", user_id, event);
+                        eprintln!("User {} is not permitted to perform action: {:?}", user_id, command);
                     }
                 }
                 _ => break,

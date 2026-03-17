@@ -9,7 +9,7 @@
 //! 1. A session is created via [`GameSession::try_new`], which loads the game
 //!    metadata from the repository and initialises the aggregate.
 //! 2. When the GM opens a WebSocket connection, [`GameSession::gm_connect`] is
-//!    called.  The session loops, receiving [`GameEvent`]s from the GM,
+//!    called.  The session loops, receiving [`GameCommand`]s from the GM,
 //!    applying them to the aggregate, and broadcasting the updated game state
 //!    to all connected clients.
 //! 3. Users can connect via [`GameSession::user_connect`], which follows the
@@ -26,7 +26,7 @@ use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::domain::game::entities::game::Game;
 use crate::domain::game::error::{GameError, GameErrorKind};
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::gm_game_info::GmGameInfo;
 use crate::domain::game::projections::user_game_info::UserGameInfo;
 use crate::domain::game::value_objects::id::Id;
@@ -78,10 +78,10 @@ where
 
         let mut game = Game::new(game_metadata.id, game_metadata.name);
 
-        // Apply all past events to reconstruct the current game state
-        let past_events = game_repository.get_game_history(game_id).await?;
-        for event in past_events {
-            game.handle_event(event).map_err(|e| GameError::with_source(GameErrorKind::GameHistoryInvalid, Box::new(e)))?;
+        // Apply all past commands to reconstruct the current game state
+        let past_commands = game_repository.get_game_history(game_id).await?;
+        for command in past_commands {
+            game.handle_command(command).map_err(|e| GameError::with_source(GameErrorKind::GameHistoryInvalid, Box::new(e)))?;
         }
 
         Ok(Self {
@@ -92,31 +92,31 @@ where
         })
     }
 
-    /// Applies a [`GameEvent`] to the aggregate and calls broadcast_game_state.
+    /// Applies a [`GameCommand`] to the aggregate and calls broadcast_game_state.
     ///
-    /// If the aggregate accepts the event successfully, the new state is persisted to the
-    /// repository.  If the event is rejected (e.g. due to invalid data or an illegal state
+    /// If the aggregate accepts the command successfully, the new state is persisted to the
+    /// repository.  If the command is rejected (e.g. due to invalid data or an illegal state
     /// transition) the error is logged to stderr and the game state is not persisted.
     ///
     /// Regardless of outcome the current game state is broadcast to all
     /// connected clients so they remain in sync.
     ///
-    /// If the event was triggered by a user action, the `user_id` of the triggering user is passed.
+    /// If the command was triggered by a user action, the `user_id` of the triggering user is passed.
     /// This is used to check if the user has permission to perform the action.
-    async fn handle_event(&self, event: GameEvent, _user_id: Option<&Id>) {
+    async fn handle_command(&self, command: GameCommand, _user_id: Option<&Id>) {
         let mut game_guard = self.game.write().await;
 
-        let res = game_guard.handle_event(event.clone());
+        let res = game_guard.handle_command(command.clone());
 
         if res.is_ok() {
-            // Persist the game state only if the event was handled successfully
-            if let Err(e) = self.game_repo.log_event(*game_guard.id(), event).await {
+            // Persist the game state only if the command was handled successfully
+            if let Err(e) = self.game_repo.log_command(*game_guard.id(), command).await {
                 eprintln!("Failed to save game state: {}", e);
             }
         } else {
-            // TODO: Revert the game state to the previous valid state if the event was rejected.
+            // TODO: Revert the game state to the previous valid state if the command was rejected.
             // TODO: Send error to gm
-            eprintln!("Failed to handle event: {}", res.err().unwrap());
+            eprintln!("Failed to handle command: {}", res.err().unwrap());
         }
 
         drop(game_guard);

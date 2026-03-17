@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { useModalStore } from '../../common/modal/modalStore';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import type { Tradable } from '../gameStore';
 import SendTradableModal from './SendTradableModal.vue';
 
@@ -10,11 +10,11 @@ const props = defineProps<{
     size?: 'sm' | 'md' | 'lg';
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 const modalStore = useModalStore();
 
 const editTradable = (newValue: number) => {
-    eventEmitter.changePlayerTradableValue(props.playerId, props.tradable.id, newValue);
+    commandEmitter.changePlayerTradableValue(props.playerId, props.tradable.id, newValue);
 };
 </script>
 

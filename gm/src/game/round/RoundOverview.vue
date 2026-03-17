@@ -2,7 +2,7 @@
 import { computed } from 'vue';
 import { useGameStore } from '../gameStore';
 import { useUsersStore } from '../../users/usersStore';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import InlineStatEditor from '../stats/InlineStatEditor.vue';
 import AddStatModal from '../stats/AddStatModal.vue';
 import { useModalStore } from '../../common/modal/modalStore';
@@ -10,7 +10,7 @@ import InlineTradableEditor from '../tradables/InlineTradableEditor.vue';
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 const modalStore = useModalStore();
 
 const currentPlayer = computed(() => {
@@ -33,7 +33,7 @@ const currentPlayer = computed(() => {
                         'btn btn-xs',
                         currentPlayer?.id !== player.id ? 'btn-ghost' : 'btn-secondary',
                     ]"
-                    @click="eventEmitter.skipTurnToPlayer(player.id)"
+                    @click="commandEmitter.skipTurnToPlayer(player.id)"
                 >
                     {{ usersStore.getPlayerName(player.id) }}
                 </button>
@@ -43,10 +43,10 @@ const currentPlayer = computed(() => {
             </template>
         </div>
         <div class="flex flex-row gap-2">
-            <button class="btn btn-sm btn-ghost btn-warning" @click="eventEmitter.previousTurn">
+            <button class="btn btn-sm btn-ghost btn-warning" @click="commandEmitter.previousTurn">
                 Previous Turn
             </button>
-            <button class="btn btn-sm btn-primary" @click="eventEmitter.nextTurn">Next Turn</button>
+            <button class="btn btn-sm btn-primary" @click="commandEmitter.nextTurn">Next Turn</button>
         </div>
     </div>
 

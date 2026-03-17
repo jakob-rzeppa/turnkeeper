@@ -1,8 +1,8 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const tradableName = ref('');
 const initialValue = ref(100);
@@ -16,7 +16,7 @@ const handleCreate = () => {
         alert('Please enter a tradable name');
         return;
     }
-    eventEmitter.addTradable(tradableName.value, initialValue.value);
+    commandEmitter.addTradable(tradableName.value, initialValue.value);
     emit('close');
     tradableName.value = '';
     initialValue.value = 100;

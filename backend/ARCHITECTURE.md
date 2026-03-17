@@ -22,7 +22,7 @@ Turnkeeper is a turn-based game management system that allows Game Masters (GMs)
 The backend follows clean architecture principles with three distinct layers:
 
 1. **Domain Layer** - Pure business logic, no external dependencies, except Uuid
-2. **Application Layer** - Use cases and orchestration via Request/Event Handlers
+2. **Application Layer** - Use cases and orchestration via Request/Command Handlers
 3. **Infrastructure Layer** - External concerns (HTTP, WebSockets, Database, Auth)
 
 ### Dependency Rule
@@ -43,7 +43,7 @@ graph LR
 
 ### Domain Layer
 
-The domain layer contains pure business logic with entities, value objects, and domain events.
+The domain layer contains pure business logic with entities, value objects, and domain commands.
 
 ```mermaid
 classDiagram
@@ -122,7 +122,7 @@ classDiagram
 
 ### Application Layer
 
-The application layer implements use cases through Request Handlers (for HTTP requests) and Event Handlers (for WebSocket events).
+The application layer implements use cases through Request Handlers (for HTTP requests) and Command Handlers (for commands over WebSocket).
 
 ```mermaid
 graph TB
@@ -437,7 +437,7 @@ sequenceDiagram
     Router-->>-Client: JSON Response
 ```
 
-### WebSocket Connection & Event Flow
+### WebSocket Connection & Command Flow
 
 ```mermaid
 sequenceDiagram
@@ -461,9 +461,9 @@ sequenceDiagram
     Session->>Session: broadcast_game_state()
     Session-->>Client: Full GmGameInfo (initial state)
 
-    loop Event Loop
-        Client->>Session: JSON GameEvent
-        Session->>+Game: handle_event(event)
+    loop Command Loop
+        Client->>Session: JSON GameCommand
+        Session->>+Game: handle_command(command)
         Game->>Game: Update State
         Game-->>-Session: Result
         Session->>Session: broadcast_game_state()
@@ -475,8 +475,6 @@ sequenceDiagram
     note over Session: GmConnectionState: Connected → None
     Session-->>-WS: Ok
     deactivate WS
-
-    Note over Session,Game: Event logging (games_log) is defined<br/>but not yet active (commented out)
 ```
 
 ### User WebSocket Connection Flow
@@ -503,9 +501,9 @@ sequenceDiagram
     Session->>Session: broadcast_game_state()
     Session-->>User: Full GmGameInfo (initial state)
 
-    loop Event Loop
-        User->>Session: JSON GameEvent
-        Session->>+Game: handle_event(event)
+    loop Command Loop
+        User->>Session: JSON GameCommand
+        Session->>+Game: handle_command(command)
         Game->>Game: Update State
         Game-->>-Session: Result
         Session->>Session: broadcast_game_state()
@@ -546,25 +544,7 @@ UUIDs are used for all entity IDs because:
 - Allows easy generation
 - No need for database round-trips to get IDs
 
-### 2. Request/Response vs Event
+### 2. Request/Response vs Commands
 
 - **HTTP**: Request → Handler → Response (stateless)
-- **WebSocket**: GameEvent → Handler → Apply to Game → Full State Response
-
-### 3. Current WebSocket Events
-
-The `GameEvent` enum currently supports:
-
-- `AddPlayer` — adds an anonymous player
-- `ChangePlayerOrder(Vec<String>)` — reorders players by UUID
-- `Debug(String)` — prints a debug message to the server console
-
-### 4. Unimplemented / Partial Features
-
-The following are defined in code but not yet fully functional:
-
-- `SqliteGameRepository::delete()` — will panic (`todo!()`)
-- `SqliteGameRepository::log_event()` / `get_game_history()` — event sourcing persistence (`todo!()`)
-- Event logging in `GameSession::handle_event()` — the `log_event()` call is commented out
-- `GameEvent::is_user_permitted()` — defined but never enforced; user clients can send all events
-- User frontend game view — WebSocket connection is established but no `GamePage` component exists to display game state after connecting
+- **WebSocket**: GameCommand → Handler → Apply to Game → Full State Response

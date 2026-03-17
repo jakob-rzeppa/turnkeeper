@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useGameStore } from '../gameStore';
 import { computed, ref } from 'vue';
 import CreateTradableModal from './CreateTradableModal.vue';
@@ -7,7 +7,7 @@ import { useModalStore } from '../../common/modal/modalStore';
 import { useUsersStore } from '../../users/usersStore';
 import DeleteTradableModal from './DeleteTradableModal.vue';
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 const gameStore = useGameStore();
 const modalStore = useModalStore();
 
@@ -45,7 +45,7 @@ const updatePlayerTradableValue = (playerId: string, newValue: number) => {
     if (!currentTradable.value) {
         return;
     }
-    eventEmitter.changePlayerTradableValue(playerId, currentTradable.value.id, newValue);
+    commandEmitter.changePlayerTradableValue(playerId, currentTradable.value.id, newValue);
 };
 
 // Sending tradables between players
@@ -62,7 +62,7 @@ const sendTradableFromPlayerToPlayer = () => {
         alert('Please select both a sender and a receiver.');
         return;
     }
-    eventEmitter.sendTradable(
+    commandEmitter.sendTradable(
         fromPlayerId.value,
         toPlayerId.value,
         currentTradable.value?.id,

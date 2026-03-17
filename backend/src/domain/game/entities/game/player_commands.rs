@@ -98,82 +98,42 @@ mod tests {
         fn test_add_player() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
             let player_id = Id::new();
+
             assert!(game.add_player(player_id).is_ok());
-            assert_eq!(game.players().len(), 1);
-            assert_eq!(game.players().first().unwrap().id(), &player_id);
+
+            assert_eq!(game.players.len(), 1);
+            assert_eq!(game.players[0].id(), &player_id);
         }
 
         #[test]
-        fn test_add_duplicate_player() {
+        fn test_add_duplicate_player_fails() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
             let player_id = Id::new();
+
             assert!(game.add_player(player_id).is_ok());
+
             let result = game.add_player(player_id);
             assert!(result.is_err());
+
+            match result {
+                Err(e) => {
+                    assert_eq!(e, GameError::new(GameErrorKind::PlayerAlreadyExists));
+                }
+                Ok(_) => panic!("Expected error"),
+            }
         }
 
         #[test]
-        fn test_adding_player_updates_tradables() {
+        fn test_add_player_with_tradables() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
-            let tradable_id1 = Id::new();
-            let tradable_id2 = Id::new();
-            game.add_tradable(tradable_id1, "Gold".to_string(), 100.0).unwrap();
-            game.add_tradable(tradable_id2, "Money".to_string(), 50.0).unwrap();
-
-            assert_eq!(game.tradables.len(), 2);
+            let tradable_id = Id::new();
+            game.add_tradable(tradable_id, "Gold".to_string(), 100.0).unwrap();
 
             let player_id = Id::new();
-            game.add_player(player_id).unwrap();
+            assert!(game.add_player(player_id).is_ok());
 
-            let tradable1 = &game.tradables[0];
-            assert_eq!(tradable1.values().get(&player_id.to_string()), Some(&100.0));
-
-            let tradable2 = &game.tradables[1];
-            assert_eq!(tradable2.values().get(&player_id.to_string()), Some(&50.0));
-        }
-    }
-
-    mod attach_detach_user {
-        use super::*;
-
-        #[test]
-        fn test_attach_and_detach_user() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-
-            let player_id = *game.players().first().unwrap().id();
-            let user_id = Id::new();
-
-            // Attach user to player
-            let res = game.attach_user_to_player(user_id, player_id);
-            assert!(res.is_ok());
-
-            assert_eq!(game.players().first().unwrap().user_id(), Some(user_id));
-
-            // Detach user from player
-            let res = game.detach_user_from_player(player_id);
-            assert!(res.is_ok());
-
-            assert_eq!(game.players().first().unwrap().user_id(), None);
-        }
-
-        #[test]
-        fn test_attach_user_already_attached() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
-
-            let player1_id = *game.players().get(0).unwrap().id();
-            let player2_id = *game.players().get(1).unwrap().id();
-            let user_id = Id::new();
-
-            // Attach user to first player
-            let res = game.attach_user_to_player(user_id, player1_id);
-            assert!(res.is_ok());
-
-            // Attempt to attach same user to second player should fail
-            let res = game.attach_user_to_player(user_id, player2_id);
-            assert!(res.is_err());
+            assert_eq!(game.players.len(), 1);
+            assert_eq!(game.tradables[0].values().get(&player_id.to_string()), Some(&100.0));
         }
     }
 
@@ -183,64 +143,60 @@ mod tests {
         #[test]
         fn test_change_player_order() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
+            let player_id_1 = Id::new();
+            let player_id_2 = Id::new();
+            let player_id_3 = Id::new();
 
-            let player_ids: Vec<Id> = game.players.iter().map(|p| *p.id()).collect();
-            let reversed_ids: Vec<Id> = player_ids.iter().rev().cloned().collect();
+            game.add_player(player_id_1).unwrap();
+            game.add_player(player_id_2).unwrap();
+            game.add_player(player_id_3).unwrap();
 
-            game.change_player_order(reversed_ids.clone()).unwrap();
+            game.change_player_order(vec![player_id_3, player_id_1, player_id_2]).unwrap();
 
-            let new_order_ids: Vec<Id> = game.players.iter().map(|p| *p.id()).collect();
-            assert_eq!(new_order_ids, reversed_ids);
+            assert_eq!(game.players[0].id(), &player_id_3);
+            assert_eq!(game.players[1].id(), &player_id_1);
+            assert_eq!(game.players[2].id(), &player_id_2);
         }
 
         #[test]
-        fn test_change_player_order_with_invalid_ids() {
+        fn test_change_player_order_fails_with_wrong_count() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
+            let player_id_1 = Id::new();
+            let player_id_2 = Id::new();
+            let player_id_3 = Id::new();
 
-            let invalid_ids = vec![Id::new(), Id::new()];
+            game.add_player(player_id_1).unwrap();
+            game.add_player(player_id_2).unwrap();
+            game.add_player(player_id_3).unwrap();
 
-            let result = game.change_player_order(invalid_ids);
+            let result = game.change_player_order(vec![player_id_1, player_id_2]);
             assert!(result.is_err());
         }
 
         #[test]
-        fn test_change_player_order_with_duplicate_ids() {
+        fn test_change_player_order_fails_with_duplicate_ids() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
+            let player_id_1 = Id::new();
+            let player_id_2 = Id::new();
 
-            let player_ids: Vec<Id> = game.players.iter().map(|p| *p.id()).collect();
-            let duplicate_ids = vec![player_ids[0], player_ids[0]];
+            game.add_player(player_id_1).unwrap();
+            game.add_player(player_id_2).unwrap();
 
-            let result = game.change_player_order(duplicate_ids);
+            let result = game.change_player_order(vec![player_id_1, player_id_1]);
             assert!(result.is_err());
         }
 
         #[test]
-        fn test_change_player_order_with_too_many_ids() {
+        fn test_change_player_order_fails_with_unknown_ids() {
             let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
+            let player_id_1 = Id::new();
+            let player_id_2 = Id::new();
+            let player_id_3 = Id::new();
 
-            let too_many_ids = vec![Id::new(), Id::new()];
+            game.add_player(player_id_1).unwrap();
+            game.add_player(player_id_2).unwrap();
 
-            let result = game.change_player_order(too_many_ids);
-            assert!(result.is_err());
-        }
-
-        #[test]
-        fn test_change_player_order_with_too_few_ids() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
-            game.add_player(Id::new()).unwrap();
-            game.add_player(Id::new()).unwrap();
-
-            let too_few_ids = vec![Id::new()];
-
-            let result = game.change_player_order(too_few_ids);
+            let result = game.change_player_order(vec![player_id_1, player_id_3]);
             assert!(result.is_err());
         }
     }

@@ -109,45 +109,6 @@ sequenceDiagram
 - `POST /gm/ws/ticket/{game_id}` → Get single-use WS ticket URL (GM JWT required)
 - `POST /user/ws/ticket/{game_id}` → Get single-use WS ticket URL (User JWT required)
 
-## WebSocket Events
+## WebSocket Commands
 
-Events are sent as JSON-serialized Rust enum variants. After each event, the server broadcasts the full `GmGameInfo` game state to **all** connected clients (GM and users).
-
-### Client → Backend Events
-
-| Event               | JSON Payload                                 | Description                                        |
-| ------------------- | -------------------------------------------- | -------------------------------------------------- |
-| `AddPlayer`         | `"AddPlayer"`                                | Adds a new anonymous player to the game            |
-| `ChangePlayerOrder` | `{"ChangePlayerOrder": ["id1", "id2", ...]}` | Reorders players by providing ordered player UUIDs |
-| `Debug`             | `{"Debug": "message"}`                       | Debug event (prints to server console)             |
-
-> **Note:** A `GameEvent::is_user_permitted()` method exists in the domain but is not currently enforced — users can send all events.
-
-### Backend → Client Response
-
-After every event, the server broadcasts the full game state to all connected clients:
-
-```json
-{
-    "id": "uuid",
-    "name": "string",
-    "players": [
-        {
-            "id": "uuid",
-            "user": { "id": "uuid", "name": "string" } | null,
-            "stats": [
-                {
-                    "id": "uuid",
-                    "key": "string",
-                    "value_type": "String" | "Number" | "Boolean",
-                    "string_value": "string" | null,
-                    "number_value": number | null,
-                    "boolean_value": boolean | null
-                }
-            ]
-        }
-    ],
-    "round_number": 0,
-    "current_player_index": 0
-}
-```
+Commands are sent as JSON-serialized Rust enum variants. After each command, the server broadcasts the full `GmGameInfo` game state to **all** connected clients (GM and users).

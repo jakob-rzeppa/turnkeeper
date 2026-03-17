@@ -2,7 +2,7 @@
 import { ref } from 'vue';
 import { useGameStore } from '../gameStore';
 import { useUsersStore } from '../../users/usersStore';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 
 const props = defineProps<{
     tradableId: string;
@@ -17,7 +17,7 @@ const emit = defineEmits<{
 
 const gameStore = useGameStore();
 const usersStore = useUsersStore();
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const toPlayerId = ref<string | null>(null);
 const tradableSendAmount = ref(0);
@@ -27,7 +27,7 @@ const sendTradableFromPlayerToPlayer = () => {
         alert('Please select both a sender and a receiver.');
         return;
     }
-    eventEmitter.sendTradable(
+    commandEmitter.sendTradable(
         props.fromPlayerId,
         toPlayerId.value,
         props.tradableId,

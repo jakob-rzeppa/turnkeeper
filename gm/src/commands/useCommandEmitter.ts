@@ -1,9 +1,9 @@
 import { useWsConnection } from '../api/useWsConnection';
 
 /**
- * Game events matching the Rust GameEvent enum.
+ * Game commands matching the Rust GameCommand enum.
  */
-type GameEvent =
+type GameCommand =
     | 'NextTurn'
     | 'PreviousTurn'
     | { SkipTurnToPlayer: { player_id: string } }
@@ -37,12 +37,12 @@ type GameEvent =
     | { DetachUserFromPlayer: { player_id: string } }
     | { Debug: string };
 
-export function useEventEmitter() {
+export function useCommandEmitter() {
     const wsConnection = useWsConnection();
 
-    const emit = (event: GameEvent) => {
-        const payload = JSON.stringify(event);
-        console.log('Emitting event:', payload);
+    const emit = (command: GameCommand) => {
+        const payload = JSON.stringify(command);
+        console.log('Emitting command:', payload);
         wsConnection.send(payload);
     };
 

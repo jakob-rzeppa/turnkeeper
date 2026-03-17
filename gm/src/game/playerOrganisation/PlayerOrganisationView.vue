@@ -1,12 +1,12 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
 import { useGameStore, type Player } from '../../game/gameStore';
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useModalStore } from '../../common/modal/modalStore';
 import AttatchUserToPlayerModal from './AttatchUserToPlayerModal.vue';
 import { useUsersStore } from '../../users/usersStore';
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 const gameStore = useGameStore();
 const modalStore = useModalStore();
 const usersStore = useUsersStore();
@@ -56,11 +56,11 @@ const onDragEnd = () => {
 
 const updateOrder = () => {
     const ids = localPlayers.value.map(p => p.id);
-    eventEmitter.changePlayerOrder(ids);
+    commandEmitter.changePlayerOrder(ids);
 };
 
 const addPlayer = () => {
-    eventEmitter.addPlayer();
+    commandEmitter.addPlayer();
 };
 
 const openAttachUserModal = (playerId: string) => {
@@ -68,7 +68,7 @@ const openAttachUserModal = (playerId: string) => {
 };
 
 const detachUserFromPlayer = (playerId: string) => {
-    eventEmitter.detachUserFromPlayer(playerId);
+    commandEmitter.detachUserFromPlayer(playerId);
 };
 </script>
 

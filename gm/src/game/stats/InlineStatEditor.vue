@@ -1,5 +1,5 @@
 <script setup lang="ts">
-import { useEventEmitter } from '../../events/useEventEmitter';
+import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import type { Stat } from '../gameStore';
 
 const props = defineProps<{
@@ -8,20 +8,20 @@ const props = defineProps<{
     size?: 'sm' | 'md' | 'lg';
 }>();
 
-const eventEmitter = useEventEmitter();
+const commandEmitter = useCommandEmitter();
 
 const editStatString = (newValue: string) => {
-    eventEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'string', newValue.toString());
+    commandEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'string', newValue.toString());
 };
 const editStatNumber = (newValue: number) => {
-    eventEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'number', newValue.toString());
+    commandEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'number', newValue.toString());
 };
 const editStatBoolean = (newValue: boolean) => {
-    eventEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'boolean', newValue.toString());
+    commandEmitter.changeStatOfPlayer(props.playerId, props.stat.id, 'boolean', newValue.toString());
 };
 
 const deleteStat = () => {
-    eventEmitter.removeStatFromPlayer(props.playerId, props.stat.id);
+    commandEmitter.removeStatFromPlayer(props.playerId, props.stat.id);
 };
 </script>
 

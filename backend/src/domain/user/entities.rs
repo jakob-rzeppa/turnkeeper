@@ -19,19 +19,6 @@ use crate::domain::user::value_objects::user_password::UserPassword;
 ///
 /// The password is stored in plain text so GMs can look up passwords if users forget them.
 /// This is acceptable for the use case of a private game system.
-///
-/// # Examples
-///
-/// ```rust,ignore
-/// use uuid::Id;
-/// use crate::domain::user::entities::User;
-///
-/// let user = User::try_new(
-///     Id::new(),
-///     "player1".to_string(),
-///     "secure_password".to_string()
-/// )?;
-/// ```
 #[derive(Debug, Clone, PartialEq)]
 pub struct User {
     id: Id,

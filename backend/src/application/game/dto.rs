@@ -2,11 +2,11 @@
 //!
 //! Data transfer objects for WebSocket message handling.
 
-use crate::domain::game::events::GameEvent;
+use crate::domain::game::commands::GameCommand;
 
 #[derive(Debug)]
 pub enum ConnectionMessageDto {
-    Event(GameEvent),
+    Command(GameCommand),
     Unknown,
     Close,
 }
