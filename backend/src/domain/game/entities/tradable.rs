@@ -50,7 +50,7 @@ impl Tradable {
     }
 
     pub fn add_player(&mut self, player_id: Id) {
-        if (self.values.contains_key(&player_id.to_string())) {
+        if self.values.contains_key(&player_id.to_string()) {
             return; // Player already has a value, do nothing
         }
 

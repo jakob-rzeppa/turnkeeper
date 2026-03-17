@@ -63,8 +63,6 @@ mod gm_websocket_functional_test {
             let token = gm_login(&addr).await.unwrap().token;
             let game_id = create_game(&addr, &token, "Double Ws Connection Game").await;
 
-            let client = reqwest::Client::new();
-
             // First ticket request – should succeed
             let resp1 = gm_ws_ticket_request(&addr, &token, &game_id).await;
             assert_eq!(resp1.status(), StatusCode::OK);
@@ -87,7 +85,7 @@ mod gm_websocket_functional_test {
             let ws_url = body["url"].as_str().unwrap().to_string();
 
             // Open the WebSocket using the ticket URL
-            let mut ws_stream = gm_ws_connect(&addr, &ws_url).await.expect("WebSocket handshake should succeed");
+            let mut ws_stream = gm_ws_connect(&ws_url).await.expect("WebSocket handshake should succeed");
 
             // Check that we receive the initial game state, which indicates the GM is now connected
             use futures_util::StreamExt;
@@ -131,7 +129,7 @@ mod gm_websocket_functional_test {
             let ws_url = body["url"].as_str().unwrap().to_string();
 
             // 2. Open the WebSocket using the ticket URL
-            let mut ws_stream = gm_ws_connect(&addr, &ws_url).await.expect("WebSocket handshake should succeed");
+            let mut ws_stream = gm_ws_connect(&ws_url).await.expect("WebSocket handshake should succeed");
 
             // 3. The server should immediately send the initial game state
             use futures_util::StreamExt;
@@ -161,7 +159,7 @@ mod gm_websocket_functional_test {
 
             // Try connecting without a ticket query param
             let ws_url = format!("ws://{addr}/gm/ws/{game_id}");
-            let result = gm_ws_connect(&addr, &ws_url).await;
+            let result = gm_ws_connect(&ws_url).await;
 
             // The server should reject the connection (non-101 response)
             assert!(
@@ -188,7 +186,7 @@ mod gm_websocket_functional_test {
             // Try connecting with a bogus ticket
             let ws_url = format!("ws://{addr}/gm/ws/{game_id}?ticket=bogus-ticket");
             // The server should accept the WebSocket handshake but then immediately close the connection due to invalid ticket
-            let mut ws_stream = gm_ws_connect(&addr, &ws_url).await.expect("WebSocket handshake should succeed");
+            let mut ws_stream = gm_ws_connect(&ws_url).await.expect("WebSocket handshake should succeed");
 
             // The server should close the connection quickly since the ticket is invalid.
             // We should receive no valid game state or a close frame.

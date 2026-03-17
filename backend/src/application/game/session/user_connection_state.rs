@@ -28,7 +28,7 @@ where
     /// A user WebSocket connection is active.
     Connected {
         connection: Arc<Connection>,
-        user: User,
+        _user: User,
     }
 }
 
@@ -69,7 +69,7 @@ where
                 } else {
                     *self = UserConnectionState::Connected {
                         connection: Arc::new(connection),
-                        user: user.clone(),
+                        _user: user.clone(),
                     };
 
                     Ok(())

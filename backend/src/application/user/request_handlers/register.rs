@@ -3,7 +3,6 @@
 //! Creates a new user and returns a JWT token.
 
 use std::sync::Arc;
-use uuid::Uuid;
 use crate::application::user::contracts::{UserJwtGeneratorContract, UserRepositoryContract};
 use crate::application::user::requests::{UserRegisterRequest};
 use crate::application::user::responses::UserTokenResponse;

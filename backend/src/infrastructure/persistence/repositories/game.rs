@@ -175,7 +175,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(events)
     }
 
-    async fn delete(&self, game_id: Id) -> Result<(), GameError> {
+    async fn delete(&self, _game_id: Id) -> Result<(), GameError> {
         todo!()
     }
 }

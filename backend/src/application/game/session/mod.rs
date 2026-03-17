@@ -103,7 +103,7 @@ where
     ///
     /// If the event was triggered by a user action, the `user_id` of the triggering user is passed.
     /// This is used to check if the user has permission to perform the action.
-    async fn handle_event(&self, event: GameEvent, user_id: Option<&Id>) {
+    async fn handle_event(&self, event: GameEvent, _user_id: Option<&Id>) {
         let mut game_guard = self.game.write().await;
 
         let res = game_guard.handle_event(event.clone());

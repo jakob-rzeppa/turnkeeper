@@ -41,6 +41,7 @@ pub async fn user_register_request(addr: &SocketAddr, name: &str, password: &str
         .expect("Failed to send user register request")
 }
 
+#[allow(dead_code)]
 pub async fn user_login_request(addr: &SocketAddr, name: &str, password: &str) -> reqwest::Response {
     let client = reqwest::Client::new();
     client
@@ -52,6 +53,7 @@ pub async fn user_login_request(addr: &SocketAddr, name: &str, password: &str) -
         .expect("Failed to send user login request")
 }
 
+#[allow(dead_code)]
 pub async fn user_register(addr: &SocketAddr, name: &str, password: &str) -> Result<gm::LoginResponse, String> {
     let resp = user_register_request(addr, name, password).await;
 
