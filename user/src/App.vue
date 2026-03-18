@@ -1,37 +1,26 @@
 <script setup lang="ts">
-import GameDisplay from './components/GameDisplay.vue';
-import LoginForm from './components/LoginForm.vue';
-import LogoutButton from './components/LogoutButton.vue';
-import MainContainer from './components/MainContainer.vue';
-import MessagesDisplay from './components/MessagesDisplay.vue';
-import PlayerNameDisplay from './components/PlayerNameDisplay.vue';
-import PlayerNotesDisplay from './components/PlayerNotesDisplay.vue';
-import PlayerDisplay from './components/StatsDisplay.vue';
-import useConnection from './composables/useConnection';
-import { useGameStateStore } from './stores/gameStateStore';
-import { useMessagesStore } from './stores/messagesStore';
-import { usePlayerStore } from './stores/playerStore';
+import { onMounted } from 'vue';
+import { useWsConnection } from './api/useWsConnection';
+import { useAuthStore } from './auth/authStore';
+import UserAuth from './auth/UserAuth.vue';
+import GamePage from './game/GamePage.vue';
+import GameOverview from './gameOverview/GameOverview.vue';
+import { useUsersStore } from './users/usersStore';
 
-const { isConnected } = useConnection();
+const authStore = useAuthStore();
+const wsConnection = useWsConnection();
+const usersStore = useUsersStore();
 
-// Initialize all stores, that define listeners for backend updates, so that they are ready when the user connects to the backend
-usePlayerStore();
-useGameStateStore();
-useMessagesStore();
+onMounted(() => {
+    wsConnection.autoConnect();
+    usersStore.loadUsers();
+});
 </script>
 
 <template>
-    <div class="min-h-screen">
-        <LoginForm v-if="!isConnected" />
-        <MainContainer v-else>
-            <PlayerNameDisplay />
-            <GameDisplay />
-            <PlayerNotesDisplay />
-            <PlayerDisplay />
-            <MessagesDisplay />
-        </MainContainer>
-        <LogoutButton v-if="isConnected" />
-        <!-- Footer spacer for mobile (to scroll down) -->
-        <div class="h-[50vh]"></div>
+    <div class="container">
+        <UserAuth v-if="!authStore.isAuthenticated" />
+        <GamePage v-else-if="wsConnection.isConnected.value" />
+        <GameOverview v-else />
     </div>
 </template>

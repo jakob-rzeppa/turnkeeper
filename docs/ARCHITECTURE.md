@@ -1,264 +1,114 @@
-# Turnkeeper architecture
+# Architecture
 
-The Turnkeeper application is split into three parts: the backend, the game master (frontend) and the user (frontend). The game master and users are connecting to the backend via socket.io.
-
-## Basic backend - gm/user socket event sequence
+## System Overview
 
 ```mermaid
-sequenceDiagram
-    Gm->>+Backend: "players:update"
-    Backend-->>Gm: "players:info"
-    Backend-->>-User: "player:info" (only the updated player, if connected)
-    Gm->>+Backend: "game:init"
-    Backend-->>Gm: "game:info"
-    Backend-->>-User: "game:info"
-    Gm->>+Backend: "players:create"
-    Backend-->>Gm: "players:info"
-    Backend-->>User: "player:info" (only the created player, if connected)
-    Backend-->>Gm: "game:info" updated Player Order
-    Backend-->>-User: "game:info" updated Player Order
-```
+graph TB
+    subgraph "GM Device"
+        GM[GM Client<br/>Vue.js SPA]
+        Backend[Backend Server<br/>Rust/Axum]
+        DB[(SQLite DB)]
 
-## Messages event sequence
-
-```mermaid
-sequenceDiagram
-    Gm->>+Backend: "messages:send"
-    Backend-->>Gm: "messages:new"
-    Backend-->>-User: "messages:new"
-
-    User->>+Backend: "messages:send"
-    Backend-->>Gm: "messages:new"
-    Backend-->>-User: "messages:new"
-
-    note over Backend: Some event happend
-    Backend-->>Gm: "messages:new"
-    Backend-->>User: "messages:new"
-```
-
-## Gm connection
-
-```mermaid
-sequenceDiagram
-    actor Gm as Gm Client
-    participant Socket as Socket.IO Gm Client
-    participant Backend as Backend gmSocket
-    participant GmCtrl as GmController
-
-    Gm->>Socket: connect() (no auth required)
-    Socket->>Backend: WebSocket connection to /gm namespace
-
-    alt No Backend response
-
-        note over Socket: timeout waiting for server
-
-        Socket->>Gm: Connection failed
-
-    else Backend response
-
-        Backend->>GmCtrl: isConnected()
-        GmCtrl-->>Backend: isGmAlreadyConnected
-
-        alt Gm is already connected
-
-            Backend->>Socket: 'connection_error' GM_ALREADY_CONNECTED
-            Backend->>Socket: disconnect()
-            Socket->>Gm: Connection failed
-
-        else Gm is not already connected
-
-            Backend->>GmCtrl: registerSocket()
-            Note over GmCtrl: Creates GmController with Emitters & Listeners
-
-            Note over Gm,GmCtrl: Connection established
-
-        end
+        GM <-->|HTTP + WS| Backend
+        Backend <--> DB
     end
+
+    subgraph "User Devices"
+        User1[User 1<br/>Vue.js SPA]
+        User2[User 2<br/>Vue.js SPA]
+        User3[User 3<br/>Vue.js SPA]
+    end
+
+    User1 <-->|HTTP + WS| Backend
+    User2 <-->|HTTP + WS| Backend
+    User3 <-->|HTTP + WS| Backend
+
+    style GM fill:#e1f5ff
+    style Backend fill:#fff3e0
+    style User1 fill:#f3e5f5
+    style User2 fill:#f3e5f5
+    style User3 fill:#f3e5f5
 ```
 
-## User connection
+## GM Auth / Game Start
 
 ```mermaid
 sequenceDiagram
-    actor User as User Client
-    participant Socket as Socket.IO User Client
-    participant Backend as Backend userSocket
-    participant Auth as Authenticator
-    participant PlayerRepo as playerRepository
-    participant UserCtrl as UserController
+    participant GM as GM Client
+    participant Backend as Backend Server
 
-    User->>Socket: connect() with auth: { playerName, playerSecret }
-    Socket->>Backend: WebSocket connection to /user namespace with auth: { playerName, playerSecret }
+    GM->>+Backend: POST /gm/login
+    note over Backend: Validate password against GM_PASSWORD env var
+    Backend->>-GM: JSON web token
 
-    alt No Backend response
+    GM->>Backend: GET /gm/games
+    Backend->>GM: List of game metadata (id, name)
+    note over GM: Choose a game to resume
 
-        note over Socket: timeout waiting for server
+    GM->>+Backend: POST /gm/ws/ticket/{game_id}
+    note over Backend: Validate JWT
+    note over Backend: Get or create GameSession via GameSessionManager
+    note over Backend: GameSession.gm_pre_connect() creates ticket (30s TTL)
+    note over Backend: ConnectionState: None → Pending
+    Backend->>-GM: { url: "ws://.../gm/ws/{id}?ticket=..." }
 
-        Socket->>User: Connection failed
-
-    else Backend response
-
-        Backend->>Backend: extractUserCredentials()
-        Note over Backend: Extracts credentials from socket auth
-
-        alt Credentials not found
-
-            Backend->>Socket: 'connection_error', INVALID_CREDENTIALS
-            Backend->>Socket: disconnect()
-            Socket->>User: Connection failed
-
-        else Valid credentials
-
-            Backend->>Auth: authenticateUser()
-            Note over Auth: Validates playerSecret against stored hash
-            Auth-->>Backend: isAuthenticated
-
-            alt Invalid Secret
-
-                Backend->>Socket: 'connection_error', INVALID_SECRET
-                Backend->>Socket: disconnect()
-                Socket->>User: Connection failed
-
-            else Valid Secret
-
-                Backend->>UserCtrl: registerSocket(playerId, socket)
-                Note over UserCtrl: Creates UserController with Emitters & Listeners
-
-                Note over User,UserCtrl: Connection established & authenticated
-
-            end
-        end
-    end
+    GM->>+Backend: WS connect to returned URL
+    note over Backend: GameSession.gm_connect() validates ticket
+    note over Backend: ConnectionState: Pending → Connected
+    Backend->>-GM: WebSocket connection established
+    note over Backend: Send full GmGameInfo state
 ```
 
-## Backend Architecture
+## User Auth / Game Join
 
-### Overview
+```mermaid
+sequenceDiagram
+    participant User as User Client
+    participant Backend as Backend Server
 
-The backend follows a layered architecture pattern with clear separation of concerns:
+    User->>+Backend: POST /user/login or /user/register
+    note over Backend: Validate user credentials
+    Backend->>-User: JSON web token
 
-```
-┌─────────────────────────────────────────────────────┐
-│                   Socket Layer                      │
-│            (gmSocket.ts, userSocket.ts)             │
-└────────────────────┬────────────────────────────────┘
-                     │
-┌────────────────────▼────────────────────────────────┐
-│                Controller Layer                      │
-│         (GmController, UserController)              │
-│  • Manages socket instances (singleton/multi)       │
-│  • Initializes Emitters and Listeners               │
-└────────────┬─────────────────────┬──────────────────┘
-             │                     │
-┌────────────▼──────────┐ ┌───────▼──────────────────┐
-│   Emitter Classes     │ │   Listener Classes       │
-│ • Send data to clients│ │ • Handle incoming events │
-│ • One per feature     │ │ • One per feature        │
-└────────────┬──────────┘ └───────┬──────────────────┘
-             │                     │
-             └──────────┬──────────┘
-                        │
-┌───────────────────────▼─────────────────────────────┐
-│                  Service Layer                       │
-│  (gameStateHandler, playersHandler, messagesHandler) │
-│  • Business logic                                    │
-│  • Coordinates repositories and emitters             │
-└────────────────────────┬────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────┐
-│                Repository Layer                      │
-│  (gameStateRepository, playerRepository, etc.)      │
-│  • Data access logic                                 │
-│  • Direct database operations                        │
-└────────────────────────┬────────────────────────────┘
-                         │
-┌────────────────────────▼────────────────────────────┐
-│                  Database Layer                      │
-│              (SqliteDatabase singleton)              │
-└─────────────────────────────────────────────────────┘
+    User->>Backend: GET /user/games
+    Backend->>User: List of game metadata (id, name)
+    note over User: Choose a game to join
+
+    User->>+Backend: POST /user/ws/ticket/{game_id}
+    note over Backend: Validate User JWT, extract user_id
+    note over Backend: Get or create GameSession via GameSessionManager
+    note over Backend: GameSession.user_pre_connect() creates ticket (30s TTL)
+    Backend->>-User: { url: "ws://.../user/ws/{id}?ticket=...&user_id=..." }
+
+    User->>+Backend: WS connect to returned URL
+    note over Backend: GameSession.user_connect() validates ticket
+    note over Backend: ConnectionState: Pending → Connected
+    Backend->>-User: WebSocket connection established
+    note over Backend: Send full GmGameInfo state
 ```
 
-### Socket Namespaces
+> **Note:** The user frontend has WebSocket connection support and game overview, but does not yet display a game view after connecting — no `GamePage` component exists for the user client.
 
-The application uses two Socket.IO namespaces:
+## API HTTP Endpoints
 
--   **`/gm` namespace**: Single GM connection (singleton pattern)
--   **`/user` namespace**: Multiple user connections (one per player)
+### Auth (Unauthenticated)
 
-### Controllers
+- `POST /user/login` → JWT
+- `POST /user/register` → JWT
+- `POST /gm/login` → JWT
 
-Controllers manage WebSocket connections and coordinate emitters/listeners.
+### Games
 
-#### GmController (Singleton)
+- `GET /user/games` → All game metadata (User JWT required)
+- `GET /gm/games` → All game metadata (GM JWT required)
+- `POST /gm/games` → Create new game (GM JWT required)
+- `DELETE /gm/games/{id}` → Delete game (GM JWT required, **repository not yet implemented**)
 
--   Only one GM can be connected at a time
--   Static methods: `getInstance()`, `isConnected()`, `registerSocket()`, `unregisterSocket()`
--   Instantiates:
-    -   **Emitters**: `GmGameEmitter`, `GmPlayersEmitter`, `GmLogsEmitter`, `GmMessagesEmitter`
-    -   **Listeners**: `GmGameListener`, `GmPlayersListener`, `GmMessagesListener`
+### WebSocket Tickets
 
-#### UserController (Multi-instance)
+- `POST /gm/ws/ticket/{game_id}` → Get single-use WS ticket URL (GM JWT required)
+- `POST /user/ws/ticket/{game_id}` → Get single-use WS ticket URL (User JWT required)
 
--   One instance per connected player (Map-based storage by playerId)
--   Static methods: `getInstance(playerId)`, `getAllInstances()`, `isConnected(playerId)`, `registerSocket()`, `unregisterSocket()`
--   Each instance instantiates:
-    -   **Emitters**: `UserGameEmitter`, `UserPlayersEmitter`, `UserMessagesEmitter`
-    -   **Listeners**: `UserMessagesListener`
+## WebSocket Commands
 
-### Emitters
-
-Emitters send data from the backend to connected clients. Each emitter handles a specific domain.
-
-#### GM Emitters
-
--   **GmGameEmitter**: Sends game state info (`game:info`)
--   **GmPlayersEmitter**: Sends all players info (`players:info`)
--   **GmLogsEmitter**: Sends log entries (`logs:new`)
--   **GmMessagesEmitter**: Sends new messages (`messages:new`)
-
-#### User Emitters
-
--   **UserGameEmitter**: Sends game state info to user (`game:info`)
--   **UserPlayersEmitter**: Sends player's own info (`player:info`)
--   **UserMessagesEmitter**: Sends messages to specific player (`messages:new`)
-
-### Listeners
-
-Listeners handle incoming socket events from clients. Each listener registers event handlers for a specific domain.
-
-#### GM Listeners
-
--   **GmGameListener**: Handles game state events (init, update, advance turn, etc.)
--   **GmPlayersListener**: Handles player CRUD operations
--   **GmMessagesListener**: Handles GM sending messages
-
-#### User Listeners
-
--   **UserMessagesListener**: Handles user sending messages
-
-### Services
-
-Services contain business logic and orchestrate data flow between repositories and emitters.
-
--   **gameStateHandler**: Manages game state, turn order, round tracking
--   **playersHandler**: Handles player creation, updates, deletion
--   **messagesHandler**: Routes messages between GM and users
--   **logger**: Logging service for application events
--   **statsHandler**: Manages player statistics
-
-### Repositories
-
-Repositories provide data access abstraction over the SQLite database.
-
--   **gameStateRepository**: CRUD for game state (turn order, current turn, round)
--   **playerRepository**: CRUD for players (name, HP, initiative, secret)
--   **messageRepository**: CRUD for messages between GM and players
--   **statsRepository**: CRUD for player statistics (key-value pairs)
-
-### Database
-
-**SqliteDatabase**: Singleton wrapper around `better-sqlite3`
-
--   Manages single database connection
--   Initializes tables on startup
--   Located at path defined in config
+Commands are sent as JSON-serialized Rust enum variants. After each command, the server broadcasts the full `GmGameInfo` game state to **all** connected clients (GM and users).

@@ -1,17 +1,25 @@
 # How to use the project
 
+## Prerequisites
+
+- **Backend:** Rust toolchain (install via [rustup](https://rustup.rs/))
+- **Frontends (GM & User):** Node.js and npm
+
+## Environment Variables
+
+The backend requires a `.env` file (or environment variables) with:
+
+```
+DATABASE_URL=sqlite:var/turnkeeper.db
+GM_JWT_SECRET=<your-secret>
+USER_JWT_SECRET=<your-secret>
+GM_PASSWORD=<your-gm-password>
+```
+
 ## Development
 
-1. Make sure to install all dependencies in the backend, gm and user with `npm install`.
-2. Now you can run the backend, user and gm each with `npm run dev`.
+1. **Backend:** In the `backend/` directory, run `cargo run`. This starts the Axum server (default port 8080) and automatically runs SQLite migrations.
+2. **GM Frontend:** In the `gm/` directory, run `npm install` then `npm run dev`.
+3. **User Frontend:** In the `user/` directory, run `npm install` then `npm run dev`.
 
-## Deployment
-
-1. Make sure to install all dependencies in the backend, gm and user with `npm install`.
-2. Set the .env.production `VITE_BACKEND_URL` in user and gm to 'http://localhost:3000/gm' for the gm and 'http://[ip address]:3000/user' for the users.
-3. Now run `npm run build` in all three projects.
-4. In the backend run `npm run start`.
-5. For the gm and user go into the /dist directory and serve the site (for example using serve https://www.npmjs.com/package/serve).
-6. Now you are ready to give the users on their phones the url of the user frontend.
-
-> Make sure your firewall doesn't block their requests.
+The GM frontend defaults to `http://localhost:8080/gm` as the API base URL (configurable via `VITE_API_BASE_URL`). The user frontend defaults to `http://localhost:8080`.
