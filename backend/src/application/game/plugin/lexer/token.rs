@@ -16,6 +16,7 @@ pub enum Token {
     Return,
     Reject,
     Throw,
+    Exit,
     Exec,
     Catch,
     Fn,

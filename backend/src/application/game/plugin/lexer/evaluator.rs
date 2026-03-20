@@ -14,6 +14,7 @@ fn evaluate_text_lexeme(text: String) -> Token {
         "return" => Token::Return,
         "reject" => Token::Reject,
         "throw" => Token::Throw,
+        "exit" => Token::Exit,
         "exec" => Token::Exec,
         "catch" => Token::Catch,
         "fn" => Token::Fn,
