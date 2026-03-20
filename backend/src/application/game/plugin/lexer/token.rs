@@ -1,10 +1,12 @@
+use crate::application::game::plugin::lexer::scanner::Lexeme;
+
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
+    // --- FROM Text LEXEME ---
     // Keywords
     Let,
     If,
     Else,
-    ElseIf,
     Match,
     While,
     Do,
@@ -25,20 +27,17 @@ pub enum Token {
     BoolType,
     ArrayType(Box<Token>),
 
-    // Object Types
-    IdType,
-    GameType,
-    PlayerType,
-    StatType,
-    TradableType,
-
-    // Literals
     Identifier(String),
-    IntValue(i64),
-    FloatValue(f64),
-    StringValue(String),
-    BoolValue(bool),
+    BoolLiteral(bool),
 
+    // --- FROM Number, NumberWithDot LEXEME ---
+    IntLiteral(i64),
+    FloatLiteral(f64),
+
+    // --- FROM Quote LEXEME ---
+    StringLiteral(String),
+
+    // --- FROM Symbol and DoubleSymbol LEXEME ---
     // Assignment Operators
     Assign,                 // =
     AddAssign,              // +=
