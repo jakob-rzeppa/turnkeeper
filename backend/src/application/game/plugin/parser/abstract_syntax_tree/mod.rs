@@ -23,10 +23,10 @@ pub trait Parse {
 }
 
 #[derive(Debug)]
-struct Root(Vec<Statement>);
+pub struct Root(Vec<Statement>);
 
 impl Root {
-    fn parse(mut tokens: Vec<Token>) -> Result<Self, String> {
+    pub fn parse(mut tokens: Vec<Token>) -> Result<Self, String> {
         let mut elements = Vec::new();
         
         let mut index = 0;

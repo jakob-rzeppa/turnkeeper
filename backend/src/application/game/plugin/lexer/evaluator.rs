@@ -106,7 +106,7 @@ fn evaluate_lexeme(lexeme: Lexeme) -> Token {
     }
 }
 
-fn evaluate_lexemes(lexemes: Vec<Lexeme>) -> Vec<Token> {
+pub fn evaluate_lexemes(lexemes: Vec<Lexeme>) -> Vec<Token> {
     lexemes.into_iter().map(evaluate_lexeme).collect()
 }
 

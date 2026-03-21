@@ -47,7 +47,7 @@ impl Parse for Statement {
 
 
 #[derive(Clone, PartialEq, Debug)]
-struct VariableDeclaration {
+pub struct VariableDeclaration {
     pub name: Identifier,
     pub datatype: Type,
     pub value: Expr,
@@ -78,7 +78,7 @@ impl Parse for VariableDeclaration {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct Assignment {
+pub struct Assignment {
     pub target: Identifier,
     pub value: Expr,
 }
@@ -102,7 +102,7 @@ impl Parse for Assignment {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct ExprStatement(pub Expr);
+pub struct ExprStatement(pub Expr);
 
 impl Parse for ExprStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
@@ -119,7 +119,7 @@ impl Parse for ExprStatement {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct IfStatement {
+pub struct IfStatement {
     condition: Expr,
     then: Block,
 }
@@ -145,7 +145,7 @@ impl Parse for IfStatement {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct WhileStatement {
+pub struct WhileStatement {
     pub condition: Expr,
     pub body: Block,
 }
@@ -171,7 +171,7 @@ impl Parse for WhileStatement {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct ThrowStatement(pub Option<Expr>);
+pub struct ThrowStatement(pub Option<Expr>);
 
 impl Parse for ThrowStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
@@ -196,7 +196,7 @@ impl Parse for ThrowStatement {
 }
 
 #[derive(Clone, PartialEq, Debug)]
-struct ExitStatement;
+pub struct ExitStatement;
 
 impl Parse for ExitStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
@@ -216,7 +216,7 @@ impl Parse for ExitStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::expression::Literal;
+    use crate::application::game::plugin::parser::abstract_syntax_tree::expression::{ExprAtom, Literal};
 
     use super::*;
     
@@ -236,7 +236,7 @@ mod tests {
         assert_eq!(statement, Statement::VariableDeclaration(VariableDeclaration {
             name: Identifier("x".to_string()),
             datatype: Type::Int,
-            value: Expr::Atom(Literal::Int(42)),
+            value: Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
         }));
     }
 
@@ -252,7 +252,7 @@ mod tests {
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse assignment statement");
         assert_eq!(statement, Statement::Assignment(Assignment {
             target: Identifier("x".to_string()),
-            value: Expr::Atom(Literal::Int(10)),
+            value: Expr::Atom(ExprAtom::Literal(Literal::Int(10))),
         }));
     }
 
@@ -273,11 +273,11 @@ mod tests {
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'if' statement");
         assert_eq!(statement, Statement::If(IfStatement {
-            condition: Expr::Atom(Literal::Bool(true)),
+            condition: Expr::Atom(ExprAtom::Literal(Literal::Bool(true))),
             then: Block(vec![
                 Statement::Assignment(Assignment {
                     target: Identifier("x".to_string()),
-                    value: Expr::Atom(Literal::Int(0)),
+                    value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
                 }),
             ]),
         }));
@@ -300,11 +300,11 @@ mod tests {
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'while' statement");
         assert_eq!(statement, Statement::While(WhileStatement {
-            condition: Expr::Atom(Literal::Bool(false)),
+            condition: Expr::Atom(ExprAtom::Literal(Literal::Bool(false))),
             body: Block(vec![
                 Statement::Assignment(Assignment {
                     target: Identifier("x".to_string()),
-                    value: Expr::Atom(Literal::Int(0)),
+                    value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
                 }),
             ]),
         }));
@@ -319,7 +319,7 @@ mod tests {
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement");
-        assert_eq!(statement, Statement::Throw(ThrowStatement(Some(Expr::Atom(Literal::String("Error message".to_string()))))));
+        assert_eq!(statement, Statement::Throw(ThrowStatement(Some(Expr::Atom(ExprAtom::Literal(Literal::String("Error message".to_string())))))));
     }
 
     #[test]
