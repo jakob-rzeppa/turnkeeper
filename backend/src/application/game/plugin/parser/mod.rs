@@ -1,7 +1,6 @@
 use crate::application::game::plugin::{lexer, parser::abstract_syntax_tree::Root};
 
-mod abstract_syntax_tree;
-
+pub mod abstract_syntax_tree;
 
 pub fn parse_source_code(code: String) -> Result<Root, String> {
     let tokens = lexer::tokenize(code);

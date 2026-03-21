@@ -3,9 +3,10 @@ use crate::application::game::plugin::{lexer::token::Token, parser::abstract_syn
 #[macro_use]
 mod macros;
 
-mod statement;
-mod expression;
-mod common;
+pub mod statement;
+pub mod expression;
+pub mod common;
+
 pub trait Parse {
     /// Checks if the next tokens match the expected pattern for this type.
     /// 
