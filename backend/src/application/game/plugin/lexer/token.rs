@@ -57,6 +57,8 @@ pub enum Token {
     Caret,                  // ^
     EqualEqual,             // ==
     NotEqual,               // !=
+    Less,                   // <
+    Greater,                // >
     LessEqual,              // <=
     GreaterEqual,           // >=
     And,                    // &&

@@ -42,8 +42,12 @@ Block:
 ## Program
 
 ```
-Program:
-    {(Stmt | FnDecl)}
+Root:
+    RootElement
+
+RootElement:
+    Stmt
+    FnDecl
 ```
 
 ## Statements
@@ -91,7 +95,6 @@ ParenthesizedExpression:
 UnaryOperator:
     !
     -
-    (Type)
 
 BinaryOperator:
     +
@@ -106,6 +109,7 @@ BinaryOperator:
     >=
     &&
     ||
+    as
 ```
 
 ## Functions
