@@ -236,7 +236,7 @@ mod tests {
         assert_eq!(statement, Statement::VariableDeclaration(VariableDeclaration {
             name: Identifier("x".to_string()),
             datatype: Type::Int,
-            value: Expr::Literal(Literal::Int(42)),
+            value: Expr::Atom(Literal::Int(42)),
         }));
     }
 
@@ -252,7 +252,7 @@ mod tests {
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse assignment statement");
         assert_eq!(statement, Statement::Assignment(Assignment {
             target: Identifier("x".to_string()),
-            value: Expr::Literal(Literal::Int(10)),
+            value: Expr::Atom(Literal::Int(10)),
         }));
     }
 
@@ -273,11 +273,11 @@ mod tests {
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'if' statement");
         assert_eq!(statement, Statement::If(IfStatement {
-            condition: Expr::Literal(Literal::Bool(true)),
+            condition: Expr::Atom(Literal::Bool(true)),
             then: Block(vec![
                 Statement::Assignment(Assignment {
                     target: Identifier("x".to_string()),
-                    value: Expr::Literal(Literal::Int(0)),
+                    value: Expr::Atom(Literal::Int(0)),
                 }),
             ]),
         }));
@@ -300,11 +300,11 @@ mod tests {
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'while' statement");
         assert_eq!(statement, Statement::While(WhileStatement {
-            condition: Expr::Literal(Literal::Bool(false)),
+            condition: Expr::Atom(Literal::Bool(false)),
             body: Block(vec![
                 Statement::Assignment(Assignment {
                     target: Identifier("x".to_string()),
-                    value: Expr::Literal(Literal::Int(0)),
+                    value: Expr::Atom(Literal::Int(0)),
                 }),
             ]),
         }));
@@ -319,7 +319,7 @@ mod tests {
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement");
-        assert_eq!(statement, Statement::Throw(ThrowStatement(Some(Expr::Literal(Literal::String("Error message".to_string()))))));
+        assert_eq!(statement, Statement::Throw(ThrowStatement(Some(Expr::Atom(Literal::String("Error message".to_string()))))));
     }
 
     #[test]
