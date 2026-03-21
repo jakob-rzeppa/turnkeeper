@@ -1,0 +1,70 @@
+graph TD
+    Root["Root"]
+    Root --> Statement["Statement (enum)"]
+    Root --> Expr["Expr (enum)"]
+    Root --> Literal["Literal (enum)"]
+    Root --> Type["Type (enum)"]
+    Root --> Block["Block"]
+    Root --> Identifier["Identifier"]
+
+    %% Statement variants
+    Statement --> VarDecl["VariableDeclaration"]
+    Statement --> Assign["Assignment"]
+    Statement --> ExprStmt["ExprStatement"]
+    Statement --> If["IfStatement"]
+    Statement --> While["WhileStatement"]
+    Statement --> Throw["ThrowStatement"]
+    Statement --> Exit["ExitStatement"]
+
+    %% VariableDeclaration components
+    VarDecl --> VD1["name: Identifier"]
+    VarDecl --> VD2["datatype: Type"]
+    VarDecl --> VD3["value: Expr"]
+
+    %% Assignment components
+    Assign --> A1["target: Identifier"]
+    Assign --> A2["value: Expr"]
+
+    %% ExprStatement
+    ExprStmt --> E1["Expr"]
+
+    %% IfStatement
+    If --> IF1["condition: Expr"]
+    If --> IF2["then: Block"]
+
+    %% WhileStatement
+    While --> W1["condition: Expr"]
+    While --> W2["body: Block"]
+
+    %% ThrowStatement
+    Throw --> T1["Option<Expr>"]
+
+    %% Expr variants
+    Expr --> Lit["Literal"]
+
+    %% Literal variants
+    Literal --> LitInt["Int(i64)"]
+    Literal --> LitFloat["Float(f64)"]
+    Literal --> LitString["String(String)"]
+    Literal --> LitBool["Bool(bool)"]
+
+    %% Type variants
+    Type --> TInt["Int"]
+    Type --> TFloat["Float"]
+    Type --> TString["String"]
+    Type --> TBool["Bool"]
+
+    %% Block structure
+    Block --> Stmts["Vec<Statement>"]
+
+    %% Identifier structure
+    Identifier --> ID["String"]
+
+    %% Styling
+    classDef enum fill:#e1f5ff,stroke:#01579b,stroke-width:2px
+    classDef struct fill:#f3e5f5,stroke:#4a148c,stroke-width:2px
+    classDef primary fill:#fff3e0,stroke:#e65100,stroke-width:2px
+
+    class Statement,Expr,Literal,Type enum
+    class Block,Identifier struct
+    class Root primary
