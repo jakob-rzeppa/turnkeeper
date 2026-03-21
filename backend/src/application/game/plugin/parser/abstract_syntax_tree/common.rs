@@ -63,6 +63,16 @@ impl Parse for Identifier {
     }
 }
 
+impl Identifier {
+    pub fn as_str(&self) -> &str {
+        &self.0
+    }
+
+    pub fn to_string(&self) -> String {
+        self.0.clone()
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;

@@ -15,7 +15,6 @@ pub enum Expr {
 }
 
 impl Expr {
-
     fn parse_unary(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         let operator = match tokens.get(index) {
             Some(Token::Minus) => UnaryOperator::Neg,
@@ -88,10 +87,10 @@ impl Expr {
 
         loop {
             let operator = match tokens.get(index) {
-                Some(Token::Plus) => BinaryOperator::Plus,
-                Some(Token::Minus) => BinaryOperator::Minus,
-                Some(Token::Star) => BinaryOperator::Multiply,
-                Some(Token::Slash) => BinaryOperator::Divide,
+                Some(Token::Plus) => BinaryOperator::Addition,
+                Some(Token::Minus) => BinaryOperator::Subtraction,
+                Some(Token::Star) => BinaryOperator::Multiplication,
+                Some(Token::Slash) => BinaryOperator::Division,
                 Some(Token::Percent) => BinaryOperator::Modulo,
                 Some(Token::Caret) => BinaryOperator::Power,
                 Some(Token::EqualEqual) => BinaryOperator::Equal,
@@ -172,10 +171,10 @@ pub enum UnaryOperator {
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum BinaryOperator {
-    Plus,
-    Minus,
-    Multiply,
-    Divide,
+    Addition,
+    Subtraction,
+    Multiplication,
+    Division,
     Modulo,
     Power,
 
@@ -198,9 +197,9 @@ impl BinaryOperator {
             
             BinaryOperator::Equal | BinaryOperator::NotEqual | BinaryOperator::Less | BinaryOperator::Greater | BinaryOperator::LessEqual | BinaryOperator::GreaterEqual => (70, 71),
 
-            BinaryOperator::Plus | BinaryOperator::Minus => (80, 81),
+            BinaryOperator::Addition | BinaryOperator::Subtraction => (80, 81),
 
-            BinaryOperator::Multiply | BinaryOperator::Divide | BinaryOperator::Modulo => (90, 91),
+            BinaryOperator::Multiplication | BinaryOperator::Division | BinaryOperator::Modulo => (90, 91),
             BinaryOperator::Power => (101, 100),
         }
     }
@@ -222,7 +221,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
         });
     }
@@ -237,7 +236,7 @@ mod tests {
 
         assert!(Expr::is_next(&tokens, 0));
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
-        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Multiply, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
+        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Multiplication, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
     }
 
     #[test]
@@ -254,10 +253,10 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
             }) 
         });
@@ -278,10 +277,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -301,10 +300,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -324,10 +323,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Minus, 
+                operator: BinaryOperator::Subtraction, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Minus, 
+            operator: BinaryOperator::Subtraction, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -347,10 +346,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Multiply, 
+            operator: BinaryOperator::Multiplication, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -370,10 +369,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Divide, 
+                operator: BinaryOperator::Division, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Divide, 
+            operator: BinaryOperator::Division, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -395,14 +394,14 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::BinaryOperation { 
                     left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                    operator: BinaryOperator::Multiply, 
+                    operator: BinaryOperator::Multiplication, 
                     right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
                 })
             }), 
-            operator: BinaryOperator::Minus, 
+            operator: BinaryOperator::Subtraction, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(6)))) 
         });
     }
@@ -434,7 +433,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
         });
     }
@@ -456,10 +455,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Multiply, 
+            operator: BinaryOperator::Multiplication, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -480,10 +479,10 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Multiply, 
+            operator: BinaryOperator::Multiplication, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
             }) 
         });
@@ -506,10 +505,10 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
         });
     }
@@ -530,10 +529,10 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
             }) 
         });
@@ -557,10 +556,10 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Multiply, 
+            operator: BinaryOperator::Multiplication, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
             }) 
         });
@@ -588,17 +587,17 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Multiply, 
+            operator: BinaryOperator::Multiplication, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::BinaryOperation { 
                     left: Box::new(Expr::BinaryOperation { 
                         left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))), 
-                        operator: BinaryOperator::Multiply, 
+                        operator: BinaryOperator::Multiplication, 
                         right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(6)))) 
                     }), 
-                    operator: BinaryOperator::Divide, 
+                    operator: BinaryOperator::Division, 
                     right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(6)))) 
                 }),
             }),
@@ -642,7 +641,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::UnaryOperation { operator: UnaryOperator::Neg, operand: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) }), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))) 
         });
     }
@@ -660,7 +659,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::UnaryOperation { operator: UnaryOperator::Neg, operand: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(1)))) }), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(0)))) 
         });
     }
@@ -678,7 +677,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::UnaryOperation { operator: UnaryOperator::Neg, operand: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) }) 
         });
     }
@@ -736,7 +735,7 @@ mod tests {
             operator: UnaryOperator::Neg, 
             operand: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))) 
             }) 
         });
@@ -776,7 +775,7 @@ mod tests {
 
         assert!(Expr::is_next(&tokens, 0));
         let (expr, index) = Expr::parse(&tokens, 0).unwrap();
-        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Plus, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
+        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Addition, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
         assert_eq!(index, 3); // The expression should end at the semicolon
     }
 
@@ -792,7 +791,7 @@ mod tests {
 
         assert!(Expr::is_next(&tokens, 1));
         let (expr, index) = Expr::parse(&tokens, 1).unwrap();
-        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Plus, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
+        assert_eq!(expr, Expr::BinaryOperation { left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), operator: BinaryOperator::Addition, right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) });
         assert_eq!(index, 4); // The expression should end at the right parenthesis
     }
 
@@ -861,7 +860,7 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Multiply, 
+                operator: BinaryOperator::Multiplication, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
             operator: BinaryOperator::Modulo, 
@@ -1013,7 +1012,7 @@ mod tests {
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
-                operator: BinaryOperator::Plus, 
+                operator: BinaryOperator::Addition, 
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
             }), 
             operator: BinaryOperator::Equal, 
@@ -1036,7 +1035,7 @@ mod tests {
         let (expr, _) = Expr::parse(&tokens, 0).unwrap();
         assert_eq!(expr, Expr::BinaryOperation { 
             left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(2)))), 
-            operator: BinaryOperator::Plus, 
+            operator: BinaryOperator::Addition, 
             right: Box::new(Expr::BinaryOperation { 
                 left: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3)))), 
                 operator: BinaryOperator::Power, 
@@ -1071,10 +1070,10 @@ mod tests {
                             operator: UnaryOperator::Neg,
                             operand: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(3))))
                         }),
-                        operator: BinaryOperator::Multiply,
+                        operator: BinaryOperator::Multiplication,
                         right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4))))
                     }),
-                    operator: BinaryOperator::Plus,
+                    operator: BinaryOperator::Addition,
                     right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5))))
                 }),
                 operator: BinaryOperator::Less,
