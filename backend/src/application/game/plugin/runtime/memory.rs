@@ -13,6 +13,12 @@ pub enum VariableValue {
     Bool(bool),
 }
 
+impl VariableValue {
+    pub fn is_type(&self, other: &VariableValue) -> bool {
+        std::mem::discriminant(self) == std::mem::discriminant(other)
+    }
+}
+
 impl Default for MemoryManager {
     fn default() -> Self {
         Self {
@@ -53,6 +59,10 @@ impl MemoryManager {
         // Look for the variable first in the current scope and then in outer scopes
         for scope in self.variables.iter_mut().rev() {
             if scope.contains_key(&name) {
+                if !scope.get(&name).unwrap().is_type(&value) {
+                    return Err(format!("Type mismatch: cannot assign value of type {:?} to variable '{}'", value, name));
+                }
+
                 scope.insert(name, value);
                 return Ok(());
             }

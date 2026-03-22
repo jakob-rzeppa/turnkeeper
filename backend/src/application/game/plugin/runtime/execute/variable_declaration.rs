@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::{common::Type, expression::Expr, statement::VariableDeclaration}, runtime::{RuntimeEnvironment, memory::VariableValue}};
+use crate::application::game::plugin::{parser::abstract_syntax_tree::{common::Type, statement::VariableDeclaration}, runtime::{RuntimeEnvironment, memory::VariableValue}};
 
 impl RuntimeEnvironment {
     pub fn execute_variable_declaration(&mut self, element: &VariableDeclaration) -> Result<(), String> {
@@ -21,7 +21,7 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::{common::Identifier, expression::{ExprAtom, Literal}};
+    use crate::application::game::plugin::parser::abstract_syntax_tree::{common::Identifier, expression::{Expr, ExprAtom, Literal}};
     use super::*;
 
     #[test]
