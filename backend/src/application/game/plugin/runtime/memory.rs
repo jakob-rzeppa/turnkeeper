@@ -11,6 +11,7 @@ pub enum VariableValue {
     Float(f64),
     String(String),
     Bool(bool),
+    None,
 }
 
 impl VariableValue {

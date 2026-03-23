@@ -13,7 +13,12 @@ impl RuntimeEnvironment {
                 }
             },
             ExprAtom::Identifier(name) => self.memory_manager.get_variable(name.as_str()).cloned(),
-            _ => Err("Unsupported expression atom".to_string()),
+            ExprAtom::FunctionCall(function_call) => {
+                match self.evaluate_function(function_call) {
+                    Ok(value) => Ok(value),
+                    Err(err) => Err(format!("Error evaluating function call '{}': {}", function_call.identifier.as_str(), err)),
+                }
+            }
         }
     }
 
