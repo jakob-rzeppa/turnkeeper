@@ -173,7 +173,7 @@ impl Scanner {
     }
 }
 
-pub fn scan_source_code(source: String) -> Vec<Lexeme> {
+pub fn scan_source_code(source: &str) -> Vec<Lexeme> {
     let mut lexemes: Vec<Lexeme> = Vec::new();
     
     let mut scanner = Scanner::new();
@@ -200,13 +200,13 @@ mod tests {
     // Basic Text Tests
     #[test]
     fn test_single_word() {
-        let result = scan_source_code("hello".to_string());
+        let result = scan_source_code("hello");
         assert_eq!(result, vec![Lexeme::Text("hello".to_string())]);
     }
 
     #[test]
     fn test_multiple_words() {
-        let result = scan_source_code("hello world".to_string());
+        let result = scan_source_code("hello world");
         assert_eq!(result, vec![
             Lexeme::Text("hello".to_string()),
             Lexeme::Text("world".to_string()),
@@ -215,44 +215,44 @@ mod tests {
 
     #[test]
     fn test_text_with_underscores() {
-        let result = scan_source_code("hello_world".to_string());
+        let result = scan_source_code("hello_world");
         assert_eq!(result, vec![Lexeme::Text("hello_world".to_string())]);
     }
 
     #[test]
     fn test_text_with_hyphens() {
-        let result = scan_source_code("hello-world".to_string());
+        let result = scan_source_code("hello-world");
         assert_eq!(result, vec![Lexeme::Text("hello-world".to_string())]);
     }
 
     #[test]
     fn test_text_with_numbers() {
-        let result = scan_source_code("test123".to_string());
+        let result = scan_source_code("test123");
         assert_eq!(result, vec![Lexeme::Text("test123".to_string())]);
     }
 
     // Number Tests
     #[test]
     fn test_single_digit() {
-        let result = scan_source_code("5".to_string());
+        let result = scan_source_code("5");
         assert_eq!(result, vec![Lexeme::Number("5".to_string())]);
     }
 
     #[test]
     fn test_multi_digit_number() {
-        let result = scan_source_code("12345".to_string());
+        let result = scan_source_code("12345");
         assert_eq!(result, vec![Lexeme::Number("12345".to_string())]);
     }
 
     #[test]
     fn test_decimal_number() {
-        let result = scan_source_code("123.45".to_string());
+        let result = scan_source_code("123.45");
         assert_eq!(result, vec![Lexeme::NumberWithDot("123.45".to_string())]);
     }
 
     #[test]
     fn test_multiple_numbers() {
-        let result = scan_source_code("1 2 3".to_string());
+        let result = scan_source_code("1 2 3");
         assert_eq!(result, vec![
             Lexeme::Number("1".to_string()),
             Lexeme::Number("2".to_string()),
@@ -262,38 +262,38 @@ mod tests {
 
     #[test]
     fn test_zero_decimal() {
-        let result = scan_source_code("0.0".to_string());
+        let result = scan_source_code("0.0");
         assert_eq!(result, vec![Lexeme::NumberWithDot("0.0".to_string())]);
     }
 
     // Quote Tests
     #[test]
     fn test_simple_quoted_string() {
-        let result = scan_source_code("\"hello\"".to_string());
+        let result = scan_source_code("\"hello\"");
         assert_eq!(result, vec![Lexeme::Quote("hello".to_string())]);
     }
 
     #[test]
     fn test_quoted_string_with_spaces() {
-        let result = scan_source_code("\"hello world\"".to_string());
+        let result = scan_source_code("\"hello world\"");
         assert_eq!(result, vec![Lexeme::Quote("hello world".to_string())]);
     }
 
     #[test]
     fn test_quoted_string_with_numbers() {
-        let result = scan_source_code("\"test 123\"".to_string());
+        let result = scan_source_code("\"test 123\"");
         assert_eq!(result, vec![Lexeme::Quote("test 123".to_string())]);
     }
 
     #[test]
     fn test_quoted_string_with_symbols() {
-        let result = scan_source_code("\"a+b\"".to_string());
+        let result = scan_source_code("\"a+b\"");
         assert_eq!(result, vec![Lexeme::Quote("a+b".to_string())]);
     }
 
     #[test]
     fn test_multiple_quoted_strings() {
-        let result = scan_source_code("\"first\" \"second\"".to_string());
+        let result = scan_source_code("\"first\" \"second\"");
         assert_eq!(result, vec![
             Lexeme::Quote("first".to_string()),
             Lexeme::Quote("second".to_string()),
@@ -302,26 +302,26 @@ mod tests {
 
     #[test]
     fn test_empty_quoted_string() {
-        let result = scan_source_code("\"\"".to_string());
+        let result = scan_source_code("\"\"");
         assert_eq!(result, vec![Lexeme::Quote("".to_string())]);
     }
 
     // Symbol Tests
     #[test]
     fn test_single_symbol() {
-        let result = scan_source_code("+".to_string());
+        let result = scan_source_code("+");
         assert_eq!(result, vec![Lexeme::Symbol("+".to_string())]);
     }
 
     #[test]
     fn test_equals_symbol() {
-        let result = scan_source_code("=".to_string());
+        let result = scan_source_code("=");
         assert_eq!(result, vec![Lexeme::Symbol("=".to_string())]);
     }
 
     #[test]
     fn test_multiple_single_symbols() {
-        let result = scan_source_code("+ - *".to_string());
+        let result = scan_source_code("+ - *");
         assert_eq!(result, vec![
             Lexeme::Symbol("+".to_string()),
             Lexeme::Symbol("-".to_string()),
@@ -331,7 +331,7 @@ mod tests {
 
     #[test]
     fn test_parentheses() {
-        let result = scan_source_code("( )".to_string());
+        let result = scan_source_code("( )");
         assert_eq!(result, vec![
             Lexeme::Symbol("(".to_string()),
             Lexeme::Symbol(")".to_string()),
@@ -340,7 +340,7 @@ mod tests {
 
     #[test]
     fn test_parentheses_no_spaces() {
-        let result = scan_source_code("()".to_string());
+        let result = scan_source_code("()");
         assert_eq!(result, vec![
             Lexeme::Symbol("(".to_string()),
             Lexeme::Symbol(")".to_string()),
@@ -349,7 +349,7 @@ mod tests {
 
     #[test]
     fn test_brackets() {
-        let result = scan_source_code("[ ]".to_string());
+        let result = scan_source_code("[ ]");
         assert_eq!(result, vec![
             Lexeme::Symbol("[".to_string()),
             Lexeme::Symbol("]".to_string()),
@@ -358,7 +358,7 @@ mod tests {
 
     #[test]
     fn test_brackets_no_spaces() {
-        let result = scan_source_code("[]".to_string());
+        let result = scan_source_code("[]");
         assert_eq!(result, vec![
             Lexeme::Symbol("[".to_string()),
             Lexeme::Symbol("]".to_string()),
@@ -367,7 +367,7 @@ mod tests {
 
     #[test]
     fn test_braces() {
-        let result = scan_source_code("{ }".to_string());
+        let result = scan_source_code("{ }");
         assert_eq!(result, vec![
             Lexeme::Symbol("{".to_string()),
             Lexeme::Symbol("}".to_string()),
@@ -376,7 +376,7 @@ mod tests {
 
     #[test]
     fn test_braces_no_spaces() {
-        let result = scan_source_code("{}".to_string());
+        let result = scan_source_code("{}");
         assert_eq!(result, vec![
             Lexeme::Symbol("{".to_string()),
             Lexeme::Symbol("}".to_string()),
@@ -386,81 +386,81 @@ mod tests {
     // Double Symbol Tests
     #[test]
     fn test_double_equals() {
-        let result = scan_source_code("==".to_string());
+        let result = scan_source_code("==");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("==".to_string())]);
     }
 
     #[test]
     fn test_plus_equals() {
-        let result = scan_source_code("+=".to_string());
+        let result = scan_source_code("+=");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("+=".to_string())]);
     }
 
     #[test]
     fn test_minus_equals() {
-        let result = scan_source_code("-=".to_string());
+        let result = scan_source_code("-=");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("-=".to_string())]);
     }
 
     #[test]
     fn test_less_than_equals() {
-        let result = scan_source_code("<=".to_string());
+        let result = scan_source_code("<=");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("<=".to_string())]);
     }
 
     #[test]
     fn test_greater_than_equals() {
-        let result = scan_source_code(">=".to_string());
+        let result = scan_source_code(">=");
         assert_eq!(result, vec![Lexeme::DoubleSymbol(">=".to_string())]);
     }
 
     #[test]
     fn test_logical_and() {
-        let result = scan_source_code("&&".to_string());
+        let result = scan_source_code("&&");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("&&".to_string())]);
     }
 
     #[test]
     fn test_logical_or() {
-        let result = scan_source_code("||".to_string());
+        let result = scan_source_code("||");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("||".to_string())]);
     }
 
     // Whitespace Tests
     #[test]
     fn test_empty_string() {
-        let result = scan_source_code("".to_string());
+        let result = scan_source_code("");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_spaces() {
-        let result = scan_source_code("   ".to_string());
+        let result = scan_source_code("   ");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_tabs() {
-        let result = scan_source_code("\t\t".to_string());
+        let result = scan_source_code("\t\t");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_newlines() {
-        let result = scan_source_code("\n\n".to_string());
+        let result = scan_source_code("\n\n");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_mixed_whitespace() {
-        let result = scan_source_code(" \t\n ".to_string());
+        let result = scan_source_code(" \t\n ");
         assert_eq!(result, vec![]);
     }
 
     // Complex Expression Tests
     #[test]
     fn test_arithmetic_expression() {
-        let result = scan_source_code("10 + 5".to_string());
+        let result = scan_source_code("10 + 5");
         assert_eq!(result, vec![
             Lexeme::Number("10".to_string()),
             Lexeme::Symbol("+".to_string()),
@@ -470,7 +470,7 @@ mod tests {
 
     #[test]
     fn test_equation() {
-        let result = scan_source_code("x = 10".to_string());
+        let result = scan_source_code("x = 10");
         assert_eq!(result, vec![
             Lexeme::Text("x".to_string()),
             Lexeme::Symbol("=".to_string()),
@@ -480,7 +480,7 @@ mod tests {
 
     #[test]
     fn test_function_call() {
-        let result = scan_source_code("func ( 1 , 2 )".to_string());
+        let result = scan_source_code("func ( 1 , 2 )");
         assert_eq!(result, vec![
             Lexeme::Text("func".to_string()),
             Lexeme::Symbol("(".to_string()),
@@ -493,7 +493,7 @@ mod tests {
 
     #[test]
     fn test_function_call_no_spaces() {
-        let result = scan_source_code("func(1,2)".to_string());
+        let result = scan_source_code("func(1,2)");
         assert_eq!(result, vec![
             Lexeme::Text("func".to_string()),
             Lexeme::Symbol("(".to_string()),
@@ -506,7 +506,7 @@ mod tests {
 
     #[test]
     fn test_complex_comparison() {
-        let result = scan_source_code("if x >= 5 && y <= 10".to_string());
+        let result = scan_source_code("if x >= 5 && y <= 10");
         assert_eq!(result, vec![
             Lexeme::Text("if".to_string()),
             Lexeme::Text("x".to_string()),
@@ -521,7 +521,7 @@ mod tests {
 
     #[test]
     fn test_mathematical_expression() {
-        let result = scan_source_code("( a + b ) * c".to_string());
+        let result = scan_source_code("( a + b ) * c");
         assert_eq!(result, vec![
             Lexeme::Symbol("(".to_string()),
             Lexeme::Text("a".to_string()),
@@ -535,7 +535,7 @@ mod tests {
 
     #[test]
     fn test_string_with_text_and_numbers() {
-        let result = scan_source_code("price \"$100\"".to_string());
+        let result = scan_source_code("price \"$100\"");
         assert_eq!(result, vec![
             Lexeme::Text("price".to_string()),
             Lexeme::Quote("$100".to_string()),
@@ -544,7 +544,7 @@ mod tests {
 
     #[test]
     fn test_assignment_with_decimal() {
-        let result = scan_source_code("value = 3.14".to_string());
+        let result = scan_source_code("value = 3.14");
         assert_eq!(result, vec![
             Lexeme::Text("value".to_string()),
             Lexeme::Symbol("=".to_string()),
@@ -554,7 +554,7 @@ mod tests {
 
     #[test]
     fn test_array_initialization() {
-        let result = scan_source_code("[1,2,3]".to_string());
+        let result = scan_source_code("[1,2,3]");
         assert_eq!(result, vec![
             Lexeme::Symbol("[".to_string()),
             Lexeme::Number("1".to_string()),
@@ -568,7 +568,7 @@ mod tests {
 
     #[test]
     fn test_array_with_spaces() {
-        let result = scan_source_code("[ 1 , 2 , 3 ]".to_string());
+        let result = scan_source_code("[ 1 , 2 , 3 ]");
         assert_eq!(result, vec![
             Lexeme::Symbol("[".to_string()),
             Lexeme::Number("1".to_string()),
@@ -582,7 +582,7 @@ mod tests {
 
     #[test]
     fn test_all_operator_types() {
-        let result = scan_source_code("+ - * / % ^ ! &".to_string());
+        let result = scan_source_code("+ - * / % ^ ! &");
         assert_eq!(result.len(), 8);
         assert!(result.contains(&Lexeme::Symbol("+".to_string())));
         assert!(result.contains(&Lexeme::Symbol("-".to_string())));
@@ -592,7 +592,7 @@ mod tests {
 
     #[test]
     fn test_not_equals() {
-        let result = scan_source_code("!=".to_string());
+        let result = scan_source_code("!=");
         assert_eq!(result, vec![Lexeme::DoubleSymbol("!=".to_string())]);
     }
 
@@ -601,7 +601,7 @@ mod tests {
     fn test_number_followed_by_text() {
         // Once scanner enters Number state, it can't transition to Text
         // This is expected behavior in the current implementation
-        let result = scan_source_code("123abc".to_string());
+        let result = scan_source_code("123abc");
         assert_eq!(result, vec![
             Lexeme::Number("123".to_string()),
             Lexeme::Text("abc".to_string()),
@@ -610,26 +610,26 @@ mod tests {
 
     #[test]
     fn test_underscore_only() {
-        let result = scan_source_code("_".to_string());
+        let result = scan_source_code("_");
         assert_eq!(result, vec![Lexeme::Text("_".to_string())]);
     }
 
     #[test]
     fn test_multiple_underscores() {
-        let result = scan_source_code("___".to_string());
+        let result = scan_source_code("___");
         assert_eq!(result, vec![Lexeme::Text("___".to_string())]);
     }
 
     #[test]
     fn test_text_starts_with_number_like_char() {
-        let result = scan_source_code("_123text".to_string());
+        let result = scan_source_code("_123text");
         assert_eq!(result, vec![Lexeme::Text("_123text".to_string())]);
     }
 
     #[test]
     fn test_dot_after_non_number_becomes_token() {
         // Dot is now recognized as a symbol
-        let result = scan_source_code("text.method".to_string());
+        let result = scan_source_code("text.method");
         assert_eq!(result, vec![
             Lexeme::Text("text".to_string()),
             Lexeme::Symbol(".".to_string()),
@@ -639,7 +639,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_separator() {
-        let result = scan_source_code("a ; b".to_string());
+        let result = scan_source_code("a ; b");
         assert_eq!(result, vec![
             Lexeme::Text("a".to_string()),
             Lexeme::Symbol(";".to_string()),
@@ -649,7 +649,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_separator_no_spaces() {
-        let result = scan_source_code("a;b".to_string());
+        let result = scan_source_code("a;b");
         assert_eq!(result, vec![
             Lexeme::Text("a".to_string()),
             Lexeme::Symbol(";".to_string()),
@@ -659,7 +659,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_end_of_line() {
-        let result = scan_source_code("a;\nhello;".to_string());
+        let result = scan_source_code("a;\nhello;");
         assert_eq!(result, vec![
             Lexeme::Text("a".to_string()),
             Lexeme::Symbol(";".to_string()),
@@ -670,7 +670,7 @@ mod tests {
 
     #[test]
     fn test_mixed_operators() {
-        let result = scan_source_code("a += 5; b -= 3; c *= 2; d /= 4; e %= 3; f ^= 2;".to_string());
+        let result = scan_source_code("a += 5; b -= 3; c *= 2; d /= 4; e %= 3; f ^= 2;");
         assert_eq!(result, vec![
             Lexeme::Text("a".to_string()),
             Lexeme::DoubleSymbol("+=".to_string()),
@@ -701,7 +701,7 @@ mod tests {
 
     #[test]
     fn test_function_definition() {
-        let result = scan_source_code("fn add(a: int, b: int) -> int { return a + b; }".to_string());
+        let result = scan_source_code("fn add(a: int, b: int) -> int { return a + b; }");
         assert_eq!(result, vec![
             Lexeme::Text("fn".to_string()),
             Lexeme::Text("add".to_string()),
@@ -728,7 +728,7 @@ mod tests {
 
     #[test]
     fn test_reject_function_definition() {
-        let result = scan_source_code("fn add(a: int, b: int) -> int? { return a + b; }".to_string());
+        let result = scan_source_code("fn add(a: int, b: int) -> int? { return a + b; }");
         assert_eq!(result, vec![
             Lexeme::Text("fn".to_string()),
             Lexeme::Text("add".to_string()),

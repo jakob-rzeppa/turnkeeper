@@ -24,7 +24,7 @@ pub trait Parse {
 }
 
 #[derive(Debug)]
-pub struct Root(Vec<Statement>);
+pub struct Root(pub Vec<Statement>);
 
 impl Root {
     pub fn parse(mut tokens: Vec<Token>) -> Result<Self, String> {
