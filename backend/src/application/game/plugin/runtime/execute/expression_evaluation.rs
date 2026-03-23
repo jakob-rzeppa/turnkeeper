@@ -13,6 +13,7 @@ impl RuntimeEnvironment {
                 }
             },
             ExprAtom::Identifier(name) => self.memory_manager.get_variable(name.as_str()).cloned(),
+            _ => Err("Unsupported expression atom".to_string()),
         }
     }
 

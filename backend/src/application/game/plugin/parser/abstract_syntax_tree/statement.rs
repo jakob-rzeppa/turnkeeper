@@ -9,6 +9,7 @@ pub enum Statement {
     Expression(ExprStatement),
     If(IfStatement),
     While(WhileStatement),
+    Return(ReturnStatement), // Return statement with an optional expression
     Throw(ThrowStatement),
     Exit(ExitStatement),
 }
@@ -20,6 +21,7 @@ impl Parse for Statement {
         ExprStatement::is_next(tokens, index) ||
         IfStatement::is_next(tokens, index) ||
         WhileStatement::is_next(tokens, index) ||
+        ReturnStatement::is_next(tokens, index) ||
         ThrowStatement::is_next(tokens, index) ||
         ExitStatement::is_next(tokens, index)
     }
@@ -33,6 +35,8 @@ impl Parse for Statement {
             IfStatement::parse(tokens, index).map(|(if_stmt, new_index)| (Statement::If(if_stmt), new_index))
         } else if WhileStatement::is_next(tokens, index) {
             WhileStatement::parse(tokens, index).map(|(while_stmt, new_index)| (Statement::While(while_stmt), new_index))
+        } else if ReturnStatement::is_next(tokens, index) {
+            ReturnStatement::parse(tokens, index).map(|(return_stmt, new_index)| (Statement::Return(return_stmt), new_index))
         } else if ThrowStatement::is_next(tokens, index) {
             ThrowStatement::parse(tokens, index).map(|(throw_stmt, new_index)| (Statement::Throw(throw_stmt), new_index))
         } else if ExitStatement::is_next(tokens, index) {
@@ -171,6 +175,31 @@ impl Parse for WhileStatement {
 }
 
 #[derive(Clone, PartialEq, Debug)]
+pub struct ReturnStatement(pub Option<Expr>);
+
+impl Parse for ReturnStatement {
+    fn is_next(tokens: &[Token], index: usize) -> bool {
+        matches!(tokens.get(index), Some(Token::Return))
+    }
+
+    fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
+        expect_token!(tokens, index, Token::Return, "Expected 'return' at the beginning of return statement");
+
+        if Expr::is_next(tokens, index) {
+            let expr = expect_parse!(tokens, index, Expr, "Expected expression after checking there is one");
+
+            expect_token!(tokens, index, Token::Semicolon, "Expected ';' at the end of 'return' statement");
+
+            Ok((ReturnStatement(Some(expr)), index))
+        } else {
+            expect_token!(tokens, index, Token::Semicolon, "Expected ';' after 'return' statement with no expression");
+
+            Ok((ReturnStatement(None), index))
+        }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
 pub struct ThrowStatement(pub Option<Expr>);
 
 impl Parse for ThrowStatement {
@@ -216,7 +245,7 @@ impl Parse for ExitStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::expression::{ExprAtom, Literal};
+    use crate::application::game::plugin::parser::abstract_syntax_tree::expression::{ExprAtom, FunctionCall, Literal};
 
     use super::*;
     
@@ -311,6 +340,29 @@ mod tests {
     }
 
     #[test]
+    fn test_parse_return_with_expr() {
+        let tokens = vec![
+            Token::Return,
+            Token::IntLiteral(5),
+            Token::Semicolon,
+        ];
+
+        let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement with expression");
+        assert_eq!(statement, Statement::Return(ReturnStatement(Some(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))))));
+    }
+
+    #[test]
+    fn test_parse_return_without_expr() {
+        let tokens = vec![
+            Token::Return,
+            Token::Semicolon,
+        ];
+
+        let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement without expression");
+        assert_eq!(statement, Statement::Return(ReturnStatement(None)));
+    }
+
+    #[test]
     fn test_parse_throw() {
         let tokens = vec![
             Token::Throw,
@@ -342,5 +394,28 @@ mod tests {
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'exit' statement");
         assert_eq!(statement, Statement::Exit(ExitStatement));
+    }
+
+    #[test]
+    fn test_parse_function_call_statement() {
+        let tokens = vec![
+            Token::Identifier("doSomething".to_string()),
+            Token::LeftParen,
+            Token::IntLiteral(42),
+            Token::Comma,
+            Token::StringLiteral("hello".to_string()),
+            Token::RightParen,
+            Token::Semicolon,
+        ];
+
+        let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse function call statement");
+        assert_eq!(statement, Statement::Expression(ExprStatement(Expr::Atom(ExprAtom::FunctionCall(FunctionCall {
+            identifier: Identifier("doSomething".to_string()),
+            arguments: vec![
+                Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
+                Expr::Atom(ExprAtom::Literal(Literal::String("hello".to_string()))),
+            ],
+            catch_block: None,
+        })))));
     }
 }

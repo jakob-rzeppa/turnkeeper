@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{lexer::token::Token, parser::abstract_syntax_tree::{Parse, common::Identifier}};
+use crate::application::game::plugin::{lexer::token::Token, parser::abstract_syntax_tree::{Parse, common::{Block, Identifier}}};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Expr {
@@ -73,15 +73,14 @@ impl Expr {
             },
             _ => {
                 if Literal::is_next(tokens, index) {
-                    Expr::Atom(ExprAtom::Literal(expect_parse!(tokens, index, Literal, "Expected literal or '(' at beginning of expression")))
+                    Expr::Atom(ExprAtom::Literal(expect_parse!(tokens, index, Literal, "Expected literal after checking that there is one")))
+                } else if FunctionCall::is_next(tokens, index) {
+                    Expr::Atom(ExprAtom::FunctionCall(expect_parse!(tokens, index, FunctionCall, "Expected function call after checking that there is one")))
                 } else if Identifier::is_next(tokens, index) {
-                    let (identifier, new_index) = Identifier::parse(tokens, index)?;
-                    index = new_index;
-                    Expr::Atom(ExprAtom::Identifier(identifier))
+                    Expr::Atom(ExprAtom::Identifier(expect_parse!(tokens, index, Identifier, "Expected identifier after checking that there is one")))
                 } else {
-                    return Err("Expected literal or '(' at beginning of expression".to_string());
+                    return Err("Expected expression atom".to_string());
                 }
-                
             },
         };
 
@@ -125,6 +124,8 @@ impl Expr {
 impl Parse for Expr {
     fn is_next(tokens: &[Token], index: usize) -> bool {
         Literal::is_next(tokens, index) || 
+        FunctionCall::is_next(tokens, index) ||
+        Identifier::is_next(tokens, index) ||
         matches!(tokens.get(index), Some(Token::LeftParen) | Some(Token::Minus) | Some(Token::Not))
     }
 
@@ -137,6 +138,7 @@ impl Parse for Expr {
 pub enum ExprAtom {
     Literal(Literal),
     Identifier(Identifier),
+    FunctionCall(FunctionCall),
 }
 
 #[derive(Clone, PartialEq, Debug)]
@@ -160,6 +162,55 @@ impl Parse for Literal {
             Some(Token::BoolLiteral(value)) => Ok((Literal::Bool(*value), index + 1)),
             _ => Err("Expected literal".to_string()),
         }
+    }
+}
+
+#[derive(Clone, PartialEq, Debug)]
+pub struct FunctionCall {
+    pub identifier: Identifier,
+    pub arguments: Vec<Expr>,
+    pub catch_block: Option<Block>,
+}
+
+impl Parse for FunctionCall {
+    fn is_next(tokens: &[Token], index: usize) -> bool {
+        Identifier::is_next(tokens, index) && 
+        matches!(tokens.get(index + 1), Some(Token::LeftParen))
+    }
+
+    fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
+        let identifier = expect_parse!(tokens, index, Identifier, "Expected function name at beginning of function call");
+
+        expect_token!(tokens, index, Token::LeftParen, "Expected '(' after function name in function call");
+
+        let mut arguments = Vec::new();
+        if !matches!(tokens.get(index), Some(Token::RightParen)) {
+            loop {
+                let arg = expect_parse!(tokens, index, Expr, "Expected expression as function argument");
+                arguments.push(arg);
+
+                // If there is a comma, consume it and continue parsing the next argument. Otherwise, break the loop
+                if matches!(tokens.get(index), Some(Token::Comma)) {
+                    index += 1; // consume ','
+                } else {
+                    break;
+                }
+            }
+        }
+
+        // After the arguments, we should have a right parenthesis. Consume it!
+        expect_token!(tokens, index, Token::RightParen, "Expected ')' after function arguments in function call");
+
+        let catch_block = if matches!(tokens.get(index), Some(Token::Catch)) {
+            index += 1; // consume 'catch'
+            let (block, new_index) = Block::parse(tokens, index)?;
+            index = new_index;
+            Some(block)
+        } else {
+            None
+        };
+
+        Ok((FunctionCall { identifier, arguments, catch_block }, index))
     }
 }
 
@@ -207,6 +258,8 @@ impl BinaryOperator {
 
 #[cfg(test)]
 mod tests {
+    use crate::application::game::plugin::parser::abstract_syntax_tree::statement::{ReturnStatement, Statement};
+
     use super::*;
 
     #[test]
@@ -1081,6 +1134,102 @@ mod tests {
             }), 
             operator: BinaryOperator::And, 
             right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Bool(true)))) 
+        });
+    }
+
+    #[test]
+    fn test_expr_with_variable() {
+        let tokens = vec![
+            Token::Identifier("x".to_string()),
+            Token::Plus,
+            Token::IntLiteral(5),
+        ];
+
+        assert!(Expr::is_next(&tokens, 0));
+        let (expr, _) = Expr::parse(&tokens, 0).unwrap();
+        assert_eq!(expr, Expr::BinaryOperation { 
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))), 
+            operator: BinaryOperator::Addition, 
+            right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))) 
+        });
+    }
+
+    #[test]
+    fn test_expr_with_function_call() {
+        let tokens = vec![
+            Token::Identifier("f".to_string()),
+            Token::LeftParen,
+            Token::IntLiteral(3),
+            Token::RightParen,
+            Token::Star,
+            Token::IntLiteral(4),
+        ];
+
+        assert!(Expr::is_next(&tokens, 0));
+        let (expr, _) = Expr::parse(&tokens, 0).unwrap();
+        assert_eq!(expr, Expr::BinaryOperation { 
+            left: Box::new(Expr::Atom(ExprAtom::FunctionCall(FunctionCall { 
+                identifier: Identifier("f".to_string()),
+                arguments: vec![Expr::Atom(ExprAtom::Literal(Literal::Int(3)))],
+                catch_block: None,
+            }))), 
+            operator: BinaryOperator::Multiplication, 
+            right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
+        });
+    }
+
+    #[test]
+    fn test_expr_with_nested_function_calls() {
+        let tokens = vec![
+            Token::Identifier("f".to_string()),
+            Token::LeftParen,
+            Token::Identifier("g".to_string()),
+            Token::LeftParen,
+            Token::IntLiteral(3),
+            Token::RightParen,
+            Token::RightParen,
+        ];
+
+        assert!(Expr::is_next(&tokens, 0));
+        let (expr, _) = Expr::parse(&tokens, 0).unwrap();
+        assert_eq!(expr, Expr::Atom(ExprAtom::FunctionCall(FunctionCall { 
+            identifier: Identifier("f".to_string()),
+            arguments: vec![Expr::Atom(ExprAtom::FunctionCall(FunctionCall { 
+                identifier: Identifier("g".to_string()),
+                arguments: vec![Expr::Atom(ExprAtom::Literal(Literal::Int(3)))],
+                catch_block: None,
+            }))],
+            catch_block: None,
+        })));
+    }
+
+    #[test]
+    fn test_expr_with_function_call_and_catch_block() {
+        let tokens = vec![
+            Token::Identifier("f".to_string()),
+            Token::LeftParen,
+            Token::IntLiteral(3),
+            Token::RightParen,
+            Token::Catch,
+            Token::LeftBrace,
+            Token::Return,
+            Token::IntLiteral(0),
+            Token::Semicolon,
+            Token::RightBrace,
+            Token::Star,
+            Token::IntLiteral(4),
+        ];
+
+        assert!(Expr::is_next(&tokens, 0));
+        let (expr, _) = Expr::parse(&tokens, 0).unwrap();
+        assert_eq!(expr, Expr::BinaryOperation { 
+            left: Box::new(Expr::Atom(ExprAtom::FunctionCall(FunctionCall { 
+                identifier: Identifier("f".to_string()),
+                arguments: vec![Expr::Atom(ExprAtom::Literal(Literal::Int(3)))],
+                catch_block: Some(Block(vec![Statement::Return(ReturnStatement(Some(Expr::Atom(ExprAtom::Literal(Literal::Int(0))))))])),
+            }))), 
+            operator: BinaryOperator::Multiplication, 
+            right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(4)))) 
         });
     }
 }

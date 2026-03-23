@@ -98,6 +98,9 @@ let c: int = count("text") catch {
     // do something and return or throw
     return 2;
 }
+
+// In expression
+let c: int = count("text") catch { return 5; } + 5;
 ```
 
 ## Access Game State
