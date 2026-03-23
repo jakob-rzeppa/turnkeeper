@@ -120,8 +120,8 @@ impl Parse for ExprStatement {
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct IfStatement {
-    condition: Expr,
-    then: Block,
+    pub condition: Expr,
+    pub then: Block,
 }
 
 impl Parse for IfStatement {
