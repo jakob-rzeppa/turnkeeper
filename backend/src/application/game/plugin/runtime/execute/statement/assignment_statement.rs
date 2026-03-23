@@ -2,7 +2,7 @@ use crate::application::game::plugin::{parser::abstract_syntax_tree::statement::
 
 
 impl RuntimeEnvironment {
-    pub fn execute_assignment(&mut self, assignment: &Assignment) -> Result<(), String> {
+    pub fn execute_assignment_statement(&mut self, assignment: &Assignment) -> Result<(), String> {
         let name = assignment.target.to_string();
         let value = self.evaluate_expression(&assignment.value)?;
 
@@ -25,7 +25,7 @@ mod tests {
             target: Identifier("x".to_string()),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
-        assert!(env.execute_assignment(&assignment).is_ok());
+        assert!(env.execute_assignment_statement(&assignment).is_ok());
         let stored_value = env.memory_manager.get_variable("x").unwrap();
         assert_eq!(stored_value, &VariableValue::Int(100));
     }
@@ -38,7 +38,7 @@ mod tests {
             target: Identifier("y".to_string()),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(200))),
         };
-        assert!(env.execute_assignment(&assignment).is_err());
+        assert!(env.execute_assignment_statement(&assignment).is_err());
     }
 
     #[test]
@@ -50,6 +50,6 @@ mod tests {
             target: Identifier("z".to_string()),
             value: Expr::Atom(ExprAtom::Literal(Literal::String("not an integer".to_string()))),
         };
-        assert!(env.execute_assignment(&assignment).is_err());
+        assert!(env.execute_assignment_statement(&assignment).is_err());
     }
 }

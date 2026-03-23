@@ -2,13 +2,13 @@ use crate::application::game::plugin::{parser::abstract_syntax_tree::statement::
 
 
 impl RuntimeEnvironment {
-    pub fn execute_if_stmt(&mut self, stmt: &IfStatement) -> Result<(), String> {
+    pub fn execute_if_statement(&mut self, stmt: &IfStatement) -> Result<(), String> {
         let condition_value = self.evaluate_expression(&stmt.condition)?;
 
         match condition_value {
             VariableValue::Bool(true) => {
                 for stmt in &stmt.then.0 {
-                    self.execute_stmt(stmt)?;
+                    self.execute_statement(stmt)?;
                 }
             },
             VariableValue::Bool(false) => {

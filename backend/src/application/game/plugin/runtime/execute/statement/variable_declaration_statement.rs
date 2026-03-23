@@ -1,7 +1,7 @@
 use crate::application::game::plugin::{parser::abstract_syntax_tree::{common::Type, statement::VariableDeclaration}, runtime::{RuntimeEnvironment, memory::VariableValue}};
 
 impl RuntimeEnvironment {
-    pub fn execute_variable_declaration(&mut self, element: &VariableDeclaration) -> Result<(), String> {
+    pub fn execute_variable_declaration_statement(&mut self, element: &VariableDeclaration) -> Result<(), String> {
         let name = element.name.0.clone();
         let var_type = &element.datatype;
         let value = self.evaluate_expression(&element.value)?;
@@ -33,7 +33,7 @@ mod tests {
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
         };
 
-        let result = env.execute_variable_declaration(&var_decl);
+        let result = env.execute_variable_declaration_statement(&var_decl);
         assert!(result.is_ok());
         let stored_value = env.memory_manager.get_variable("x").unwrap();
         assert_eq!(stored_value, &VariableValue::Int(42));
@@ -48,7 +48,7 @@ mod tests {
             value: Expr::Atom(ExprAtom::Literal(Literal::String("not an integer".to_string()))),
         };
 
-        let result = env.execute_variable_declaration(&var_decl);
+        let result = env.execute_variable_declaration_statement(&var_decl);
         assert!(result.is_err());
         let error_message = result.err().unwrap();
         assert!(error_message.contains("Type mismatch"));
@@ -66,7 +66,7 @@ mod tests {
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
 
-        let result = env.execute_variable_declaration(&var_decl);
+        let result = env.execute_variable_declaration_statement(&var_decl);
         assert!(result.is_ok());
         let stored_value = env.memory_manager.get_variable("x").unwrap();
         assert_eq!(stored_value, &VariableValue::Int(100)); // The inner scope should shadow the outer variable
@@ -87,7 +87,7 @@ mod tests {
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
 
-        let result = env.execute_variable_declaration(&var_decl);
+        let result = env.execute_variable_declaration_statement(&var_decl);
         assert!(result.is_err());
 
         let old_value = env.memory_manager.get_variable("x").unwrap();
