@@ -103,7 +103,8 @@ mod user_websocket_functional_test {
 
         match msg {
             tungstenite::Message::Text(text) => {
-                let state: Value = serde_json::from_str(&text).expect("Invalid JSON game state");
+                let json_str = text.strip_prefix("GameInfo ").unwrap_or(&text);
+                let state: Value = serde_json::from_str(&json_str).expect("Invalid JSON game state");
                 assert!(state["id"].is_string());
                 assert!(state["name"].is_string());
                 assert_eq!(state["name"].as_str().unwrap(), "User WS Connect Game");
@@ -236,7 +237,8 @@ mod user_websocket_functional_test {
 
             match msg {
                 tungstenite::Message::Text(text) => {
-                    let state: Value = serde_json::from_str(&text).expect("Invalid JSON game state");
+                    let json_str = text.strip_prefix("GameInfo ").unwrap_or(&text);
+                    let state: Value = serde_json::from_str(&json_str).expect("Invalid JSON game state");
                     assert!(state["id"].is_string());
                     assert!(state["name"].is_string());
                     assert_eq!(state["name"].as_str().unwrap(), "Shared Game");

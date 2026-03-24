@@ -97,7 +97,9 @@ mod gm_websocket_functional_test {
 
             match msg {
                 tungstenite::Message::Text(text) => {
-                    let state: Value = serde_json::from_str(&text).expect("Invalid JSON game state");
+                    // Strip "GameInfo " prefix from the message
+                    let json_str = text.strip_prefix("GameInfo ").unwrap_or(&text);
+                    let state: Value = serde_json::from_str(json_str).expect("Invalid JSON game state");
                     // The initial game state should have the expected structure
                     assert!(state["id"].is_string());
                     assert!(state["name"].is_string());
@@ -141,7 +143,9 @@ mod gm_websocket_functional_test {
 
             match msg {
                 tungstenite::Message::Text(text) => {
-                    let state: Value = serde_json::from_str(&text).expect("Invalid JSON game state");
+                    // Strip "GameInfo " prefix from the message
+                    let json_str = text.strip_prefix("GameInfo ").unwrap_or(&text);
+                    let state: Value = serde_json::from_str(json_str).expect("Invalid JSON game state");
                     // The initial game state should have the expected structure
                     assert!(state["id"].is_string());
                     assert!(state["name"].is_string());
