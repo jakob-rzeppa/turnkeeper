@@ -1,12 +1,12 @@
 #[derive(Debug, Clone, PartialEq)]
-pub struct LexemeWithPosition {
-    pub lexeme: Lexeme,
+pub struct Lexeme {
+    pub lexeme: LexemeType,
     pub line: usize,
     pub first_char: usize,
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Lexeme {
+pub enum LexemeType {
     Text(String),
     Number(String),
     NumberWithDot(String),
@@ -62,7 +62,7 @@ impl Scanner {
         }
     }
 
-    fn step_next_lexeme(&mut self, char: char) -> Option<Lexeme> {
+    fn step_next_lexeme(&mut self, char: char) -> Option<LexemeType> {
         // Record starting position for the new lexeme at current character position
         self.lexeme_start_column = self.current_column;
         self.lexeme_start_line = self.current_line;
@@ -94,18 +94,18 @@ impl Scanner {
         }
     }
 
-    fn step_text(&mut self, char: char) -> Option<Lexeme> {
+    fn step_text(&mut self, char: char) -> Option<LexemeType> {
         if char.is_alphanumeric() || char == '_' || char == '-' {
             self.buffer.push(char);
             None
         } else {
-            let lexeme = Lexeme::Text(self.buffer.clone());
+            let lexeme = LexemeType::Text(self.buffer.clone());
             self.step_next_lexeme(char);
             Some(lexeme)
         }
     }
 
-    fn step_number(&mut self, char: char) -> Option<Lexeme> {
+    fn step_number(&mut self, char: char) -> Option<LexemeType> {
         if char.is_numeric() {
             self.buffer.push(char);
             None
@@ -114,24 +114,24 @@ impl Scanner {
             self.buffer.push(char);
             None
         } else {
-            let lexeme = Lexeme::Number(self.buffer.clone());
+            let lexeme = LexemeType::Number(self.buffer.clone());
             self.step_next_lexeme(char);
             Some(lexeme)
         }
     }
 
-    fn step_number_with_dot(&mut self, char: char) -> Option<Lexeme> {
+    fn step_number_with_dot(&mut self, char: char) -> Option<LexemeType> {
         if char.is_numeric() {
             self.buffer.push(char);
             None
         } else {
-            let lexeme = Lexeme::NumberWithDot(self.buffer.clone());
+            let lexeme = LexemeType::NumberWithDot(self.buffer.clone());
             self.step_next_lexeme(char);
             Some(lexeme)
         }
     }
 
-    fn step_quote(&mut self, char: char) -> Option<Lexeme> {
+    fn step_quote(&mut self, char: char) -> Option<LexemeType> {
         if char != '"' {
             self.buffer.push(char);
             None
@@ -141,31 +141,31 @@ impl Scanner {
         }
     }
 
-    fn step_closed_quote(&mut self, char: char) -> Option<Lexeme> {
-        let lexeme = Lexeme::Quote(self.buffer.clone());
+    fn step_closed_quote(&mut self, char: char) -> Option<LexemeType> {
+        let lexeme = LexemeType::Quote(self.buffer.clone());
         self.step_next_lexeme(char);
         Some(lexeme)
     }
 
-    fn step_symbol(&mut self, char: char) -> Option<Lexeme> {
+    fn step_symbol(&mut self, char: char) -> Option<LexemeType> {
         if is_double_symbol(&self.buffer, char) {
             self.state = ScannerState::DoubleSymbol;
             self.buffer.push(char);
             None
         } else {
-            let lexeme = Lexeme::Symbol(self.buffer.clone());
+            let lexeme = LexemeType::Symbol(self.buffer.clone());
             self.step_next_lexeme(char);
             Some(lexeme)
         }
     }
 
-    fn step_double_symbol(&mut self, char: char) -> Option<Lexeme> {
-        let lexeme = Lexeme::DoubleSymbol(self.buffer.clone());
+    fn step_double_symbol(&mut self, char: char) -> Option<LexemeType> {
+        let lexeme = LexemeType::DoubleSymbol(self.buffer.clone());
         self.step_next_lexeme(char);
         Some(lexeme)
     }
 
-    fn step(&mut self, char: char) -> Option<LexemeWithPosition> {
+    fn step(&mut self, char: char) -> Option<Lexeme> {
         // Save current lexeme position before it might be modified
         let lexeme_line = self.lexeme_start_line;
         let lexeme_col = self.lexeme_start_column;
@@ -175,13 +175,13 @@ impl Scanner {
         let lexeme = if is_newline {
             // Handle newline: finalize current lexeme if any
             let result = match self.state {
-                ScannerState::Text => Some(Lexeme::Text(self.buffer.clone())),
-                ScannerState::Number => Some(Lexeme::Number(self.buffer.clone())),
-                ScannerState::NumberWithDot => Some(Lexeme::NumberWithDot(self.buffer.clone())),
-                ScannerState::Quote => Some(Lexeme::Quote(self.buffer.clone())),
-                ScannerState::ClosedQuote => Some(Lexeme::Quote(self.buffer.clone())),
-                ScannerState::Symbol => Some(Lexeme::Symbol(self.buffer.clone())),
-                ScannerState::DoubleSymbol => Some(Lexeme::DoubleSymbol(self.buffer.clone())),
+                ScannerState::Text => Some(LexemeType::Text(self.buffer.clone())),
+                ScannerState::Number => Some(LexemeType::Number(self.buffer.clone())),
+                ScannerState::NumberWithDot => Some(LexemeType::NumberWithDot(self.buffer.clone())),
+                ScannerState::Quote => Some(LexemeType::Quote(self.buffer.clone())),
+                ScannerState::ClosedQuote => Some(LexemeType::Quote(self.buffer.clone())),
+                ScannerState::Symbol => Some(LexemeType::Symbol(self.buffer.clone())),
+                ScannerState::DoubleSymbol => Some(LexemeType::DoubleSymbol(self.buffer.clone())),
                 _ => None,
             };
             
@@ -211,7 +211,7 @@ impl Scanner {
             if !is_newline {
                 self.current_column += 1;
             }
-            Some(LexemeWithPosition {
+            Some(Lexeme {
                 lexeme: lex,
                 line: lexeme_line,
                 first_char: lexeme_col,
@@ -225,19 +225,19 @@ impl Scanner {
         }
     }
 
-    fn last_step(&mut self) -> Option<LexemeWithPosition> {
+    fn last_step(&mut self) -> Option<Lexeme> {
         let lexeme = match self.state {
-            ScannerState::Text => Some(Lexeme::Text(self.buffer.clone())),
-            ScannerState::Number => Some(Lexeme::Number(self.buffer.clone())),
-            ScannerState::NumberWithDot => Some(Lexeme::NumberWithDot(self.buffer.clone())),
-            ScannerState::Quote => Some(Lexeme::Quote(self.buffer.clone())),
-            ScannerState::ClosedQuote => Some(Lexeme::Quote(self.buffer.clone())),
-            ScannerState::Symbol => Some(Lexeme::Symbol(self.buffer.clone())),
-            ScannerState::DoubleSymbol => Some(Lexeme::DoubleSymbol(self.buffer.clone())),
+            ScannerState::Text => Some(LexemeType::Text(self.buffer.clone())),
+            ScannerState::Number => Some(LexemeType::Number(self.buffer.clone())),
+            ScannerState::NumberWithDot => Some(LexemeType::NumberWithDot(self.buffer.clone())),
+            ScannerState::Quote => Some(LexemeType::Quote(self.buffer.clone())),
+            ScannerState::ClosedQuote => Some(LexemeType::Quote(self.buffer.clone())),
+            ScannerState::Symbol => Some(LexemeType::Symbol(self.buffer.clone())),
+            ScannerState::DoubleSymbol => Some(LexemeType::DoubleSymbol(self.buffer.clone())),
             _ => None,
         };
 
-        lexeme.map(|lex| LexemeWithPosition {
+        lexeme.map(|lex| Lexeme {
             lexeme: lex,
             line: self.lexeme_start_line,
             first_char: self.lexeme_start_column,
@@ -245,8 +245,8 @@ impl Scanner {
     }
 }
 
-pub fn scan_source_code(source: &str) -> Vec<LexemeWithPosition> {
-    let mut lexemes: Vec<LexemeWithPosition> = Vec::new();
+pub fn scan_source_code(source: &str) -> Vec<Lexeme> {
+    let mut lexemes: Vec<Lexeme> = Vec::new();
 
     let mut scanner = Scanner::new();
     for char in source.chars() {
@@ -273,8 +273,8 @@ mod tests {
     #[test]
     fn test_single_word() {
         let result = scan_source_code("hello");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("hello".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("hello".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -284,13 +284,13 @@ mod tests {
     fn test_multiple_words() {
         let result = scan_source_code("hello world");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("hello".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("hello".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("world".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("world".to_string()),
                 line: 0,
                 first_char: 6,
             },
@@ -300,8 +300,8 @@ mod tests {
     #[test]
     fn test_text_with_underscores() {
         let result = scan_source_code("hello_world");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("hello_world".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("hello_world".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -310,8 +310,8 @@ mod tests {
     #[test]
     fn test_text_with_hyphens() {
         let result = scan_source_code("hello-world");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("hello-world".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("hello-world".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -320,8 +320,8 @@ mod tests {
     #[test]
     fn test_text_with_numbers() {
         let result = scan_source_code("test123");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("test123".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("test123".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -331,8 +331,8 @@ mod tests {
     #[test]
     fn test_single_digit() {
         let result = scan_source_code("5");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Number("5".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Number("5".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -341,8 +341,8 @@ mod tests {
     #[test]
     fn test_multi_digit_number() {
         let result = scan_source_code("12345");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Number("12345".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Number("12345".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -351,8 +351,8 @@ mod tests {
     #[test]
     fn test_decimal_number() {
         let result = scan_source_code("123.45");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::NumberWithDot("123.45".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::NumberWithDot("123.45".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -362,18 +362,18 @@ mod tests {
     fn test_multiple_numbers() {
         let result = scan_source_code("1 2 3");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("1".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("1".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("3".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("3".to_string()),
                 line: 0,
                 first_char: 4,
             },
@@ -383,8 +383,8 @@ mod tests {
     #[test]
     fn test_zero_decimal() {
         let result = scan_source_code("0.0");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::NumberWithDot("0.0".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::NumberWithDot("0.0".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -394,8 +394,8 @@ mod tests {
     #[test]
     fn test_simple_quoted_string() {
         let result = scan_source_code("\"hello\"");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Quote("hello".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Quote("hello".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -404,8 +404,8 @@ mod tests {
     #[test]
     fn test_quoted_string_with_spaces() {
         let result = scan_source_code("\"hello world\"");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Quote("hello world".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Quote("hello world".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -414,8 +414,8 @@ mod tests {
     #[test]
     fn test_quoted_string_with_numbers() {
         let result = scan_source_code("\"test 123\"");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Quote("test 123".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Quote("test 123".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -424,8 +424,8 @@ mod tests {
     #[test]
     fn test_quoted_string_with_symbols() {
         let result = scan_source_code("\"a+b\"");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Quote("a+b".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Quote("a+b".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -435,13 +435,13 @@ mod tests {
     fn test_multiple_quoted_strings() {
         let result = scan_source_code("\"first\" \"second\"");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Quote("first".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Quote("first".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Quote("second".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Quote("second".to_string()),
                 line: 0,
                 first_char: 8,
             },
@@ -451,8 +451,8 @@ mod tests {
     #[test]
     fn test_empty_quoted_string() {
         let result = scan_source_code("\"\"");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Quote("".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Quote("".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -462,8 +462,8 @@ mod tests {
     #[test]
     fn test_single_symbol() {
         let result = scan_source_code("+");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Symbol("+".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Symbol("+".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -472,8 +472,8 @@ mod tests {
     #[test]
     fn test_equals_symbol() {
         let result = scan_source_code("=");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Symbol("=".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Symbol("=".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -483,18 +483,18 @@ mod tests {
     fn test_multiple_single_symbols() {
         let result = scan_source_code("+ - *");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("+".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("+".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("-".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("-".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("*".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("*".to_string()),
                 line: 0,
                 first_char: 4,
             },
@@ -505,13 +505,13 @@ mod tests {
     fn test_parentheses() {
         let result = scan_source_code("( )");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 2,
             },
@@ -522,13 +522,13 @@ mod tests {
     fn test_parentheses_no_spaces() {
         let result = scan_source_code("()");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 1,
             },
@@ -539,13 +539,13 @@ mod tests {
     fn test_brackets() {
         let result = scan_source_code("[ ]");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("[".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("[".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("]".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("]".to_string()),
                 line: 0,
                 first_char: 2,
             },
@@ -556,13 +556,13 @@ mod tests {
     fn test_brackets_no_spaces() {
         let result = scan_source_code("[]");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("[".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("[".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("]".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("]".to_string()),
                 line: 0,
                 first_char: 1,
             },
@@ -573,13 +573,13 @@ mod tests {
     fn test_braces() {
         let result = scan_source_code("{ }");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("{".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("{".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("}".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("}".to_string()),
                 line: 0,
                 first_char: 2,
             },
@@ -590,13 +590,13 @@ mod tests {
     fn test_braces_no_spaces() {
         let result = scan_source_code("{}");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("{".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("{".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("}".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("}".to_string()),
                 line: 0,
                 first_char: 1,
             },
@@ -608,8 +608,8 @@ mod tests {
     fn test_double_equals() {
         let result = scan_source_code("==");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("==".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("==".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -620,8 +620,8 @@ mod tests {
     fn test_plus_equals() {
         let result = scan_source_code("+=");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("+=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("+=".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -632,8 +632,8 @@ mod tests {
     fn test_minus_equals() {
         let result = scan_source_code("-=");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("-=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("-=".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -644,8 +644,8 @@ mod tests {
     fn test_less_than_equals() {
         let result = scan_source_code("<=");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("<=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("<=".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -656,8 +656,8 @@ mod tests {
     fn test_greater_than_equals() {
         let result = scan_source_code(">=");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol(">=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol(">=".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -668,8 +668,8 @@ mod tests {
     fn test_logical_and() {
         let result = scan_source_code("&&");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("&&".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("&&".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -680,8 +680,8 @@ mod tests {
     fn test_logical_or() {
         let result = scan_source_code("||");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("||".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("||".to_string()),
                 line: 0,
                 first_char: 0,
             }
@@ -724,18 +724,18 @@ mod tests {
     fn test_arithmetic_expression() {
         let result = scan_source_code("10 + 5");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("10".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("10".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("+".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("+".to_string()),
                 line: 0,
                 first_char: 3,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("5".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("5".to_string()),
                 line: 0,
                 first_char: 5,
             },
@@ -746,18 +746,18 @@ mod tests {
     fn test_equation() {
         let result = scan_source_code("x = 10");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("x".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("x".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("=".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("10".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("10".to_string()),
                 line: 0,
                 first_char: 4,
             },
@@ -768,33 +768,33 @@ mod tests {
     fn test_function_call() {
         let result = scan_source_code("func(1, 2)");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("func".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("func".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("1".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("1".to_string()),
                 line: 0,
                 first_char: 5,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 9,
             },
@@ -805,33 +805,33 @@ mod tests {
     fn test_function_call_no_spaces() {
         let result = scan_source_code("func(1,2)");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("func".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("func".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("1".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("1".to_string()),
                 line: 0,
                 first_char: 5,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 7,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 8,
             },
@@ -842,43 +842,43 @@ mod tests {
     fn test_complex_comparison() {
         let result = scan_source_code("if x >= 5 && y <= 10");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("if".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("if".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("x".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("x".to_string()),
                 line: 0,
                 first_char: 3,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol(">=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol(">=".to_string()),
                 line: 0,
                 first_char: 5,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("5".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("5".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("&&".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("&&".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("y".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("y".to_string()),
                 line: 0,
                 first_char: 13,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("<=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("<=".to_string()),
                 line: 0,
                 first_char: 15,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("10".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("10".to_string()),
                 line: 0,
                 first_char: 18,
             },
@@ -889,38 +889,38 @@ mod tests {
     fn test_mathematical_expression() {
         let result = scan_source_code("( a + b ) * c");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("+".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("+".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("*".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("*".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("c".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("c".to_string()),
                 line: 0,
                 first_char: 12,
             },
@@ -931,13 +931,13 @@ mod tests {
     fn test_string_with_text_and_numbers() {
         let result = scan_source_code("price \"$100\"");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("price".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("price".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Quote("$100".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Quote("$100".to_string()),
                 line: 0,
                 first_char: 6,
             },
@@ -948,18 +948,18 @@ mod tests {
     fn test_assignment_with_decimal() {
         let result = scan_source_code("value = 3.14");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("value".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("value".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("=".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::NumberWithDot("3.14".to_string()),
+            Lexeme {
+                lexeme: LexemeType::NumberWithDot("3.14".to_string()),
                 line: 0,
                 first_char: 8,
             },
@@ -970,38 +970,38 @@ mod tests {
     fn test_array_initialization() {
         let result = scan_source_code("[1,2,3]");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("[".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("[".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("1".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("1".to_string()),
                 line: 0,
                 first_char: 1,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 3,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("3".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("3".to_string()),
                 line: 0,
                 first_char: 5,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("]".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("]".to_string()),
                 line: 0,
                 first_char: 6,
             },
@@ -1012,38 +1012,38 @@ mod tests {
     fn test_array_with_spaces() {
         let result = scan_source_code("[ 1 , 2 , 3 ]");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("[".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("[".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("1".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("1".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("3".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("3".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("]".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("]".to_string()),
                 line: 0,
                 first_char: 12,
             },
@@ -1054,23 +1054,23 @@ mod tests {
     fn test_all_operator_types() {
         let result = scan_source_code("+ - * / % ^ ! &");
         assert_eq!(result.len(), 8);
-        assert!(result.contains(&LexemeWithPosition {
-            lexeme: Lexeme::Symbol("+".to_string()),
+        assert!(result.contains(&Lexeme {
+            lexeme: LexemeType::Symbol("+".to_string()),
             line: 0,
             first_char: 0,
         }));
-        assert!(result.contains(&LexemeWithPosition {
-            lexeme: Lexeme::Symbol("-".to_string()),
+        assert!(result.contains(&Lexeme {
+            lexeme: LexemeType::Symbol("-".to_string()),
             line: 0,
             first_char: 2,
         }));
-        assert!(result.contains(&LexemeWithPosition {
-            lexeme: Lexeme::Symbol("*".to_string()),
+        assert!(result.contains(&Lexeme {
+            lexeme: LexemeType::Symbol("*".to_string()),
             line: 0,
             first_char: 4,
         }));
-        assert!(result.contains(&LexemeWithPosition {
-            lexeme: Lexeme::Symbol("/".to_string()),
+        assert!(result.contains(&Lexeme {
+            lexeme: LexemeType::Symbol("/".to_string()),
             line: 0,
             first_char: 6,
         }));
@@ -1079,8 +1079,8 @@ mod tests {
     #[test]
     fn test_not_equals() {
         let result = scan_source_code("!=");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::DoubleSymbol("!=".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::DoubleSymbol("!=".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -1093,13 +1093,13 @@ mod tests {
         // This is expected behavior in the current implementation
         let result = scan_source_code("123abc");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("123".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("123".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("abc".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("abc".to_string()),
                 line: 0,
                 first_char: 3,
             }
@@ -1109,8 +1109,8 @@ mod tests {
     #[test]
     fn test_underscore_only() {
         let result = scan_source_code("_");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("_".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("_".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -1119,8 +1119,8 @@ mod tests {
     #[test]
     fn test_multiple_underscores() {
         let result = scan_source_code("___");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("___".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("___".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -1129,8 +1129,8 @@ mod tests {
     #[test]
     fn test_text_starts_with_number_like_char() {
         let result = scan_source_code("_123text");
-        assert_eq!(result, vec![LexemeWithPosition {
-            lexeme: Lexeme::Text("_123text".to_string()),
+        assert_eq!(result, vec![Lexeme {
+            lexeme: LexemeType::Text("_123text".to_string()),
             line: 0,
             first_char: 0,
         }]);
@@ -1141,18 +1141,18 @@ mod tests {
         // Dot is now recognized as a symbol
         let result = scan_source_code("text.method");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("text".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("text".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(".".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(".".to_string()),
                 line: 0,
                 first_char: 4,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("method".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("method".to_string()),
                 line: 0,
                 first_char: 5,
             },
@@ -1163,18 +1163,18 @@ mod tests {
     fn test_semicolon_separator() {
         let result = scan_source_code("a ; b");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 4,
             },
@@ -1185,18 +1185,18 @@ mod tests {
     fn test_semicolon_separator_no_spaces() {
         let result = scan_source_code("a;b");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 1,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 2,
             },
@@ -1207,23 +1207,23 @@ mod tests {
     fn test_semicolon_end_of_line() {
         let result = scan_source_code("a;\nhello;");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 1,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("hello".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("hello".to_string()),
                 line: 1,        
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 1,
                 first_char: 5,
             },
@@ -1234,123 +1234,123 @@ mod tests {
     fn test_mixed_operators() {
         let result = scan_source_code("a += 5; b -= 3; c *= 2; d /= 4; e %= 3; f ^= 2;");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("+=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("+=".to_string()),
                 line: 0,
                 first_char: 2,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("5".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("5".to_string()),
                 line: 0,
                 first_char: 5,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("-=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("-=".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("3".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("3".to_string()),
                 line: 0,
                 first_char: 13,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 14,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("c".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("c".to_string()),
                 line: 0,
                 first_char: 16,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("*=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("*=".to_string()),
                 line: 0,
                 first_char: 18,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 21,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 22,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("d".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("d".to_string()),
                 line: 0,
                 first_char: 24,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("/=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("/=".to_string()),
                 line: 0,
                 first_char: 26,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("4".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("4".to_string()),
                 line: 0,
                 first_char: 29,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 30,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("e".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("e".to_string()),
                 line: 0,
                 first_char: 32,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("%=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("%=".to_string()),
                 line: 0,
                 first_char: 34,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("3".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("3".to_string()),
                 line: 0,
                 first_char: 37,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 38,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("f".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("f".to_string()),
                 line: 0,
                 first_char: 40,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("^=".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("^=".to_string()),
                 line: 0,
                 first_char: 42,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Number("2".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Number("2".to_string()),
                 line: 0,
                 first_char: 45,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 46,
             },
@@ -1361,103 +1361,103 @@ mod tests {
     fn test_function_definition() {
         let result = scan_source_code("fn add(a: int, b: int) -> int { return a + b; }");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("fn".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("fn".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("add".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("add".to_string()),
                 line: 0,
                 first_char: 3,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 7,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(":".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(":".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 13,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 15,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(":".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(":".to_string()),
                 line: 0,
                 first_char: 16,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 18,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 21,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("->".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("->".to_string()),
                 line: 0,
                 first_char: 23,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 26,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("{".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("{".to_string()),
                 line: 0,
                 first_char: 30,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("return".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("return".to_string()),
                 line: 0,
                 first_char: 32,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 39,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("+".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("+".to_string()),
                 line: 0,
                 first_char: 41,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 43,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 44,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("}".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("}".to_string()),
                 line: 0,
                 first_char: 46,
             },
@@ -1468,108 +1468,108 @@ mod tests {
     fn test_reject_function_definition() {
         let result = scan_source_code("fn add(a: int, b: int) -> int? { return a + b; }");
         assert_eq!(result, vec![
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("fn".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("fn".to_string()),
                 line: 0,
                 first_char: 0,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("add".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("add".to_string()),
                 line: 0,
                 first_char: 3,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("(".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("(".to_string()),
                 line: 0,
                 first_char: 6,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 7,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(":".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(":".to_string()),
                 line: 0,
                 first_char: 8,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 10,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(",".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(",".to_string()),
                 line: 0,
                 first_char: 13,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 15,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(":".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(":".to_string()),
                 line: 0,
                 first_char: 16,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 18,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(")".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(")".to_string()),
                 line: 0,
                 first_char: 21,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::DoubleSymbol("->".to_string()),
+            Lexeme {
+                lexeme: LexemeType::DoubleSymbol("->".to_string()),
                 line: 0,
                 first_char: 23,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("int".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("int".to_string()),
                 line: 0,
                 first_char: 26,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("?".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("?".to_string()),
                 line: 0,
                 first_char: 29,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("{".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("{".to_string()),
                 line: 0,
                 first_char: 31,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("return".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("return".to_string()),
                 line: 0,
                 first_char: 33,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("a".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("a".to_string()),
                 line: 0,
                 first_char: 40,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("+".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("+".to_string()),
                 line: 0,
                 first_char: 42,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Text("b".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Text("b".to_string()),
                 line: 0,
                 first_char: 44,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol(";".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol(";".to_string()),
                 line: 0,
                 first_char: 45,
             },
-            LexemeWithPosition {
-                lexeme: Lexeme::Symbol("}".to_string()),
+            Lexeme {
+                lexeme: LexemeType::Symbol("}".to_string()),
                 line: 0,
                 first_char: 47,
             },

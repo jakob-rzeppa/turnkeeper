@@ -1,13 +1,13 @@
 #[derive(Debug, Clone, PartialEq)]
-pub struct TokenWithPosition {
-    pub token: Token,
+pub struct Token {
+    pub token: TokenType,
     pub line: usize,
     pub first_char: usize,
 }
 
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum Token {
+pub enum TokenType {
     // --- FROM Text LEXEME ---
     // Keywords
     Let,
@@ -32,7 +32,7 @@ pub enum Token {
     FloatType,
     StringType,
     BoolType,
-    ArrayType(Box<Token>),
+    ArrayType(Box<TokenType>),
 
     Identifier(String),
     BoolLiteral(bool),
