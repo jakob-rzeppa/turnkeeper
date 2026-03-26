@@ -1,8 +1,18 @@
+use crate::application::game::plugin::Position;
+
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
     pub token: TokenType,
-    pub line: usize,
-    pub first_char: usize,
+    pub pos: Position,
+}
+
+impl Token {
+    pub fn new(token: TokenType, line: usize, first_char: usize) -> Self {
+        Token {
+            token,
+            pos: Position { line, first_char },
+        }
+    }
 }
 
 

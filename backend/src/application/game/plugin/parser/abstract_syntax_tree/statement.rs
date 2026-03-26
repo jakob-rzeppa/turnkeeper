@@ -256,13 +256,13 @@ mod tests {
     #[test]
     fn test_parse_let() {
         let tokens = vec![
-            Token { token: TokenType::Let, line: 0, first_char: 0 },
-            Token { token: TokenType::Identifier("x".to_string()), line: 0, first_char: 4 },
-            Token { token: TokenType::Colon, line: 0, first_char: 6 },
-            Token { token: TokenType::IntType, line: 0, first_char: 8 },
-            Token { token: TokenType::Assign, line: 0, first_char: 12 },
-            Token { token: TokenType::IntLiteral(42), line: 0, first_char: 14 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 17 },
+            Token::new(TokenType::Let, 0, 0),
+            Token::new(TokenType::Identifier("x".to_string()), 0, 4),
+            Token::new(TokenType::Colon, 0, 6),
+            Token::new(TokenType::IntType, 0, 8),
+            Token::new(TokenType::Assign, 0, 12),
+            Token::new(TokenType::IntLiteral(42), 0, 14),
+            Token::new(TokenType::Semicolon, 0, 17),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'let' statement");
@@ -276,10 +276,10 @@ mod tests {
     #[test]
     fn test_parse_assignment() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("x".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::Assign, line: 0, first_char: 2 },
-            Token { token: TokenType::IntLiteral(10), line: 0, first_char: 4 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 7 },
+            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
+            Token::new(TokenType::Assign, 0, 2),
+            Token::new(TokenType::IntLiteral(10), 0, 4),
+            Token::new(TokenType::Semicolon, 0, 7),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse assignment statement");
@@ -292,16 +292,16 @@ mod tests {
     #[test]
     fn test_parse_if() {
         let tokens = vec![
-            Token { token: TokenType::If, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 3 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 4 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 9 },
-            Token { token: TokenType::LeftBrace, line: 0, first_char: 11 },
-            Token { token: TokenType::Identifier("x".to_string()), line: 1, first_char: 4 },
-            Token { token: TokenType::Assign, line: 1, first_char: 6 },
-            Token { token: TokenType::IntLiteral(0), line: 1, first_char: 8 },
-            Token { token: TokenType::Semicolon, line: 1, first_char: 10 },
-            Token { token: TokenType::RightBrace, line: 2, first_char: 0 },
+            Token::new(TokenType::If, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 3),
+            Token::new(TokenType::BoolLiteral(true), 0, 4),
+            Token::new(TokenType::RightParen, 0, 9),
+            Token::new(TokenType::LeftBrace, 0, 11),
+            Token::new(TokenType::Identifier("x".to_string()), 1, 4),
+            Token::new(TokenType::Assign, 1, 6),
+            Token::new(TokenType::IntLiteral(0), 1, 8),
+            Token::new(TokenType::Semicolon, 1, 10),
+            Token::new(TokenType::RightBrace, 2, 0),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'if' statement");
@@ -319,16 +319,16 @@ mod tests {
     #[test]
     fn test_parse_while() {
         let tokens = vec![
-            Token { token: TokenType::While, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 6 },
-            Token { token: TokenType::BoolLiteral(false), line: 0, first_char: 7 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 13 },
-            Token { token: TokenType::LeftBrace, line: 0, first_char: 15 },
-            Token { token: TokenType::Identifier("x".to_string()), line: 1, first_char: 4 },
-            Token { token: TokenType::Assign, line: 1, first_char: 6 },
-            Token { token: TokenType::IntLiteral(0), line: 1, first_char: 8 },
-            Token { token: TokenType::Semicolon, line: 1, first_char: 10 },
-            Token { token: TokenType::RightBrace, line: 2, first_char: 0 },
+            Token::new(TokenType::While, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 6),
+            Token::new(TokenType::BoolLiteral(false), 0, 7),
+            Token::new(TokenType::RightParen, 0, 13),
+            Token::new(TokenType::LeftBrace, 0, 15),
+            Token::new(TokenType::Identifier("x".to_string()), 1, 4),
+            Token::new(TokenType::Assign, 1, 6),
+            Token::new(TokenType::IntLiteral(0), 1, 8),
+            Token::new(TokenType::Semicolon, 1, 10),
+            Token::new(TokenType::RightBrace, 2, 0),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'while' statement");
@@ -346,9 +346,9 @@ mod tests {
     #[test]
     fn test_parse_return_with_expr() {
         let tokens = vec![
-            Token { token: TokenType::Return, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 7 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 9 },
+            Token::new(TokenType::Return, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 7),
+            Token::new(TokenType::Semicolon, 0, 9),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement with expression");
@@ -358,8 +358,8 @@ mod tests {
     #[test]
     fn test_parse_return_without_expr() {
         let tokens = vec![
-            Token { token: TokenType::Return, line: 0, first_char: 0 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 7 },
+            Token::new(TokenType::Return, 0, 0),
+            Token::new(TokenType::Semicolon, 0, 7),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement without expression");
@@ -369,9 +369,9 @@ mod tests {
     #[test]
     fn test_parse_throw() {
         let tokens = vec![
-            Token { token: TokenType::Throw, line: 0, first_char: 0 },
-            Token { token: TokenType::StringLiteral("Error message".to_string()), line: 0, first_char: 6 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 22 },
+            Token::new(TokenType::Throw, 0, 0),
+            Token::new(TokenType::StringLiteral("Error message".to_string()), 0, 6),
+            Token::new(TokenType::Semicolon, 0, 22),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement");
@@ -381,8 +381,8 @@ mod tests {
     #[test]
     fn test_parse_throw_without_expr() {
         let tokens = vec![
-            Token { token: TokenType::Throw, line: 0, first_char: 0 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 6 },
+            Token::new(TokenType::Throw, 0, 0),
+            Token::new(TokenType::Semicolon, 0, 6),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement without expression");
@@ -392,8 +392,8 @@ mod tests {
     #[test]
     fn test_parse_exit() {
         let tokens = vec![
-            Token { token: TokenType::Exit, line: 0, first_char: 0 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 5 },
+            Token::new(TokenType::Exit, 0, 0),
+            Token::new(TokenType::Semicolon, 0, 5),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'exit' statement");
@@ -403,13 +403,13 @@ mod tests {
     #[test]
     fn test_parse_function_call_statement() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("doSomething".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 11 },
-            Token { token: TokenType::IntLiteral(42), line: 0, first_char: 12 },
-            Token { token: TokenType::Comma, line: 0, first_char: 15 },
-            Token { token: TokenType::StringLiteral("hello".to_string()), line: 0, first_char: 17 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 24 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 25 },
+            Token::new(TokenType::Identifier("doSomething".to_string()), 0, 0),
+            Token::new(TokenType::LeftParen, 0, 11),
+            Token::new(TokenType::IntLiteral(42), 0, 12),
+            Token::new(TokenType::Comma, 0, 15),
+            Token::new(TokenType::StringLiteral("hello".to_string()), 0, 17),
+            Token::new(TokenType::RightParen, 0, 24),
+            Token::new(TokenType::Semicolon, 0, 25),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse function call statement");

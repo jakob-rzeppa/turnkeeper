@@ -80,8 +80,8 @@ mod tests {
     #[test]
     fn test_parse_block() {
         let tokens = vec![
-            Token { token: TokenType::LeftBrace, line: 0, first_char: 0 },
-            Token { token: TokenType::RightBrace, line: 0, first_char: 0 },
+            Token::new(TokenType::LeftBrace, 0, 0),
+            Token::new(TokenType::RightBrace, 0, 0),
         ];
         let (block, _) = Block::parse(&tokens, 0).unwrap();
         assert_eq!(block, Block(Vec::new()));
@@ -90,25 +90,25 @@ mod tests {
     #[test]
     fn test_parse_type() {
         let tokens = vec![
-            Token { token: TokenType::IntType, line: 0, first_char: 0 },
+            Token::new(TokenType::IntType, 0, 0),
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Int);
 
         let tokens = vec![
-            Token { token: TokenType::StringType, line: 0, first_char: 0 },
+            Token::new(TokenType::StringType, 0, 0),
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::String);
 
         let tokens = vec![
-            Token { token: TokenType::BoolType, line: 0, first_char: 0 },
+            Token::new(TokenType::BoolType, 0, 0),
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Bool);
 
         let tokens = vec![
-            Token { token: TokenType::FloatType, line: 0, first_char: 0 },
+            Token::new(TokenType::FloatType, 0, 0),
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Float);
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn test_parse_identifier() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("x".to_string()), line: 0, first_char: 0 },
+            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
         ];
         let (identifier, _) = Identifier::parse(&tokens, 0).unwrap();
         assert_eq!(identifier, Identifier("x".to_string()));

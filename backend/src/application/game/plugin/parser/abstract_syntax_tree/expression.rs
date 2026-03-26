@@ -267,9 +267,9 @@ mod tests {
     #[test]
     fn test_plus_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -284,9 +284,9 @@ mod tests {
     #[test]
     fn test_star_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -297,11 +297,11 @@ mod tests {
     #[test]
     fn test_plus_then_star() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -320,11 +320,11 @@ mod tests {
     #[test]
     fn test_star_then_plus() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -343,11 +343,11 @@ mod tests {
     #[test]
     fn test_eval_first_plus_before_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -366,11 +366,11 @@ mod tests {
     #[test]
     fn test_eval_first_minus_before_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -389,11 +389,11 @@ mod tests {
     #[test]
     fn test_eval_first_multiply_before_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -412,11 +412,11 @@ mod tests {
     #[test]
     fn test_eval_first_divide_before_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Slash, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Slash, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Slash, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Slash, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -435,13 +435,13 @@ mod tests {
     #[test]
     fn test_complex_expression() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(6), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(6), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -464,9 +464,9 @@ mod tests {
     #[test]
     fn test_parenthesized_literal() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(42), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(42), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -477,11 +477,11 @@ mod tests {
     #[test]
     fn test_parenthesized_expression() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -496,13 +496,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_higher_precedence_first() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -521,13 +521,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_higher_precedence_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -546,13 +546,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_lower_precedence_first() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -571,13 +571,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_lower_precedence_last() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -596,15 +596,15 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_nested_parentheses() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -623,19 +623,19 @@ mod tests {
     #[test]
     fn test_complex_nested_parenthesized_expression() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(6), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Slash, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(6), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(6), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::Slash, 0, 0),
+            Token::new(TokenType::IntLiteral(6), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -662,8 +662,8 @@ mod tests {
     #[test]
     fn test_unary_minus() {
         let tokens = vec![
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -674,8 +674,8 @@ mod tests {
     #[test]
     fn test_unary_not() {
         let tokens = vec![
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -686,10 +686,10 @@ mod tests {
     #[test]
     fn test_unary_minus_with_binary_operation() {
         let tokens = vec![
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -704,10 +704,10 @@ mod tests {
     #[test]
     fn test_unary_not_with_binary_operation() {
         let tokens = vec![
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(1), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(0), line: 0, first_char: 0 },
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(1), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(0), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -722,10 +722,10 @@ mod tests {
     #[test]
     fn test_unary_in_binary_operation() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -740,9 +740,9 @@ mod tests {
     #[test]
     fn test_multiple_unary_operators() {
         let tokens = vec![
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -759,10 +759,10 @@ mod tests {
     #[test]
     fn test_unary_operators_with_parentheses() {
         let tokens = vec![
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -776,12 +776,12 @@ mod tests {
     #[test]
     fn test_unary_operators_with_expr_in_parentheses() {
         let tokens = vec![
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -799,13 +799,13 @@ mod tests {
     #[test]
     fn test_unary_operators_with_nested_parentheses() {
         let tokens = vec![
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Not, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::Not, 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -822,10 +822,10 @@ mod tests {
     #[test]
     fn test_expr_end_is_at_semicolon() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Semicolon, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -837,11 +837,11 @@ mod tests {
     #[test]
     fn test_expr_end_is_at_right_paren() {
         let tokens = vec![
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 1));
@@ -853,9 +853,9 @@ mod tests {
     #[test]
     fn test_modulo_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(10), line: 0, first_char: 0 },
-            Token { token: TokenType::Percent, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(10), 0, 0),
+            Token::new(TokenType::Percent, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -866,9 +866,9 @@ mod tests {
     #[test]
     fn test_power_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(2), line: 0, first_char: 0 },
-            Token { token: TokenType::Caret, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(2), 0, 0),
+            Token::new(TokenType::Caret, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -879,11 +879,11 @@ mod tests {
     #[test]
     fn test_power_is_right_associative() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(2), line: 0, first_char: 0 },
-            Token { token: TokenType::Caret, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Caret, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(2), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(2), 0, 0),
+            Token::new(TokenType::Caret, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Caret, 0, 0),
+            Token::new(TokenType::IntLiteral(2), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -903,11 +903,11 @@ mod tests {
     #[test]
     fn test_multiply_then_modulo() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Percent, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Percent, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -926,9 +926,9 @@ mod tests {
     #[test]
     fn test_equal_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::EqualEqual, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::EqualEqual, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -939,9 +939,9 @@ mod tests {
     #[test]
     fn test_not_equal_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::NotEqual, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::NotEqual, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -952,9 +952,9 @@ mod tests {
     #[test]
     fn test_less_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Less, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Less, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -965,9 +965,9 @@ mod tests {
     #[test]
     fn test_greater_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Greater, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Greater, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -978,9 +978,9 @@ mod tests {
     #[test]
     fn test_less_equal_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::LessEqual, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::LessEqual, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -991,9 +991,9 @@ mod tests {
     #[test]
     fn test_greater_equal_operator() {
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::GreaterEqual, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::GreaterEqual, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1004,9 +1004,9 @@ mod tests {
     #[test]
     fn test_and_operator() {
         let tokens = vec![
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
-            Token { token: TokenType::And, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(false), line: 0, first_char: 0 },
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
+            Token::new(TokenType::And, 0, 0),
+            Token::new(TokenType::BoolLiteral(false), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1017,9 +1017,9 @@ mod tests {
     #[test]
     fn test_or_operator() {
         let tokens = vec![
-            Token { token: TokenType::BoolLiteral(false), line: 0, first_char: 0 },
-            Token { token: TokenType::Or, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
+            Token::new(TokenType::BoolLiteral(false), 0, 0),
+            Token::new(TokenType::Or, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1031,11 +1031,11 @@ mod tests {
     fn test_and_or_precedence() {
         // OR has lower precedence than AND, so: false && true || true => (false && true) || true
         let tokens = vec![
-            Token { token: TokenType::BoolLiteral(false), line: 0, first_char: 0 },
-            Token { token: TokenType::And, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
-            Token { token: TokenType::Or, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
+            Token::new(TokenType::BoolLiteral(false), 0, 0),
+            Token::new(TokenType::And, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
+            Token::new(TokenType::Or, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1055,11 +1055,11 @@ mod tests {
     fn test_comparison_lower_precedence_than_arithmetic() {
         // 3 + 4 == 7 should be (3 + 4) == 7
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::EqualEqual, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(7), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::EqualEqual, 0, 0),
+            Token::new(TokenType::IntLiteral(7), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1079,11 +1079,11 @@ mod tests {
     fn test_arithmetic_lower_precedence_than_power() {
         // 2 + 3 ** 2 should be 2 + (3 ** 2)
         let tokens = vec![
-            Token { token: TokenType::IntLiteral(2), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Caret, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(2), line: 0, first_char: 0 },
+            Token::new(TokenType::IntLiteral(2), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Caret, 0, 0),
+            Token::new(TokenType::IntLiteral(2), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1103,16 +1103,16 @@ mod tests {
     fn test_complex_mixed_operators() {
         // -3 * 4 + 5 < 10 && true
         let tokens = vec![
-            Token { token: TokenType::Minus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
-            Token { token: TokenType::Less, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(10), line: 0, first_char: 0 },
-            Token { token: TokenType::And, line: 0, first_char: 0 },
-            Token { token: TokenType::BoolLiteral(true), line: 0, first_char: 0 },
+            Token::new(TokenType::Minus, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
+            Token::new(TokenType::Less, 0, 0),
+            Token::new(TokenType::IntLiteral(10), 0, 0),
+            Token::new(TokenType::And, 0, 0),
+            Token::new(TokenType::BoolLiteral(true), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1142,9 +1142,9 @@ mod tests {
     #[test]
     fn test_expr_with_variable() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("x".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::Plus, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(5), line: 0, first_char: 0 },
+            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
+            Token::new(TokenType::Plus, 0, 0),
+            Token::new(TokenType::IntLiteral(5), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1159,12 +1159,12 @@ mod tests {
     #[test]
     fn test_expr_with_function_call() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("f".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
+            Token::new(TokenType::Identifier("f".to_string()), 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1183,13 +1183,13 @@ mod tests {
     #[test]
     fn test_expr_with_nested_function_calls() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("f".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Identifier("g".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
+            Token::new(TokenType::Identifier("f".to_string()), 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::Identifier("g".to_string()), 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1208,18 +1208,18 @@ mod tests {
     #[test]
     fn test_expr_with_function_call_and_catch_block() {
         let tokens = vec![
-            Token { token: TokenType::Identifier("f".to_string()), line: 0, first_char: 0 },
-            Token { token: TokenType::LeftParen, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(3), line: 0, first_char: 0 },
-            Token { token: TokenType::RightParen, line: 0, first_char: 0 },
-            Token { token: TokenType::Catch, line: 0, first_char: 0 },
-            Token { token: TokenType::LeftBrace, line: 0, first_char: 0 },
-            Token { token: TokenType::Return, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(0), line: 0, first_char: 0 },
-            Token { token: TokenType::Semicolon, line: 0, first_char: 0 },
-            Token { token: TokenType::RightBrace, line: 0, first_char: 0 },
-            Token { token: TokenType::Star, line: 0, first_char: 0 },
-            Token { token: TokenType::IntLiteral(4), line: 0, first_char: 0 },
+            Token::new(TokenType::Identifier("f".to_string()), 0, 0),
+            Token::new(TokenType::LeftParen, 0, 0),
+            Token::new(TokenType::IntLiteral(3), 0, 0),
+            Token::new(TokenType::RightParen, 0, 0),
+            Token::new(TokenType::Catch, 0, 0),
+            Token::new(TokenType::LeftBrace, 0, 0),
+            Token::new(TokenType::Return, 0, 0),
+            Token::new(TokenType::IntLiteral(0), 0, 0),
+            Token::new(TokenType::Semicolon, 0, 0),
+            Token::new(TokenType::RightBrace, 0, 0),
+            Token::new(TokenType::Star, 0, 0),
+            Token::new(TokenType::IntLiteral(4), 0, 0),
         ];
 
         assert!(Expr::is_next(&tokens, 0));

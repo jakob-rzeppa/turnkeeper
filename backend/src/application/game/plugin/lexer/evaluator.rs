@@ -105,11 +105,7 @@ fn evaluate_lexeme(lexeme: Lexeme) -> Token {
         LexemeType::DoubleSymbol(symbol) => evaluate_symbol_lexeme(symbol),
     };
 
-    Token {
-        token,
-        line: lexeme.line,
-        first_char: lexeme.first_char,
-    }
+    Token::new(token, lexeme.pos.line, lexeme.pos.first_char)
 }
 
 pub fn evaluate_lexemes(lexemes: Vec<Lexeme>) -> Vec<Token> {
@@ -127,27 +123,27 @@ mod tests {
 
     #[test]
     fn test_evaluate_lexemes_single() {
-        let lexemes = vec![Lexeme { lexeme: LexemeType::Text("let".to_string()), line: 1, first_char: 1 }];
+        let lexemes = vec![Lexeme::new(LexemeType::Text("let".to_string()), 1, 1)];
         let tokens = evaluate_lexemes(lexemes);
-        assert_eq!(tokens, vec![Token { token: TokenType::Let, line: 1, first_char: 1 }]);
+        assert_eq!(tokens, vec![Token::new(TokenType::Let, 1, 1)]);
     }
 
     #[test]
     fn test_evaluate_lexemes_multiple() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Text("let".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Text("x".to_string()), line: 1, first_char: 5 },
-            Lexeme { lexeme: LexemeType::Symbol("=".to_string()), line: 1, first_char: 7 },
-            Lexeme { lexeme: LexemeType::Number("42".to_string()), line: 1, first_char: 9 },
+            Lexeme::new(LexemeType::Text("let".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Text("x".to_string()), 1, 5),
+            Lexeme::new(LexemeType::Symbol("=".to_string()), 1, 7),
+            Lexeme::new(LexemeType::Number("42".to_string()), 1, 9),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token { token: TokenType::Let, line: 1, first_char: 1 },
-                Token { token: TokenType::Identifier("x".to_string()), line: 1, first_char: 5 },
-                Token { token: TokenType::Assign, line: 1, first_char: 7 },
-                Token { token: TokenType::IntLiteral(42), line: 1, first_char: 9 },
+                Token::new(TokenType::Let, 1, 1),
+                Token::new(TokenType::Identifier("x".to_string()), 1, 5),
+                Token::new(TokenType::Assign, 1, 7),
+                Token::new(TokenType::IntLiteral(42), 1, 9),
             ]
         );
     }
@@ -155,17 +151,17 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_expression() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Text("x".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Symbol("+".to_string()), line: 1, first_char: 3 },
-            Lexeme { lexeme: LexemeType::Number("5".to_string()), line: 1, first_char: 5 },
+            Lexeme::new(LexemeType::Text("x".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Symbol("+".to_string()), 1, 3),
+            Lexeme::new(LexemeType::Number("5".to_string()), 1, 5),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token { token: TokenType::Identifier("x".to_string()), line: 1, first_char: 1 },
-                Token { token: TokenType::Plus, line: 1, first_char: 3 },
-                Token { token: TokenType::IntLiteral(5), line: 1, first_char: 5 },
+                Token::new(TokenType::Identifier("x".to_string()), 1, 1),
+                Token::new(TokenType::Plus, 1, 3),
+                Token::new(TokenType::IntLiteral(5), 1, 5),
             ]
         );
     }
@@ -173,17 +169,17 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_with_string_and_types() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Text("int".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Quote("hello".to_string()), line: 1, first_char: 5 },
-            Lexeme { lexeme: LexemeType::Text("true".to_string()), line: 1, first_char: 13 },
+            Lexeme::new(LexemeType::Text("int".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Quote("hello".to_string()), 1, 5),
+            Lexeme::new(LexemeType::Text("true".to_string()), 1, 13),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token { token: TokenType::IntType, line: 1, first_char: 1 },
-                Token { token: TokenType::StringLiteral("hello".to_string()), line: 1, first_char: 5 },
-                Token { token: TokenType::BoolLiteral(true), line: 1, first_char: 13 },
+                Token::new(TokenType::IntType, 1, 1),
+                Token::new(TokenType::StringLiteral("hello".to_string()), 1, 5),
+                Token::new(TokenType::BoolLiteral(true), 1, 13),
             ]
         );
     }
@@ -191,51 +187,51 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_function_definition() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Text("fn".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Text("add".to_string()), line: 1, first_char: 3 },
-            Lexeme { lexeme: LexemeType::Symbol("(".to_string()), line: 1, first_char: 6 },
-            Lexeme { lexeme: LexemeType::Text("a".to_string()), line: 1, first_char: 7 },
-            Lexeme { lexeme: LexemeType::Symbol(":".to_string()), line: 1, first_char: 8 },
-            Lexeme { lexeme: LexemeType::Text("int".to_string()), line: 1, first_char: 9 },
-            Lexeme { lexeme: LexemeType::Symbol(")".to_string()), line: 1, first_char: 12 },
-            Lexeme { lexeme: LexemeType::DoubleSymbol("->".to_string()), line: 1, first_char: 14 },
-            Lexeme { lexeme: LexemeType::Text("int".to_string()), line: 1, first_char: 16 },
-            Lexeme { lexeme: LexemeType::Symbol("{".to_string()), line: 1, first_char: 19 },
-            Lexeme { lexeme: LexemeType::Text("return".to_string()), line: 1, first_char: 21 },
-            Lexeme { lexeme: LexemeType::Text("a".to_string()), line: 1, first_char: 27 },
-            Lexeme { lexeme: LexemeType::Symbol("}".to_string()), line: 1, first_char: 28 },
+            Lexeme::new(LexemeType::Text("fn".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Text("add".to_string()), 1, 3),
+            Lexeme::new(LexemeType::Symbol("(".to_string()), 1, 6),
+            Lexeme::new(LexemeType::Text("a".to_string()), 1, 7),
+            Lexeme::new(LexemeType::Symbol(":".to_string()), 1, 8),
+            Lexeme::new(LexemeType::Text("int".to_string()), 1, 9),
+            Lexeme::new(LexemeType::Symbol(")".to_string()), 1, 12),
+            Lexeme::new(LexemeType::DoubleSymbol("->".to_string()), 1, 14),
+            Lexeme::new(LexemeType::Text("int".to_string()), 1, 16),
+            Lexeme::new(LexemeType::Symbol("{".to_string()), 1, 19),
+            Lexeme::new(LexemeType::Text("return".to_string()), 1, 21),
+            Lexeme::new(LexemeType::Text("a".to_string()), 1, 27),
+            Lexeme::new(LexemeType::Symbol("}".to_string()), 1, 28),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(tokens.len(), 13);
-        assert_eq!(tokens[0], Token { token: TokenType::Fn, line: 1, first_char: 1 });
-        assert_eq!(tokens[1], Token { token: TokenType::Identifier("add".to_string()), line: 1, first_char: 3 });
-        assert_eq!(tokens[9], Token { token: TokenType::LeftBrace, line: 1, first_char: 19 });
-        assert_eq!(tokens[10], Token { token: TokenType::Return, line: 1, first_char: 21 });
-        assert_eq!(tokens[12], Token { token: TokenType::RightBrace, line: 1, first_char: 28 });
+        assert_eq!(tokens[0], Token::new(TokenType::Fn, 1, 1));
+        assert_eq!(tokens[1], Token::new(TokenType::Identifier("add".to_string()), 1, 3));
+        assert_eq!(tokens[9], Token::new(TokenType::LeftBrace, 1, 19));
+        assert_eq!(tokens[10], Token::new(TokenType::Return, 1, 21));
+        assert_eq!(tokens[12], Token::new(TokenType::RightBrace, 1, 28));
     }
 
     #[test]
     fn test_evaluate_lexemes_conditional() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Text("if".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Text("x".to_string()), line: 1, first_char: 3 },
-            Lexeme { lexeme: LexemeType::DoubleSymbol(">=".to_string()), line: 1, first_char: 5 },
-            Lexeme { lexeme: LexemeType::Number("10".to_string()), line: 1, first_char: 7 },
-            Lexeme { lexeme: LexemeType::Symbol("{".to_string()), line: 1, first_char: 9 },
-            Lexeme { lexeme: LexemeType::Text("break".to_string()), line: 1, first_char: 10 },
-            Lexeme { lexeme: LexemeType::Symbol("}".to_string()), line: 1, first_char: 11 },
+            Lexeme::new(LexemeType::Text("if".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Text("x".to_string()), 1, 3),
+            Lexeme::new(LexemeType::DoubleSymbol(">=".to_string()), 1, 5),
+            Lexeme::new(LexemeType::Number("10".to_string()), 1, 7),
+            Lexeme::new(LexemeType::Symbol("{".to_string()), 1, 9),
+            Lexeme::new(LexemeType::Text("break".to_string()), 1, 10),
+            Lexeme::new(LexemeType::Symbol("}".to_string()), 1, 11),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token { token: TokenType::If, line: 1, first_char: 1 },
-                Token { token: TokenType::Identifier("x".to_string()), line: 1, first_char: 3 },
-                Token { token: TokenType::GreaterEqual, line: 1, first_char: 5 },
-                Token { token: TokenType::IntLiteral(10), line: 1, first_char: 7 },
-                Token { token: TokenType::LeftBrace, line: 1, first_char: 9 },
-                Token { token: TokenType::Break, line: 1, first_char: 10 },
-                Token { token: TokenType::RightBrace, line: 1, first_char: 11 },
+                Token::new(TokenType::If, 1, 1),
+                Token::new(TokenType::Identifier("x".to_string()), 1, 3),
+                Token::new(TokenType::GreaterEqual, 1, 5),
+                Token::new(TokenType::IntLiteral(10), 1, 7),
+                Token::new(TokenType::LeftBrace, 1, 9),
+                Token::new(TokenType::Break, 1, 10),
+                Token::new(TokenType::RightBrace, 1, 11),
             ]
         );
     }
@@ -243,21 +239,21 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_mixed_operators() {
         let lexemes = vec![
-            Lexeme { lexeme: LexemeType::Number("5".to_string()), line: 1, first_char: 1 },
-            Lexeme { lexeme: LexemeType::Symbol("+".to_string()), line: 1, first_char: 2 },
-            Lexeme { lexeme: LexemeType::Number("3".to_string()), line: 1, first_char: 3 },
-            Lexeme { lexeme: LexemeType::Symbol("*".to_string()), line: 1, first_char: 4 },
-            Lexeme { lexeme: LexemeType::Number("2".to_string()), line: 1, first_char: 5 },
+            Lexeme::new(LexemeType::Number("5".to_string()), 1, 1),
+            Lexeme::new(LexemeType::Symbol("+".to_string()), 1, 2),
+            Lexeme::new(LexemeType::Number("3".to_string()), 1, 3),
+            Lexeme::new(LexemeType::Symbol("*".to_string()), 1, 4),
+            Lexeme::new(LexemeType::Number("2".to_string()), 1, 5),
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token { token: TokenType::IntLiteral(5), line: 1, first_char: 1 },
-                Token { token: TokenType::Plus, line: 1, first_char: 2 },
-                Token { token: TokenType::IntLiteral(3), line: 1, first_char: 3 },
-                Token { token: TokenType::Star, line: 1, first_char: 4 },
-                Token { token: TokenType::IntLiteral(2), line: 1, first_char: 5 },
+                Token::new(TokenType::IntLiteral(5), 1, 1),
+                Token::new(TokenType::Plus, 1, 2),
+                Token::new(TokenType::IntLiteral(3), 1, 3),
+                Token::new(TokenType::Star, 1, 4),
+                Token::new(TokenType::IntLiteral(2), 1, 5),
             ]
         );
     }
