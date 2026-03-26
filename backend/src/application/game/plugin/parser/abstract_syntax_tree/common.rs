@@ -1,18 +1,18 @@
-use crate::application::game::plugin::{lexer::token::TokenType, parser::abstract_syntax_tree::{Parse, statement::Statement}};
+use crate::application::game::plugin::{lexer::token::{Token, TokenType}, parser::abstract_syntax_tree::{Parse, statement::Statement}};
 
 #[derive(Clone, PartialEq, Debug)]
 pub struct Block(pub Vec<Statement>);
 
 impl Parse for Block {
-    fn is_next(tokens: &[TokenType], index: usize) -> bool {
-        matches!(tokens.get(index), Some(&TokenType::LeftBrace))
+    fn is_next(tokens: &[Token], index: usize) -> bool {
+        matches!(tokens.get(index), Some(t) if t.token == TokenType::LeftBrace)
     }
 
-    fn parse(tokens: &[TokenType], mut index: usize) -> Result<(Self, usize), String> {
+    fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         expect_token!(tokens, index, TokenType::LeftBrace, "Expected '{' to start a block");
 
         let mut statements = Vec::new();
-        while tokens.get(index) != Some(&TokenType::RightBrace) {
+        while tokens.get(index).map(|t| &t.token) != Some(&TokenType::RightBrace) {
             let statement = expect_parse!(tokens, index, Statement, "Expected a statement inside a block");
             statements.push(statement);
         }
@@ -32,12 +32,12 @@ pub enum Type {
 }
 
 impl Parse for Type {
-    fn is_next(tokens: &[TokenType], index: usize) -> bool {
-        matches!(tokens.get(index), Some(TokenType::IntType | TokenType::FloatType | TokenType::StringType | TokenType::BoolType))
+    fn is_next(tokens: &[Token], index: usize) -> bool {
+        matches!(tokens.get(index), Some(t) if matches!(t.token, TokenType::IntType | TokenType::FloatType | TokenType::StringType | TokenType::BoolType))
     }
 
-    fn parse(tokens: &[TokenType], index: usize) -> Result<(Self, usize), String> {
-        match tokens.get(index) {
+    fn parse(tokens: &[Token], index: usize) -> Result<(Self, usize), String> {
+        match tokens.get(index).map(|t| &t.token) {
             Some(TokenType::IntType) => Ok((Type::Int, index + 1)),
             Some(TokenType::FloatType) => Ok((Type::Float, index + 1)),
             Some(TokenType::StringType) => Ok((Type::String, index + 1)),
@@ -51,12 +51,12 @@ impl Parse for Type {
 pub struct Identifier(pub String);
 
 impl Parse for Identifier {
-    fn is_next(tokens: &[TokenType], index: usize) -> bool {
-        matches!(tokens.get(index), Some(TokenType::Identifier(_)))
+    fn is_next(tokens: &[Token], index: usize) -> bool {
+        matches!(tokens.get(index), Some(t) if matches!(t.token, TokenType::Identifier(_)))
     }
 
-    fn parse(tokens: &[TokenType], index: usize) -> Result<(Self, usize), String> {
-        match tokens.get(index) {
+    fn parse(tokens: &[Token], index: usize) -> Result<(Self, usize), String> {
+        match tokens.get(index).map(|t| &t.token) {
             Some(TokenType::Identifier(name)) => Ok((Identifier(name.clone()), index + 1)),
             _ => Err("Expected an identifier".to_string()),
         }
@@ -80,8 +80,8 @@ mod tests {
     #[test]
     fn test_parse_block() {
         let tokens = vec![
-            TokenType::LeftBrace,
-            TokenType::RightBrace,
+            Token { token: TokenType::LeftBrace, line: 0, first_char: 0 },
+            Token { token: TokenType::RightBrace, line: 0, first_char: 0 },
         ];
         let (block, _) = Block::parse(&tokens, 0).unwrap();
         assert_eq!(block, Block(Vec::new()));
@@ -90,25 +90,25 @@ mod tests {
     #[test]
     fn test_parse_type() {
         let tokens = vec![
-            TokenType::IntType,
+            Token { token: TokenType::IntType, line: 0, first_char: 0 },
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Int);
 
         let tokens = vec![
-            TokenType::StringType,
+            Token { token: TokenType::StringType, line: 0, first_char: 0 },
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::String);
 
         let tokens = vec![
-            TokenType::BoolType,
+            Token { token: TokenType::BoolType, line: 0, first_char: 0 },
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Bool);
 
         let tokens = vec![
-            TokenType::FloatType,
+            Token { token: TokenType::FloatType, line: 0, first_char: 0 },
         ];
         let (datatype, _) = Type::parse(&tokens, 0).unwrap();
         assert_eq!(datatype, Type::Float);
@@ -117,7 +117,7 @@ mod tests {
     #[test]
     fn test_parse_identifier() {
         let tokens = vec![
-            TokenType::Identifier("x".to_string()),
+            Token { token: TokenType::Identifier("x".to_string()), line: 0, first_char: 0 },
         ];
         let (identifier, _) = Identifier::parse(&tokens, 0).unwrap();
         assert_eq!(identifier, Identifier("x".to_string()));

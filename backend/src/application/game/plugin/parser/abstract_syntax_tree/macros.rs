@@ -14,11 +14,11 @@ macro_rules! expect_parse {
 
 /// Macro to expect and consume a specific token
 /// 
-/// Usage: `expect_token!(tokens, index, Token::Semicolon, "Expected ';'")`
+/// Usage: `expect_token!(tokens, index, TokenType::Semicolon, "Expected ';'")`
 macro_rules! expect_token {
     ($tokens:expr, $index:expr, $expected:expr, $error:expr) => {
         {
-            if $tokens.get($index) != Some(&$expected) {
+            if $tokens.get($index).map(|t| &t.token) != Some(&$expected) {
                 return Err($error.to_string());
             }
             $index += 1;

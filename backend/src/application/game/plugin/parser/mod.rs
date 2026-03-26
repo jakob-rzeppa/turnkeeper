@@ -5,7 +5,7 @@ pub mod abstract_syntax_tree;
 pub fn parse_source_code(code: &str) -> Result<Root, String> {
     let tokens = lexer::tokenize(code);
 
-    Root::parse(tokens.into_iter().map(|token_with_position| token_with_position.token).collect())
+    Root::parse(tokens)
 }
 
 #[cfg(test)]
