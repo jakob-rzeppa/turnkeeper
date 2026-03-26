@@ -1,11 +1,11 @@
-use crate::application::game::plugin::lexer::token::Token;
+use crate::application::game::plugin::lexer::token::{TokenWithPosition};
 
 pub mod token;
 mod scanner;
 mod evaluator;
 
-pub fn tokenize(code: &str) -> Vec<Token> {
+pub fn tokenize(code: &str) -> Vec<TokenWithPosition> {
     let lexemes = scanner::scan_source_code(code);
 
-    evaluator::evaluate_lexemes(lexemes.into_iter().map(|lexeme| lexeme.lexeme).collect())
+    evaluator::evaluate_lexemes(lexemes)
 }

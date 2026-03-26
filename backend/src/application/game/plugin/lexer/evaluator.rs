@@ -1,4 +1,4 @@
-use crate::application::game::plugin::lexer::{scanner::Lexeme, token::Token};
+use crate::application::game::plugin::lexer::{scanner::{Lexeme, LexemeWithPosition}, token::{Token, TokenWithPosition}};
 
 fn evaluate_text_lexeme(text: String) -> Token {
     match text.as_str() {
@@ -95,18 +95,24 @@ fn evaluate_symbol_lexeme(symbol: String) -> Token {
     }
 }
 
-fn evaluate_lexeme(lexeme: Lexeme) -> Token {
-    match lexeme {
+fn evaluate_lexeme(lexeme: LexemeWithPosition) -> TokenWithPosition {
+    let token = match lexeme.lexeme {
         Lexeme::Text(text) => evaluate_text_lexeme(text),
         Lexeme::Number(num) => evaluate_number_lexeme(num),
         Lexeme::NumberWithDot(num) => evaluate_number_with_dot_lexeme(num),
         Lexeme::Quote(text) => evaluate_quote_lexeme(text),
         Lexeme::Symbol(symbol) => evaluate_symbol_lexeme(symbol),
         Lexeme::DoubleSymbol(symbol) => evaluate_symbol_lexeme(symbol),
+    };
+
+    TokenWithPosition {
+        token,
+        line: lexeme.line,
+        first_char: lexeme.first_char,
     }
 }
 
-pub fn evaluate_lexemes(lexemes: Vec<Lexeme>) -> Vec<Token> {
+pub fn evaluate_lexemes(lexemes: Vec<LexemeWithPosition>) -> Vec<TokenWithPosition> {
     lexemes.into_iter().map(evaluate_lexeme).collect()
 }
 
@@ -121,27 +127,27 @@ mod tests {
 
     #[test]
     fn test_evaluate_lexemes_single() {
-        let lexemes = vec![Lexeme::Text("let".to_string())];
+        let lexemes = vec![LexemeWithPosition { lexeme: Lexeme::Text("let".to_string()), line: 1, first_char: 1 }];
         let tokens = evaluate_lexemes(lexemes);
-        assert_eq!(tokens, vec![Token::Let]);
+        assert_eq!(tokens, vec![TokenWithPosition { token: Token::Let, line: 1, first_char: 1 }]);
     }
 
     #[test]
     fn test_evaluate_lexemes_multiple() {
         let lexemes = vec![
-            Lexeme::Text("let".to_string()),
-            Lexeme::Text("x".to_string()),
-            Lexeme::Symbol("=".to_string()),
-            Lexeme::Number("42".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Text("let".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Text("x".to_string()), line: 1, first_char: 5 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("=".to_string()), line: 1, first_char: 7 },
+            LexemeWithPosition { lexeme: Lexeme::Number("42".to_string()), line: 1, first_char: 9 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::Let,
-                Token::Identifier("x".to_string()),
-                Token::Assign,
-                Token::IntLiteral(42),
+                TokenWithPosition { token: Token::Let, line: 1, first_char: 1 },
+                TokenWithPosition { token: Token::Identifier("x".to_string()), line: 1, first_char: 5 },
+                TokenWithPosition { token: Token::Assign, line: 1, first_char: 7 },
+                TokenWithPosition { token: Token::IntLiteral(42), line: 1, first_char: 9 },
             ]
         );
     }
@@ -149,17 +155,17 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_expression() {
         let lexemes = vec![
-            Lexeme::Text("x".to_string()),
-            Lexeme::Symbol("+".to_string()),
-            Lexeme::Number("5".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Text("x".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("+".to_string()), line: 1, first_char: 3 },
+            LexemeWithPosition { lexeme: Lexeme::Number("5".to_string()), line: 1, first_char: 5 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::Identifier("x".to_string()),
-                Token::Plus,
-                Token::IntLiteral(5),
+                TokenWithPosition { token: Token::Identifier("x".to_string()), line: 1, first_char: 1 },
+                TokenWithPosition { token: Token::Plus, line: 1, first_char: 3 },
+                TokenWithPosition { token: Token::IntLiteral(5), line: 1, first_char: 5 },
             ]
         );
     }
@@ -167,17 +173,17 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_with_string_and_types() {
         let lexemes = vec![
-            Lexeme::Text("int".to_string()),
-            Lexeme::Quote("hello".to_string()),
-            Lexeme::Text("true".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Text("int".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Quote("hello".to_string()), line: 1, first_char: 5 },
+            LexemeWithPosition { lexeme: Lexeme::Text("true".to_string()), line: 1, first_char: 13 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::IntType,
-                Token::StringLiteral("hello".to_string()),
-                Token::BoolLiteral(true),
+                TokenWithPosition { token: Token::IntType, line: 1, first_char: 1 },
+                TokenWithPosition { token: Token::StringLiteral("hello".to_string()), line: 1, first_char: 5 },
+                TokenWithPosition { token: Token::BoolLiteral(true), line: 1, first_char: 13 },
             ]
         );
     }
@@ -185,51 +191,51 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_function_definition() {
         let lexemes = vec![
-            Lexeme::Text("fn".to_string()),
-            Lexeme::Text("add".to_string()),
-            Lexeme::Symbol("(".to_string()),
-            Lexeme::Text("a".to_string()),
-            Lexeme::Symbol(":".to_string()),
-            Lexeme::Text("int".to_string()),
-            Lexeme::Symbol(")".to_string()),
-            Lexeme::DoubleSymbol("->".to_string()),
-            Lexeme::Text("int".to_string()),
-            Lexeme::Symbol("{".to_string()),
-            Lexeme::Text("return".to_string()),
-            Lexeme::Text("a".to_string()),
-            Lexeme::Symbol("}".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Text("fn".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Text("add".to_string()), line: 1, first_char: 3 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("(".to_string()), line: 1, first_char: 6 },
+            LexemeWithPosition { lexeme: Lexeme::Text("a".to_string()), line: 1, first_char: 7 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol(":".to_string()), line: 1, first_char: 8 },
+            LexemeWithPosition { lexeme: Lexeme::Text("int".to_string()), line: 1, first_char: 9 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol(")".to_string()), line: 1, first_char: 12 },
+            LexemeWithPosition { lexeme: Lexeme::DoubleSymbol("->".to_string()), line: 1, first_char: 14 },
+            LexemeWithPosition { lexeme: Lexeme::Text("int".to_string()), line: 1, first_char: 16 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("{".to_string()), line: 1, first_char: 19 },
+            LexemeWithPosition { lexeme: Lexeme::Text("return".to_string()), line: 1, first_char: 21 },
+            LexemeWithPosition { lexeme: Lexeme::Text("a".to_string()), line: 1, first_char: 27 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("}".to_string()), line: 1, first_char: 28 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(tokens.len(), 13);
-        assert_eq!(tokens[0], Token::Fn);
-        assert_eq!(tokens[1], Token::Identifier("add".to_string()));
-        assert_eq!(tokens[9], Token::LeftBrace);
-        assert_eq!(tokens[10], Token::Return);
-        assert_eq!(tokens[12], Token::RightBrace);
+        assert_eq!(tokens[0], TokenWithPosition { token: Token::Fn, line: 1, first_char: 1 });
+        assert_eq!(tokens[1], TokenWithPosition { token: Token::Identifier("add".to_string()), line: 1, first_char: 3 });
+        assert_eq!(tokens[9], TokenWithPosition { token: Token::LeftBrace, line: 1, first_char: 19 });
+        assert_eq!(tokens[10], TokenWithPosition { token: Token::Return, line: 1, first_char: 21 });
+        assert_eq!(tokens[12], TokenWithPosition { token: Token::RightBrace, line: 1, first_char: 28 });
     }
 
     #[test]
     fn test_evaluate_lexemes_conditional() {
         let lexemes = vec![
-            Lexeme::Text("if".to_string()),
-            Lexeme::Text("x".to_string()),
-            Lexeme::DoubleSymbol(">=".to_string()),
-            Lexeme::Number("10".to_string()),
-            Lexeme::Symbol("{".to_string()),
-            Lexeme::Text("break".to_string()),
-            Lexeme::Symbol("}".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Text("if".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Text("x".to_string()), line: 1, first_char: 3 },
+            LexemeWithPosition { lexeme: Lexeme::DoubleSymbol(">=".to_string()), line: 1, first_char: 5 },
+            LexemeWithPosition { lexeme: Lexeme::Number("10".to_string()), line: 1, first_char: 7 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("{".to_string()), line: 1, first_char: 9 },
+            LexemeWithPosition { lexeme: Lexeme::Text("break".to_string()), line: 1, first_char: 10 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("}".to_string()), line: 1, first_char: 11 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::If,
-                Token::Identifier("x".to_string()),
-                Token::GreaterEqual,
-                Token::IntLiteral(10),
-                Token::LeftBrace,
-                Token::Break,
-                Token::RightBrace,
+                TokenWithPosition { token: Token::If, line: 1, first_char: 1 },
+                TokenWithPosition { token: Token::Identifier("x".to_string()), line: 1, first_char: 3 },
+                TokenWithPosition { token: Token::GreaterEqual, line: 1, first_char: 5 },
+                TokenWithPosition { token: Token::IntLiteral(10), line: 1, first_char: 7 },
+                TokenWithPosition { token: Token::LeftBrace, line: 1, first_char: 9 },
+                TokenWithPosition { token: Token::Break, line: 1, first_char: 10 },
+                TokenWithPosition { token: Token::RightBrace, line: 1, first_char: 11 },
             ]
         );
     }
@@ -237,21 +243,21 @@ mod tests {
     #[test]
     fn test_evaluate_lexemes_mixed_operators() {
         let lexemes = vec![
-            Lexeme::Number("5".to_string()),
-            Lexeme::Symbol("+".to_string()),
-            Lexeme::Number("3".to_string()),
-            Lexeme::Symbol("*".to_string()),
-            Lexeme::Number("2".to_string()),
+            LexemeWithPosition { lexeme: Lexeme::Number("5".to_string()), line: 1, first_char: 1 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("+".to_string()), line: 1, first_char: 2 },
+            LexemeWithPosition { lexeme: Lexeme::Number("3".to_string()), line: 1, first_char: 3 },
+            LexemeWithPosition { lexeme: Lexeme::Symbol("*".to_string()), line: 1, first_char: 4 },
+            LexemeWithPosition { lexeme: Lexeme::Number("2".to_string()), line: 1, first_char: 5 },
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::IntLiteral(5),
-                Token::Plus,
-                Token::IntLiteral(3),
-                Token::Star,
-                Token::IntLiteral(2),
+                TokenWithPosition { token: Token::IntLiteral(5), line: 1, first_char: 1 },
+                TokenWithPosition { token: Token::Plus, line: 1, first_char: 2 },
+                TokenWithPosition { token: Token::IntLiteral(3), line: 1, first_char: 3 },
+                TokenWithPosition { token: Token::Star, line: 1, first_char: 4 },
+                TokenWithPosition { token: Token::IntLiteral(2), line: 1, first_char: 5 },
             ]
         );
     }

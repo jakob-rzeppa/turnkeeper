@@ -1,4 +1,10 @@
-use crate::application::game::plugin::lexer::scanner::Lexeme;
+#[derive(Debug, Clone, PartialEq)]
+pub struct TokenWithPosition {
+    pub token: Token,
+    pub line: usize,
+    pub first_char: usize,
+}
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Token {
