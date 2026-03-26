@@ -7,5 +7,5 @@ mod evaluator;
 pub fn tokenize(code: &str) -> Vec<Token> {
     let lexemes = scanner::scan_source_code(code);
 
-    evaluator::evaluate_lexemes(lexemes)
+    evaluator::evaluate_lexemes(lexemes.into_iter().map(|lexeme| lexeme.lexeme).collect())
 }
