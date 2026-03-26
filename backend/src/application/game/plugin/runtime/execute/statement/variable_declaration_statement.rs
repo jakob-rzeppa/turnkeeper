@@ -1,17 +1,17 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::{common::Type, statement::VariableDeclaration}, runtime::{RuntimeEnvironment, memory::VariableValue}};
+use crate::application::game::plugin::{parser::abstract_syntax_tree::{datatype::{Datatype, DatatypeVariant}, statement::VariableDeclaration}, runtime::{RuntimeEnvironment, memory::VariableValue}};
 
 impl RuntimeEnvironment {
     pub fn execute_variable_declaration_statement(&mut self, element: &VariableDeclaration) -> Result<(), String> {
-        let name = element.name.0.clone();
+        let name = element.name.name.clone();
         let var_type = &element.datatype;
         let value = self.evaluate_expression(&element.value)?;
 
         // Type checking
-        match (var_type, &value) {
-            (Type::Int, VariableValue::Int(_)) |
-            (Type::Float, VariableValue::Float(_)) |
-            (Type::String, VariableValue::String(_)) |
-            (Type::Bool, VariableValue::Bool(_)) => {
+        match (&var_type.variant, &value) {
+            (DatatypeVariant::Int, VariableValue::Int(_)) |
+            (DatatypeVariant::Float, VariableValue::Float(_)) |
+            (DatatypeVariant::String, VariableValue::String(_)) |
+            (DatatypeVariant::Bool, VariableValue::Bool(_)) => {
                 self.memory_manager.declare_variable(name, value)
             },
             _ => Err(format!("Type mismatch: cannot assign value of type {:?} to variable of type {:?}", value, var_type)),
@@ -21,15 +21,15 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::{common::Identifier, expression::{Expr, ExprAtom, Literal}};
+    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{datatype::{Datatype, DatatypeVariant}, expression::{Expr, ExprAtom, Literal}, identifier::Identifier}};
     use super::*;
 
     #[test]
     fn test_variable_declaration() {
         let mut env = RuntimeEnvironment::new();
         let var_decl = VariableDeclaration {
-            name: Identifier("x".to_string()),
-            datatype: Type::Int,
+            name: Identifier::new("x".to_string(), Position::new(0, 0)),
+            datatype: Datatype::new(DatatypeVariant::Int, Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
         };
 
@@ -43,8 +43,8 @@ mod tests {
     fn test_variable_declaration_type_mismatch() {
         let mut env = RuntimeEnvironment::new();
         let var_decl = VariableDeclaration {
-            name: Identifier("x".to_string()),
-            datatype: Type::Int,
+            name: Identifier::new("x".to_string(), Position::new(0, 0)),
+            datatype: Datatype::new(DatatypeVariant::Int, Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::String("not an integer".to_string()))),
         };
 
@@ -61,8 +61,8 @@ mod tests {
         env.memory_manager.push_scope(); // Enter a new scope
 
         let var_decl = VariableDeclaration {
-            name: Identifier("x".to_string()),
-            datatype: Type::Int,
+            name: Identifier::new("x".to_string(), Position::new(0, 0)),
+            datatype: Datatype::new(DatatypeVariant::Int, Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
 
@@ -82,8 +82,8 @@ mod tests {
         env.memory_manager.declare_variable("x".to_string(), VariableValue::Int(42)).unwrap();
 
         let var_decl = VariableDeclaration {
-            name: Identifier("x".to_string()),
-            datatype: Type::Int,
+            name: Identifier::new("x".to_string(), Position::new(0, 0)),
+            datatype: Datatype::new(DatatypeVariant::Int, Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
 

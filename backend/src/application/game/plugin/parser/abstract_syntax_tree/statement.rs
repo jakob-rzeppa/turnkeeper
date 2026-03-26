@@ -1,6 +1,6 @@
-use crate::application::game::plugin::{lexer::token::{Token, TokenType}, parser::abstract_syntax_tree::{Parse, common::Block}};
+use crate::application::game::plugin::{lexer::token::{Token, TokenType}, parser::abstract_syntax_tree::{Parse, block::Block, datatype::Datatype, identifier::Identifier}};
 
-use super::{common::Type, common::Identifier, expression::Expr};
+use super::{expression::Expr};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Statement {
@@ -53,7 +53,7 @@ impl Parse for Statement {
 #[derive(Clone, PartialEq, Debug)]
 pub struct VariableDeclaration {
     pub name: Identifier,
-    pub datatype: Type,
+    pub datatype: Datatype,
     pub value: Expr,
 }
 
@@ -69,7 +69,7 @@ impl Parse for VariableDeclaration {
 
         expect_token!(tokens, index, TokenType::Colon, "Expected ':' after variable name in 'let' statement");
 
-        let datatype = expect_parse!(tokens, index, Type, "Expected type after ':' in 'let' statement");
+        let datatype = expect_parse!(tokens, index, Datatype, "Expected type after ':' in 'let' statement");
 
         expect_token!(tokens, index, TokenType::Assign, "Expected '=' after type in 'let' statement");
 
@@ -249,26 +249,26 @@ impl Parse for ExitStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::expression::{ExprAtom, FunctionCall, Literal};
+    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{datatype::DatatypeVariant, expression::{ExprAtom, FunctionCall, Literal}}};
 
     use super::*;
     
     #[test]
     fn test_parse_let() {
         let tokens = vec![
-            Token::new(TokenType::Let, 0, 0),
-            Token::new(TokenType::Identifier("x".to_string()), 0, 4),
-            Token::new(TokenType::Colon, 0, 6),
-            Token::new(TokenType::IntType, 0, 8),
-            Token::new(TokenType::Assign, 0, 12),
-            Token::new(TokenType::IntLiteral(42), 0, 14),
-            Token::new(TokenType::Semicolon, 0, 17),
+            Token::new(TokenType::Let, Position::new(0, 0)),
+            Token::new(TokenType::Identifier("x".to_string()), Position::new(0, 4)),
+            Token::new(TokenType::Colon, Position::new(0, 6)),
+            Token::new(TokenType::IntType, Position::new(0, 8)),
+            Token::new(TokenType::Assign, Position::new(0, 12)),
+            Token::new(TokenType::IntLiteral(42), Position::new(0, 14)),
+            Token::new(TokenType::Semicolon, Position::new(0, 17)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'let' statement");
         assert_eq!(statement, Statement::VariableDeclaration(VariableDeclaration {
-            name: Identifier("x".to_string()),
-            datatype: Type::Int,
+            name: Identifier::new("x".to_string(), Position::new(0, 4)),
+            datatype: Datatype::new(DatatypeVariant::Int, Position::new(0, 8)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
         }));
     }
@@ -276,15 +276,15 @@ mod tests {
     #[test]
     fn test_parse_assignment() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
-            Token::new(TokenType::Assign, 0, 2),
-            Token::new(TokenType::IntLiteral(10), 0, 4),
-            Token::new(TokenType::Semicolon, 0, 7),
+            Token::new(TokenType::Identifier("x".to_string()), Position::new(0, 0)),
+            Token::new(TokenType::Assign, Position::new(0, 2)),
+            Token::new(TokenType::IntLiteral(10), Position::new(0, 4)),
+            Token::new(TokenType::Semicolon, Position::new(0, 7)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse assignment statement");
         assert_eq!(statement, Statement::Assignment(Assignment {
-            target: Identifier("x".to_string()),
+            target: Identifier::new("x".to_string(), Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(10))),
         }));
     }
@@ -292,63 +292,69 @@ mod tests {
     #[test]
     fn test_parse_if() {
         let tokens = vec![
-            Token::new(TokenType::If, 0, 0),
-            Token::new(TokenType::LeftParen, 0, 3),
-            Token::new(TokenType::BoolLiteral(true), 0, 4),
-            Token::new(TokenType::RightParen, 0, 9),
-            Token::new(TokenType::LeftBrace, 0, 11),
-            Token::new(TokenType::Identifier("x".to_string()), 1, 4),
-            Token::new(TokenType::Assign, 1, 6),
-            Token::new(TokenType::IntLiteral(0), 1, 8),
-            Token::new(TokenType::Semicolon, 1, 10),
-            Token::new(TokenType::RightBrace, 2, 0),
+            Token::new(TokenType::If, Position::new(0, 0)),
+            Token::new(TokenType::LeftParen, Position::new(0, 3)),
+            Token::new(TokenType::BoolLiteral(true), Position::new(0, 4)),
+            Token::new(TokenType::RightParen, Position::new(0, 9)),
+            Token::new(TokenType::LeftBrace, Position::new(0, 11)),
+            Token::new(TokenType::Identifier("x".to_string()), Position::new(1, 4)),
+            Token::new(TokenType::Assign, Position::new(1, 6)),
+            Token::new(TokenType::IntLiteral(0), Position::new(1, 8)),
+            Token::new(TokenType::Semicolon, Position::new(1, 10)),
+            Token::new(TokenType::RightBrace, Position::new(2, 0)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'if' statement");
         assert_eq!(statement, Statement::If(IfStatement {
             condition: Expr::Atom(ExprAtom::Literal(Literal::Bool(true))),
-            then: Block(vec![
-                Statement::Assignment(Assignment {
-                    target: Identifier("x".to_string()),
-                    value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
-                }),
-            ]),
+            then: Block { 
+                statements: vec![
+                    Statement::Assignment(Assignment {
+                        target: Identifier::new("x".to_string(), Position::new(1, 4)),
+                        value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
+                    }),
+                ],
+                pos: Position::new(0, 11),
+            },
         }));
     }
 
     #[test]
     fn test_parse_while() {
         let tokens = vec![
-            Token::new(TokenType::While, 0, 0),
-            Token::new(TokenType::LeftParen, 0, 6),
-            Token::new(TokenType::BoolLiteral(false), 0, 7),
-            Token::new(TokenType::RightParen, 0, 13),
-            Token::new(TokenType::LeftBrace, 0, 15),
-            Token::new(TokenType::Identifier("x".to_string()), 1, 4),
-            Token::new(TokenType::Assign, 1, 6),
-            Token::new(TokenType::IntLiteral(0), 1, 8),
-            Token::new(TokenType::Semicolon, 1, 10),
-            Token::new(TokenType::RightBrace, 2, 0),
+            Token::new(TokenType::While, Position::new(0, 0)),
+            Token::new(TokenType::LeftParen, Position::new(0, 6)),
+            Token::new(TokenType::BoolLiteral(false), Position::new(0, 7)),
+            Token::new(TokenType::RightParen, Position::new(0, 13)),
+            Token::new(TokenType::LeftBrace, Position::new(0, 15)),
+            Token::new(TokenType::Identifier("x".to_string()), Position::new(1, 4)),
+            Token::new(TokenType::Assign, Position::new(1, 6)),
+            Token::new(TokenType::IntLiteral(0), Position::new(1, 8)),
+            Token::new(TokenType::Semicolon, Position::new(1, 10)),
+            Token::new(TokenType::RightBrace, Position::new(2, 0)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'while' statement");
         assert_eq!(statement, Statement::While(WhileStatement {
             condition: Expr::Atom(ExprAtom::Literal(Literal::Bool(false))),
-            body: Block(vec![
-                Statement::Assignment(Assignment {
-                    target: Identifier("x".to_string()),
-                    value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
-                }),
-            ]),
+            body: Block { 
+                statements: vec![
+                    Statement::Assignment(Assignment {
+                        target: Identifier::new("x".to_string(), Position::new(1, 4)),
+                        value: Expr::Atom(ExprAtom::Literal(Literal::Int(0))),
+                    }),
+                ],
+                pos: Position::new(0, 15),
+            },
         }));
     }
 
     #[test]
     fn test_parse_return_with_expr() {
         let tokens = vec![
-            Token::new(TokenType::Return, 0, 0),
-            Token::new(TokenType::IntLiteral(5), 0, 7),
-            Token::new(TokenType::Semicolon, 0, 9),
+            Token::new(TokenType::Return, Position::new(0, 0)),
+            Token::new(TokenType::IntLiteral(5), Position::new(0, 7)),
+            Token::new(TokenType::Semicolon, Position::new(0, 9)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement with expression");
@@ -358,8 +364,8 @@ mod tests {
     #[test]
     fn test_parse_return_without_expr() {
         let tokens = vec![
-            Token::new(TokenType::Return, 0, 0),
-            Token::new(TokenType::Semicolon, 0, 7),
+            Token::new(TokenType::Return, Position::new(0, 0)),
+            Token::new(TokenType::Semicolon, Position::new(0, 7)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement without expression");
@@ -369,9 +375,9 @@ mod tests {
     #[test]
     fn test_parse_throw() {
         let tokens = vec![
-            Token::new(TokenType::Throw, 0, 0),
-            Token::new(TokenType::StringLiteral("Error message".to_string()), 0, 6),
-            Token::new(TokenType::Semicolon, 0, 22),
+            Token::new(TokenType::Throw, Position::new(0, 0)),
+            Token::new(TokenType::StringLiteral("Error message".to_string()), Position::new(0, 6)),
+            Token::new(TokenType::Semicolon, Position::new(0, 22)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement");
@@ -381,8 +387,8 @@ mod tests {
     #[test]
     fn test_parse_throw_without_expr() {
         let tokens = vec![
-            Token::new(TokenType::Throw, 0, 0),
-            Token::new(TokenType::Semicolon, 0, 6),
+            Token::new(TokenType::Throw, Position::new(0, 0)),
+            Token::new(TokenType::Semicolon, Position::new(0, 6)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement without expression");
@@ -392,8 +398,8 @@ mod tests {
     #[test]
     fn test_parse_exit() {
         let tokens = vec![
-            Token::new(TokenType::Exit, 0, 0),
-            Token::new(TokenType::Semicolon, 0, 5),
+            Token::new(TokenType::Exit, Position::new(0, 0)),
+            Token::new(TokenType::Semicolon, Position::new(0, 5)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'exit' statement");
@@ -403,18 +409,18 @@ mod tests {
     #[test]
     fn test_parse_function_call_statement() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("doSomething".to_string()), 0, 0),
-            Token::new(TokenType::LeftParen, 0, 11),
-            Token::new(TokenType::IntLiteral(42), 0, 12),
-            Token::new(TokenType::Comma, 0, 15),
-            Token::new(TokenType::StringLiteral("hello".to_string()), 0, 17),
-            Token::new(TokenType::RightParen, 0, 24),
-            Token::new(TokenType::Semicolon, 0, 25),
+            Token::new(TokenType::Identifier("doSomething".to_string()), Position::new(0, 0)),
+            Token::new(TokenType::LeftParen, Position::new(0, 11)),
+            Token::new(TokenType::IntLiteral(42), Position::new(0, 12)),
+            Token::new(TokenType::Comma, Position::new(0, 15)),
+            Token::new(TokenType::StringLiteral("hello".to_string()), Position::new(0, 17)),
+            Token::new(TokenType::RightParen, Position::new(0, 24)),
+            Token::new(TokenType::Semicolon, Position::new(0, 25)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse function call statement");
         assert_eq!(statement, Statement::Expression(ExprStatement(Expr::Atom(ExprAtom::FunctionCall(FunctionCall {
-            identifier: Identifier("doSomething".to_string()),
+            identifier: Identifier::new("doSomething".to_string(), Position::new(0, 0)),
             arguments: vec![
                 Expr::Atom(ExprAtom::Literal(Literal::Int(42))),
                 Expr::Atom(ExprAtom::Literal(Literal::String("hello".to_string()))),

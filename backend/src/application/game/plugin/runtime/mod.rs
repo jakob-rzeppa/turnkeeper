@@ -17,7 +17,7 @@ impl RuntimeEnvironment {
     pub fn run(&mut self, code: &str) -> Result<(), String> {
         let abstract_syntax_tree = parse_source_code(code)?;
 
-        for statement in abstract_syntax_tree.0 {
+        for statement in abstract_syntax_tree.statements {
             self.execute_statement(&statement)?;
         }
 

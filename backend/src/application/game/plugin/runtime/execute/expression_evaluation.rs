@@ -167,7 +167,8 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::common::Identifier;
+
+    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::identifier::Identifier};
 
     use super::*;
 
@@ -845,7 +846,7 @@ mod tests {
         let mut env = create_test_env();
         env.memory_manager.declare_variable("x".to_string(), VariableValue::Int(42)).unwrap();
         
-        let expr = Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())));
+        let expr = Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))));
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(42)));
     }
@@ -855,7 +856,7 @@ mod tests {
         let mut env = create_test_env();
         env.memory_manager.declare_variable("pi".to_string(), VariableValue::Float(3.14159)).unwrap();
         
-        let expr = Expr::Atom(ExprAtom::Identifier(Identifier("pi".to_string())));
+        let expr = Expr::Atom(ExprAtom::Identifier(Identifier::new("pi".to_string(), Position::new(0, 0))));
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Float(3.14159)));
     }
@@ -865,7 +866,7 @@ mod tests {
         let mut env = create_test_env();
         env.memory_manager.declare_variable("name".to_string(), VariableValue::String("Alice".to_string())).unwrap();
         
-        let expr = Expr::Atom(ExprAtom::Identifier(Identifier("name".to_string())));
+        let expr = Expr::Atom(ExprAtom::Identifier(Identifier::new("name".to_string(), Position::new(0, 0))));
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::String("Alice".to_string())));
     }
@@ -875,7 +876,7 @@ mod tests {
         let mut env = create_test_env();
         env.memory_manager.declare_variable("flag".to_string(), VariableValue::Bool(true)).unwrap();
         
-        let expr = Expr::Atom(ExprAtom::Identifier(Identifier("flag".to_string())));
+        let expr = Expr::Atom(ExprAtom::Identifier(Identifier::new("flag".to_string(), Position::new(0, 0))));
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
     }
@@ -883,7 +884,7 @@ mod tests {
     #[test]
     fn test_undefined_variable() {
         let mut env = create_test_env();
-        let expr = Expr::Atom(ExprAtom::Identifier(Identifier("undefined".to_string())));
+        let expr = Expr::Atom(ExprAtom::Identifier(Identifier::new("undefined".to_string(), Position::new(0, 0))));
         let result = env.evaluate_expression(&expr);
         assert!(result.is_err());
     }
@@ -896,9 +897,9 @@ mod tests {
         
         // x + y
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Addition,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("y".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("y".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(8)));
@@ -912,9 +913,9 @@ mod tests {
         
         // a - b
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("a".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("a".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Subtraction,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("b".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("b".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(6)));
@@ -928,9 +929,9 @@ mod tests {
         
         // base * multiplier
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("base".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("base".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Multiplication,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("multiplier".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("multiplier".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(42)));
@@ -944,9 +945,9 @@ mod tests {
         
         // dividend / divisor
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("dividend".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("dividend".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Division,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("divisor".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("divisor".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(5)));
@@ -960,9 +961,9 @@ mod tests {
         
         // base ^ exponent
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("base".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("base".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Power,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("exponent".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("exponent".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(16)));
@@ -976,9 +977,9 @@ mod tests {
         
         // dividend % divisor
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("dividend".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("dividend".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Modulo,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("divisor".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("divisor".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(2)));
@@ -992,9 +993,9 @@ mod tests {
         
         // left > right
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("left".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("left".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Greater,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("right".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("right".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
@@ -1008,9 +1009,9 @@ mod tests {
         
         // x == y
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Equal,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("y".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("y".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
@@ -1024,9 +1025,9 @@ mod tests {
         
         // flag1 && flag2
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("flag1".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("flag1".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::And,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("flag2".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("flag2".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(false)));
@@ -1040,9 +1041,9 @@ mod tests {
         
         // a || b
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("a".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("a".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Or,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("b".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("b".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
@@ -1056,7 +1057,7 @@ mod tests {
         // -x
         let expr = Expr::UnaryOperation {
             operator: UnaryOperator::Neg,
-            operand: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))),
+            operand: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(-5)));
@@ -1070,7 +1071,7 @@ mod tests {
         // !flag
         let expr = Expr::UnaryOperation {
             operator: UnaryOperator::Not,
-            operand: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("flag".to_string())))),
+            operand: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("flag".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(false)));
@@ -1086,12 +1087,12 @@ mod tests {
         // (x + y) * z
         let expr = Expr::BinaryOperation {
             left: Box::new(Expr::BinaryOperation {
-                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))),
+                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))))),
                 operator: BinaryOperator::Addition,
-                right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("y".to_string())))),
+                right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("y".to_string(), Position::new(0, 0))))),
             }),
             operator: BinaryOperator::Multiplication,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("z".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("z".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(20))); // (3 + 2) * 4 = 20
@@ -1105,7 +1106,7 @@ mod tests {
         // x * 5 + 2
         let expr = Expr::BinaryOperation {
             left: Box::new(Expr::BinaryOperation {
-                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("x".to_string())))),
+                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("x".to_string(), Position::new(0, 0))))),
                 operator: BinaryOperator::Multiplication,
                 right: Box::new(Expr::Atom(ExprAtom::Literal(Literal::Int(5)))),
             }),
@@ -1124,9 +1125,9 @@ mod tests {
         
         // a + b
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("a".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("a".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Addition,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("b".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("b".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Float(4.0)));
@@ -1140,9 +1141,9 @@ mod tests {
         
         // base ^ exp
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("base".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("base".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Power,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("exp".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("exp".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Float(0.25))); // 2^-2 = 0.25
@@ -1156,9 +1157,9 @@ mod tests {
         
         // s1 == s2
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("s1".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("s1".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::Equal,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("s2".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("s2".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
@@ -1172,9 +1173,9 @@ mod tests {
         
         // s1 != s2
         let expr = Expr::BinaryOperation {
-            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("s1".to_string())))),
+            left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("s1".to_string(), Position::new(0, 0))))),
             operator: BinaryOperator::NotEqual,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("s2".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("s2".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Bool(true)));
@@ -1190,12 +1191,12 @@ mod tests {
         // (a ^ b) + c
         let expr = Expr::BinaryOperation {
             left: Box::new(Expr::BinaryOperation {
-                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("a".to_string())))),
+                left: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("a".to_string(), Position::new(0, 0))))),
                 operator: BinaryOperator::Power,
-                right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("b".to_string())))),
+                right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("b".to_string(), Position::new(0, 0))))),
             }),
             operator: BinaryOperator::Addition,
-            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier("c".to_string())))),
+            right: Box::new(Expr::Atom(ExprAtom::Identifier(Identifier::new("c".to_string(), Position::new(0, 0))))),
         };
         let result = env.evaluate_expression(&expr);
         assert_eq!(result, Ok(VariableValue::Int(12))); // 2^3 + 4 = 8 + 4 = 12

@@ -12,7 +12,7 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::{parser::abstract_syntax_tree::{common::Identifier, expression::{Expr, ExprAtom, Literal}}, runtime::memory::VariableValue};
+    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{expression::{Expr, ExprAtom, Literal}, identifier::Identifier}, runtime::memory::VariableValue};
 
     use super::*;
 
@@ -22,7 +22,7 @@ mod tests {
         env.memory_manager.declare_variable("x".to_string(), VariableValue::Int(42)).unwrap();
 
         let assignment = Assignment {
-            target: Identifier("x".to_string()),
+            target: Identifier::new("x".to_string(), Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(100))),
         };
         assert!(env.execute_assignment_statement(&assignment).is_ok());
@@ -35,7 +35,7 @@ mod tests {
         let mut env = RuntimeEnvironment::new();
 
         let assignment = Assignment {
-            target: Identifier("y".to_string()),
+            target: Identifier::new("y".to_string(), Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::Int(200))),
         };
         assert!(env.execute_assignment_statement(&assignment).is_err());
@@ -47,7 +47,7 @@ mod tests {
         env.memory_manager.declare_variable("z".to_string(), VariableValue::Int(42)).unwrap();
 
         let assignment = Assignment {
-            target: Identifier("z".to_string()),
+            target: Identifier::new("z".to_string(), Position::new(0, 0)),
             value: Expr::Atom(ExprAtom::Literal(Literal::String("not an integer".to_string()))),
         };
         assert!(env.execute_assignment_statement(&assignment).is_err());

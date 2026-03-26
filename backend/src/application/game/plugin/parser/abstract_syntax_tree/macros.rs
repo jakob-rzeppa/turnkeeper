@@ -25,3 +25,12 @@ macro_rules! expect_token {
         }
     };
 }
+
+/// Macro to get the position of the current token for error reporting
+/// 
+/// Usage: `let pos = get_pos!(tokens, index)`
+macro_rules! get_pos {
+    ($tokens:expr, $index:expr) => {
+        $tokens.get($index).map(|t| t.pos).ok_or_else(|| "Unexpected EOF".to_string())?
+    };
+}

@@ -23,7 +23,7 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::parser::abstract_syntax_tree::{common::Identifier, expression::{Expr, ExprAtom, Literal}};
+    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{expression::{Expr, ExprAtom, Literal}, identifier::Identifier}};
 
     use super::*;
 
@@ -31,7 +31,7 @@ mod tests {
     fn test_evaluate_function_print() {
         let mut runtime_env = RuntimeEnvironment::new();
         let function_call = FunctionCall {
-            identifier: Identifier("print".to_string()),
+            identifier: Identifier::new("print".to_string(), Position::new(0, 0)),
             arguments: vec![Expr::Atom(ExprAtom::Literal(Literal::String("Hello, World!".to_string())))],
             catch_block: None,
         };

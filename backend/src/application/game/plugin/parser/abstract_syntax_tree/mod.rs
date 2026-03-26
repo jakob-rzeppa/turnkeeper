@@ -1,11 +1,13 @@
-use crate::application::game::plugin::{lexer::token::{Token}, parser::abstract_syntax_tree::statement::Statement};
+use crate::application::game::plugin::{common::Position, lexer::token::Token, parser::abstract_syntax_tree::statement::Statement};
 
 #[macro_use]
 mod macros;
 
 pub mod statement;
 pub mod expression;
-pub mod common;
+pub mod block;
+pub mod datatype;
+pub mod identifier;
 
 pub trait Parse {
     /// Checks if the next tokens match the expected pattern for this type.
@@ -24,10 +26,15 @@ pub trait Parse {
 }
 
 #[derive(Debug)]
-pub struct Root(pub Vec<Statement>);
+pub struct Root {
+    pub statements: Vec<Statement>,
+    pub pos: Position,
+}
 
 impl Root {
     pub fn parse(mut tokens: Vec<Token>) -> Result<Self, String> {
+        let pos = get_pos!(tokens, 0);
+
         let mut elements = Vec::new();
         
         let mut index = 0;
@@ -37,45 +44,25 @@ impl Root {
             index = new_index; // Consume the parsed tokens and move to the next token
         }
 
-        Ok(Root(elements))
+        Ok(Root { statements: elements, pos })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::lexer::token::TokenType;
+    use crate::application::game::plugin::lexer::tokenize;
 
     use super::*;
 
     #[test]
     fn test_parse_full_program() {
-        let tokens = vec![
-            Token::new(TokenType::Let, 0, 0),
-            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
-            Token::new(TokenType::Colon, 0, 0),
-            Token::new(TokenType::IntType, 0, 0),
-            Token::new(TokenType::Assign, 0, 0),
-            Token::new(TokenType::IntLiteral(42), 0, 0),
-            Token::new(TokenType::Semicolon, 0, 0),
-
-            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
-            Token::new(TokenType::Assign, 0, 0),
-            Token::new(TokenType::IntLiteral(10), 0, 0),
-            Token::new(TokenType::Semicolon, 0, 0),
-
-            Token::new(TokenType::If, 0, 0),
-            Token::new(TokenType::LeftParen, 0, 0),
-            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
-            Token::new(TokenType::Greater, 0, 0),
-            Token::new(TokenType::IntLiteral(20), 0, 0),
-            Token::new(TokenType::RightParen, 0, 0),
-            Token::new(TokenType::LeftBrace, 0, 0),
-            Token::new(TokenType::Identifier("x".to_string()), 0, 0),
-            Token::new(TokenType::Assign, 0, 0),
-            Token::new(TokenType::IntLiteral(0), 0, 0),
-            Token::new(TokenType::Semicolon, 0, 0),
-            Token::new(TokenType::RightBrace, 0, 0),
-        ];
+        let tokens = tokenize(r#"
+            let x: int = 10;
+            x = x + 5;
+            if (x >= 10) {
+                break;
+            }
+        "#);
 
         let root = Root::parse(tokens).expect("Failed to parse program");
         println!("{:#?}", root);

@@ -7,7 +7,7 @@ impl RuntimeEnvironment {
 
         match condition_value {
             VariableValue::Bool(true) => {
-                for stmt in &stmt.then.0 {
+                for stmt in &stmt.then.statements {
                     self.execute_statement(stmt)?;
                 }
             },
