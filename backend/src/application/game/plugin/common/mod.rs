@@ -1,4 +1,3 @@
-
 #[derive(Debug, Clone, Copy, PartialEq)]
 pub struct Position {
     line: usize,
@@ -8,5 +7,9 @@ pub struct Position {
 impl Position {
     pub fn new(line: usize, first_char: usize) -> Self {
         Position { line, first_char }
+    }
+
+    pub fn matches(&self, line: usize, first_char: usize) -> bool {
+        self.line == line && self.first_char == first_char
     }
 }

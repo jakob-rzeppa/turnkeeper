@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::expression::FunctionCall, runtime::{RuntimeEnvironment, memory::VariableValue}};
+use crate::application::game::plugin::{parser::old_abstract_syntax_tree::expression::FunctionCall, runtime::{RuntimeEnvironment, memory::VariableValue}};
 
 
 
@@ -23,7 +23,7 @@ impl RuntimeEnvironment {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{expression::{Expr, ExprAtom, Literal}, identifier::Identifier}};
+    use crate::application::game::plugin::{common::Position, parser::old_abstract_syntax_tree::{expression::{Expr, ExprAtom, Literal}, identifier::Identifier}};
 
     use super::*;
 

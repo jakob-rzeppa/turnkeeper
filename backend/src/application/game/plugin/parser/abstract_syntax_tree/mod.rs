@@ -1,70 +1,78 @@
-use crate::application::game::plugin::{common::Position, lexer::token::Token, parser::abstract_syntax_tree::statement::Statement};
+use crate::application::game::plugin::{
+    common::Position,
+    lexer::token::{Token, TokenVariant},
+    parser::abstract_syntax_tree::statement::Statement,
+    runtime::RuntimeEnvironment,
+};
 
 #[macro_use]
 mod macros;
 
-pub mod statement;
+pub mod atom;
 pub mod expression;
-pub mod block;
-pub mod datatype;
-pub mod identifier;
-
-pub trait Parse {
-    /// Checks if the next tokens match the expected pattern for this type.
-    /// 
-    /// This is used to determine which parsing function to call when parsing a sequence of tokens.
-    fn is_next(tokens: &[Token], index: usize) -> bool
-    where
-        Self: Sized;
-    
-    /// Parses the tokens starting from the given index and returns the parsed object along with the new index after parsing.
-    /// 
-    /// The new index should point to the next token after the parsed object, allowing for sequential parsing of multiple objects.
-    fn parse(tokens: &[Token], index: usize) -> Result<(Self, usize), String>
-    where
-        Self: Sized;
-}
+pub mod statement;
 
 #[derive(Debug)]
+pub enum ParsingError {
+    SyntaxError {
+        message: String,
+        pos: Position,
+    },
+    UnexpectedToken {
+        expected: String,
+        found: TokenVariant,
+        pos: Position,
+    },
+    UnexpectedEOF {
+        expected: String,
+    },
+}
+
+pub enum EvaluationError {}
+
+pub trait Parsable
+where
+    Self: Sized,
+{
+    fn is_next(ts: &TokenStream) -> bool;
+
+    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError>;
+}
+
+pub trait Positioned {
+    fn position(&self) -> Position;
+}
+
+pub trait Evaluable {
+    fn evaluate(&self, runtime: &mut RuntimeEnvironment) -> Result<(), EvaluationError>;
+}
+
+pub struct TokenStream {
+    tokens: Vec<Token>,
+    index: usize,
+}
+
+impl TokenStream {
+    fn new(tokens: Vec<Token>) -> Self {
+        Self { tokens, index: 0 }
+    }
+
+    fn peek(&self) -> Option<&Token> {
+        self.tokens.get(self.index)
+    }
+
+    fn peek_nth(&self, n: usize) -> Option<&Token> {
+        self.tokens.get(self.index + n)
+    }
+
+    fn next(&mut self) -> Option<&Token> {
+        self.tokens.get(self.index).map(|token| {
+            self.index += 1;
+            token
+        })
+    }
+}
+
 pub struct Root {
-    pub statements: Vec<Statement>,
-    pub pos: Position,
-}
-
-impl Root {
-    pub fn parse(mut tokens: Vec<Token>) -> Result<Self, String> {
-        let pos = get_pos!(tokens, 0);
-
-        let mut elements = Vec::new();
-        
-        let mut index = 0;
-        while index < tokens.len() {
-            let (element, new_index) = Statement::parse(&mut tokens, index)?;
-            elements.push(element);
-            index = new_index; // Consume the parsed tokens and move to the next token
-        }
-
-        Ok(Root { statements: elements, pos })
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use crate::application::game::plugin::lexer::tokenize;
-
-    use super::*;
-
-    #[test]
-    fn test_parse_full_program() {
-        let tokens = tokenize(r#"
-            let x: int = 10;
-            x = x + 5;
-            if (x >= 10) {
-                break;
-            }
-        "#);
-
-        let root = Root::parse(tokens).expect("Failed to parse program");
-        println!("{:#?}", root);
-    }
+    statements: Vec<Statement>,
 }

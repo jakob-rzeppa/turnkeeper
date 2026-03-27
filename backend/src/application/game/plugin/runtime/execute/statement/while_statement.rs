@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::statement::WhileStatement, runtime::{RuntimeEnvironment, memory::VariableValue}};
+use crate::application::game::plugin::{parser::old_abstract_syntax_tree::statement::WhileStatement, runtime::{RuntimeEnvironment, memory::VariableValue}};
 
 
 impl RuntimeEnvironment {

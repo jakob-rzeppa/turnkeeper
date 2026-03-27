@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::statement::ExprStatement, runtime::RuntimeEnvironment};
+use crate::application::game::plugin::{parser::old_abstract_syntax_tree::statement::ExprStatement, runtime::RuntimeEnvironment};
 
 
 impl RuntimeEnvironment {

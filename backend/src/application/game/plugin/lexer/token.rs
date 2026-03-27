@@ -1,25 +1,22 @@
 use crate::application::game::plugin::common::Position;
 
-
-
 #[derive(Debug, Clone, PartialEq)]
 pub struct Token {
-    pub token: TokenType,
+    pub variant: TokenVariant,
     pub pos: Position,
 }
 
 impl Token {
-    pub fn new(token: TokenType, pos: Position) -> Self {
+    pub fn new(token: TokenVariant, pos: Position) -> Self {
         Token {
-            token,
+            variant: token,
             pos,
         }
     }
 }
 
-
 #[derive(Debug, Clone, PartialEq)]
-pub enum TokenType {
+pub enum TokenVariant {
     // --- FROM Text LEXEME ---
     // Keywords
     Let,
@@ -44,7 +41,7 @@ pub enum TokenType {
     FloatType,
     StringType,
     BoolType,
-    ArrayType(Box<TokenType>),
+    ArrayType(Box<TokenVariant>),
 
     Identifier(String),
     BoolLiteral(bool),
@@ -58,46 +55,46 @@ pub enum TokenType {
 
     // --- FROM Symbol and DoubleSymbol LEXEME ---
     // Assignment Operators
-    Assign,                 // =
-    AddAssign,              // +=
-    SubAssign,              // -=
-    MulAssign,              // *=
-    DivAssign,              // /=
-    ModAssign,              // %=
-    PowAssign,              // ^=
+    Assign,    // =
+    AddAssign, // +=
+    SubAssign, // -=
+    MulAssign, // *=
+    DivAssign, // /=
+    ModAssign, // %=
+    PowAssign, // ^=
 
     // Operators
-    Plus,                   // +
-    Minus,                  // -
-    Star,                   // *
-    Slash,                  // /
-    Percent,                // %
-    Caret,                  // ^
-    EqualEqual,             // ==
-    NotEqual,               // !=
-    Less,                   // <
-    Greater,                // >
-    LessEqual,              // <=
-    GreaterEqual,           // >=
-    And,                    // &&
-    Or,                     // ||
-    Not,                    // !
+    Plus,         // +
+    Minus,        // -
+    Star,         // *
+    Slash,        // /
+    Percent,      // %
+    Caret,        // ^
+    EqualEqual,   // ==
+    NotEqual,     // !=
+    Less,         // <
+    Greater,      // >
+    LessEqual,    // <=
+    GreaterEqual, // >=
+    And,          // &&
+    Or,           // ||
+    Not,          // !
 
     // Delimiters
-    LeftParen,              // (
-    RightParen,             // )
-    LeftBrace,              // {
-    RightBrace,             // }
-    LeftBracket,            // [
-    RightBracket,           // ]
-    Semicolon,              // ;
-    Colon,                  // :
-    Comma,                  // ,
-    Pipe,                   // |
-    Underscore,             // _
-    ThickArrow,             // =>
-    ThinArrow,              // ->
+    LeftParen,    // (
+    RightParen,   // )
+    LeftBrace,    // {
+    RightBrace,   // }
+    LeftBracket,  // [
+    RightBracket, // ]
+    Semicolon,    // ;
+    Colon,        // :
+    Comma,        // ,
+    Pipe,         // |
+    Underscore,   // _
+    ThickArrow,   // =>
+    ThinArrow,    // ->
 
     // Special
-    Question,               // ?
+    Question, // ?
 }

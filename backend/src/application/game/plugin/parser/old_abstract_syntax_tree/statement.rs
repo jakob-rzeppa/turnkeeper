@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{lexer::token::{Token, TokenType}, parser::abstract_syntax_tree::{Parse, block::Block, datatype::Datatype, identifier::Identifier}};
+use crate::application::game::plugin::{lexer::token::{Token, TokenVariant}, parser::old_abstract_syntax_tree::{Parse, block::Block, datatype::Datatype, identifier::Identifier}};
 
 use super::{expression::Expr};
 
@@ -59,23 +59,23 @@ pub struct VariableDeclaration {
 
 impl Parse for VariableDeclaration {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::Let)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Let)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::Let, "Expected 'let' at the beginning of variable declaration");
+        expect_token!(tokens, index, TokenVariant::Let, "Expected 'let' at the beginning of variable declaration");
 
         let name = expect_parse!(tokens, index, Identifier, "Expected variable name after 'let'");
 
-        expect_token!(tokens, index, TokenType::Colon, "Expected ':' after variable name in 'let' statement");
+        expect_token!(tokens, index, TokenVariant::Colon, "Expected ':' after variable name in 'let' statement");
 
         let datatype = expect_parse!(tokens, index, Datatype, "Expected type after ':' in 'let' statement");
 
-        expect_token!(tokens, index, TokenType::Assign, "Expected '=' after type in 'let' statement");
+        expect_token!(tokens, index, TokenVariant::Assign, "Expected '=' after type in 'let' statement");
 
         let value = expect_parse!(tokens, index, Expr, "Expected expression after '=' in 'let' statement");
 
-        expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' at the end of 'let' statement");
+        expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' at the end of 'let' statement");
 
         Ok((VariableDeclaration { name, datatype, value }, index))
     }
@@ -89,17 +89,17 @@ pub struct Assignment {
 
 impl Parse for Assignment {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if matches!(t.token, TokenType::Identifier(_))) && tokens.get(index + 1).map(|t| &t.token) == Some(&TokenType::Assign)
+        matches!(tokens.get(index), Some(t) if matches!(t.variant, TokenVariant::Identifier(_))) && tokens.get(index + 1).map(|t| &t.variant) == Some(&TokenVariant::Assign)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         let target = expect_parse!(tokens, index, Identifier, "Expected identifier on the left side of assignment");
 
-        expect_token!(tokens, index, TokenType::Assign, "Expected '=' in assignment statement");
+        expect_token!(tokens, index, TokenVariant::Assign, "Expected '=' in assignment statement");
 
         let value = expect_parse!(tokens, index, Expr, "Expected expression on the right side of assignment");
 
-        expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' at the end of assignment statement");
+        expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' at the end of assignment statement");
 
         Ok((Assignment { target, value }, index))
     }
@@ -116,7 +116,7 @@ impl Parse for ExprStatement {
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         let expr = expect_parse!(tokens, index, Expr, "Expected expression in expression statement");
 
-        expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' at the end of expression statement");
+        expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' at the end of expression statement");
 
         Ok((ExprStatement(expr), index))
     }
@@ -130,17 +130,17 @@ pub struct IfStatement {
 
 impl Parse for IfStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::If)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::If)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::If, "Expected 'if' at the beginning of if statement");
+        expect_token!(tokens, index, TokenVariant::If, "Expected 'if' at the beginning of if statement");
 
-        expect_token!(tokens, index, TokenType::LeftParen, "Expected '(' after 'if'");
+        expect_token!(tokens, index, TokenVariant::LeftParen, "Expected '(' after 'if'");
 
         let condition = expect_parse!(tokens, index, Expr, "Expected condition expression in 'if' statement");
         
-        expect_token!(tokens, index, TokenType::RightParen, "Expected ')' after if condition");
+        expect_token!(tokens, index, TokenVariant::RightParen, "Expected ')' after if condition");
 
         let then = expect_parse!(tokens, index, Block, "Expected block after 'if' condition");
 
@@ -156,17 +156,17 @@ pub struct WhileStatement {
 
 impl Parse for WhileStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::While)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::While)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::While, "Expected 'while' at the beginning of while statement");
+        expect_token!(tokens, index, TokenVariant::While, "Expected 'while' at the beginning of while statement");
 
-        expect_token!(tokens, index, TokenType::LeftParen, "Expected '(' after 'while'");
+        expect_token!(tokens, index, TokenVariant::LeftParen, "Expected '(' after 'while'");
 
         let condition = expect_parse!(tokens, index, Expr, "Expected condition expression in 'while' statement");
 
-        expect_token!(tokens, index, TokenType::RightParen, "Expected ')' after while condition");
+        expect_token!(tokens, index, TokenVariant::RightParen, "Expected ')' after while condition");
 
         let body = expect_parse!(tokens, index, Block, "Expected block after 'while' condition");
 
@@ -179,20 +179,20 @@ pub struct ReturnStatement(pub Option<Expr>);
 
 impl Parse for ReturnStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::Return)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Return)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::Return, "Expected 'return' at the beginning of return statement");
+        expect_token!(tokens, index, TokenVariant::Return, "Expected 'return' at the beginning of return statement");
 
         if Expr::is_next(tokens, index) {
             let expr = expect_parse!(tokens, index, Expr, "Expected expression after checking there is one");
 
-            expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' at the end of 'return' statement");
+            expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' at the end of 'return' statement");
 
             Ok((ReturnStatement(Some(expr)), index))
         } else {
-            expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' after 'return' statement with no expression");
+            expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' after 'return' statement with no expression");
 
             Ok((ReturnStatement(None), index))
         }
@@ -204,20 +204,20 @@ pub struct ThrowStatement(pub Option<Expr>);
 
 impl Parse for ThrowStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::Throw)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Throw)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::Throw, "Expected 'throw' at the beginning of throw statement");
+        expect_token!(tokens, index, TokenVariant::Throw, "Expected 'throw' at the beginning of throw statement");
 
         if Expr::is_next(tokens, index) {
             let expr = expect_parse!(tokens, index, Expr, "Expected expression after 'throw'");
 
-            expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' at the end of 'throw' statement");
+            expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' at the end of 'throw' statement");
 
             Ok((ThrowStatement(Some(expr)), index))
         } else {
-            expect_token!(tokens, index, TokenType::Semicolon, "Expected ';' after 'throw' statement with no expression");
+            expect_token!(tokens, index, TokenVariant::Semicolon, "Expected ';' after 'throw' statement with no expression");
 
             Ok((ThrowStatement(None), index))
         }
@@ -229,14 +229,14 @@ pub struct ExitStatement;
 
 impl Parse for ExitStatement {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if t.token == TokenType::Exit)
+        matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Exit)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
-        expect_token!(tokens, index, TokenType::Exit, "Expected 'exit' at the beginning of exit statement");
+        expect_token!(tokens, index, TokenVariant::Exit, "Expected 'exit' at the beginning of exit statement");
 
         if let Some(t) = tokens.get(index) {
-            if t.token == TokenType::Semicolon {
+            if t.variant == TokenVariant::Semicolon {
                 Ok((ExitStatement, index + 1))
             } else {
                 Err("Expected ';' after 'exit' statement".to_string())
@@ -249,20 +249,20 @@ impl Parse for ExitStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::{datatype::DatatypeVariant, expression::{ExprAtom, FunctionCall, Literal}}};
+    use crate::application::game::plugin::{common::Position, parser::old_abstract_syntax_tree::{datatype::DatatypeVariant, expression::{ExprAtom, FunctionCall, Literal}}};
 
     use super::*;
     
     #[test]
     fn test_parse_let() {
         let tokens = vec![
-            Token::new(TokenType::Let, Position::new(0, 0)),
-            Token::new(TokenType::Identifier("x".to_string()), Position::new(0, 4)),
-            Token::new(TokenType::Colon, Position::new(0, 6)),
-            Token::new(TokenType::IntType, Position::new(0, 8)),
-            Token::new(TokenType::Assign, Position::new(0, 12)),
-            Token::new(TokenType::IntLiteral(42), Position::new(0, 14)),
-            Token::new(TokenType::Semicolon, Position::new(0, 17)),
+            Token::new(TokenVariant::Let, Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("x".to_string()), Position::new(0, 4)),
+            Token::new(TokenVariant::Colon, Position::new(0, 6)),
+            Token::new(TokenVariant::IntType, Position::new(0, 8)),
+            Token::new(TokenVariant::Assign, Position::new(0, 12)),
+            Token::new(TokenVariant::IntLiteral(42), Position::new(0, 14)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 17)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'let' statement");
@@ -276,10 +276,10 @@ mod tests {
     #[test]
     fn test_parse_assignment() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("x".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::Assign, Position::new(0, 2)),
-            Token::new(TokenType::IntLiteral(10), Position::new(0, 4)),
-            Token::new(TokenType::Semicolon, Position::new(0, 7)),
+            Token::new(TokenVariant::Identifier("x".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::Assign, Position::new(0, 2)),
+            Token::new(TokenVariant::IntLiteral(10), Position::new(0, 4)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 7)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse assignment statement");
@@ -292,16 +292,16 @@ mod tests {
     #[test]
     fn test_parse_if() {
         let tokens = vec![
-            Token::new(TokenType::If, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 3)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 4)),
-            Token::new(TokenType::RightParen, Position::new(0, 9)),
-            Token::new(TokenType::LeftBrace, Position::new(0, 11)),
-            Token::new(TokenType::Identifier("x".to_string()), Position::new(1, 4)),
-            Token::new(TokenType::Assign, Position::new(1, 6)),
-            Token::new(TokenType::IntLiteral(0), Position::new(1, 8)),
-            Token::new(TokenType::Semicolon, Position::new(1, 10)),
-            Token::new(TokenType::RightBrace, Position::new(2, 0)),
+            Token::new(TokenVariant::If, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 3)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 4)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 9)),
+            Token::new(TokenVariant::LeftBrace, Position::new(0, 11)),
+            Token::new(TokenVariant::Identifier("x".to_string()), Position::new(1, 4)),
+            Token::new(TokenVariant::Assign, Position::new(1, 6)),
+            Token::new(TokenVariant::IntLiteral(0), Position::new(1, 8)),
+            Token::new(TokenVariant::Semicolon, Position::new(1, 10)),
+            Token::new(TokenVariant::RightBrace, Position::new(2, 0)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'if' statement");
@@ -322,16 +322,16 @@ mod tests {
     #[test]
     fn test_parse_while() {
         let tokens = vec![
-            Token::new(TokenType::While, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 6)),
-            Token::new(TokenType::BoolLiteral(false), Position::new(0, 7)),
-            Token::new(TokenType::RightParen, Position::new(0, 13)),
-            Token::new(TokenType::LeftBrace, Position::new(0, 15)),
-            Token::new(TokenType::Identifier("x".to_string()), Position::new(1, 4)),
-            Token::new(TokenType::Assign, Position::new(1, 6)),
-            Token::new(TokenType::IntLiteral(0), Position::new(1, 8)),
-            Token::new(TokenType::Semicolon, Position::new(1, 10)),
-            Token::new(TokenType::RightBrace, Position::new(2, 0)),
+            Token::new(TokenVariant::While, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 6)),
+            Token::new(TokenVariant::BoolLiteral(false), Position::new(0, 7)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 13)),
+            Token::new(TokenVariant::LeftBrace, Position::new(0, 15)),
+            Token::new(TokenVariant::Identifier("x".to_string()), Position::new(1, 4)),
+            Token::new(TokenVariant::Assign, Position::new(1, 6)),
+            Token::new(TokenVariant::IntLiteral(0), Position::new(1, 8)),
+            Token::new(TokenVariant::Semicolon, Position::new(1, 10)),
+            Token::new(TokenVariant::RightBrace, Position::new(2, 0)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'while' statement");
@@ -352,9 +352,9 @@ mod tests {
     #[test]
     fn test_parse_return_with_expr() {
         let tokens = vec![
-            Token::new(TokenType::Return, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 7)),
-            Token::new(TokenType::Semicolon, Position::new(0, 9)),
+            Token::new(TokenVariant::Return, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 7)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 9)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement with expression");
@@ -364,8 +364,8 @@ mod tests {
     #[test]
     fn test_parse_return_without_expr() {
         let tokens = vec![
-            Token::new(TokenType::Return, Position::new(0, 0)),
-            Token::new(TokenType::Semicolon, Position::new(0, 7)),
+            Token::new(TokenVariant::Return, Position::new(0, 0)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 7)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'return' statement without expression");
@@ -375,9 +375,9 @@ mod tests {
     #[test]
     fn test_parse_throw() {
         let tokens = vec![
-            Token::new(TokenType::Throw, Position::new(0, 0)),
-            Token::new(TokenType::StringLiteral("Error message".to_string()), Position::new(0, 6)),
-            Token::new(TokenType::Semicolon, Position::new(0, 22)),
+            Token::new(TokenVariant::Throw, Position::new(0, 0)),
+            Token::new(TokenVariant::StringLiteral("Error message".to_string()), Position::new(0, 6)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 22)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement");
@@ -387,8 +387,8 @@ mod tests {
     #[test]
     fn test_parse_throw_without_expr() {
         let tokens = vec![
-            Token::new(TokenType::Throw, Position::new(0, 0)),
-            Token::new(TokenType::Semicolon, Position::new(0, 6)),
+            Token::new(TokenVariant::Throw, Position::new(0, 0)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 6)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'throw' statement without expression");
@@ -398,8 +398,8 @@ mod tests {
     #[test]
     fn test_parse_exit() {
         let tokens = vec![
-            Token::new(TokenType::Exit, Position::new(0, 0)),
-            Token::new(TokenType::Semicolon, Position::new(0, 5)),
+            Token::new(TokenVariant::Exit, Position::new(0, 0)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 5)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse 'exit' statement");
@@ -409,13 +409,13 @@ mod tests {
     #[test]
     fn test_parse_function_call_statement() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("doSomething".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 11)),
-            Token::new(TokenType::IntLiteral(42), Position::new(0, 12)),
-            Token::new(TokenType::Comma, Position::new(0, 15)),
-            Token::new(TokenType::StringLiteral("hello".to_string()), Position::new(0, 17)),
-            Token::new(TokenType::RightParen, Position::new(0, 24)),
-            Token::new(TokenType::Semicolon, Position::new(0, 25)),
+            Token::new(TokenVariant::Identifier("doSomething".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 11)),
+            Token::new(TokenVariant::IntLiteral(42), Position::new(0, 12)),
+            Token::new(TokenVariant::Comma, Position::new(0, 15)),
+            Token::new(TokenVariant::StringLiteral("hello".to_string()), Position::new(0, 17)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 24)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 25)),
         ];
 
         let (statement, _) = Statement::parse(&tokens, 0).expect("Failed to parse function call statement");

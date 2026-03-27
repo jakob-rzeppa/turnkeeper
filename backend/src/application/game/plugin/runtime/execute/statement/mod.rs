@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{parser::abstract_syntax_tree::{statement::Statement}, runtime::RuntimeEnvironment};
+use crate::application::game::plugin::{parser::old_abstract_syntax_tree::{statement::Statement}, runtime::RuntimeEnvironment};
 
 mod expression_statement;
 mod if_statement;

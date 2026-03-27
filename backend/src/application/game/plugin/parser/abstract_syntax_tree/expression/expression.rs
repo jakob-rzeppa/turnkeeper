@@ -1,4 +1,4 @@
-use crate::application::game::plugin::{lexer::token::{Token, TokenType}, parser::abstract_syntax_tree::{Parse, block::Block, identifier::Identifier}};
+use crate::application::game::plugin::{lexer::token::{Token, TokenVariant}, parser::old_abstract_syntax_tree::{Parse, block::Block, identifier::Identifier}};
 
 #[derive(Clone, PartialEq, Debug)]
 pub enum Expr {
@@ -17,21 +17,21 @@ pub enum Expr {
 impl Expr {
     fn parse_unary(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         let operator = match tokens.get(index) {
-            Some(t) if t.token == TokenType::Minus => UnaryOperator::Neg,
-            Some(t) if t.token == TokenType::Not => UnaryOperator::Not,
+            Some(t) if t.variant == TokenVariant::Minus => UnaryOperator::Neg,
+            Some(t) if t.variant == TokenVariant::Not => UnaryOperator::Not,
             _ => return Err("Expected unary operator after checking that there is one".to_string()),
         };
         index += 1; // consume operator
 
         if let Some(t) = tokens.get(index) {
-            if t.token == TokenType::LeftParen {
+            if t.variant == TokenVariant::LeftParen {
                 // If the next token is a left parenthesis, we need to parse the entire parenthesized expression as the operand of the unary operator
                 index += 1; // consume '('
 
                 let (expr, new_index) = Self::pratt_parse(tokens, index, 0)?;
                 index = new_index;
 
-                expect_token!(tokens, index, TokenType::RightParen, "Expected ')' after parenthesized expression");
+                expect_token!(tokens, index, TokenVariant::RightParen, "Expected ')' after parenthesized expression");
 
                 return Ok((Expr::UnaryOperation { operator, operand: Box::new(expr) }, index));
             }
@@ -40,7 +40,7 @@ impl Expr {
         // Expect the operand to be an atom or another unary operator (e.g. - -5)
 
         match tokens.get(index) {
-            Some(t) if matches!(t.token, TokenType::Minus | TokenType::Not) => {
+            Some(t) if matches!(t.variant, TokenVariant::Minus | TokenVariant::Not) => {
                 let (expr, new_index) = Self::parse_unary(tokens, index)?;
                 index = new_index;
                 return Ok((Expr::UnaryOperation { operator, operand: Box::new(expr) }, index));
@@ -58,17 +58,17 @@ impl Expr {
     /// It will also handle unary operators (highest precedence).
     fn pratt_parse(tokens: &[Token], mut index: usize, min_bp: u8) -> Result<(Self, usize), String> {
         let mut left = match tokens.get(index) {
-            Some(t) if t.token == TokenType::LeftParen => {
+            Some(t) if t.variant == TokenVariant::LeftParen => {
                 index += 1; // consume '('
 
                 let (expr, new_index) = Self::pratt_parse(tokens, index, 0)?;
                 index = new_index;
 
-                expect_token!(tokens, index, TokenType::RightParen, "Expected ')' after parenthesized expression");
+                expect_token!(tokens, index, TokenVariant::RightParen, "Expected ')' after parenthesized expression");
 
                 expr
             },
-            Some(t) if matches!(t.token, TokenType::Minus | TokenType::Not) => {
+            Some(t) if matches!(t.variant, TokenVariant::Minus | TokenVariant::Not) => {
                 let (expr, new_index) = Self::parse_unary(tokens, index)?;
                 index = new_index;
                 expr
@@ -88,22 +88,22 @@ impl Expr {
 
         loop {
             let operator = match tokens.get(index) {
-                Some(t) if t.token == TokenType::Plus => BinaryOperator::Addition,
-                Some(t) if t.token == TokenType::Minus => BinaryOperator::Subtraction,
-                Some(t) if t.token == TokenType::Star => BinaryOperator::Multiplication,
-                Some(t) if t.token == TokenType::Slash => BinaryOperator::Division,
-                Some(t) if t.token == TokenType::Percent => BinaryOperator::Modulo,
-                Some(t) if t.token == TokenType::Caret => BinaryOperator::Power,
-                Some(t) if t.token == TokenType::EqualEqual => BinaryOperator::Equal,
-                Some(t) if t.token == TokenType::NotEqual => BinaryOperator::NotEqual,
-                Some(t) if t.token == TokenType::Less => BinaryOperator::Less,
-                Some(t) if t.token == TokenType::Greater => BinaryOperator::Greater,
-                Some(t) if t.token == TokenType::LessEqual => BinaryOperator::LessEqual,
-                Some(t) if t.token == TokenType::GreaterEqual => BinaryOperator::GreaterEqual,
-                Some(t) if t.token == TokenType::And => BinaryOperator::And,
-                Some(t) if t.token == TokenType::Or => BinaryOperator::Or,
+                Some(t) if t.variant == TokenVariant::Plus => BinaryOperator::Addition,
+                Some(t) if t.variant == TokenVariant::Minus => BinaryOperator::Subtraction,
+                Some(t) if t.variant == TokenVariant::Star => BinaryOperator::Multiplication,
+                Some(t) if t.variant == TokenVariant::Slash => BinaryOperator::Division,
+                Some(t) if t.variant == TokenVariant::Percent => BinaryOperator::Modulo,
+                Some(t) if t.variant == TokenVariant::Caret => BinaryOperator::Power,
+                Some(t) if t.variant == TokenVariant::EqualEqual => BinaryOperator::Equal,
+                Some(t) if t.variant == TokenVariant::NotEqual => BinaryOperator::NotEqual,
+                Some(t) if t.variant == TokenVariant::Less => BinaryOperator::Less,
+                Some(t) if t.variant == TokenVariant::Greater => BinaryOperator::Greater,
+                Some(t) if t.variant == TokenVariant::LessEqual => BinaryOperator::LessEqual,
+                Some(t) if t.variant == TokenVariant::GreaterEqual => BinaryOperator::GreaterEqual,
+                Some(t) if t.variant == TokenVariant::And => BinaryOperator::And,
+                Some(t) if t.variant == TokenVariant::Or => BinaryOperator::Or,
 
-                Some(t) if t.token == TokenType::RightParen => break, // Don't consume ')', let the caller handle it
+                Some(t) if t.variant == TokenVariant::RightParen => break, // Don't consume ')', let the caller handle it
                 _ => break,
             };
 
@@ -128,7 +128,7 @@ impl Parse for Expr {
         Literal::is_next(tokens, index) || 
         FunctionCall::is_next(tokens, index) ||
         Identifier::is_next(tokens, index) ||
-        matches!(tokens.get(index), Some(t) if matches!(t.token, TokenType::LeftParen | TokenType::Minus | TokenType::Not))
+        matches!(tokens.get(index), Some(t) if matches!(t.variant, TokenVariant::LeftParen | TokenVariant::Minus | TokenVariant::Not))
     }
 
     fn parse(tokens: &[Token], index: usize) -> Result<(Self, usize), String> {
@@ -153,15 +153,15 @@ pub enum Literal {
 
 impl Parse for Literal {
     fn is_next(tokens: &[Token], index: usize) -> bool {
-        matches!(tokens.get(index), Some(t) if matches!(t.token, TokenType::IntLiteral(_) | TokenType::FloatLiteral(_) | TokenType::StringLiteral(_) | TokenType::BoolLiteral(_)))
+        matches!(tokens.get(index), Some(t) if matches!(t.variant, TokenVariant::IntLiteral(_) | TokenVariant::FloatLiteral(_) | TokenVariant::StringLiteral(_) | TokenVariant::BoolLiteral(_)))
     }
 
     fn parse(tokens: &[Token], index: usize) -> Result<(Self, usize), String> {
-        match tokens.get(index).map(|t| &t.token) {
-            Some(TokenType::IntLiteral(value)) => Ok((Literal::Int(*value), index + 1)),
-            Some(TokenType::FloatLiteral(value)) => Ok((Literal::Float(*value), index + 1)),
-            Some(TokenType::StringLiteral(value)) => Ok((Literal::String(value.clone()), index + 1)),
-            Some(TokenType::BoolLiteral(value)) => Ok((Literal::Bool(*value), index + 1)),
+        match tokens.get(index).map(|t| &t.variant) {
+            Some(TokenVariant::IntLiteral(value)) => Ok((Literal::Int(*value), index + 1)),
+            Some(TokenVariant::FloatLiteral(value)) => Ok((Literal::Float(*value), index + 1)),
+            Some(TokenVariant::StringLiteral(value)) => Ok((Literal::String(value.clone()), index + 1)),
+            Some(TokenVariant::BoolLiteral(value)) => Ok((Literal::Bool(*value), index + 1)),
             _ => Err("Expected literal".to_string()),
         }
     }
@@ -177,22 +177,22 @@ pub struct FunctionCall {
 impl Parse for FunctionCall {
     fn is_next(tokens: &[Token], index: usize) -> bool {
         Identifier::is_next(tokens, index) && 
-        matches!(tokens.get(index + 1), Some(t) if t.token == TokenType::LeftParen)
+        matches!(tokens.get(index + 1), Some(t) if t.variant == TokenVariant::LeftParen)
     }
 
     fn parse(tokens: &[Token], mut index: usize) -> Result<(Self, usize), String> {
         let identifier = expect_parse!(tokens, index, Identifier, "Expected function name at beginning of function call");
 
-        expect_token!(tokens, index, TokenType::LeftParen, "Expected '(' after function name in function call");
+        expect_token!(tokens, index, TokenVariant::LeftParen, "Expected '(' after function name in function call");
 
         let mut arguments = Vec::new();
-        if !matches!(tokens.get(index), Some(t) if t.token == TokenType::RightParen) {
+        if !matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::RightParen) {
             loop {
                 let arg = expect_parse!(tokens, index, Expr, "Expected expression as function argument");
                 arguments.push(arg);
 
                 // If there is a comma, consume it and continue parsing the next argument. Otherwise, break the loop
-                if matches!(tokens.get(index), Some(t) if t.token == TokenType::Comma) {
+                if matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Comma) {
                     index += 1; // consume ','
                 } else {
                     break;
@@ -201,9 +201,9 @@ impl Parse for FunctionCall {
         }
 
         // After the arguments, we should have a right parenthesis. Consume it!
-        expect_token!(tokens, index, TokenType::RightParen, "Expected ')' after function arguments in function call");
+        expect_token!(tokens, index, TokenVariant::RightParen, "Expected ')' after function arguments in function call");
 
-        let catch_block = if matches!(tokens.get(index), Some(t) if t.token == TokenType::Catch) {
+        let catch_block = if matches!(tokens.get(index), Some(t) if t.variant == TokenVariant::Catch) {
             index += 1; // consume 'catch'
             let (block, new_index) = Block::parse(tokens, index)?;
             index = new_index;
@@ -260,16 +260,16 @@ impl BinaryOperator {
 
 #[cfg(test)]
 mod tests {
-    use crate::application::game::plugin::{common::Position, parser::abstract_syntax_tree::statement::{ReturnStatement, Statement}};
+    use crate::application::game::plugin::{common::Position, parser::old_abstract_syntax_tree::statement::{ReturnStatement, Statement}};
 
     use super::*;
 
     #[test]
     fn test_plus_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -284,9 +284,9 @@ mod tests {
     #[test]
     fn test_star_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -297,11 +297,11 @@ mod tests {
     #[test]
     fn test_plus_then_star() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -320,11 +320,11 @@ mod tests {
     #[test]
     fn test_star_then_plus() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -343,11 +343,11 @@ mod tests {
     #[test]
     fn test_eval_first_plus_before_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -366,11 +366,11 @@ mod tests {
     #[test]
     fn test_eval_first_minus_before_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -389,11 +389,11 @@ mod tests {
     #[test]
     fn test_eval_first_multiply_before_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -412,11 +412,11 @@ mod tests {
     #[test]
     fn test_eval_first_divide_before_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Slash, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Slash, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Slash, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Slash, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -435,13 +435,13 @@ mod tests {
     #[test]
     fn test_complex_expression() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(6), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(6), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -464,9 +464,9 @@ mod tests {
     #[test]
     fn test_parenthesized_literal() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(42), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(42), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -477,11 +477,11 @@ mod tests {
     #[test]
     fn test_parenthesized_expression() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -496,13 +496,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_higher_precedence_first() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -521,13 +521,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_higher_precedence_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -546,13 +546,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_lower_precedence_first() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -571,13 +571,13 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_lower_precedence_last() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -596,15 +596,15 @@ mod tests {
     #[test]
     fn test_parenthesized_expression_with_nested_parentheses() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -623,19 +623,19 @@ mod tests {
     #[test]
     fn test_complex_nested_parenthesized_expression() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(6), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::Slash, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(6), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(6), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Slash, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(6), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -662,8 +662,8 @@ mod tests {
     #[test]
     fn test_unary_minus() {
         let tokens = vec![
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -674,8 +674,8 @@ mod tests {
     #[test]
     fn test_unary_not() {
         let tokens = vec![
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -686,10 +686,10 @@ mod tests {
     #[test]
     fn test_unary_minus_with_binary_operation() {
         let tokens = vec![
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -704,10 +704,10 @@ mod tests {
     #[test]
     fn test_unary_not_with_binary_operation() {
         let tokens = vec![
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(1), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(0), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(1), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(0), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -722,10 +722,10 @@ mod tests {
     #[test]
     fn test_unary_in_binary_operation() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -740,9 +740,9 @@ mod tests {
     #[test]
     fn test_multiple_unary_operators() {
         let tokens = vec![
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -759,10 +759,10 @@ mod tests {
     #[test]
     fn test_unary_operators_with_parentheses() {
         let tokens = vec![
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -776,12 +776,12 @@ mod tests {
     #[test]
     fn test_unary_operators_with_expr_in_parentheses() {
         let tokens = vec![
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -799,13 +799,13 @@ mod tests {
     #[test]
     fn test_unary_operators_with_nested_parentheses() {
         let tokens = vec![
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::Not, Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Not, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -822,10 +822,10 @@ mod tests {
     #[test]
     fn test_expr_end_is_at_semicolon() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Semicolon, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -837,11 +837,11 @@ mod tests {
     #[test]
     fn test_expr_end_is_at_right_paren() {
         let tokens = vec![
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 1));
@@ -853,9 +853,9 @@ mod tests {
     #[test]
     fn test_modulo_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(10), Position::new(0, 0)),
-            Token::new(TokenType::Percent, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(10), Position::new(0, 0)),
+            Token::new(TokenVariant::Percent, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -866,9 +866,9 @@ mod tests {
     #[test]
     fn test_power_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(2), Position::new(0, 0)),
-            Token::new(TokenType::Caret, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(2), Position::new(0, 0)),
+            Token::new(TokenVariant::Caret, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -879,11 +879,11 @@ mod tests {
     #[test]
     fn test_power_is_right_associative() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(2), Position::new(0, 0)),
-            Token::new(TokenType::Caret, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Caret, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(2), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(2), Position::new(0, 0)),
+            Token::new(TokenVariant::Caret, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Caret, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(2), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -903,11 +903,11 @@ mod tests {
     #[test]
     fn test_multiply_then_modulo() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Percent, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Percent, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -926,9 +926,9 @@ mod tests {
     #[test]
     fn test_equal_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::EqualEqual, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::EqualEqual, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -939,9 +939,9 @@ mod tests {
     #[test]
     fn test_not_equal_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::NotEqual, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::NotEqual, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -952,9 +952,9 @@ mod tests {
     #[test]
     fn test_less_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Less, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Less, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -965,9 +965,9 @@ mod tests {
     #[test]
     fn test_greater_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Greater, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Greater, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -978,9 +978,9 @@ mod tests {
     #[test]
     fn test_less_equal_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::LessEqual, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::LessEqual, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -991,9 +991,9 @@ mod tests {
     #[test]
     fn test_greater_equal_operator() {
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::GreaterEqual, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::GreaterEqual, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1004,9 +1004,9 @@ mod tests {
     #[test]
     fn test_and_operator() {
         let tokens = vec![
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
-            Token::new(TokenType::And, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(false), Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::And, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(false), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1017,9 +1017,9 @@ mod tests {
     #[test]
     fn test_or_operator() {
         let tokens = vec![
-            Token::new(TokenType::BoolLiteral(false), Position::new(0, 0)),
-            Token::new(TokenType::Or, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(false), Position::new(0, 0)),
+            Token::new(TokenVariant::Or, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1031,11 +1031,11 @@ mod tests {
     fn test_and_or_precedence() {
         // OR has lower precedence than AND, so: false && true || true => (false && true) || true
         let tokens = vec![
-            Token::new(TokenType::BoolLiteral(false), Position::new(0, 0)),
-            Token::new(TokenType::And, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
-            Token::new(TokenType::Or, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(false), Position::new(0, 0)),
+            Token::new(TokenVariant::And, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::Or, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1055,11 +1055,11 @@ mod tests {
     fn test_comparison_lower_precedence_than_arithmetic() {
         // 3 + 4 == 7 should be (3 + 4) == 7
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::EqualEqual, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(7), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::EqualEqual, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(7), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1079,11 +1079,11 @@ mod tests {
     fn test_arithmetic_lower_precedence_than_power() {
         // 2 + 3 ** 2 should be 2 + (3 ** 2)
         let tokens = vec![
-            Token::new(TokenType::IntLiteral(2), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Caret, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(2), Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(2), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Caret, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(2), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1103,16 +1103,16 @@ mod tests {
     fn test_complex_mixed_operators() {
         // -3 * 4 + 5 < 10 && true
         let tokens = vec![
-            Token::new(TokenType::Minus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
-            Token::new(TokenType::Less, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(10), Position::new(0, 0)),
-            Token::new(TokenType::And, Position::new(0, 0)),
-            Token::new(TokenType::BoolLiteral(true), Position::new(0, 0)),
+            Token::new(TokenVariant::Minus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Less, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(10), Position::new(0, 0)),
+            Token::new(TokenVariant::And, Position::new(0, 0)),
+            Token::new(TokenVariant::BoolLiteral(true), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1142,9 +1142,9 @@ mod tests {
     #[test]
     fn test_expr_with_variable() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("x".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::Plus, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(5), Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("x".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::Plus, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(5), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1159,12 +1159,12 @@ mod tests {
     #[test]
     fn test_expr_with_function_call() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("f".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("f".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1183,13 +1183,13 @@ mod tests {
     #[test]
     fn test_expr_with_nested_function_calls() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("f".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::Identifier("g".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("f".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("g".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
@@ -1208,18 +1208,18 @@ mod tests {
     #[test]
     fn test_expr_with_function_call_and_catch_block() {
         let tokens = vec![
-            Token::new(TokenType::Identifier("f".to_string()), Position::new(0, 0)),
-            Token::new(TokenType::LeftParen, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(3), Position::new(0, 0)),
-            Token::new(TokenType::RightParen, Position::new(0, 0)),
-            Token::new(TokenType::Catch, Position::new(0, 0)),
-            Token::new(TokenType::LeftBrace, Position::new(0, 0)),
-            Token::new(TokenType::Return, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(0), Position::new(0, 0)),
-            Token::new(TokenType::Semicolon, Position::new(0, 0)),
-            Token::new(TokenType::RightBrace, Position::new(0, 0)),
-            Token::new(TokenType::Star, Position::new(0, 0)),
-            Token::new(TokenType::IntLiteral(4), Position::new(0, 0)),
+            Token::new(TokenVariant::Identifier("f".to_string()), Position::new(0, 0)),
+            Token::new(TokenVariant::LeftParen, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(3), Position::new(0, 0)),
+            Token::new(TokenVariant::RightParen, Position::new(0, 0)),
+            Token::new(TokenVariant::Catch, Position::new(0, 0)),
+            Token::new(TokenVariant::LeftBrace, Position::new(0, 0)),
+            Token::new(TokenVariant::Return, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(0), Position::new(0, 0)),
+            Token::new(TokenVariant::Semicolon, Position::new(0, 0)),
+            Token::new(TokenVariant::RightBrace, Position::new(0, 0)),
+            Token::new(TokenVariant::Star, Position::new(0, 0)),
+            Token::new(TokenVariant::IntLiteral(4), Position::new(0, 0)),
         ];
 
         assert!(Expr::is_next(&tokens, 0));
