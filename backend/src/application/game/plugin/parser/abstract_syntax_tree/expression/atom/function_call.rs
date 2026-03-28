@@ -15,7 +15,7 @@ pub struct FunctionCallExpressionAtom {
 
 impl Parsable for FunctionCallExpressionAtom {
     fn is_next(ts: &TokenStream) -> bool {
-        Identifier::is_next(ts) && nth_is_token!(ts, TokenVariant::LeftParen, 1)
+        Identifier::is_next(ts) && nth_is_token!(ts, 1, TokenVariant::LeftParen)
     }
 
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {

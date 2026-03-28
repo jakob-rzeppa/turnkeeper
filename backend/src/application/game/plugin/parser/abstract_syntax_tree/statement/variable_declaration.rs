@@ -60,6 +60,12 @@ impl Parsable for VariableDeclarationStatement {
             "Expected expression after '=' in variable declaration"
         );
 
+        expect_token!(
+            ts,
+            TokenVariant::Semicolon,
+            "Expected ';' at the end of variable declaration"
+        );
+
         Ok(VariableDeclarationStatement {
             identifier,
             var_type,
@@ -99,7 +105,8 @@ mod tests {
             TokenVariant::Colon,
             TokenVariant::IntType,
             TokenVariant::EqualEqual,
-            TokenVariant::IntLiteral(42)
+            TokenVariant::IntLiteral(42),
+            TokenVariant::Semicolon
         );
 
         assert!(VariableDeclarationStatement::is_next(&ts));
@@ -124,7 +131,8 @@ mod tests {
             TokenVariant::Colon,
             TokenVariant::FloatType,
             TokenVariant::EqualEqual,
-            TokenVariant::FloatLiteral(3.14)
+            TokenVariant::FloatLiteral(3.14),
+            TokenVariant::Semicolon
         );
 
         assert!(VariableDeclarationStatement::is_next(&ts));
@@ -149,7 +157,8 @@ mod tests {
             TokenVariant::Colon,
             TokenVariant::StringType,
             TokenVariant::EqualEqual,
-            TokenVariant::StringLiteral("Hello".to_string())
+            TokenVariant::StringLiteral("Hello".to_string()),
+            TokenVariant::Semicolon
         );
 
         assert!(VariableDeclarationStatement::is_next(&ts));
@@ -174,7 +183,8 @@ mod tests {
             TokenVariant::Colon,
             TokenVariant::BoolType,
             TokenVariant::EqualEqual,
-            TokenVariant::BoolLiteral(true)
+            TokenVariant::BoolLiteral(true),
+            TokenVariant::Semicolon
         );
 
         assert!(VariableDeclarationStatement::is_next(&ts));
@@ -201,7 +211,8 @@ mod tests {
             TokenVariant::EqualEqual,
             TokenVariant::IntLiteral(1),
             TokenVariant::Plus,
-            TokenVariant::IntLiteral(2)
+            TokenVariant::IntLiteral(2),
+            TokenVariant::Semicolon
         );
 
         assert!(VariableDeclarationStatement::is_next(&ts));

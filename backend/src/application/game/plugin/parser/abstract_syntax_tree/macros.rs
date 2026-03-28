@@ -20,7 +20,7 @@ macro_rules! is_token {
 }
 
 macro_rules! nth_is_token {
-    ($tokenstream:expr, $expected:pat, $n:expr) => {
+    ($tokenstream:expr, $n:expr, $expected:pat) => {
         match $tokenstream.peek_nth($n) {
             Some(token) => {
                 if let $expected = &token.variant {
