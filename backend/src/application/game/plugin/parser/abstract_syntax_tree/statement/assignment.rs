@@ -15,7 +15,7 @@ pub struct AssignmentStatement {
 
 impl Parsable for AssignmentStatement {
     fn is_next(ts: &TokenStream) -> bool {
-        is_token!(ts, TokenVariant::Identifier(_)) && nth_is_token!(ts, 1, TokenVariant::EqualEqual)
+        is_token!(ts, TokenVariant::Identifier(_)) && nth_is_token!(ts, 1, TokenVariant::Assign)
     }
 
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
@@ -29,7 +29,7 @@ impl Parsable for AssignmentStatement {
 
         expect_token!(
             ts,
-            TokenVariant::EqualEqual,
+            TokenVariant::Assign,
             "Expected '=' after identifier in assignment statement"
         );
 
@@ -72,7 +72,7 @@ mod tests {
     fn test_assignment_statement_parsing() {
         let mut ts = test_token_stream!(
             TokenVariant::Identifier("myVariable".to_string()),
-            TokenVariant::EqualEqual,
+            TokenVariant::Assign,
             TokenVariant::IntLiteral(42),
             TokenVariant::Semicolon
         );
@@ -94,7 +94,7 @@ mod tests {
     fn test_assignment_statement_no_semicolon() {
         let mut ts = test_token_stream!(
             TokenVariant::Identifier("myVariable".to_string()),
-            TokenVariant::EqualEqual,
+            TokenVariant::Assign,
             TokenVariant::IntLiteral(42)
         );
 

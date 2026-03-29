@@ -1,8 +1,8 @@
 use crate::application::game::plugin::parser::abstract_syntax_tree::{
     Parsable, ParsingError, TokenStream,
     statement::{
-        assignment_statement::AssignmentStatement, if_statement::IfStatement,
-        variable_declaration_statement::VariableDeclarationStatement,
+        assignment::AssignmentStatement, if_statement::IfStatement,
+        variable_declaration::VariableDeclarationStatement, while_loop::WhileLoopStatement,
     },
 };
 #[cfg(test)]
@@ -12,15 +12,17 @@ use crate::application::game::plugin::parser::abstract_syntax_tree::{
     statement::if_statement::{ElseBranch, ElseIfBranch},
 };
 
-mod assignment_statement;
+mod assignment;
 mod if_statement;
-mod variable_declaration_statement;
+mod variable_declaration;
+mod while_loop;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
     VariableDeclaration(VariableDeclarationStatement),
     Assignment(AssignmentStatement),
     If(IfStatement),
+    WhileLoop(WhileLoopStatement),
 }
 
 impl Parsable for Statement {
@@ -28,11 +30,14 @@ impl Parsable for Statement {
         VariableDeclarationStatement::is_next(ts)
             || AssignmentStatement::is_next(ts)
             || IfStatement::is_next(ts)
+            || WhileLoopStatement::is_next(ts)
     }
 
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
         if IfStatement::is_next(ts) {
             Ok(Statement::If(IfStatement::parse(ts)?))
+        } else if WhileLoopStatement::is_next(ts) {
+            Ok(Statement::WhileLoop(WhileLoopStatement::parse(ts)?))
         } else if VariableDeclarationStatement::is_next(ts) {
             Ok(Statement::VariableDeclaration(
                 VariableDeclarationStatement::parse(ts)?,
@@ -86,6 +91,17 @@ impl Statement {
             else_branch,
             line,
             column,
+        ))
+    }
+
+    pub fn new_while_loop(
+        condition: Expression,
+        body: Vec<Statement>,
+        line: usize,
+        column: usize,
+    ) -> Self {
+        Statement::WhileLoop(WhileLoopStatement::new_while_loop(
+            condition, body, line, column,
         ))
     }
 }

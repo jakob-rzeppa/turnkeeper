@@ -186,7 +186,7 @@ impl ElseIfBranch {
 #[cfg(test)]
 mod tests {
     use crate::application::game::plugin::parser::abstract_syntax_tree::{
-        expression::binary::BinaryOperator, statement::assignment_statement::AssignmentStatement,
+        expression::binary::BinaryOperator, statement::assignment::AssignmentStatement,
     };
 
     use super::*;

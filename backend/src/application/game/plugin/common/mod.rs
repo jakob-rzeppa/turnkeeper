@@ -12,4 +12,8 @@ impl Position {
     pub fn matches(&self, line: usize, first_char: usize) -> bool {
         self.line == line && self.first_char == first_char
     }
+
+    pub fn to_tuple(&self) -> (usize, usize) {
+        (self.line, self.first_char)
+    }
 }
