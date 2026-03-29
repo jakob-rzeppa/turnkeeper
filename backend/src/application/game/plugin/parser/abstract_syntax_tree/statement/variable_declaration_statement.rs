@@ -78,14 +78,14 @@ impl Parsable for VariableDeclarationStatement {
 #[cfg(test)]
 impl VariableDeclarationStatement {
     pub fn new(
-        identifier: Identifier,
+        identifier: &str,
         var_type: Datatype,
         value: Expression,
         line: usize,
         first_char: usize,
     ) -> Self {
         VariableDeclarationStatement {
-            identifier,
+            identifier: Identifier::new(identifier),
             var_type,
             value,
             pos: Position::new(line, first_char),
@@ -114,7 +114,7 @@ mod tests {
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                Identifier::new("x"),
+                "x",
                 Datatype::Integer,
                 Expression::new_atom_literal_int(42, 5, 0),
                 0,
@@ -140,7 +140,7 @@ mod tests {
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                Identifier::new("pi"),
+                "pi",
                 Datatype::Float,
                 Expression::new_atom_literal_float(3.14, 5, 0),
                 0,
@@ -166,7 +166,7 @@ mod tests {
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                Identifier::new("name"),
+                "name",
                 Datatype::String,
                 Expression::new_atom_literal_string("Hello".to_string(), 5, 0),
                 0,
@@ -192,7 +192,7 @@ mod tests {
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                Identifier::new("flag"),
+                "flag",
                 Datatype::Boolean,
                 Expression::new_atom_literal_bool(true, 5, 0),
                 0,
@@ -220,7 +220,7 @@ mod tests {
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                Identifier::new("sum"),
+                "sum",
                 Datatype::Integer,
                 Expression::new_binary(
                     Expression::new_atom_literal_int(1, 5, 0),
