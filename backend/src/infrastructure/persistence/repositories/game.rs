@@ -1,12 +1,12 @@
-use sqlx::SqlitePool;
+use crate::application::game::commands::GameCommand;
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::domain::game::error::{GameError, GameErrorKind};
-use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::domain::game::value_objects::id::Id;
+use sqlx::SqlitePool;
 
 pub struct SqliteGameRepository {
-    db: SqlitePool
+    db: SqlitePool,
 }
 
 impl SqliteGameRepository {
@@ -57,12 +57,10 @@ impl GameRepositoryContract for SqliteGameRepository {
         let games = rows
             .into_iter()
             .map(|row| {
-                let id = Id::parse_str(&row.id)
-                    .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
-                Ok(GameMetadata {
-                    id,
-                    name: row.name,
-                })
+                let id = Id::parse_str(&row.id).map_err(|e| {
+                    GameError::with_source(GameErrorKind::RepositoryError, Box::new(e))
+                })?;
+                Ok(GameMetadata { id, name: row.name })
             })
             .collect::<Result<Vec<_>, GameError>>()?;
 
@@ -86,12 +84,10 @@ impl GameRepositoryContract for SqliteGameRepository {
 
         match row {
             Some(row) => {
-                let id = Id::parse_str(&row.id)
-                    .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
-                Ok(GameMetadata {
-                    id,
-                    name: row.name,
-                })
+                let id = Id::parse_str(&row.id).map_err(|e| {
+                    GameError::with_source(GameErrorKind::RepositoryError, Box::new(e))
+                })?;
+                Ok(GameMetadata { id, name: row.name })
             }
             None => Err(GameError::new(GameErrorKind::GameNotFound)),
         }
@@ -101,13 +97,10 @@ impl GameRepositoryContract for SqliteGameRepository {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
-        let game_exists = sqlx::query!(
-            r#"SELECT id FROM games WHERE id = ?"#,
-            game_id_str
-        )
-        .fetch_optional(&self.db)
-        .await
-        .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
+        let game_exists = sqlx::query!(r#"SELECT id FROM games WHERE id = ?"#, game_id_str)
+            .fetch_optional(&self.db)
+            .await
+            .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
 
         if game_exists.is_none() {
             return Err(GameError::new(GameErrorKind::GameNotFound));
@@ -137,13 +130,10 @@ impl GameRepositoryContract for SqliteGameRepository {
         let game_id_str = game_id.to_string();
 
         // Check if game exists first
-        let game_exists = sqlx::query!(
-            r#"SELECT id FROM games WHERE id = ?"#,
-            game_id_str
-        )
-        .fetch_optional(&self.db)
-        .await
-        .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
+        let game_exists = sqlx::query!(r#"SELECT id FROM games WHERE id = ?"#, game_id_str)
+            .fetch_optional(&self.db)
+            .await
+            .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))?;
 
         if game_exists.is_none() {
             return Err(GameError::new(GameErrorKind::GameNotFound));
@@ -167,8 +157,9 @@ impl GameRepositoryContract for SqliteGameRepository {
         let commands = rows
             .into_iter()
             .map(|row| {
-                serde_json::from_str(&row.command)
-                    .map_err(|e| GameError::with_source(GameErrorKind::RepositoryError, Box::new(e)))
+                serde_json::from_str(&row.command).map_err(|e| {
+                    GameError::with_source(GameErrorKind::RepositoryError, Box::new(e))
+                })
             })
             .collect::<Result<Vec<GameCommand>, GameError>>()?;
 
@@ -182,8 +173,8 @@ impl GameRepositoryContract for SqliteGameRepository {
 
 #[cfg(test)]
 mod test {
-    use crate::infrastructure::persistence::db::create_test_pool;
     use super::*;
+    use crate::infrastructure::persistence::db::create_test_pool;
 
     #[tokio::test]
     async fn test_create_and_get_game_metadata() {
@@ -238,8 +229,12 @@ mod test {
         // Create some games
         let game1_id = Id::new();
         let game2_id = Id::new();
-        repo.create(game1_id.clone(), "Game 1".to_string()).await.unwrap();
-        repo.create(game2_id.clone(), "Game 2".to_string()).await.unwrap();
+        repo.create(game1_id.clone(), "Game 1".to_string())
+            .await
+            .unwrap();
+        repo.create(game2_id.clone(), "Game 2".to_string())
+            .await
+            .unwrap();
 
         let res = repo.get_metadata_all_games().await;
         assert!(res.is_ok());
@@ -266,7 +261,9 @@ mod test {
         let repo = SqliteGameRepository::new(db);
 
         let game_id = Id::new();
-        repo.create(game_id.clone(), "Command Test Game".to_string()).await.unwrap();
+        repo.create(game_id.clone(), "Command Test Game".to_string())
+            .await
+            .unwrap();
 
         let command1 = GameCommand::SetNotes("test notes".to_string());
         let res = repo.log_command(game_id.clone(), command1.clone()).await;
@@ -321,7 +318,9 @@ mod test {
         let repo = SqliteGameRepository::new(db);
 
         let game_id = Id::new();
-        repo.create(game_id.clone(), "Empty History Game".to_string()).await.unwrap();
+        repo.create(game_id.clone(), "Empty History Game".to_string())
+            .await
+            .unwrap();
 
         let res = repo.get_game_history(game_id.clone()).await;
         assert!(res.is_ok());

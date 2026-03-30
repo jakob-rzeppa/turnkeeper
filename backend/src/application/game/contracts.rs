@@ -2,9 +2,9 @@
 //!
 //! Defines traits (contracts) for game-related infrastructure dependencies.
 
+use crate::application::game::commands::GameCommand;
 use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::domain::game::error::GameError;
-use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::domain::game::value_objects::id::Id;
 
@@ -17,9 +17,9 @@ use crate::domain::game::value_objects::id::Id;
 #[mockall::automock]
 pub trait GameRepositoryContract {
     /// Creates a new game in the database.
-    /// 
+    ///
     /// This function may be called in a stateless request.
-    /// Against clean architecture using this won't require the extra step over the domain, 
+    /// Against clean architecture using this won't require the extra step over the domain,
     /// to ensure no invariants, since no invariants, that can be checked by the aggregate,
     /// are possible.
     ///
@@ -40,7 +40,7 @@ pub trait GameRepositoryContract {
     /// - Database connection fails
     /// - Constraint violations occur
     fn create(&self, id: Id, name: String) -> impl Future<Output = Result<(), GameError>> + Send;
-    
+
     /// Retrieves metadata for all games.
     ///
     /// Returns a list of game metadata (ID and name) without full game state.
@@ -50,8 +50,10 @@ pub trait GameRepositoryContract {
     ///
     /// * `Ok(Vec<GameMetadata>)` - List of all games (may be empty)
     /// * `Err(GameError)` - Database query failed
-    fn get_metadata_all_games(&self) -> impl Future<Output = Result<Vec<GameMetadata>, GameError>> + Send;
-    
+    fn get_metadata_all_games(
+        &self,
+    ) -> impl Future<Output = Result<Vec<GameMetadata>, GameError>> + Send;
+
     /// Retrieves metadata for a specific game.
     ///
     /// # Returns
@@ -62,21 +64,28 @@ pub trait GameRepositoryContract {
     /// # Errors
     ///
     /// Returns [`GameErrorKind::GameNotFound`] if no game exists with the given ID.
-    fn get_metadata_by_id(&self, id: Id) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
-    
+    fn get_metadata_by_id(
+        &self,
+        id: Id,
+    ) -> impl Future<Output = Result<GameMetadata, GameError>> + Send;
+
     /// Logs a game command.
     ///
     /// Commands are appended to the game's command log and can be replayed later
     /// to reconstruct game state.
-    /// 
+    ///
     /// **Important** this function should be called after the command handling in the game succeeded.
     ///
     /// # Command Sourcing
     ///
     /// Commands should be immutable once logged. They form an append-only log
     /// that represents the complete history of the game.
-    fn log_command(&self, game_id: Id, command: GameCommand) -> impl Future<Output = Result<(), GameError>> + Send;
-    
+    fn log_command(
+        &self,
+        game_id: Id,
+        command: GameCommand,
+    ) -> impl Future<Output = Result<(), GameError>> + Send;
+
     /// Retrieves the complete command history for a game.
     ///
     /// Returns all commands in chronological order, which can be replayed
@@ -86,8 +95,11 @@ pub trait GameRepositoryContract {
     ///
     /// * `Ok(Vec<GameCommand>)` - Ordered list of all game commands (may be empty for new games)
     /// * `Err(GameError)` - Game not found or database error
-    fn get_game_history(&self, id: Id) -> impl Future<Output = Result<Vec<GameCommand>, GameError>> + Send;
-    
+    fn get_game_history(
+        &self,
+        id: Id,
+    ) -> impl Future<Output = Result<Vec<GameCommand>, GameError>> + Send;
+
     /// Deletes a game and all associated data.
     ///
     /// # Cascading Deletes

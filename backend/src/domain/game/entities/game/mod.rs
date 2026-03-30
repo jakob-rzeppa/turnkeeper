@@ -1,11 +1,9 @@
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::entities::tradable::Tradable;
-use crate::domain::game::error::{GameError};
-use crate::domain::game::commands::GameCommand;
 use crate::domain::game::value_objects::id::Id;
 
-mod player_commands;
 mod notes_commands;
+mod player_commands;
 mod player_stat_commands;
 mod tradables_commands;
 mod turn_commands;
@@ -76,66 +74,5 @@ impl Game {
 
     pub fn hidden_notes(&self) -> &str {
         &self.hidden_notes
-    }
-
-    /// Dispatches a [`GameCommand`] to the appropriate handler method.
-    pub fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
-        println!("Handling command: {:?}", command);
-        match command {
-            GameCommand::NextTurn => Ok(self.next_turn()),
-            GameCommand::PreviousTurn => Ok(self.prev_turn()),
-            GameCommand::SkipTurnToPlayer { player_id } => self.skip_turn_to_player(player_id),
-            GameCommand::SetNotes(notes) => Ok(self.set_notes(notes)),
-            GameCommand::SetHiddenNotes(hidden_notes) => Ok(self.set_hidden_notes(hidden_notes)),
-            GameCommand::AddPlayer { player_id } => self.add_player(player_id),
-            GameCommand::AddStatToPlayer { player_id, stat_id, stat_key, stat_type, stat_value } => self.add_stat_to_player(
-                player_id,
-                stat_id,
-                stat_key,
-                stat_type,
-                stat_value
-            ),
-            GameCommand::ChangeStatOfPlayer { player_id, stat_id, stat_type, stat_value } => self.change_stat_of_player(
-                player_id,
-                stat_id,
-                stat_type,
-                stat_value,
-            ),
-            GameCommand::RemoveStatFromPlayer { player_id, stat_id } => self.remove_stat_from_player(player_id, stat_id),
-            GameCommand::AddTradable { tradable_id, name, initial_value } => {
-                self.add_tradable(
-                    tradable_id,
-                    name,
-                    initial_value)
-            },
-            GameCommand::RemoveTradable { tradable_id } => self.remove_tradable(tradable_id),
-            GameCommand::ChangePlayerTradableValue { player_id, tradable_id, new_value } => {
-                self.change_player_tradable_value(
-                    player_id,
-                    tradable_id,
-                    new_value)
-            },
-            GameCommand::SendTradable {from_id, to_id, tradable_id, amount } => {
-                self.send_tradable(
-                    from_id,
-                    to_id,
-                    tradable_id,
-                    amount)
-            },
-            GameCommand::AttachUserToPlayer { user_id, player_id } => self.attach_user_to_player(
-                user_id,
-                player_id,
-            ),
-            GameCommand::DetachUserFromPlayer { player_id } => self.detach_user_from_player(
-                player_id,
-            ),
-            GameCommand::ChangePlayerOrder(ids_in_order) => {
-                self.change_player_order(ids_in_order)
-            },
-            GameCommand::Debug(msg) => {
-                println!("Debug command with message: {}", msg);
-                Ok(())
-            }
-        }
     }
 }

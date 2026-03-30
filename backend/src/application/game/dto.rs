@@ -4,7 +4,12 @@
 
 use std::fmt::Display;
 
-use crate::domain::game::{commands::GameCommand, projections::{game_error::GameErrorProjection, gm_game_info::GmGameInfo, user_game_info::UserGameInfo}};
+use crate::{
+    application::game::commands::GameCommand,
+    domain::game::projections::{
+        game_error::GameErrorProjection, gm_game_info::GmGameInfo, user_game_info::UserGameInfo,
+    },
+};
 
 #[derive(Debug)]
 pub enum IncomingConnectionMessageDto {

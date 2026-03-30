@@ -3,13 +3,13 @@
 //! Implements [`ConnectionContract`] over an Axum WebSocket, splitting the
 //! socket into independent send and receive halves protected by `Mutex`.
 
+use crate::application::game::commands::GameCommand;
+use crate::application::game::contracts::ConnectionContract;
+use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use axum::extract::ws::{Message, WebSocket};
 use futures_util::stream::{SplitSink, SplitStream};
 use futures_util::{SinkExt, StreamExt};
 use tokio::sync::Mutex;
-use crate::application::game::contracts::{ConnectionContract};
-use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
-use crate::domain::game::commands::GameCommand;
 
 /// A WebSocket connection implementing [`ConnectionContract`].
 ///
@@ -25,7 +25,7 @@ impl WebSocketConnection {
         let (sender, receiver) = socket.split();
         Self {
             sender: Mutex::new(sender),
-            receiver: Mutex::new(receiver)
+            receiver: Mutex::new(receiver),
         }
     }
 }
@@ -45,9 +45,7 @@ impl ConnectionContract for WebSocketConnection {
                     IncomingConnectionMessageDto::Unknown
                 }
             }
-            Some(Ok(Message::Close(_))) => {
-                IncomingConnectionMessageDto::Close
-            }
+            Some(Ok(Message::Close(_))) => IncomingConnectionMessageDto::Close,
             _ => IncomingConnectionMessageDto::Unknown,
         }
     }

@@ -18,18 +18,18 @@
 //!    message (or the connection is otherwise dropped), at which point the
 //!    stored connection handle is cleared.
 
-use std::collections::HashMap;
-use std::sync::Arc;
-use tokio::sync::RwLock;
+use crate::application::game::commands::GameCommand;
 use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
 use crate::application::game::dto::OutgoingConnectionMessageDto;
 use crate::application::game::runtime::GameRuntime;
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
 use crate::domain::game::error::{GameError, GameErrorKind};
-use crate::domain::game::commands::GameCommand;
 use crate::domain::game::projections::game_error::GameErrorProjection;
 use crate::domain::game::value_objects::id::Id;
+use std::collections::HashMap;
+use std::sync::Arc;
+use tokio::sync::RwLock;
 
 mod gm_connection_state;
 mod gm_lifecycle;
@@ -46,7 +46,7 @@ const TICKET_TTL_SECS: u64 = 30;
 pub struct GameSession<Connection, GameRepository>
 where
     Connection: ConnectionContract,
-    GameRepository: GameRepositoryContract
+    GameRepository: GameRepositoryContract,
 {
     /// The live game runtime that holds all current game state.
     runtime: Arc<RwLock<GameRuntime>>,
@@ -61,7 +61,7 @@ where
 impl<Connection, GameRepository> GameSession<Connection, GameRepository>
 where
     Connection: ConnectionContract,
-    GameRepository: GameRepositoryContract
+    GameRepository: GameRepositoryContract,
 {
     /// Creates a new `GameSession` for the given game.
     ///
@@ -73,7 +73,10 @@ where
     ///
     /// Returns a [`GameError`] if the game cannot be found or the repository
     /// call fails.
-    pub async fn try_new(game_id: Id, game_repository: Arc<GameRepository>) -> Result<Self, GameError> {
+    pub async fn try_new(
+        game_id: Id,
+        game_repository: Arc<GameRepository>,
+    ) -> Result<Self, GameError> {
         let game_metadata = game_repository.get_metadata_by_id(game_id).await?;
 
         let mut runtime = GameRuntime::new(game_metadata.id, game_metadata.name);
@@ -81,7 +84,9 @@ where
         // Apply all past commands to reconstruct the current game state
         let past_commands = game_repository.get_game_history(game_id).await?;
         for command in past_commands {
-            runtime.handle_command(command).map_err(|e| GameError::with_source(GameErrorKind::GameHistoryInvalid, Box::new(e)))?;
+            runtime.handle_command(command).map_err(|e| {
+                GameError::with_source(GameErrorKind::GameHistoryInvalid, Box::new(e))
+            })?;
         }
 
         Ok(Self {
@@ -111,14 +116,18 @@ where
         match res {
             Ok(_) => {
                 // Persist the game state only if the command was handled successfully
-                if let Err(e) = self.game_repo.log_command(runtime_guard.get_id(), command).await {
+                if let Err(e) = self
+                    .game_repo
+                    .log_command(runtime_guard.get_id(), command)
+                    .await
+                {
                     eprintln!("Failed to save game state: {}", e);
                 }
-            },
+            }
             Err(e) => {
                 eprintln!("Failed to handle command: {}", e);
                 self.send_error_to_gm(e).await;
-            },
+            }
         };
 
         drop(runtime_guard);
@@ -161,7 +170,7 @@ where
 impl<Connection, GameRepository> Clone for GameSession<Connection, GameRepository>
 where
     Connection: ConnectionContract,
-    GameRepository: GameRepositoryContract
+    GameRepository: GameRepositoryContract,
 {
     fn clone(&self) -> Self {
         Self {

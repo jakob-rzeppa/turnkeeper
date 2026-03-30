@@ -1,8 +1,9 @@
+pub mod commands;
+pub mod contracts;
 pub mod dto;
+mod plugin;
 pub mod request_handlers;
 pub mod requests;
 pub mod responses;
-pub mod contracts;
-pub mod session;
 mod runtime;
-mod plugin;
+pub mod session;
