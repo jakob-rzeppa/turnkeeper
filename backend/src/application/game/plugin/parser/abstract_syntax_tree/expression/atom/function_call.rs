@@ -1,9 +1,11 @@
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{
-        Parsable, Positioned, TokenStream, atom::identifier::Identifier, error::ParsingError,
-        expression::Expression,
+    parser::{
+        abstract_syntax_tree::{
+            Parsable, Positioned, TokenStream, atom::identifier::Identifier, expression::Expression,
+        },
+        error::ParsingError,
     },
 };
 
@@ -37,11 +39,8 @@ impl Parsable for FunctionCallExpressionAtom {
         let mut arguments = Vec::new();
         if !is_token!(ts, TokenVariant::RightParen) {
             loop {
-                let argument = expect_parse!(
-                    ts,
-                    Expression,
-                    "expression as argument in function call"
-                );
+                let argument =
+                    expect_parse!(ts, Expression, "expression as argument in function call");
                 arguments.push(argument);
 
                 if is_token!(ts, TokenVariant::RightParen) {

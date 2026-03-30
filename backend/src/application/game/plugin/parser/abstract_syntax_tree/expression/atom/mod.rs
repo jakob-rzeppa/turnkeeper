@@ -1,14 +1,16 @@
-use crate::application::game::plugin::parser::abstract_syntax_tree::{
-    Parsable, Positioned, TokenStream,
-    error::ParsingError,
-    expression::atom::{
-        function_call::FunctionCallExpressionAtom, literal::LiteralExpressionAtom,
-        variable::VariableExpressionAtom,
-    },
-};
 #[cfg(test)]
 use crate::application::game::plugin::parser::abstract_syntax_tree::{
     atom::identifier::Identifier, expression::Expression,
+};
+use crate::application::game::plugin::parser::{
+    abstract_syntax_tree::{
+        Parsable, Positioned, TokenStream,
+        expression::atom::{
+            function_call::FunctionCallExpressionAtom, literal::LiteralExpressionAtom,
+            variable::VariableExpressionAtom,
+        },
+    },
+    error::ParsingError,
 };
 
 pub mod function_call;

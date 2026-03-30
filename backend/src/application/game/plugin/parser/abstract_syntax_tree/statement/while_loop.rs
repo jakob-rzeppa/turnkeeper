@@ -1,9 +1,11 @@
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{
-        Parsable, Positioned, TokenStream, error::ParsingError, expression::Expression,
-        statement::Statement,
+    parser::{
+        abstract_syntax_tree::{
+            Parsable, Positioned, TokenStream, expression::Expression, statement::Statement,
+        },
+        error::ParsingError,
     },
 };
 
@@ -36,22 +38,14 @@ impl Parsable for WhileLoopStatement {
 
         let condition = Expression::parse(ts)?;
 
-        expect_token!(
-            ts,
-            TokenVariant::LeftBrace,
-            "'{' after while condition"
-        );
+        expect_token!(ts, TokenVariant::LeftBrace, "'{' after while condition");
 
         let mut body = Vec::new();
         while !is_token!(ts, TokenVariant::RightBrace) {
             body.push(Statement::parse(ts)?);
         }
 
-        expect_token!(
-            ts,
-            TokenVariant::RightBrace,
-            "'}' to close while loop body"
-        );
+        expect_token!(ts, TokenVariant::RightBrace, "'}' to close while loop body");
 
         Ok(WhileLoopStatement {
             condition,

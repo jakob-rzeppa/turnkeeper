@@ -1,7 +1,10 @@
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{Parsable, Positioned, TokenStream, error::ParsingError},
+    parser::{
+        abstract_syntax_tree::{Parsable, Positioned, TokenStream},
+        error::ParsingError,
+    },
 };
 
 #[derive(Debug, Clone, PartialEq)]

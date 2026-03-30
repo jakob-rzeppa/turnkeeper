@@ -9,7 +9,8 @@ use crate::application::game::plugin::{
         },
     },
     runtime::{
-        RuntimeEnvironment, RuntimeError,
+        RuntimeEnvironment,
+        error::RuntimeError,
         memory::{identifier::Identifier, values::VariableValue},
     },
 };

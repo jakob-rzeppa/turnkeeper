@@ -1,13 +1,15 @@
 use crate::application::game::plugin::{
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{
-        Parsable, Positioned, TokenStream,
-        error::ParsingError,
-        expression::{
-            atom::ExpressionAtom,
-            binary::{BinaryExpression, BinaryOperator},
-            unary::UnaryExpression,
+    parser::{
+        abstract_syntax_tree::{
+            Parsable, Positioned, TokenStream,
+            expression::{
+                atom::ExpressionAtom,
+                binary::{BinaryExpression, BinaryOperator},
+                unary::UnaryExpression,
+            },
         },
+        error::ParsingError,
     },
 };
 

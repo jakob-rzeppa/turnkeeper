@@ -4,7 +4,8 @@ use crate::application::game::plugin::{
         statement::variable_declaration::VariableDeclarationStatement,
     },
     runtime::{
-        RuntimeEnvironment, RuntimeError,
+        RuntimeEnvironment,
+        error::RuntimeError,
         memory::{identifier::Identifier, values::VariableValue},
     },
 };

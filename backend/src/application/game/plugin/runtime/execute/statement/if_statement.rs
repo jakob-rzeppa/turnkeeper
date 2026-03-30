@@ -1,6 +1,6 @@
 use crate::application::game::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::if_statement::IfStatement},
-    runtime::{RuntimeEnvironment, RuntimeError, memory::values::VariableValue},
+    runtime::{RuntimeEnvironment, error::RuntimeError, memory::values::VariableValue},
 };
 
 impl RuntimeEnvironment {

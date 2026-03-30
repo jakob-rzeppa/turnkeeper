@@ -1,3 +1,5 @@
+use std::{error::Error, fmt::Display};
+
 use crate::application::game::plugin::{common::Position, lexer::token::TokenVariant};
 
 #[derive(Debug)]
@@ -14,6 +16,14 @@ pub enum ParsingError {
     UnexpectedEOF {
         expected: String,
     },
+}
+
+impl Error for ParsingError {}
+
+impl Display for ParsingError {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        write!(f, "{}", self.message())
+    }
 }
 
 impl ParsingError {

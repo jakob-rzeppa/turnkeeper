@@ -1,17 +1,19 @@
-use crate::application::game::plugin::parser::abstract_syntax_tree::{
-    Parsable, TokenStream,
-    error::ParsingError,
-    statement::{
-        assignment::AssignmentStatement, expression::ExpressionStatement,
-        if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
-        while_loop::WhileLoopStatement,
-    },
-};
 #[cfg(test)]
 use crate::application::game::plugin::parser::abstract_syntax_tree::{
     atom::datatype::Datatype,
     expression::Expression,
     statement::if_statement::{ElseBranch, ElseIfBranch},
+};
+use crate::application::game::plugin::parser::{
+    abstract_syntax_tree::{
+        Parsable, TokenStream,
+        statement::{
+            assignment::AssignmentStatement, expression::ExpressionStatement,
+            if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
+            while_loop::WhileLoopStatement,
+        },
+    },
+    error::ParsingError,
 };
 
 pub mod assignment;

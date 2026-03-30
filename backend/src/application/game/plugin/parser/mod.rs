@@ -1,9 +1,13 @@
 use crate::application::game::plugin::{
     lexer::tokenize,
-    parser::abstract_syntax_tree::{Parsable, TokenStream, error::ParsingError, root::Root},
+    parser::{
+        abstract_syntax_tree::{Parsable, TokenStream, root::Root},
+        error::ParsingError,
+    },
 };
 
 pub mod abstract_syntax_tree;
+pub mod error;
 
 pub fn parse_source_code(source: &str) -> Result<Root, ParsingError> {
     let tokens = tokenize(source);

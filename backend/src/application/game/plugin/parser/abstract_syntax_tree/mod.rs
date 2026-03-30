@@ -1,12 +1,11 @@
 use crate::application::game::plugin::{
-    common::Position, lexer::token::Token, parser::abstract_syntax_tree::error::ParsingError,
+    common::Position, lexer::token::Token, parser::error::ParsingError,
 };
 
 #[macro_use]
 mod macros;
 
 pub mod atom;
-pub mod error;
 pub mod expression;
 pub mod root;
 pub mod statement;

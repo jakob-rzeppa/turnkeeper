@@ -1,6 +1,6 @@
 use crate::application::game::plugin::{
     parser::abstract_syntax_tree::statement::Statement,
-    runtime::{RuntimeEnvironment, RuntimeError},
+    runtime::{RuntimeEnvironment, error::RuntimeError},
 };
 
 mod assignment_statement;

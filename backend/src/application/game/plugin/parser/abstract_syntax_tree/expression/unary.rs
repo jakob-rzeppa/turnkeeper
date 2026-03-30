@@ -3,10 +3,12 @@ use std::fmt::Display;
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{
-        Parsable, Positioned, TokenStream,
+    parser::{
+        abstract_syntax_tree::{
+            Parsable, Positioned, TokenStream,
+            expression::{Expression, atom::ExpressionAtom},
+        },
         error::ParsingError,
-        expression::{Expression, atom::ExpressionAtom},
     },
 };
 

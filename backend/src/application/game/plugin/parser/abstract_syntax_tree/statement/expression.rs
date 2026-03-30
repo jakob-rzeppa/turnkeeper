@@ -1,8 +1,9 @@
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{
-        Parsable, Positioned, TokenStream, error::ParsingError, expression::Expression,
+    parser::{
+        abstract_syntax_tree::{Parsable, Positioned, TokenStream, expression::Expression},
+        error::ParsingError,
     },
 };
 
