@@ -10,18 +10,34 @@ impl RuntimeEnvironment {
 
         match condition_value {
             VariableValue::Bool(true) => {
+                self.memory_manager.push_scope();
                 for stmt in stmt.then_statements() {
-                    self.execute_statement(stmt)?;
+                    match self.execute_statement(stmt) {
+                        Ok(()) => {}
+                        Err(err) => {
+                            self.memory_manager.pop_scope();
+                            return Err(err);
+                        }
+                    }
                 }
+                self.memory_manager.pop_scope();
             }
             VariableValue::Bool(false) => {
                 for else_if in stmt.else_if_branches() {
                     let else_if_condition = else_if.condition();
                     let else_if_condition_value = self.evaluate_expression(else_if_condition)?;
                     if let VariableValue::Bool(true) = else_if_condition_value {
+                        self.memory_manager.push_scope();
                         for stmt in else_if.then_statements() {
-                            self.execute_statement(stmt)?;
+                            match self.execute_statement(stmt) {
+                                Ok(()) => {}
+                                Err(err) => {
+                                    self.memory_manager.pop_scope();
+                                    return Err(err);
+                                }
+                            }
                         }
+                        self.memory_manager.pop_scope();
                         return Ok(());
                     } else if !matches!(else_if_condition_value, VariableValue::Bool(_)) {
                         return Err(RuntimeError::TypeMismatch {
@@ -33,9 +49,17 @@ impl RuntimeEnvironment {
                 }
 
                 if let Some(else_branch) = stmt.else_branch() {
+                    self.memory_manager.push_scope();
                     for stmt in else_branch.then_statements() {
-                        self.execute_statement(stmt)?;
+                        match self.execute_statement(stmt) {
+                            Ok(()) => {}
+                            Err(err) => {
+                                self.memory_manager.pop_scope();
+                                return Err(err);
+                            }
+                        }
                     }
+                    self.memory_manager.pop_scope();
                 }
             }
             _ => {

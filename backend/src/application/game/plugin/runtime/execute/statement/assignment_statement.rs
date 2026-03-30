@@ -13,10 +13,7 @@ impl RuntimeEnvironment {
 
         self.memory_manager
             .assign_variable(name, value)
-            .map_err(|err| RuntimeError::Temp {
-                message: "Assignment failed".to_string() + &err,
-                pos: assignment.position(),
-            })
+            .map_err(|err| RuntimeError::from_memory_error(err, assignment.position()))
     }
 }
 

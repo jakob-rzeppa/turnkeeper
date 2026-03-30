@@ -1,9 +1,10 @@
 use std::collections::HashMap;
 
 use crate::application::game::plugin::runtime::memory::{
-    identifier::Identifier, values::VariableValue,
+    error::MemoryError, identifier::Identifier, values::VariableValue,
 };
 
+pub mod error;
 pub mod identifier;
 pub mod values;
 
@@ -43,14 +44,11 @@ impl MemoryManager {
         &mut self,
         name: Identifier,
         value: VariableValue,
-    ) -> Result<(), String> {
+    ) -> Result<(), MemoryError> {
         // Check if the variable already exists in the current scope
         // If the variable already exists in a higher scope, we allow it to be shadowed, but if it exists in the current scope, it's an error
         if self.current_scope().contains_key(&name) {
-            return Err(format!(
-                "Variable '{}' already declared in the current scope",
-                name
-            ));
+            return Err(MemoryError::VariableAlreadyDeclared(name));
         }
 
         self.current_scope().insert(name, value);
@@ -61,31 +59,31 @@ impl MemoryManager {
         &mut self,
         name: Identifier,
         value: VariableValue,
-    ) -> Result<(), String> {
+    ) -> Result<(), MemoryError> {
         // Look for the variable first in the current scope and then in outer scopes
         for scope in self.variables.iter_mut().rev() {
             if scope.contains_key(&name) {
                 if !scope.get(&name).unwrap().is_type(&value) {
-                    return Err(format!(
-                        "Type mismatch: cannot assign value of type {:?} to variable '{}'",
-                        value, name
-                    ));
+                    return Err(MemoryError::TypeMismatch {
+                        expected: format!("{}", scope.get(&name).unwrap()),
+                        found: value,
+                    });
                 }
 
                 scope.insert(name, value);
                 return Ok(());
             }
         }
-        Err(format!("Variable '{}' not found", name))
+        Err(MemoryError::VariableNotFound(name))
     }
 
-    pub fn get_variable(&self, name: &Identifier) -> Result<&VariableValue, String> {
+    pub fn get_variable(&self, name: &Identifier) -> Result<&VariableValue, MemoryError> {
         // Look for the variable first in the current scope and then in outer scopes
         for scope in self.variables.iter().rev() {
             if let Some(value) = scope.get(name) {
                 return Ok(value);
             }
         }
-        Err(format!("Variable '{}' not found", name))
+        Err(MemoryError::VariableNotFound(name.clone()))
     }
 }

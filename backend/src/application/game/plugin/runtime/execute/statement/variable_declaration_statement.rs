@@ -28,10 +28,7 @@ impl RuntimeEnvironment {
             | (Datatype::Boolean, VariableValue::Bool(_)) => self
                 .memory_manager
                 .declare_variable(identifier, value)
-                .map_err(|err| RuntimeError::Temp {
-                    message: err,
-                    pos: var_decl.position(),
-                }),
+                .map_err(|err| RuntimeError::from_memory_error(err, expression.position())),
             _ => Err(RuntimeError::TypeMismatch {
                 expected: format!("type {} for variable '{}'", var_type, identifier),
                 found: value,

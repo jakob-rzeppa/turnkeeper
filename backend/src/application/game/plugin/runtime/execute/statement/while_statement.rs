@@ -15,9 +15,17 @@ impl RuntimeEnvironment {
 
             match condition_value {
                 VariableValue::Bool(true) => {
+                    self.memory_manager.push_scope();
                     for stmt in stmt.body() {
-                        self.execute_statement(stmt)?;
+                        match self.execute_statement(stmt) {
+                            Ok(()) => {}
+                            Err(err) => {
+                                self.memory_manager.pop_scope();
+                                return Err(err);
+                            }
+                        }
                     }
+                    self.memory_manager.pop_scope();
                 }
                 VariableValue::Bool(false) => break,
                 _ => {

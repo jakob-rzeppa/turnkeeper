@@ -14,7 +14,7 @@ impl Root {
 }
 
 impl Parsable for Root {
-    fn is_next(ts: &TokenStream) -> bool {
+    fn is_next(_: &TokenStream) -> bool {
         true // Root is the entry point, so we always return true here
     }
 

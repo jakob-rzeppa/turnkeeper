@@ -33,8 +33,8 @@ impl RuntimeEnvironment {
             ExpressionAtom::Variable(var) => self
                 .memory_manager
                 .get_variable(&Identifier::from(var.identifier()))
-                .map_err(|err| RuntimeError::Temp {
-                    message: err,
+                .map_err(|err| RuntimeError::VariableNotFound {
+                    identifier: Identifier::from(var.identifier()),
                     pos: var.position(),
                 })
                 .cloned(),

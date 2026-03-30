@@ -1,8 +1,8 @@
 use std::{error::Error, fmt::Display};
 
 use crate::application::game::plugin::{
-    common::Position, parser::abstract_syntax_tree::atom::identifier::Identifier,
-    runtime::memory::values::VariableValue,
+    common::Position,
+    runtime::memory::{error::MemoryError, identifier::Identifier, values::VariableValue},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -30,6 +30,10 @@ pub enum RuntimeError {
     DivisionByZero {
         pos: Position,
     },
+    VariableAlreadyDeclared {
+        identifier: Identifier,
+        pos: Position,
+    },
     Temp {
         message: String,
         pos: Position,
@@ -37,10 +41,29 @@ pub enum RuntimeError {
 }
 
 impl RuntimeError {
+    pub fn from_memory_error(err: MemoryError, pos: Position) -> Self {
+        match err {
+            MemoryError::VariableNotFound(id) => RuntimeError::VariableNotFound {
+                identifier: id,
+                pos,
+            },
+            MemoryError::VariableAlreadyDeclared(identifier) => {
+                RuntimeError::VariableAlreadyDeclared { identifier, pos }
+            }
+            MemoryError::TypeMismatch { expected, found } => RuntimeError::TypeMismatch {
+                expected,
+                found,
+                pos,
+            },
+        }
+    }
+}
+
+impl RuntimeError {
     pub fn message(&self) -> String {
         match self {
             RuntimeError::VariableNotFound { identifier, .. } => {
-                format!("Variable '{}' not found", identifier.name())
+                format!("Variable '{}' not found", identifier.to_string())
             }
             RuntimeError::TypeMismatch {
                 expected, found, ..
@@ -67,6 +90,12 @@ impl RuntimeError {
                 )
             }
             RuntimeError::DivisionByZero { .. } => "Division by zero".to_string(),
+            RuntimeError::VariableAlreadyDeclared { identifier, .. } => {
+                format!(
+                    "Variable '{}' already declared in the current scope",
+                    identifier
+                )
+            }
             RuntimeError::Temp { message, .. } => message.clone(),
         }
     }
@@ -78,7 +107,8 @@ impl RuntimeError {
             | RuntimeError::UndefinedUnaryOperation { pos, .. }
             | RuntimeError::UndefinedBinaryOperation { pos, .. }
             | RuntimeError::DivisionByZero { pos, .. }
-            | RuntimeError::Temp { pos, .. } => *pos,
+            | RuntimeError::Temp { pos, .. }
+            | RuntimeError::VariableAlreadyDeclared { pos, .. } => *pos,
         };
 
         let lines: Vec<&str> = source_code.lines().collect();
