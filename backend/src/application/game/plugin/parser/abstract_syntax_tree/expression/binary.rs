@@ -1,7 +1,9 @@
+use std::fmt::Display;
+
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::{Token, TokenVariant},
-    parser::abstract_syntax_tree::expression::Expression,
+    parser::abstract_syntax_tree::{Positioned, expression::Expression},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -10,6 +12,26 @@ pub struct BinaryExpression {
     operator: BinaryOperator,
     right: Box<Expression>,
     pos: Position,
+}
+
+impl BinaryExpression {
+    pub fn left(&self) -> &Expression {
+        &self.left
+    }
+
+    pub fn operator(&self) -> &BinaryOperator {
+        &self.operator
+    }
+
+    pub fn right(&self) -> &Expression {
+        &self.right
+    }
+}
+
+impl Positioned for BinaryExpression {
+    fn position(&self) -> Position {
+        self.pos
+    }
 }
 
 #[derive(Debug, Clone, PartialEq)]
@@ -66,6 +88,28 @@ impl BinaryOperator {
             }
             BinaryOperator::Power => (101, 100),
         }
+    }
+}
+
+impl Display for BinaryOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let op_str = match self {
+            BinaryOperator::Addition => "+",
+            BinaryOperator::Subtraction => "-",
+            BinaryOperator::Multiplication => "*",
+            BinaryOperator::Division => "/",
+            BinaryOperator::Modulo => "%",
+            BinaryOperator::Power => "^",
+            BinaryOperator::LogicalAnd => "&&",
+            BinaryOperator::LogicalOr => "||",
+            BinaryOperator::Equal => "==",
+            BinaryOperator::NotEqual => "!=",
+            BinaryOperator::LessThan => "<",
+            BinaryOperator::LessThanOrEqual => "<=",
+            BinaryOperator::GreaterThan => ">",
+            BinaryOperator::GreaterThanOrEqual => ">=",
+        };
+        write!(f, "{}", op_str)
     }
 }
 

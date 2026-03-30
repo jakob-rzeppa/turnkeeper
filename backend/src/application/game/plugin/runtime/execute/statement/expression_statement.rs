@@ -1,9 +1,14 @@
-use crate::application::game::plugin::{parser::old_abstract_syntax_tree::statement::ExprStatement, runtime::RuntimeEnvironment};
-
+use crate::application::game::plugin::{
+    parser::abstract_syntax_tree::statement::expression::ExpressionStatement,
+    runtime::{RuntimeEnvironment, RuntimeError},
+};
 
 impl RuntimeEnvironment {
-    pub fn execute_expression_statement(&mut self, expression_stmt: &ExprStatement) -> Result<(), String> {
-        self.evaluate_expression(&expression_stmt.0)?;
+    pub fn execute_expression_statement(
+        &mut self,
+        expression_stmt: &ExpressionStatement,
+    ) -> Result<(), RuntimeError> {
+        self.evaluate_expression(expression_stmt.expression())?;
         Ok(())
     }
 }

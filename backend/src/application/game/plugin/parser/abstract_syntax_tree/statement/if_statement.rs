@@ -2,7 +2,8 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream, expression::Expression, statement::Statement,
+        Parsable, Positioned, TokenStream, error::ParsingError, expression::Expression,
+        statement::Statement,
     },
 };
 
@@ -28,6 +29,40 @@ pub struct ElseIfBranch {
     pos: Position,
 }
 
+impl IfStatement {
+    pub fn condition(&self) -> &Expression {
+        &self.condition
+    }
+
+    pub fn then_statements(&self) -> &[Statement] {
+        &self.then_branch
+    }
+
+    pub fn else_if_branches(&self) -> &[ElseIfBranch] {
+        &self.else_if_branches
+    }
+
+    pub fn else_branch(&self) -> Option<&ElseBranch> {
+        self.else_branch.as_ref()
+    }
+}
+
+impl ElseIfBranch {
+    pub fn condition(&self) -> &Expression {
+        &self.condition
+    }
+
+    pub fn then_statements(&self) -> &[Statement] {
+        &self.then_branch
+    }
+}
+
+impl ElseBranch {
+    pub fn then_statements(&self) -> &[Statement] {
+        &self.then_branch
+    }
+}
+
 impl Parsable for IfStatement {
     fn is_next(ts: &TokenStream) -> bool {
         is_token!(ts, TokenVariant::If)
@@ -39,19 +74,19 @@ impl Parsable for IfStatement {
         expect_token!(
             ts,
             TokenVariant::If,
-            "Expected 'if' keyword at the beginning of if statement"
+            "'if' keyword at the beginning of if statement"
         );
 
         let condition = expect_parse!(
             ts,
             Expression,
-            "Expected expression after 'if' keyword in if statement"
+            "expression after 'if' keyword in if statement"
         );
 
         expect_token!(
             ts,
             TokenVariant::LeftBrace,
-            "Expected '{' after condition in if statement"
+            "'{' after condition in if statement"
         );
 
         let mut then_branch = Vec::new();
@@ -62,7 +97,7 @@ impl Parsable for IfStatement {
         expect_token!(
             ts,
             TokenVariant::RightBrace,
-            "Expected '}' at the end of then branch in if statement"
+            "'}' at the end of then branch in if statement"
         );
 
         let mut else_if_branches = Vec::new();
@@ -77,13 +112,13 @@ impl Parsable for IfStatement {
                 let else_if_condition = expect_parse!(
                     ts,
                     Expression,
-                    "Expected expression after 'if' keyword in else if branch"
+                    "expression after 'if' keyword in else if branch"
                 );
 
                 expect_token!(
                     ts,
                     TokenVariant::LeftBrace,
-                    "Expected '{' after condition in else if branch"
+                    "'{' after condition in else if branch"
                 );
 
                 let mut else_if_then_branch = Vec::new();
@@ -94,7 +129,7 @@ impl Parsable for IfStatement {
                 expect_token!(
                     ts,
                     TokenVariant::RightBrace,
-                    "Expected '}' at the end of then branch in else if branch"
+                    "'}' at the end of then branch in else if branch"
                 );
 
                 else_if_branches.push(ElseIfBranch {
@@ -106,7 +141,7 @@ impl Parsable for IfStatement {
                 expect_token!(
                     ts,
                     TokenVariant::LeftBrace,
-                    "Expected '{' after 'else' keyword in else branch"
+                    "'{' after 'else' keyword in else branch"
                 );
 
                 let mut else_then_branch = Vec::new();
@@ -117,7 +152,7 @@ impl Parsable for IfStatement {
                 expect_token!(
                     ts,
                     TokenVariant::RightBrace,
-                    "Expected '}' at the end of else branch"
+                    "'}' at the end of else branch"
                 );
 
                 else_branch = Some(ElseBranch {
@@ -134,6 +169,24 @@ impl Parsable for IfStatement {
             else_branch,
             pos,
         })
+    }
+}
+
+impl Positioned for IfStatement {
+    fn position(&self) -> Position {
+        self.pos
+    }
+}
+
+impl Positioned for ElseBranch {
+    fn position(&self) -> Position {
+        self.pos
+    }
+}
+
+impl Positioned for ElseIfBranch {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

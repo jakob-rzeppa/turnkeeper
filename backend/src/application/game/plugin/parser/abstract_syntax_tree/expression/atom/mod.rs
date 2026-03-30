@@ -1,5 +1,6 @@
 use crate::application::game::plugin::parser::abstract_syntax_tree::{
-    Parsable, ParsingError, TokenStream,
+    Parsable, Positioned, TokenStream,
+    error::ParsingError,
     expression::atom::{
         function_call::FunctionCallExpressionAtom, literal::LiteralExpressionAtom,
         variable::VariableExpressionAtom,
@@ -41,10 +42,19 @@ impl Parsable for ExpressionAtom {
             Ok(ExpressionAtom::Variable(VariableExpressionAtom::parse(ts)?))
         } else {
             Err(ParsingError::SyntaxError {
-                message: "Expected literal, function call or variable in expression atom"
-                    .to_string(),
+                message: "literal, function call or variable in expression atom".to_string(),
                 pos,
             })
+        }
+    }
+}
+
+impl Positioned for ExpressionAtom {
+    fn position(&self) -> crate::application::game::plugin::common::Position {
+        match self {
+            ExpressionAtom::Literal(lit) => lit.position(),
+            ExpressionAtom::Variable(var) => var.position(),
+            ExpressionAtom::FunctionCall(func_call) => func_call.position(),
         }
     }
 }

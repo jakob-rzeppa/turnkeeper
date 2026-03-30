@@ -8,6 +8,12 @@ pub struct Identifier {
     name: String,
 }
 
+impl Identifier {
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+}
+
 impl Parsable for Identifier {
     fn is_next(ts: &TokenStream) -> bool {
         is_token!(ts, TokenVariant::Identifier(_))

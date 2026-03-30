@@ -2,7 +2,7 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream, atom::identifier::Identifier,
+        Parsable, Positioned, TokenStream, atom::identifier::Identifier, error::ParsingError,
     },
 };
 
@@ -10,6 +10,12 @@ use crate::application::game::plugin::{
 pub struct VariableExpressionAtom {
     identifier: Identifier,
     pos: Position,
+}
+
+impl VariableExpressionAtom {
+    pub fn identifier(&self) -> &Identifier {
+        &self.identifier
+    }
 }
 
 impl Parsable for VariableExpressionAtom {
@@ -20,9 +26,15 @@ impl Parsable for VariableExpressionAtom {
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
-        let identifier = expect_parse!(ts, Identifier, "Expected identifier");
+        let identifier = expect_parse!(ts, Identifier, "identifier");
 
         Ok(VariableExpressionAtom { identifier, pos })
+    }
+}
+
+impl Positioned for VariableExpressionAtom {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

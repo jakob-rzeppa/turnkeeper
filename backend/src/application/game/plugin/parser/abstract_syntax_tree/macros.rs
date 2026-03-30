@@ -36,7 +36,7 @@ macro_rules! nth_is_token {
 
 /// The macro is used to expect a specific token from the token stream. It checks if the next token matches the expected pattern and returns it if it does.
 ///
-/// Example usage: `expect_token!(tokens, TokenVariant::Let, "Expected 'let' keyword")` checks if the next token is of type `TokenVariant::Let` and returns it. If the token does not match, it returns a `ParsingError::UnexpectedToken` with a message and the position of the error. If there are no more tokens, it returns a `ParsingError::UnexpectedEOF` with a message.
+/// Example usage: `expect_token!(tokens, TokenVariant::Let, "'let' keyword")` checks if the next token is of type `TokenVariant::Let` and returns it. If the token does not match, it returns a `ParsingError::UnexpectedToken` with a message and the position of the error. If there are no more tokens, it returns a `ParsingError::UnexpectedEOF` with a message.
 macro_rules! expect_token {
     ($tokenstream:expr, $expected:pat, $expected_msg:expr) => {
         match $tokenstream.next() {
@@ -62,7 +62,7 @@ macro_rules! expect_token {
 
 /// Macro to expect and parse a specific type
 ///
-/// Usage: `let name = expect_parse!(tokens, index, Identifier, "Expected variable name")`
+/// Usage: `let name = expect_parse!(tokens, index, Identifier, "variable name")`
 macro_rules! expect_parse {
     ($tokenstream:expr, $expected_parse:ty, $expected_msg:expr) => {{
         <$expected_parse>::parse($tokenstream).map_err(|err| match err {

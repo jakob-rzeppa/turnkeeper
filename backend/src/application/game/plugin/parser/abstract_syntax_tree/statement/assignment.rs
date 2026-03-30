@@ -2,7 +2,8 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream, atom::identifier::Identifier, expression::Expression,
+        Parsable, Positioned, TokenStream, atom::identifier::Identifier, error::ParsingError,
+        expression::Expression,
     },
 };
 
@@ -11,6 +12,16 @@ pub struct AssignmentStatement {
     identifier: Identifier,
     value: Expression,
     pos: Position,
+}
+
+impl AssignmentStatement {
+    pub fn identifier(&self) -> &Identifier {
+        &self.identifier
+    }
+
+    pub fn value(&self) -> &Expression {
+        &self.value
+    }
 }
 
 impl Parsable for AssignmentStatement {
@@ -24,25 +35,25 @@ impl Parsable for AssignmentStatement {
         let identifier = expect_parse!(
             ts,
             Identifier,
-            "Expected identifier at the beginning of assignment statement"
+            "identifier at the beginning of assignment statement"
         );
 
         expect_token!(
             ts,
             TokenVariant::Assign,
-            "Expected '=' after identifier in assignment statement"
+            "'=' after identifier in assignment statement"
         );
 
         let value = expect_parse!(
             ts,
             Expression,
-            "Expected expression after '=' in assignment statement"
+            "expression after '=' in assignment statement"
         );
 
         expect_token!(
             ts,
             TokenVariant::Semicolon,
-            "Expected ';' at the end of assignment statement"
+            "';' at the end of assignment statement"
         );
 
         Ok(AssignmentStatement {
@@ -50,6 +61,12 @@ impl Parsable for AssignmentStatement {
             value,
             pos,
         })
+    }
+}
+
+impl Positioned for AssignmentStatement {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

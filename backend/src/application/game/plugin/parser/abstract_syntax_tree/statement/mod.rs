@@ -1,8 +1,10 @@
 use crate::application::game::plugin::parser::abstract_syntax_tree::{
-    Parsable, ParsingError, TokenStream,
+    Parsable, TokenStream,
+    error::ParsingError,
     statement::{
-        assignment::AssignmentStatement, if_statement::IfStatement,
-        variable_declaration::VariableDeclarationStatement, while_loop::WhileLoopStatement,
+        assignment::AssignmentStatement, expression::ExpressionStatement,
+        if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
+        while_loop::WhileLoopStatement,
     },
 };
 #[cfg(test)]
@@ -12,10 +14,11 @@ use crate::application::game::plugin::parser::abstract_syntax_tree::{
     statement::if_statement::{ElseBranch, ElseIfBranch},
 };
 
-mod assignment;
-mod if_statement;
-mod variable_declaration;
-mod while_loop;
+pub mod assignment;
+pub mod expression;
+pub mod if_statement;
+pub mod variable_declaration;
+pub mod while_loop;
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Statement {
@@ -23,6 +26,7 @@ pub enum Statement {
     Assignment(AssignmentStatement),
     If(IfStatement),
     WhileLoop(WhileLoopStatement),
+    Expression(ExpressionStatement),
 }
 
 impl Parsable for Statement {
@@ -44,6 +48,8 @@ impl Parsable for Statement {
             ))
         } else if AssignmentStatement::is_next(ts) {
             Ok(Statement::Assignment(AssignmentStatement::parse(ts)?))
+        } else if ExpressionStatement::is_next(ts) {
+            Ok(Statement::Expression(ExpressionStatement::parse(ts)?))
         } else {
             Err(ParsingError::SyntaxError {
                 message: "Invalid statement".to_string(),
@@ -103,5 +109,9 @@ impl Statement {
         Statement::WhileLoop(WhileLoopStatement::new_while_loop(
             condition, body, line, column,
         ))
+    }
+
+    pub fn new_expression_statement(expression: Expression, line: usize, column: usize) -> Self {
+        Statement::Expression(ExpressionStatement::new(expression, line, column))
     }
 }

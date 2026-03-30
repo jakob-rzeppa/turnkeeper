@@ -1,7 +1,7 @@
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{Parsable, ParsingError, TokenStream},
+    parser::abstract_syntax_tree::{Parsable, Positioned, TokenStream, error::ParsingError},
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -16,6 +16,12 @@ pub enum LiteralValue {
     Float(f64),
     String(String),
     Bool(bool),
+}
+
+impl LiteralExpressionAtom {
+    pub fn value(&self) -> &LiteralValue {
+        &self.value
+    }
 }
 
 impl Parsable for LiteralExpressionAtom {
@@ -38,7 +44,7 @@ impl Parsable for LiteralExpressionAtom {
                     TokenVariant::BoolLiteral(val) => LiteralValue::Bool(val.clone()),
                     _ => {
                         return Err(ParsingError::UnexpectedToken {
-                            expected: "Expected a literal".to_string(),
+                            expected: "a literal".to_string(),
                             found: token.variant.clone(),
                             pos: token.pos,
                         });
@@ -48,9 +54,15 @@ impl Parsable for LiteralExpressionAtom {
                 Ok(Self { value, pos })
             }
             None => Err(ParsingError::UnexpectedEOF {
-                expected: "Expected a literal".to_string(),
+                expected: "a literal".to_string(),
             }),
         }
+    }
+}
+
+impl Positioned for LiteralExpressionAtom {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

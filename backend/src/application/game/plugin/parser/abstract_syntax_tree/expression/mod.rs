@@ -1,7 +1,8 @@
 use crate::application::game::plugin::{
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream,
+        Parsable, Positioned, TokenStream,
+        error::ParsingError,
         expression::{
             atom::ExpressionAtom,
             binary::{BinaryExpression, BinaryOperator},
@@ -43,7 +44,7 @@ impl Expression {
             expect_token!(
                 ts,
                 TokenVariant::RightParen,
-                "Expected ')' after parenthesized expression"
+                "')' after parenthesized expression"
             );
 
             expr
@@ -56,12 +57,12 @@ impl Expression {
 
             return match next {
                 Some(t) => Err(ParsingError::UnexpectedToken {
-                    expected: "Expected identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
+                    expected: "identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
                     found: t.variant.clone(),
                     pos,
                 }),
                 None => Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
+                    expected: "identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
                 }),
             };
         };
@@ -88,6 +89,16 @@ impl Expression {
         }
 
         Ok(left)
+    }
+}
+
+impl Positioned for Expression {
+    fn position(&self) -> crate::application::game::plugin::common::Position {
+        match self {
+            Expression::Atom(atom) => atom.position(),
+            Expression::Unary(unary) => unary.position(),
+            Expression::Binary(binary) => binary.position(),
+        }
     }
 }
 

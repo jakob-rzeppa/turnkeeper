@@ -2,7 +2,8 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream, expression::Expression, statement::Statement,
+        Parsable, Positioned, TokenStream, error::ParsingError, expression::Expression,
+        statement::Statement,
     },
 };
 
@@ -13,6 +14,16 @@ pub struct WhileLoopStatement {
     pos: Position,
 }
 
+impl WhileLoopStatement {
+    pub fn condition(&self) -> &Expression {
+        &self.condition
+    }
+
+    pub fn body(&self) -> &[Statement] {
+        &self.body
+    }
+}
+
 impl Parsable for WhileLoopStatement {
     fn is_next(ts: &TokenStream) -> bool {
         is_token!(ts, TokenVariant::While)
@@ -21,14 +32,14 @@ impl Parsable for WhileLoopStatement {
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
-        expect_token!(ts, TokenVariant::While, "Expected 'while' keyword");
+        expect_token!(ts, TokenVariant::While, "'while' keyword");
 
         let condition = Expression::parse(ts)?;
 
         expect_token!(
             ts,
             TokenVariant::LeftBrace,
-            "Expected '{' after while condition"
+            "'{' after while condition"
         );
 
         let mut body = Vec::new();
@@ -39,7 +50,7 @@ impl Parsable for WhileLoopStatement {
         expect_token!(
             ts,
             TokenVariant::RightBrace,
-            "Expected '}' to close while loop body"
+            "'}' to close while loop body"
         );
 
         Ok(WhileLoopStatement {
@@ -47,6 +58,12 @@ impl Parsable for WhileLoopStatement {
             body,
             pos,
         })
+    }
+}
+
+impl Positioned for WhileLoopStatement {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

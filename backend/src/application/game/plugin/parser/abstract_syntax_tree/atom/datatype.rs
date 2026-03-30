@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use crate::application::game::plugin::{
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{Parsable, ParsingError, TokenStream},
@@ -9,6 +11,18 @@ pub enum Datatype {
     Float,
     String,
     Boolean,
+}
+
+impl Display for Datatype {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let type_str = match self {
+            Datatype::Integer => "int",
+            Datatype::Float => "float",
+            Datatype::String => "string",
+            Datatype::Boolean => "bool",
+        };
+        write!(f, "{}", type_str)
+    }
 }
 
 impl Parsable for Datatype {
@@ -24,7 +38,7 @@ impl Parsable for Datatype {
             Some(token) => token,
             None => {
                 return Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected datatype".to_string(),
+                    expected: "datatype".to_string(),
                 });
             }
         };
@@ -35,7 +49,7 @@ impl Parsable for Datatype {
             TokenVariant::StringType => Ok(Datatype::String),
             TokenVariant::BoolType => Ok(Datatype::Boolean),
             _ => Err(ParsingError::UnexpectedToken {
-                expected: "Expected datatype".to_string(),
+                expected: "datatype".to_string(),
                 found: token.variant.clone(),
                 pos: token.pos,
             }),

@@ -2,8 +2,9 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream,
+        Parsable, Positioned, TokenStream,
         atom::{datatype::Datatype, identifier::Identifier},
+        error::ParsingError,
         expression::Expression,
     },
 };
@@ -14,6 +15,20 @@ pub struct VariableDeclarationStatement {
     var_type: Datatype,
     value: Expression,
     pos: Position,
+}
+
+impl VariableDeclarationStatement {
+    pub fn identifier(&self) -> &Identifier {
+        &self.identifier
+    }
+
+    pub fn datatype(&self) -> &Datatype {
+        &self.var_type
+    }
+
+    pub fn value(&self) -> &Expression {
+        &self.value
+    }
 }
 
 impl Parsable for VariableDeclarationStatement {
@@ -27,43 +42,39 @@ impl Parsable for VariableDeclarationStatement {
         expect_token!(
             ts,
             TokenVariant::Let,
-            "Expected 'let' keyword at the beginning of variable declaration"
+            "'let' keyword at the beginning of variable declaration"
         );
 
         let identifier = expect_parse!(
             ts,
             Identifier,
-            "Expected identifier after 'let' keyword in variable declaration"
+            "identifier after 'let' keyword in variable declaration"
         );
 
         expect_token!(
             ts,
             TokenVariant::Colon,
-            "Expected ':' after identifier in variable declaration"
+            "':' after identifier in variable declaration"
         );
 
-        let var_type = expect_parse!(
-            ts,
-            Datatype,
-            "Expected datatype after ':' in variable declaration"
-        );
+        let var_type = expect_parse!(ts, Datatype, "datatype after ':' in variable declaration");
 
         expect_token!(
             ts,
-            TokenVariant::EqualEqual,
-            "Expected '=' after datatype in variable declaration"
+            TokenVariant::Assign,
+            "'=' after datatype in variable declaration"
         );
 
         let value = expect_parse!(
             ts,
             Expression,
-            "Expected expression after '=' in variable declaration"
+            "expression after '=' in variable declaration"
         );
 
         expect_token!(
             ts,
             TokenVariant::Semicolon,
-            "Expected ';' at the end of variable declaration"
+            "';' at the end of variable declaration"
         );
 
         Ok(VariableDeclarationStatement {
@@ -72,6 +83,12 @@ impl Parsable for VariableDeclarationStatement {
             value,
             pos,
         })
+    }
+}
+
+impl Positioned for VariableDeclarationStatement {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

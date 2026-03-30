@@ -1,8 +1,11 @@
+use std::fmt::Display;
+
 use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream,
+        Parsable, Positioned, TokenStream,
+        error::ParsingError,
         expression::{Expression, atom::ExpressionAtom},
     },
 };
@@ -20,6 +23,16 @@ pub enum UnaryOperator {
     LogicalNot,
 }
 
+impl UnaryExpression {
+    pub fn operator(&self) -> &UnaryOperator {
+        &self.operator
+    }
+
+    pub fn operand(&self) -> &Expression {
+        &self.operand
+    }
+}
+
 impl Parsable for UnaryExpression {
     fn is_next(ts: &TokenStream) -> bool {
         is_token!(ts, TokenVariant::Minus) || is_token!(ts, TokenVariant::Not)
@@ -33,14 +46,14 @@ impl Parsable for UnaryExpression {
             Some(t) if t.variant == TokenVariant::Not => UnaryOperator::LogicalNot,
             Some(t) => {
                 return Err(ParsingError::UnexpectedToken {
-                    expected: "Expected unary operator".to_string(),
+                    expected: "unary operator".to_string(),
                     found: t.variant.clone(),
                     pos,
                 });
             }
             None => {
                 return Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected unary operator".to_string(),
+                    expected: "unary operator".to_string(),
                 });
             }
         };
@@ -49,16 +62,12 @@ impl Parsable for UnaryExpression {
         if is_token!(ts, TokenVariant::LeftParen) {
             ts.next(); // consume '('
 
-            let expr = expect_parse!(
-                ts,
-                Expression,
-                "Expected expression after '(' in unary operator"
-            );
+            let expr = expect_parse!(ts, Expression, "expression after '(' in unary operator");
 
             expect_token!(
                 ts,
                 TokenVariant::RightParen,
-                "Expected ')' after parenthesized expression"
+                "')' after parenthesized expression"
             );
 
             return Ok(UnaryExpression {
@@ -72,7 +81,7 @@ impl Parsable for UnaryExpression {
         let operant = expect_parse!(
             ts,
             ExpressionAtom,
-            "Expected expression atom or '(' after unary operator"
+            "expression atom or '(' after unary operator"
         );
 
         Ok(UnaryExpression {
@@ -80,6 +89,21 @@ impl Parsable for UnaryExpression {
             operand: Box::new(Expression::Atom(operant)),
             pos,
         })
+    }
+}
+
+impl Display for UnaryOperator {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnaryOperator::Negation => write!(f, "-"),
+            UnaryOperator::LogicalNot => write!(f, "!"),
+        }
+    }
+}
+
+impl Positioned for UnaryExpression {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

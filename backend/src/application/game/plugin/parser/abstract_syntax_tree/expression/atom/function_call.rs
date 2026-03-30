@@ -2,7 +2,8 @@ use crate::application::game::plugin::{
     common::Position,
     lexer::token::TokenVariant,
     parser::abstract_syntax_tree::{
-        Parsable, ParsingError, TokenStream, atom::identifier::Identifier, expression::Expression,
+        Parsable, Positioned, TokenStream, atom::identifier::Identifier, error::ParsingError,
+        expression::Expression,
     },
 };
 
@@ -24,13 +25,13 @@ impl Parsable for FunctionCallExpressionAtom {
         let identifier = expect_parse!(
             ts,
             Identifier,
-            "Expected function name (identifier) at the beginning of function call"
+            "function name (identifier) at the beginning of function call"
         );
 
         expect_token!(
             ts,
             TokenVariant::LeftParen,
-            "Expected '(' after function name in function call"
+            "'(' after function name in function call"
         );
 
         let mut arguments = Vec::new();
@@ -39,7 +40,7 @@ impl Parsable for FunctionCallExpressionAtom {
                 let argument = expect_parse!(
                     ts,
                     Expression,
-                    "Expected expression as argument in function call"
+                    "expression as argument in function call"
                 );
                 arguments.push(argument);
 
@@ -50,7 +51,7 @@ impl Parsable for FunctionCallExpressionAtom {
                 expect_token!(
                     ts,
                     TokenVariant::Comma,
-                    "Expected ',' between arguments in function call"
+                    "',' between arguments in function call"
                 );
             }
         }
@@ -58,7 +59,7 @@ impl Parsable for FunctionCallExpressionAtom {
         expect_token!(
             ts,
             TokenVariant::RightParen,
-            "Expected ')' at the end of function call"
+            "')' at the end of function call"
         );
 
         Ok(FunctionCallExpressionAtom {
@@ -66,6 +67,12 @@ impl Parsable for FunctionCallExpressionAtom {
             arguments,
             pos,
         })
+    }
+}
+
+impl Positioned for FunctionCallExpressionAtom {
+    fn position(&self) -> Position {
+        self.pos
     }
 }
 

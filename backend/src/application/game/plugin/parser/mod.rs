@@ -1,28 +1,31 @@
-use crate::application::game::plugin::{lexer};
+use crate::application::game::plugin::{
+    lexer::tokenize,
+    parser::abstract_syntax_tree::{Parsable, TokenStream, error::ParsingError, root::Root},
+};
 
 pub mod abstract_syntax_tree;
 
-pub fn parse_source_code(code: &str) -> Result<(), String> {
-    let tokens = lexer::tokenize(code);
+pub fn parse_source_code(source: &str) -> Result<Root, ParsingError> {
+    let tokens = tokenize(source);
+    let mut token_stream = TokenStream::new(tokens);
 
-    // Root::parse(tokens)
-    Ok(())
+    let root = Root::parse(&mut token_stream)?;
+
+    Ok(root)
 }
 
-// #[cfg(test)]
-// mod tests {
-//     use super::*;
+#[cfg(test)]
+mod tests {
+    use super::*;
 
-//     #[test]
-//     fn test_parse() {
-//         let code = r#"
-//             let x: int = 42;
-//             x = x + 1;
-//         "#;
+    #[test]
+    fn test_parse() {
+        let code = "let x: int = 42;\nx = x + 4;";
 
-//         let result = parse_source_code(code);
-//         println!("{:#?}", result);
-//         assert!(result.is_ok());
-//         println!("{:#?}", result.unwrap());
-//     }
-// }
+        let result = parse_source_code(code);
+        match &result {
+            Ok(root) => println!("{:#?}", root),
+            Err(err) => println!("{}", err.context_message(code)),
+        }
+    }
+}
