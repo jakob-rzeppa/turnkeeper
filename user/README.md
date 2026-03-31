@@ -1,5 +1,14 @@
-# Vue 3 + TypeScript + Vite
+# User Frontend
 
-This template should help get you started developing with Vue 3 and TypeScript in Vite. The template uses Vue 3 `<script setup>` SFCs, check out the [script setup docs](https://v3.vuejs.org/api/sfc-script-setup.html#sfc-script-setup) to learn more.
+This app is the player/user client for Turnkeeper.
 
-Learn more about the recommended Project Setup and IDE Support in the [Vue Docs TypeScript Guide](https://vuejs.org/guide/typescript/overview.html#project-setup).
+## Run
+
+```bash
+npm install
+npm run dev
+```
+
+## Configuration
+
+The app targets the backend API running locally on `http://localhost:8080` by default via the API layer.

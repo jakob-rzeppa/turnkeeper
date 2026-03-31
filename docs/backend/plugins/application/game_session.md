@@ -1,5 +1,12 @@
 # Game Session
 
+See also:
+
+- [Plugin Docs Index](../README.md)
+- [Plugin Overview](../OVERVIEW.md)
+- [Grammar](../GRAMMAR.md)
+- [Pages](../PAGES.md)
+
 ```mermaid
 classDiagram
 direction BT
@@ -44,3 +51,8 @@ sequenceDiagram
     note over GameRuntime : Overwrite the current game with the updated
     GameRuntime -->>- GameSession :
 ```
+
+## Related Project Docs
+
+- [Main Documentation Index](../../README.md)
+- [Architecture](../../ARCHITECTURE.md)
