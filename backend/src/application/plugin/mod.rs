@@ -1,6 +1,7 @@
 use crate::application::plugin::parser::parse_source_code;
 
 mod common;
+mod debugger;
 mod lexer;
 mod parser;
 mod runtime;
