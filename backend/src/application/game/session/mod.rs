@@ -18,9 +18,10 @@
 //!    message (or the connection is otherwise dropped), at which point the
 //!    stored connection handle is cleared.
 
+use crate::application::common::connection::ConnectionContract;
 use crate::application::game::commands::GameCommand;
-use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
-use crate::application::game::dto::OutgoingConnectionMessageDto;
+use crate::application::game::contracts::GameRepositoryContract;
+use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::application::game::runtime::GameRuntime;
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::user_connection_state::UserConnectionState;
@@ -45,7 +46,7 @@ const TICKET_TTL_SECS: u64 = 30;
 /// from the GM and multiple user players.
 pub struct GameSession<Connection, GameRepository>
 where
-    Connection: ConnectionContract,
+    Connection: ConnectionContract<IncomingConnectionMessageDto, OutgoingConnectionMessageDto>,
     GameRepository: GameRepositoryContract,
 {
     /// The live game runtime that holds all current game state.
@@ -60,7 +61,7 @@ where
 
 impl<Connection, GameRepository> GameSession<Connection, GameRepository>
 where
-    Connection: ConnectionContract,
+    Connection: ConnectionContract<IncomingConnectionMessageDto, OutgoingConnectionMessageDto>,
     GameRepository: GameRepositoryContract,
 {
     /// Creates a new `GameSession` for the given game.
@@ -169,7 +170,7 @@ where
 
 impl<Connection, GameRepository> Clone for GameSession<Connection, GameRepository>
 where
-    Connection: ConnectionContract,
+    Connection: ConnectionContract<IncomingConnectionMessageDto, OutgoingConnectionMessageDto>,
     GameRepository: GameRepositoryContract,
 {
     fn clone(&self) -> Self {

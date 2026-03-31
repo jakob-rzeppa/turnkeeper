@@ -113,15 +113,3 @@ pub trait GameRepositoryContract {
     /// Ensure the game is not active (no WebSocket connections) before deletion.
     fn delete(&self, game_id: Id) -> impl Future<Output = Result<(), GameError>> + Send;
 }
-
-/// Contract for a bidirectional WebSocket connection.
-///
-/// Abstracts the underlying transport so the session logic can be tested
-/// without a real WebSocket.
-pub trait ConnectionContract {
-    /// Receives the next message from the connection.
-    fn recv(&self) -> impl Future<Output = IncomingConnectionMessageDto> + Send;
-
-    /// Sends a JSON string to the connected client.
-    fn send(&self, msg: OutgoingConnectionMessageDto) -> impl Future<Output = ()> + Send;
-}

@@ -15,7 +15,6 @@ use crate::{
 pub enum IncomingConnectionMessageDto {
     Command(GameCommand),
     Unknown,
-    Close,
 }
 
 pub enum OutgoingConnectionMessageDto {

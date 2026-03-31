@@ -3,8 +3,8 @@
 //! Implements [`ConnectionContract`] over an Axum WebSocket, splitting the
 //! socket into independent send and receive halves protected by `Mutex`.
 
+use crate::application::common::connection::{ConnectionContract, ConnectionMessage};
 use crate::application::game::commands::GameCommand;
-use crate::application::game::contracts::ConnectionContract;
 use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use axum::extract::ws::{Message, WebSocket};
 use futures_util::stream::{SplitSink, SplitStream};
@@ -14,12 +14,12 @@ use tokio::sync::Mutex;
 /// A WebSocket connection implementing [`ConnectionContract`].
 ///
 /// Used for both GM and user connections.
-pub struct WebSocketConnection {
+pub struct GameWebSocketConnection {
     sender: Mutex<SplitSink<WebSocket, Message>>,
     receiver: Mutex<SplitStream<WebSocket>>,
 }
 
-impl WebSocketConnection {
+impl GameWebSocketConnection {
     /// Creates a new connection by splitting the given WebSocket.
     pub fn new(socket: WebSocket) -> Self {
         let (sender, receiver) = socket.split();
@@ -30,8 +30,10 @@ impl WebSocketConnection {
     }
 }
 
-impl ConnectionContract for WebSocketConnection {
-    async fn recv(&self) -> IncomingConnectionMessageDto {
+impl ConnectionContract<IncomingConnectionMessageDto, OutgoingConnectionMessageDto>
+    for GameWebSocketConnection
+{
+    async fn recv(&self) -> ConnectionMessage<IncomingConnectionMessageDto> {
         let mut receiver = self.receiver.lock().await;
 
         match receiver.next().await {
@@ -39,14 +41,13 @@ impl ConnectionContract for WebSocketConnection {
                 let command = serde_json::from_str::<GameCommand>(&msg);
 
                 if let Ok(command) = command {
-                    IncomingConnectionMessageDto::Command(command)
+                    ConnectionMessage::Message(IncomingConnectionMessageDto::Command(command))
                 } else {
                     println!("Received unknown command: {}", msg);
-                    IncomingConnectionMessageDto::Unknown
+                    ConnectionMessage::Message(IncomingConnectionMessageDto::Unknown)
                 }
             }
-            Some(Ok(Message::Close(_))) => IncomingConnectionMessageDto::Close,
-            _ => IncomingConnectionMessageDto::Unknown,
+            _ => ConnectionMessage::Close,
         }
     }
 

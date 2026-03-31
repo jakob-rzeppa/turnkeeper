@@ -1,12 +1,12 @@
+use crate::AppState;
+use crate::domain::game::value_objects::id::Id;
+use crate::infrastructure::error::HttpError;
+use crate::infrastructure::websocket::game_connection::GameWebSocketConnection;
 use axum::extract::{Path, Query, State, WebSocketUpgrade};
 use axum::http::HeaderMap;
 use axum::response::Response;
 use backend_derive::JsonResponse;
 use serde::{Deserialize, Serialize};
-use crate::AppState;
-use crate::domain::game::value_objects::id::Id;
-use crate::infrastructure::error::HttpError;
-use crate::infrastructure::websocket::gm_connection::WebSocketConnection;
 
 #[derive(Deserialize)]
 pub struct GmWsQueryParams {
@@ -23,18 +23,20 @@ pub async fn gm_websocket_handler(
     Query(params): Query<GmWsQueryParams>,
     ws: WebSocketUpgrade,
 ) -> Result<Response, HttpError> {
-    let id = Id::parse_str(&id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
-    let ticket = params.ticket.ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
+    let id =
+        Id::parse_str(&id).map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
+    let ticket = params
+        .ticket
+        .ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
 
     Ok(ws.on_upgrade(async move |socket| {
-        let gm_conn = WebSocketConnection::new(socket);
+        let gm_conn = GameWebSocketConnection::new(socket);
         let session = state.game_session_manager.get_session(id).await;
         if let Some(session) = session {
             let _ = session.gm_connect(ticket, gm_conn).await;
         }
     }))
 }
-
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct GmWsTicketResponse {
@@ -52,7 +54,10 @@ pub async fn gm_websocket_ticket(
     let game_id = Id::parse_str(&game_id)
         .map_err(|_| HttpError::BadRequest("Invalid game id".to_string()))?;
 
-    let session = state.game_session_manager.get_or_create_session(game_id, state.clone()).await?;
+    let session = state
+        .game_session_manager
+        .get_or_create_session(game_id, state.clone())
+        .await?;
 
     let ticket = session.gm_pre_connect().await?;
 

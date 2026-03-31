@@ -2,18 +2,19 @@
 //!
 //! Implements the GM connection lifecycle on [`GameSession`]
 
-use std::time::Instant;
-use uuid::Uuid;
-use crate::application::game::contracts::{ConnectionContract, GameRepositoryContract};
-use crate::application::game::dto::IncomingConnectionMessageDto;
+use crate::application::common::connection::{ConnectionContract, ConnectionMessage};
+use crate::application::game::contracts::GameRepositoryContract;
+use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::application::game::session::gm_connection_state::GmConnectionState;
 use crate::application::game::session::{GameSession, TICKET_TTL_SECS};
 use crate::domain::game::error::{GameError, GameErrorKind};
+use std::time::Instant;
+use uuid::Uuid;
 
 impl<Connection, GameRepository> GameSession<Connection, GameRepository>
 where
-    Connection: ConnectionContract,
-    GameRepository: GameRepositoryContract
+    Connection: ConnectionContract<IncomingConnectionMessageDto, OutgoingConnectionMessageDto>,
+    GameRepository: GameRepositoryContract,
 {
     /// Creates a single-use GM connection ticket.
     ///
@@ -28,7 +29,11 @@ where
         let mut gm_connection_guard = self.gm_connection.write().await;
 
         // Opportunistically clean up expired pending connection
-        if let GmConnectionState::Pending { ref ticket_created_at, .. } = *gm_connection_guard {
+        if let GmConnectionState::Pending {
+            ref ticket_created_at,
+            ..
+        } = *gm_connection_guard
+        {
             if ticket_created_at.elapsed().as_secs() >= TICKET_TTL_SECS {
                 *gm_connection_guard = GmConnectionState::None;
             }
@@ -43,9 +48,13 @@ where
                     ticket_created_at: Instant::now(),
                 };
                 Ok(ticket)
-            },
-            GmConnectionState::Pending { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
-            GmConnectionState::Connected { .. } => Err(GameError::new(GameErrorKind::GmAlreadyConnected)),
+            }
+            GmConnectionState::Pending { .. } => {
+                Err(GameError::new(GameErrorKind::GmAlreadyConnected))
+            }
+            GmConnectionState::Connected { .. } => {
+                Err(GameError::new(GameErrorKind::GmAlreadyConnected))
+            }
         }
     }
 
@@ -59,7 +68,11 @@ where
     ///
     /// This method returns only after the connection is closed. Only one GM
     /// connection may be active per session at a time.
-    pub async fn gm_connect(&self, connection_ticket: String, connection: Connection) -> Result<(), GameError> {
+    pub async fn gm_connect(
+        &self,
+        connection_ticket: String,
+        connection: Connection,
+    ) -> Result<(), GameError> {
         let mut gm_connection_guard = self.gm_connection.write().await;
 
         gm_connection_guard.upgrade_pending_connection(connection_ticket, connection)?;
@@ -85,7 +98,9 @@ where
             let msg = conn.recv().await;
 
             match msg {
-                IncomingConnectionMessageDto::Command(command) => self.handle_command(command, None).await,
+                ConnectionMessage::Message(IncomingConnectionMessageDto::Command(command)) => {
+                    self.handle_command(command, None).await
+                }
                 _ => break,
             }
         }
