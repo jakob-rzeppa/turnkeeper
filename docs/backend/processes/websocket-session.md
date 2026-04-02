@@ -1,0 +1,56 @@
+# Websocket Session
+
+### WsConnection
+
+Using the game ws connection as an example - it works the same for the other ws connections.
+
+The WsSessionManager is shared between the websocket use cases, since every one needs to get the user and entries in the WsSessionManager do not interfere with each other.
+
+#### Get the ticket
+
+Js Websockets do not support headers. We don't want to send the users jwt in the url, so we use a ticket endpoint. It serves the purpose of authorizing the user and creating a short-lived ticket used to connect to the websocket.
+
+```mermaid
+sequenceDiagram
+    actor f as Frontend
+    participant ws_t as game_ws_ticket (axios HTTP Endpoint)
+    participant wsm as WsSessionManager
+
+    f ->> ws_t : HTTP /game/ws/ticket
+    note over ws_t, f : Authentication via middleware
+    ws_t ->> wsm : create_ticket(user_id)
+    wsm ->> wsm : save jwt
+    wsm -->> ws_t : ticket
+    ws_t -->> f : ticket
+```
+
+The ticket and corresponding information (user information) is saved in the WsSessionManager to be used after the connect.
+
+#### Connect
+
+```mermaid
+sequenceDiagram
+    actor f as Frontend
+    participant ws_c as game_ws_connect (axios WS Endpoint)
+    participant wsm as WsSessionManager
+    participant gsm as GameSessionManager
+
+    f ->> ws_c : WS /game/ws?ticket=<ticket>
+    ws_c ->> wsm : connect(ticket)
+    wsm -->> ws_c : user
+
+    ws_c ->> gsm : connect_to_game(user_id)
+
+    alt if not exists
+    create participant gs as GameSession
+    gsm ->> gs : create
+    end
+    gsm ->> gs : connect_user(user_id)
+    gs -->> gsm : commandChannelSender, gameStateWatchReceiver
+
+    gsm -->> ws_c : commandChannelSender, gameStateWatchReceiver
+
+    note over ws_c, gs : now the websocket session can talk to the game session
+    ws_c -->> gs : command
+    gs -->> ws_c : game state
+```
