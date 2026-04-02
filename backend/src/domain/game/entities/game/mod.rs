@@ -19,6 +19,7 @@ mod turn_commands;
 pub struct Game {
     id: Id,
     name: String,
+    gm_user_id: Id,
 
     players: Vec<Player>,
     tradables: Vec<Tradable>,
@@ -31,10 +32,11 @@ pub struct Game {
 }
 
 impl Game {
-    pub fn new(id: Id, name: String) -> Self {
+    pub fn new(id: Id, name: String, gm_user_id: Id) -> Self {
         Self {
             id,
             name,
+            gm_user_id,
             players: Vec::new(),
             tradables: Vec::new(),
             round_number: 0,

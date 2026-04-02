@@ -13,9 +13,9 @@ pub struct GameRuntime {
 }
 
 impl GameRuntime {
-    pub fn new(id: Id, name: String) -> Self {
+    pub fn new(id: Id, name: String, gm_user_id: Id) -> Self {
         Self {
-            game: Game::new(id, name),
+            game: Game::new(id, name, gm_user_id),
         }
     }
 

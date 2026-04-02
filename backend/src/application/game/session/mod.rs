@@ -80,7 +80,11 @@ where
     ) -> Result<Self, GameError> {
         let game_metadata = game_repository.get_metadata_by_id(game_id).await?;
 
-        let mut runtime = GameRuntime::new(game_metadata.id, game_metadata.name);
+        let mut runtime = GameRuntime::new(
+            game_metadata.id,
+            game_metadata.name,
+            game_metadata.gm_user_id,
+        );
 
         // Apply all past commands to reconstruct the current game state
         let past_commands = game_repository.get_game_history(game_id).await?;

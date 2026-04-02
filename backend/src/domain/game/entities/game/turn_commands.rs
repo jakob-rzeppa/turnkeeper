@@ -1,6 +1,6 @@
+use super::Game;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::value_objects::id::Id;
-use super::Game;
 
 impl Game {
     pub fn next_turn(&mut self) {
@@ -31,7 +31,10 @@ impl Game {
     }
 
     pub fn skip_turn_to_player(&mut self, player_id: Id) -> Result<(), GameError> {
-        let new_index = self.players.iter().position(|p| p.id() == &player_id)
+        let new_index = self
+            .players
+            .iter()
+            .position(|p| p.id() == &player_id)
             .ok_or_else(|| GameError::new(GameErrorKind::PlayerNotFound))?;
 
         if new_index < self.current_player_index {
@@ -50,7 +53,7 @@ mod tests {
 
     #[test]
     fn text_next_turn() {
-        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
         let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
         let player_id_2 = Id::new();
@@ -79,7 +82,7 @@ mod tests {
 
     #[test]
     fn text_prev_turn() {
-        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
         let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
         let player_id_2 = Id::new();
@@ -118,7 +121,7 @@ mod tests {
 
     #[test]
     fn text_skip_turn_to_player() {
-        let mut game = Game::new(Id::new(), "test-game".to_string());
+        let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
         let player_id_1 = Id::new();
         game.add_player(player_id_1).unwrap();
         let player_id_2 = Id::new();

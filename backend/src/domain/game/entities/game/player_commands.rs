@@ -1,7 +1,7 @@
+use super::Game;
 use crate::domain::game::entities::player::Player;
 use crate::domain::game::error::{GameError, GameErrorKind};
 use crate::domain::game::value_objects::id::Id;
-use super::Game;
 
 impl Game {
     /// Adds a new player to the game with the specified ID.
@@ -65,7 +65,9 @@ impl Game {
     /// The user is not validated here. If a user doesn't exist, it will be displayed as "User not found" in the UI, but it won't cause an error at this stage, since we don't care about the user details.
     pub fn attach_user_to_player(&mut self, user_id: Id, player_id: Id) -> Result<(), GameError> {
         if self.players.iter().any(|p| p.user_id() == Some(user_id)) {
-            return Err(GameError::new(GameErrorKind::UserAlreadyAttachedToAnotherPlayer));
+            return Err(GameError::new(
+                GameErrorKind::UserAlreadyAttachedToAnotherPlayer,
+            ));
         }
 
         if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
@@ -96,7 +98,7 @@ mod tests {
 
         #[test]
         fn test_add_player() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id = Id::new();
 
             assert!(game.add_player(player_id).is_ok());
@@ -107,7 +109,7 @@ mod tests {
 
         #[test]
         fn test_add_duplicate_player_fails() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id = Id::new();
 
             assert!(game.add_player(player_id).is_ok());
@@ -125,15 +127,19 @@ mod tests {
 
         #[test]
         fn test_add_player_with_tradables() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let tradable_id = Id::new();
-            game.add_tradable(tradable_id, "Gold".to_string(), 100.0).unwrap();
+            game.add_tradable(tradable_id, "Gold".to_string(), 100.0)
+                .unwrap();
 
             let player_id = Id::new();
             assert!(game.add_player(player_id).is_ok());
 
             assert_eq!(game.players.len(), 1);
-            assert_eq!(game.tradables[0].values().get(&player_id.to_string()), Some(&100.0));
+            assert_eq!(
+                game.tradables[0].values().get(&player_id.to_string()),
+                Some(&100.0)
+            );
         }
     }
 
@@ -142,7 +148,7 @@ mod tests {
 
         #[test]
         fn test_change_player_order() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id_1 = Id::new();
             let player_id_2 = Id::new();
             let player_id_3 = Id::new();
@@ -151,7 +157,8 @@ mod tests {
             game.add_player(player_id_2).unwrap();
             game.add_player(player_id_3).unwrap();
 
-            game.change_player_order(vec![player_id_3, player_id_1, player_id_2]).unwrap();
+            game.change_player_order(vec![player_id_3, player_id_1, player_id_2])
+                .unwrap();
 
             assert_eq!(game.players[0].id(), &player_id_3);
             assert_eq!(game.players[1].id(), &player_id_1);
@@ -160,7 +167,7 @@ mod tests {
 
         #[test]
         fn test_change_player_order_fails_with_wrong_count() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id_1 = Id::new();
             let player_id_2 = Id::new();
             let player_id_3 = Id::new();
@@ -175,7 +182,7 @@ mod tests {
 
         #[test]
         fn test_change_player_order_fails_with_duplicate_ids() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id_1 = Id::new();
             let player_id_2 = Id::new();
 
@@ -188,7 +195,7 @@ mod tests {
 
         #[test]
         fn test_change_player_order_fails_with_unknown_ids() {
-            let mut game = Game::new(Id::new(), "test-game".to_string());
+            let mut game = Game::new(Id::new(), "test-game".to_string(), Id::new());
             let player_id_1 = Id::new();
             let player_id_2 = Id::new();
             let player_id_3 = Id::new();

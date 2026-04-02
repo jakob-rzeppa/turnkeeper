@@ -10,4 +10,5 @@ use crate::domain::game::value_objects::id::Id;
 pub struct GameMetadata {
     pub id: Id,
     pub name: String,
+    pub gm_user_id: Id,
 }

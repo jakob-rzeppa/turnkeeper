@@ -3,7 +3,6 @@
 //! Defines traits (contracts) for game-related infrastructure dependencies.
 
 use crate::application::game::commands::GameCommand;
-use crate::application::game::dto::{IncomingConnectionMessageDto, OutgoingConnectionMessageDto};
 use crate::domain::game::error::GameError;
 use crate::domain::game::projections::game_metadata::GameMetadata;
 use crate::domain::game::value_objects::id::Id;
@@ -27,6 +26,7 @@ pub trait GameRepositoryContract {
     ///
     /// * `id` - Unique identifier for the game
     /// * `name` - Display name for the game
+    /// * `gm_user_id` - ID of the game master user
     ///
     /// # Returns
     ///
@@ -39,7 +39,12 @@ pub trait GameRepositoryContract {
     /// - A game with the same Name already exists
     /// - Database connection fails
     /// - Constraint violations occur
-    fn create(&self, id: Id, name: String) -> impl Future<Output = Result<(), GameError>> + Send;
+    fn create(
+        &self,
+        id: Id,
+        name: String,
+        gm_user_id: Id,
+    ) -> impl Future<Output = Result<(), GameError>> + Send;
 
     /// Retrieves metadata for all games.
     ///
