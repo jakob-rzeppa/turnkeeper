@@ -3,19 +3,23 @@
 //! Re-exports the core modules so they are accessible from integration tests
 //! and from the binary entry-point in `main.rs`.
 
-pub mod util;
-pub mod domain;
 pub mod application;
+pub mod domain;
 pub mod infrastructure;
+pub mod util;
 
-use axum::{Router};
-use tower::ServiceBuilder;
-use tower_http::cors::{Any, CorsLayer};
-use crate::infrastructure::auth::AuthManager;
+use std::sync::Arc;
+
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::repositories::RepositoryManager;
-use crate::infrastructure::websocket::session_manager::GameSessionManager;
-use crate::infrastructure::websocket::{get_websocket_routes};
+use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
+use crate::infrastructure::websocket::game_session_manager::GameSessionManager;
+use crate::infrastructure::websocket::get_websocket_routes;
+// use crate::infrastructure::websocket::session_manager::GameSessionManager;
+use crate::infrastructure::{auth::AuthManager, websocket::ws_session_manager::WsSessionManager};
+use axum::Router;
+use tower::ServiceBuilder;
+use tower_http::cors::{Any, CorsLayer};
 
 /// Application state shared across all HTTP handlers and WebSocket connections.
 #[derive(Clone)]
@@ -25,7 +29,10 @@ pub struct AppState {
     /// Manages JWT generation and validation for GM and user auth.
     pub auth_manager: AuthManager,
     /// Manages active in-memory game sessions.
-    pub game_session_manager: GameSessionManager,
+    //pub game_session_manager: GameSessionManager,
+    /// Manages pending WebSocket connections for both GMs and users.
+    pub ws_session_manager: WsSessionManager,
+    pub game_session_manager: GameSessionManager<SqliteGameRepository>,
 }
 
 /// Builds the Axum application router with all routes configured.

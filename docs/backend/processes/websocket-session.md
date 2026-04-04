@@ -28,6 +28,8 @@ The ticket and corresponding information (user information) is saved in the WsSe
 
 #### Connect
 
+> Blue sections are communications via channels
+
 ```mermaid
 sequenceDiagram
     actor f as Frontend
@@ -44,13 +46,13 @@ sequenceDiagram
     alt if not exists
     create participant gs as GameSession
     gsm ->> gs : create
+    gs -->> gsm : connector_channel_sender, game_state_channel_receiver
     end
-    gsm ->> gs : connect_user(user_id)
-    gs -->> gsm : commandChannelSender, gameStateWatchReceiver
+    gsm -->> ws_c : command_channel_sender, game_state_channel_receiver
 
-    gsm -->> ws_c : commandChannelSender, gameStateWatchReceiver
-
+    rect rgb(191, 223, 255)
     note over ws_c, gs : now the websocket session can talk to the game session
-    ws_c -->> gs : command
-    gs -->> ws_c : game state
+    ws_c ->> gs : command_channel
+    gs ->> ws_c : game_state_channel
+    end
 ```

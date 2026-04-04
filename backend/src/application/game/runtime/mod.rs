@@ -3,7 +3,10 @@ use crate::{
     domain::game::{
         entities::game::Game,
         error::GameError,
-        projections::{gm_game_info::GmGameInfo, user_game_info::UserGameInfo},
+        projections::{
+            game::{GameProjection, user::PlayerGameProjection},
+            game_metadata::GameMetadata,
+        },
         value_objects::id::Id,
     },
 };
@@ -13,9 +16,9 @@ pub struct GameRuntime {
 }
 
 impl GameRuntime {
-    pub fn new(id: Id, name: String, gm_user_id: Id) -> Self {
+    pub fn new(metadata: GameMetadata) -> Self {
         Self {
-            game: Game::new(id, name, gm_user_id),
+            game: Game::new(metadata.id, metadata.name, metadata.gm_user_id),
         }
     }
 
@@ -90,11 +93,23 @@ impl GameRuntime {
         *self.game.id()
     }
 
-    pub fn get_gm_game_projection(&self) -> GmGameInfo {
-        GmGameInfo::from(&self.game)
+    pub fn get_gm_user_id(&self) -> Id {
+        *self.game.gm_user_id()
     }
 
-    pub fn get_user_game_projection(&self, user_id: &Id) -> UserGameInfo {
-        UserGameInfo::for_user(&self.game, user_id)
+    pub fn get_user_ids(&self) -> Vec<Id> {
+        self.game
+            .players()
+            .iter()
+            .filter_map(|p| p.user_id())
+            .collect()
+    }
+
+    pub fn get_gm_game_projection(&self) -> GameProjection {
+        GameProjection::from(&self.game)
+    }
+
+    pub fn get_player_game_projection(&self, user_id: &Id) -> PlayerGameProjection {
+        PlayerGameProjection::for_player_user_id(&self.game, user_id)
     }
 }

@@ -18,6 +18,7 @@ type RawPlayer = { id: string; user_id: string | null };
 type RawGame = {
     id: string;
     name: string;
+    gm_user_id: string;
     own_player: RawOwnPlayer | null;
     players: RawPlayer[];
     round_number: number;
@@ -56,22 +57,24 @@ export function useWsConnection() {
         }
 
         // Fetch a short-lived ticket URL from the authenticated HTTP endpoint
-        let wsUrl: string;
+        let wsTicket: string;
         try {
-            const response = await axios.post<{ url: string }>(
-                `${API_BASE_URL}/ws/ticket/${gameId}`,
+            const response = await axios.post<{ ticket: string }>(
+                `${API_BASE_URL}/game/ws/ticket`,
                 null,
-                { headers: { Authorization: `Bearer ${authStore.token}` } }
+                {
+                    headers: { Authorization: `Bearer ${authStore.token}` },
+                }
             );
-            wsUrl = response.data.url;
+            wsTicket = response.data.ticket;
         } catch (err) {
             console.error('Failed to obtain WebSocket ticket:', err);
             removeGameIdFromUrl();
             return;
         }
 
-        console.log('Connecting to WebSocket at:', wsUrl);
-        websocket.value = new WebSocket(wsUrl);
+        console.log('Connecting to WebSocket at:', wsTicket);
+        websocket.value = new WebSocket(`${API_BASE_URL}/game/ws/${gameId}?ticket=${wsTicket}`);
 
         websocket.value.onopen = () => {
             console.log('WebSocket connection established.');
@@ -79,18 +82,19 @@ export function useWsConnection() {
         };
 
         websocket.value.onmessage = event => {
-            if (!event.data.startsWith('GameInfo ')) {
+            if (!event.data.startsWith('PlayerGameProjection ')) {
                 console.warn('Received unknown message type:', event.data);
                 return;
             }
 
             console.log('Received message:', event.data);
 
-            const message = JSON.parse(event.data.slice(9)) as RawGame;
+            const message = JSON.parse(event.data.slice(21)) as RawGame;
 
             gameStore.setGame({
                 id: message.id,
                 name: message.name,
+                gm_user_id: message.gm_user_id,
                 ownPlayer: message.own_player
                     ? {
                           id: message.own_player.id,

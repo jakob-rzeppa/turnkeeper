@@ -54,6 +54,10 @@ impl Game {
         &self.name
     }
 
+    pub fn gm_user_id(&self) -> &Id {
+        &self.gm_user_id
+    }
+
     pub fn players(&self) -> &[Player] {
         &self.players
     }

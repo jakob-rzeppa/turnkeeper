@@ -2,10 +2,10 @@
 import { onMounted } from 'vue';
 import { useWsConnection } from './api/useWsConnection';
 import { useAuthStore } from './auth/authStore';
-import UserAuth from './auth/UserAuth.vue';
 import GamePage from './game/GamePage.vue';
 import GameOverview from './gameOverview/GameOverview.vue';
 import { useUsersStore } from './users/usersStore';
+import AuthPage from './auth/AuthPage.vue';
 
 const authStore = useAuthStore();
 const wsConnection = useWsConnection();
@@ -19,7 +19,7 @@ onMounted(() => {
 
 <template>
     <div class="container">
-        <UserAuth v-if="!authStore.isAuthenticated" />
+        <AuthPage v-if="!authStore.isAuthenticated" />
         <GamePage v-else-if="wsConnection.isConnected.value" />
         <GameOverview v-else />
     </div>

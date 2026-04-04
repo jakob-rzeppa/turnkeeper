@@ -7,7 +7,8 @@ use std::fmt::Display;
 use crate::{
     application::game::commands::GameCommand,
     domain::game::projections::{
-        game_error::GameErrorProjection, gm_game_info::GmGameInfo, user_game_info::UserGameInfo,
+        game::{GameProjection, user::PlayerGameProjection},
+        game_error::GameErrorProjection,
     },
 };
 
@@ -17,20 +18,29 @@ pub enum IncomingConnectionMessageDto {
     Unknown,
 }
 
+#[derive(Debug, Clone)]
 pub enum OutgoingConnectionMessageDto {
-    GmGameState(GmGameInfo),
-    UserGameInfo(UserGameInfo),
+    FullGameProjection(GameProjection),
+    PlayerGameProjection(PlayerGameProjection),
     GameError(GameErrorProjection),
 }
 
 impl Display for OutgoingConnectionMessageDto {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            OutgoingConnectionMessageDto::GmGameState(info) => {
-                write!(f, "GameInfo {}", serde_json::to_string(info).unwrap())
+            OutgoingConnectionMessageDto::FullGameProjection(info) => {
+                write!(
+                    f,
+                    "FullGameProjection {}",
+                    serde_json::to_string(info).unwrap()
+                )
             }
-            OutgoingConnectionMessageDto::UserGameInfo(info) => {
-                write!(f, "GameInfo {}", serde_json::to_string(info).unwrap())
+            OutgoingConnectionMessageDto::PlayerGameProjection(info) => {
+                write!(
+                    f,
+                    "PlayerGameProjection {}",
+                    serde_json::to_string(info).unwrap()
+                )
             }
             OutgoingConnectionMessageDto::GameError(error) => {
                 write!(f, "GameError {}", serde_json::to_string(error).unwrap())

@@ -31,6 +31,7 @@ export type Player = {
 export type Game = {
     id: string;
     name: string;
+    gm_user_id: string;
 
     ownPlayer: OwnPlayer | null;
     players: Player[];

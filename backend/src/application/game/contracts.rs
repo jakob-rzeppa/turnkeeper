@@ -14,7 +14,7 @@ use crate::domain::game::value_objects::id::Id;
 /// - Metadata queries for game lists
 /// - Command logging for game state reconstruction
 #[mockall::automock]
-pub trait GameRepositoryContract {
+pub trait GameRepositoryContract: Send + Sync + 'static {
     /// Creates a new game in the database.
     ///
     /// This function may be called in a stateless request.

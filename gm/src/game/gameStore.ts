@@ -26,6 +26,7 @@ export type Player = {
 export type Game = {
     id: string;
     name: string;
+    gm_user_id: string;
 
     players: Player[];
 
