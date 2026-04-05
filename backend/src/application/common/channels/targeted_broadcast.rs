@@ -27,22 +27,22 @@ impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug
     ) {
         // The producer side of the channel, which gets the messages to be send
         let (producer_sender, mut producer_receiver) = mpsc::unbounded_channel();
-        let sender = TargetedBroadcastSender {
+        let sender: TargetedBroadcastSender<K, T> = TargetedBroadcastSender {
             sender: producer_sender,
         };
 
         // The consumer side of the channel, which allows creating a receiver for a specific user ID
         let (creator_sender, mut creator_receiver) =
             mpsc::unbounded_channel::<(K, oneshot::Sender<TargetedBroadcastReceiver<K, T>>)>();
-        let receiver_creator = TargetedBroadcastReceiverCreator {
-            creator: creator_sender,
-        };
+        let receiver_creator: TargetedBroadcastReceiverCreator<K, T> =
+            TargetedBroadcastReceiverCreator {
+                creator: creator_sender,
+            };
 
         // Spawn a task to route messages from the producer to the correct consumer based on user ID
         tokio::spawn(async move {
             // Map of user_id to the sender for that user's receiver
-            let mut consumer_senders: std::collections::HashMap<K, mpsc::UnboundedSender<T>> =
-                std::collections::HashMap::new();
+            let mut consumer_senders: Vec<(K, mpsc::UnboundedSender<T>)> = Vec::new();
 
             loop {
                 tokio::select! {
@@ -52,12 +52,14 @@ impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug
                             Some(msg) => {
                                 if let Some(to_user_id) = msg.0 {
                                     // Send to specific user
-                                    if let Some(consumer_sender) = consumer_senders.get(&to_user_id) {
-                                        let _ = consumer_sender.send(msg.1);
+                                    for (id, consumer_sender) in &consumer_senders {
+                                        if *id == to_user_id {
+                                            let _ = consumer_sender.send(msg.1.clone());
+                                        }
                                     }
                                 } else {
                                     // Broadcast to all users
-                                    for consumer_sender in consumer_senders.values() {
+                                    for (_, consumer_sender) in &consumer_senders {
                                         let _ = consumer_sender.send(msg.1.clone());
                                     }
                                 }
@@ -75,7 +77,7 @@ impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug
                             Some((user_id, response_sender)) => {
                                 // Create a new channel for this user
                                 let (consumer_sender, consumer_receiver) = mpsc::unbounded_channel();
-                                consumer_senders.insert(user_id.clone(), consumer_sender);
+                                consumer_senders.push((user_id.clone(), consumer_sender));
 
                                 // Send the receiver back to the requester
                                 let _ = response_sender.send(TargetedBroadcastReceiver {
@@ -156,7 +158,7 @@ mod tests {
     use super::*;
 
     #[tokio::test]
-    async fn test_targeted_broadcast() {
+    async fn test_send_message_and_broadcast() {
         let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
 
         // Create receivers for two users
@@ -200,5 +202,59 @@ mod tests {
         // The receiver creator should also be closed, so creating a new receiver should fail
         let result = receiver_creator.create_receiver("user3".to_string()).await;
         assert!(result.is_err());
+    }
+
+    #[tokio::test]
+    async fn test_send_to_nonexistent_client() {
+        let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
+
+        // Create a receiver for user1
+        let mut receiver1 = receiver_creator
+            .create_receiver("user1".to_string())
+            .await
+            .unwrap();
+
+        // Send a message to a non-existent user (user2)
+        sender
+            .send_to("user2".to_string(), "Hello User 2".to_string())
+            .await
+            .unwrap();
+
+        // The message should not be received by user1
+
+        // Close
+        drop(sender); // Close the sender to stop the routing task
+
+        assert!(receiver1.recv().await.is_none());
+    }
+
+    #[tokio::test]
+    async fn test_two_clients_with_same_id() {
+        let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
+
+        // Create two receivers with the same user ID
+        let mut receiver1 = receiver_creator
+            .create_receiver("user1".to_string())
+            .await
+            .unwrap();
+        let mut receiver2 = receiver_creator
+            .create_receiver("user1".to_string())
+            .await
+            .unwrap();
+
+        // Send a message to user1
+        sender
+            .send_to("user1".to_string(), "Hello User 1".to_string())
+            .await
+            .unwrap();
+
+        // Both receivers should receive the message, but since they have the same user ID, only one will actually get it due to how the routing works (the second receiver will overwrite the first in the consumer_senders map)
+        assert_eq!(receiver1.recv().await.unwrap(), "Hello User 1");
+        assert_eq!(receiver2.recv().await.unwrap(), "Hello User 1");
+
+        drop(sender); // Close the sender to stop the routing task
+
+        assert!(receiver1.recv().await.is_none());
+        assert!(receiver2.recv().await.is_none());
     }
 }
