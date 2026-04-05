@@ -79,6 +79,9 @@ export function useWsConnection() {
         websocket.value.onopen = () => {
             console.log('WebSocket connection established.');
             saveGameIdToUrl(gameId);
+
+            // Send an initial message to trigger the server to send the current game state
+            send(JSON.stringify('Connect'));
         };
 
         websocket.value.onmessage = event => {

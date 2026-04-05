@@ -3,8 +3,8 @@
 //! Domain commands that can be applied to a [`Game`](super::entities::game::Game) aggregate
 //! via its `handle_command` method. Commands are serialized as JSON over WebSocket.
 
-use serde::{Deserialize, Serialize};
 use crate::domain::game::value_objects::id::Id;
+use serde::{Deserialize, Serialize};
 
 /// A command that mutates the game aggregate's state.
 ///
@@ -17,32 +17,73 @@ use crate::domain::game::value_objects::id::Id;
 /// currently enforced** by the session command loop.
 #[derive(Debug, Clone, PartialEq, Serialize, Deserialize)]
 pub enum GameCommand {
+    // On connection, to trigger a sync of the current game state.
+    Connect,
+
     // Turn / Round
     NextTurn,
     PreviousTurn,
-    SkipTurnToPlayer { player_id: Id },
+    SkipTurnToPlayer {
+        player_id: Id,
+    },
 
     // Notes
     SetNotes(String),
     SetHiddenNotes(String),
 
     // Player
-    AddPlayer { player_id: Id },
+    AddPlayer {
+        player_id: Id,
+    },
     ChangePlayerOrder(Vec<Id>),
 
     // Stats
-    AddStatToPlayer { player_id: Id, stat_id: Id, stat_key: String, stat_type: String, stat_value: String },
-    ChangeStatOfPlayer { player_id: Id, stat_id: Id, stat_type: String, stat_value: String },
-    RemoveStatFromPlayer { player_id: Id, stat_id: Id },
+    AddStatToPlayer {
+        player_id: Id,
+        stat_id: Id,
+        stat_key: String,
+        stat_type: String,
+        stat_value: String,
+    },
+    ChangeStatOfPlayer {
+        player_id: Id,
+        stat_id: Id,
+        stat_type: String,
+        stat_value: String,
+    },
+    RemoveStatFromPlayer {
+        player_id: Id,
+        stat_id: Id,
+    },
 
     // Tradables
-    AddTradable { tradable_id: Id, name: String, initial_value: f64 },
-    RemoveTradable { tradable_id: Id },
-    ChangePlayerTradableValue { player_id: Id, tradable_id: Id, new_value: f64 },
-    SendTradable { from_id: Id, to_id: Id, tradable_id: Id, amount: f64 },
+    AddTradable {
+        tradable_id: Id,
+        name: String,
+        initial_value: f64,
+    },
+    RemoveTradable {
+        tradable_id: Id,
+    },
+    ChangePlayerTradableValue {
+        player_id: Id,
+        tradable_id: Id,
+        new_value: f64,
+    },
+    SendTradable {
+        from_id: Id,
+        to_id: Id,
+        tradable_id: Id,
+        amount: f64,
+    },
 
-    AttachUserToPlayer { player_id: Id, user_id: Id },
-    DetachUserFromPlayer { player_id: Id },
+    AttachUserToPlayer {
+        player_id: Id,
+        user_id: Id,
+    },
+    DetachUserFromPlayer {
+        player_id: Id,
+    },
 
     // Debug
     Debug(String),
@@ -55,7 +96,7 @@ impl GameCommand {
     pub fn is_user_permitted(&self, _user_id: &Id) -> bool {
         match self {
             GameCommand::Debug(_) => true,
-            _ => false
+            _ => false,
         }
     }
 }

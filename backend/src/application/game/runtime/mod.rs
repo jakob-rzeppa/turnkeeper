@@ -26,6 +26,7 @@ impl GameRuntime {
     pub fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
         println!("Handling command: {:?}", command);
         match command {
+            GameCommand::Connect => Ok(()), // No-op, connection logic is handled in the session loop.
             GameCommand::NextTurn => Ok(self.game.next_turn()),
             GameCommand::PreviousTurn => Ok(self.game.prev_turn()),
             GameCommand::SkipTurnToPlayer { player_id } => self.game.skip_turn_to_player(player_id),
