@@ -8,8 +8,6 @@ pub mod domain;
 pub mod infrastructure;
 pub mod util;
 
-use std::sync::Arc;
-
 use crate::infrastructure::http::get_routes;
 use crate::infrastructure::persistence::repositories::RepositoryManager;
 use crate::infrastructure::persistence::repositories::game::SqliteGameRepository;
