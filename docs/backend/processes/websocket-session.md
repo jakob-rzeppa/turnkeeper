@@ -18,8 +18,8 @@ sequenceDiagram
 
     f ->> ws_t : HTTP /game/ws/ticket
     note over ws_t, f : Authentication via middleware
-    ws_t ->> wsm : create_ticket(user_id)
-    wsm ->> wsm : save jwt
+    ws_t ->> wsm : pre_connect(user_id)
+    wsm ->> wsm : save ticket
     wsm -->> ws_t : ticket
     ws_t -->> f : ticket
 ```
@@ -46,8 +46,9 @@ sequenceDiagram
     alt if not exists
     create participant gs as GameSession
     gsm ->> gs : create
-    gs -->> gsm : connector_channel_sender, game_state_channel_receiver
+    gs -->> gsm : connector_channel_sender, game_state_channel_receiver_creator
     end
+    gsm ->> gsm : get game_state_channel_receiver via game_state_channel_receiver_creator
     gsm -->> ws_c : command_channel_sender, game_state_channel_receiver
 
     rect rgb(191, 223, 255)

@@ -37,35 +37,6 @@ graph TB
     style User3 fill:#f3e5f5
 ```
 
-## GM Auth / Game Start
-
-```mermaid
-sequenceDiagram
-    participant GM as GM Client
-    participant Backend as Backend Server
-
-    GM->>+Backend: POST /gm/login
-    note over Backend: Validate password against GM_PASSWORD env var
-    Backend->>-GM: JSON web token
-
-    GM->>Backend: GET /gm/games
-    Backend->>GM: List of game metadata (id, name)
-    note over GM: Choose a game to resume
-
-    GM->>+Backend: POST /gm/ws/ticket/{game_id}
-    note over Backend: Validate JWT
-    note over Backend: Get or create GameSession via GameSessionManager
-    note over Backend: GameSession.gm_pre_connect() creates ticket (30s TTL)
-    note over Backend: ConnectionState: None → Pending
-    Backend->>-GM: { url: "ws://.../gm/ws/{id}?ticket=..." }
-
-    GM->>+Backend: WS connect to returned URL
-    note over Backend: GameSession.gm_connect() validates ticket
-    note over Backend: ConnectionState: Pending → Connected
-    Backend->>-GM: WebSocket connection established
-    note over Backend: Send full GmGameInfo state
-```
-
 ## User Auth / Game Join
 
 ```mermaid
@@ -81,19 +52,17 @@ sequenceDiagram
     Backend->>User: List of game metadata (id, name)
     note over User: Choose a game to join
 
-    User->>+Backend: POST /user/ws/ticket/{game_id}
+    User->>+Backend: POST /ws/ticket
     note over Backend: Validate User JWT, extract user_id
-    note over Backend: Get or create GameSession via GameSessionManager
-    note over Backend: GameSession.user_pre_connect() creates ticket (30s TTL)
-    Backend->>-User: { url: "ws://.../user/ws/{id}?ticket=...&user_id=..." }
+    note over Backend: Create short lived token
+    Backend->>-User: { token: "..." }
 
-    User->>+Backend: WS connect to returned URL
+    User->>+Backend: WS game connect
     note over Backend: GameSession.user_connect() validates ticket
-    note over Backend: ConnectionState: Pending → Connected
+    note over Backend: Validate token
+    note over Backend: Establish game session connection
     Backend->>-User: WebSocket connection established
-    note over Backend: Send full GmGameInfo state
+
+    User -->> Backend: WS - Connect Event
+    Backend -->> User: WS - Game State
 ```
-
-## Command Flow
-
-The backend accepts game commands via WebSocket and then broadcasts full projected game state to connected clients.
