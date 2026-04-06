@@ -53,6 +53,7 @@ impl<GameRepository: GameRepositoryContract> GameSession<GameRepository> {
         for command in history {
             runtime
                 .handle_command(command)
+                .await
                 .expect("Database contains invalid state.");
         }
 
@@ -78,7 +79,7 @@ impl<GameRepository: GameRepositoryContract> GameSession<GameRepository> {
     }
 
     async fn handle_command(&mut self, command: GameCommand) {
-        match self.runtime.handle_command(command.clone()) {
+        match self.runtime.handle_command(command.clone()).await {
             Ok(_) => {
                 // Persist the game state only if the command was handled successfully
                 self.game_repo

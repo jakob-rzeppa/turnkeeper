@@ -20,12 +20,12 @@ impl GameRuntime {
     pub fn new(metadata: GameMetadata) -> Self {
         Self {
             game: Game::new(metadata.id, metadata.name, metadata.gm_user_id),
-            logger: GameLogger {},
+            logger: GameLogger::new(),
         }
     }
 
     /// Dispatches a [`GameCommand`] to the appropriate handler method.
-    pub fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
+    pub async fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
         self.logger
             .info(&format!("Handling command: {:?}", command));
 
@@ -95,8 +95,7 @@ impl GameRuntime {
         };
 
         if let Err(ref e) = res {
-            self.logger
-                .error(&format!("Handling command failed: {}", e));
+            self.logger.error(&format!("Error handling command: {}", e));
         }
 
         res
