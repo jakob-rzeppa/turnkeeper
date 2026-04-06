@@ -1,6 +1,7 @@
 pub mod commands;
 pub mod contracts;
 pub mod dto;
+pub mod logger;
 pub mod request_handlers;
 pub mod requests;
 pub mod responses;

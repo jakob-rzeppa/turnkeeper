@@ -1,5 +1,5 @@
 use crate::{
-    application::game::commands::GameCommand,
+    application::game::{commands::GameCommand, logger::GameLogger},
     domain::game::{
         entities::game::Game,
         error::GameError,
@@ -13,19 +13,23 @@ use crate::{
 
 pub struct GameRuntime {
     game: Game,
+    logger: GameLogger,
 }
 
 impl GameRuntime {
     pub fn new(metadata: GameMetadata) -> Self {
         Self {
             game: Game::new(metadata.id, metadata.name, metadata.gm_user_id),
+            logger: GameLogger {},
         }
     }
 
     /// Dispatches a [`GameCommand`] to the appropriate handler method.
     pub fn handle_command(&mut self, command: GameCommand) -> Result<(), GameError> {
-        println!("Handling command: {:?}", command);
-        match command {
+        self.logger
+            .info(&format!("Handling command: {:?}", command));
+
+        let res = match command {
             GameCommand::Connect => Ok(()), // No-op, connection logic is handled in the session loop.
             GameCommand::NextTurn => Ok(self.game.next_turn()),
             GameCommand::PreviousTurn => Ok(self.game.prev_turn()),
@@ -84,10 +88,18 @@ impl GameRuntime {
                 self.game.change_player_order(ids_in_order)
             }
             GameCommand::Debug(msg) => {
-                println!("Debug command with message: {}", msg);
+                self.logger
+                    .debug(&format!("Debug command received with message: {}", msg));
                 Ok(())
             }
+        };
+
+        if let Err(ref e) = res {
+            self.logger
+                .error(&format!("Handling command failed: {}", e));
         }
+
+        res
     }
 
     pub fn get_id(&self) -> Id {
