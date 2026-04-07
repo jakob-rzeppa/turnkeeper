@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::statement::Statement,
     runtime::{RuntimeEnvironment, error::RuntimeError, execute::Executable},
@@ -10,6 +12,7 @@ mod variable_declaration_statement;
 mod while_statement;
 
 impl Executable<()> for Statement {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         match self {
             Statement::VariableDeclaration(var_decl) => var_decl.execute(env).await,

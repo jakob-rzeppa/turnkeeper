@@ -18,7 +18,7 @@ pub struct GmWsTicketResponse {
 /// The user info is needed to enforce permissions in the game session and to associate the connection to a specific user in the game.
 ///
 /// By getting the user here first, we make sure the user is who they say they are before they can even establish a WebSocket connection, which allows us to savely allow connections and then check for the users permissions via the user_id etc. in the game session without having to worry about unauthenticated connections at all in the game session logic.
-pub async fn game_websocket_ticket(
+pub async fn websocket_ticket(
     State(state): State<AppState>,
     Extension(user): Extension<User>,
 ) -> Result<GmWsTicketResponse, HttpError> {

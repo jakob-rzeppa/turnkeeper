@@ -31,7 +31,7 @@ pub async fn game_websocket_handler(
         .ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
 
     // Validate the ticket and retrieve the associated user ID.
-    let user_id = state
+    let user = state
         .ws_session_manager
         .connect(&ticket)
         .await
@@ -40,7 +40,7 @@ pub async fn game_websocket_handler(
     Ok(ws.on_upgrade(async move |mut socket| {
         let (command_sender, mut game_state_receiver) = state
             .game_session_manager
-            .get_session(&id, user_id.id())
+            .get_session(&id, user.id())
             .await
             .expect("Failed to get game session for WebSocket connection.");
 

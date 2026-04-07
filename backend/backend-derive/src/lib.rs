@@ -1,6 +1,9 @@
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{parse_macro_input, DeriveInput};
+use syn::{
+    DeriveInput, ExprMethodCall, FnArg, ImplItemFn, PatType, Token, parse_macro_input, parse_quote,
+    punctuated::Punctuated, visit_mut::VisitMut,
+};
 
 /// Derive macro to automatically implement `axum::extract::FromRequest`
 /// that extracts and validates JSON body.
@@ -120,4 +123,100 @@ pub fn derive_json_response(input: TokenStream) -> TokenStream {
     };
 
     TokenStream::from(expanded)
+}
+
+struct ExecuteToDebugRewriter;
+
+impl VisitMut for ExecuteToDebugRewriter {
+    fn visit_expr_method_call_mut(&mut self, node: &mut ExprMethodCall) {
+        syn::visit_mut::visit_expr_method_call_mut(self, node);
+
+        if node.method == "execute" {
+            node.method = syn::Ident::new("execute_debug", node.method.span());
+            node.args.push(parse_quote!(debug_env));
+        }
+    }
+}
+
+#[proc_macro_attribute]
+pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let method = parse_macro_input!(input as ImplItemFn);
+
+    if method.sig.ident != "execute" {
+        return syn::Error::new_spanned(
+            &method.sig.ident,
+            "#[execute_debug] can only be used on a method named execute",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    if method.sig.asyncness.is_none() {
+        return syn::Error::new_spanned(
+            &method.sig.ident,
+            "#[execute_debug] can only be used on async methods",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    let mut debug_method = method.clone();
+    debug_method.sig.ident = syn::Ident::new("execute_debug", debug_method.sig.ident.span());
+
+    let debug_arg: FnArg = parse_quote!(
+        debug_env: &mut crate::application::plugin::runtime::debug::DebugEnvironment
+    );
+
+    let mut new_inputs: Punctuated<FnArg, Token![,]> = Punctuated::new();
+    let mut inserted = false;
+    for arg in &method.sig.inputs {
+        new_inputs.push(arg.clone());
+
+        if let FnArg::Typed(PatType { pat, .. }) = arg
+            && let syn::Pat::Ident(pat_ident) = pat.as_ref()
+            && pat_ident.ident == "env"
+        {
+            new_inputs.push(debug_arg.clone());
+            inserted = true;
+        }
+    }
+
+    if !inserted {
+        return syn::Error::new_spanned(
+            &method.sig.ident,
+            "#[execute_debug] expected an `env` argument to place `debug_env` next to it",
+        )
+        .to_compile_error()
+        .into();
+    }
+
+    debug_method.sig.inputs = new_inputs;
+
+    let mut rewritten_block = method.block.clone();
+    ExecuteToDebugRewriter.visit_block_mut(&mut rewritten_block);
+
+    debug_method.block = parse_quote!({
+        let stepping_over = debug_env
+            .wait(
+                crate::application::plugin::parser::abstract_syntax_tree::Positioned::position(self)
+                    .line(),
+                env.get_debug_state(),
+            )
+            .await;
+
+        // Ensure step-over finishes even when execution returns with an error.
+        let mut internal_fn = async || #rewritten_block;
+        let res = internal_fn().await;
+
+        if stepping_over {
+            debug_env.finish_step_over();
+        }
+
+        res
+    });
+
+    TokenStream::from(quote! {
+        #method
+        #debug_method
+    })
 }

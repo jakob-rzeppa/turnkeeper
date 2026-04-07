@@ -1,31 +1,26 @@
-use tokio::sync::{mpsc, watch};
-
 use crate::application::plugin::{
-    debugger::commands::DebugCommand,
     parser::abstract_syntax_tree::root::Root,
     runtime::{
-        debug_mode::DebugMode, debug_state::DebugState, error::RuntimeError, execute::Executable,
+        debug::{DebugEnvironment, state::DebugState},
+        error::RuntimeError,
+        execute::Executable,
         memory::MemoryManager,
     },
 };
 
-mod debug_env;
-mod debug_mode;
-mod debug_state;
+pub mod debug;
 pub mod error;
 mod execute;
-mod memory;
+pub mod memory;
 
 pub struct RuntimeEnvironment {
     memory_manager: MemoryManager,
-    debug_mode: Option<DebugMode>,
 }
 
 impl RuntimeEnvironment {
     pub fn new() -> Self {
         Self {
             memory_manager: MemoryManager::default(),
-            debug_mode: None,
         }
     }
 
@@ -40,15 +35,18 @@ impl RuntimeEnvironment {
     pub async fn run_debug_mode(
         &mut self,
         ast: &Root,
-        breakpoints: Vec<usize>,
-        command_receiver: mpsc::UnboundedReceiver<DebugCommand>,
-        state_sender: watch::Sender<DebugState>,
+        debug_env: &mut DebugEnvironment,
     ) -> Result<(), RuntimeError> {
-        self.debug_mode = Some(DebugMode::new(breakpoints, command_receiver, state_sender));
-
-        self.run(ast).await?;
-
+        for statement in ast.statements() {
+            statement.execute_debug(self, debug_env).await?;
+        }
         Ok(())
+    }
+
+    pub fn get_debug_state(&self) -> DebugState {
+        DebugState {
+            variables: self.memory_manager.get_all_variables(),
+        }
     }
 }
 

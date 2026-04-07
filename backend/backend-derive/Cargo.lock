@@ -3,7 +3,7 @@
 version = 4
 
 [[package]]
-name = "macros-derive"
+name = "backend-derive"
 version = "0.1.0"
 dependencies = [
  "proc-macro2",

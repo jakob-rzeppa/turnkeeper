@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, expression::atom::ExpressionAtom},
     runtime::{
@@ -9,6 +11,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<VariableValue> for ExpressionAtom {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
         match self {
             ExpressionAtom::Literal(literal) => Ok(VariableValue::from(literal.value())),

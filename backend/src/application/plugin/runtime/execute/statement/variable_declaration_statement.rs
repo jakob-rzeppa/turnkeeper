@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{
         Positioned, atom::datatype::Datatype,
@@ -12,6 +14,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for VariableDeclarationStatement {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let identifier = Identifier::from(self.identifier());
         let var_type = self.datatype();

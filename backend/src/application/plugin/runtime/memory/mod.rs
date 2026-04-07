@@ -86,4 +86,14 @@ impl MemoryManager {
         }
         Err(MemoryError::VariableNotFound(name.clone()))
     }
+
+    pub fn get_all_variables(&self) -> Vec<(Identifier, VariableValue)> {
+        let mut all_vars = Vec::new();
+        for scope in &self.variables {
+            for (id, value) in scope {
+                all_vars.push((id.clone(), value.clone()));
+            }
+        }
+        all_vars
+    }
 }

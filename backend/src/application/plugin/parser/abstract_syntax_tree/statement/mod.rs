@@ -4,16 +4,19 @@ use crate::application::plugin::parser::abstract_syntax_tree::{
     expression::Expression,
     statement::if_statement::{ElseBranch, ElseIfBranch},
 };
-use crate::application::plugin::parser::{
-    abstract_syntax_tree::{
-        Parsable, TokenStream,
-        statement::{
-            assignment::AssignmentStatement, expression::ExpressionStatement,
-            if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
-            while_loop::WhileLoopStatement,
+use crate::application::plugin::{
+    common::Position,
+    parser::{
+        abstract_syntax_tree::{
+            Parsable, Positioned, TokenStream,
+            statement::{
+                assignment::AssignmentStatement, expression::ExpressionStatement,
+                if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
+                while_loop::WhileLoopStatement,
+            },
         },
+        error::ParsingError,
     },
-    error::ParsingError,
 };
 
 pub mod assignment;
@@ -57,6 +60,18 @@ impl Parsable for Statement {
                 message: "Invalid statement".to_string(),
                 pos: get_pos!(ts),
             })
+        }
+    }
+}
+
+impl Positioned for Statement {
+    fn position(&self) -> Position {
+        match self {
+            Statement::VariableDeclaration(var_decl) => var_decl.position(),
+            Statement::Assignment(assign) => assign.position(),
+            Statement::If(if_stmt) => if_stmt.position(),
+            Statement::WhileLoop(while_loop) => while_loop.position(),
+            Statement::Expression(expr_stmt) => expr_stmt.position(),
         }
     }
 }

@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::if_statement::IfStatement},
     runtime::{
@@ -6,6 +8,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for IfStatement {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let condition = self.condition();
         let condition_value = condition.execute(env).await?;

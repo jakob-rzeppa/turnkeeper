@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::assignment::AssignmentStatement},
     runtime::{
@@ -7,6 +9,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for AssignmentStatement {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let name = Identifier::from(self.identifier());
         let value = self.value().execute(env).await?;

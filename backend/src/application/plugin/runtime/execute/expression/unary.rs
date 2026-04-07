@@ -7,8 +7,10 @@ use crate::application::plugin::{
         RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
     },
 };
+use backend_derive::execute_debug;
 
 impl Executable<VariableValue> for UnaryExpression {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
         let operand_value = self.operand().execute(env).await?;
 

@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::expression::Expression,
     runtime::{
@@ -10,6 +12,7 @@ pub mod binary;
 pub mod unary;
 
 impl Executable<VariableValue> for Expression {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
         // We need to box the future returned by the inner execute to add indirection to the async call, since we use recursion in the expression evaluation (e.g. for binary and unary expressions).
         match self {

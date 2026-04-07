@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{
         Positioned,
@@ -9,9 +11,10 @@ use crate::application::plugin::{
 };
 
 impl Executable<VariableValue> for BinaryExpression {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
-        let left_value = self.left().execute(env).await?;
-        let right_value = self.right().execute(env).await?;
+        let left_value: VariableValue = self.left().execute(env).await?;
+        let right_value: VariableValue = self.right().execute(env).await?;
 
         match (left_value.clone(), self.operator(), right_value.clone()) {
             // Addition

@@ -34,10 +34,6 @@ pub enum RuntimeError {
         identifier: Identifier,
         pos: Position,
     },
-    Temp {
-        message: String,
-        pos: Position,
-    },
 }
 
 impl RuntimeError {
@@ -96,7 +92,6 @@ impl RuntimeError {
                     identifier
                 )
             }
-            RuntimeError::Temp { message, .. } => message.clone(),
         }
     }
 
@@ -107,7 +102,6 @@ impl RuntimeError {
             | RuntimeError::UndefinedUnaryOperation { pos, .. }
             | RuntimeError::UndefinedBinaryOperation { pos, .. }
             | RuntimeError::DivisionByZero { pos, .. }
-            | RuntimeError::Temp { pos, .. }
             | RuntimeError::VariableAlreadyDeclared { pos, .. } => *pos,
         };
 

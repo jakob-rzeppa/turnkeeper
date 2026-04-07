@@ -1,3 +1,5 @@
+use backend_derive::execute_debug;
+
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::while_loop::WhileLoopStatement},
     runtime::{
@@ -6,6 +8,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for WhileLoopStatement {
+    #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let condition = self.condition();
 

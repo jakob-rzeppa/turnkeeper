@@ -1,8 +1,10 @@
 use std::fmt::Display;
 
+use serde::Serialize;
+
 use crate::application::plugin::parser::abstract_syntax_tree::expression::atom::literal::LiteralValue;
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, Serialize)]
 pub enum VariableValue {
     Int(i64),
     Float(f64),
