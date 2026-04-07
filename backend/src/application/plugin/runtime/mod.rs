@@ -9,6 +9,7 @@ use crate::application::plugin::{
     },
 };
 
+mod debug_env;
 mod debug_mode;
 mod debug_state;
 pub mod error;
