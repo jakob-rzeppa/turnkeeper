@@ -6,17 +6,17 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for WhileLoopStatement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let condition = self.condition();
 
         loop {
-            let condition_value = condition.execute(env)?;
+            let condition_value = condition.execute(env).await?;
 
             match condition_value {
                 VariableValue::Bool(true) => {
                     env.memory_manager.push_scope();
                     for stmt in self.body() {
-                        match stmt.execute(env) {
+                        match Box::pin(stmt.execute(env)).await {
                             Ok(()) => {}
                             Err(err) => {
                                 env.memory_manager.pop_scope();

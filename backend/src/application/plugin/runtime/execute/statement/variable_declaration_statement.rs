@@ -12,11 +12,11 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for VariableDeclarationStatement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let identifier = Identifier::from(self.identifier());
         let var_type = self.datatype();
         let expression = self.value();
-        let value = self.value().execute(env)?;
+        let value = self.value().execute(env).await?;
 
         // Type checking
         match (&var_type, &value) {
@@ -42,8 +42,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_variable_declaration() {
+    #[tokio::test]
+    async fn test_variable_declaration() {
         let mut env = RuntimeEnvironment::new();
         let var_decl = VariableDeclarationStatement::new(
             "x",
@@ -53,7 +53,7 @@ mod tests {
             0,
         );
 
-        let result = var_decl.execute(&mut env);
+        let result = var_decl.execute(&mut env).await;
         assert!(result.is_ok());
         let stored_value = env
             .memory_manager
@@ -62,8 +62,8 @@ mod tests {
         assert_eq!(stored_value, &VariableValue::Int(42));
     }
 
-    #[test]
-    fn test_variable_declaration_type_mismatch() {
+    #[tokio::test]
+    async fn test_variable_declaration_type_mismatch() {
         let mut env = RuntimeEnvironment::new();
         let var_decl = VariableDeclarationStatement::new(
             "x",
@@ -73,12 +73,12 @@ mod tests {
             0,
         );
 
-        let result = var_decl.execute(&mut env);
+        let result = var_decl.execute(&mut env).await;
         assert!(result.is_err());
     }
 
-    #[test]
-    fn test_variable_declaration_shadowing() {
+    #[tokio::test]
+    async fn test_variable_declaration_shadowing() {
         let mut env = RuntimeEnvironment::new();
         env.memory_manager
             .declare_variable(Identifier::new("x".to_string()), VariableValue::Int(42))
@@ -93,7 +93,7 @@ mod tests {
             0,
         );
 
-        let result = var_decl.execute(&mut env);
+        let result = var_decl.execute(&mut env).await;
         assert!(result.is_ok());
         let stored_value = env
             .memory_manager
@@ -109,8 +109,8 @@ mod tests {
         assert_eq!(stored_value, &VariableValue::Int(42)); // The outer variable should still be accessible after popping the inner scope
     }
 
-    #[test]
-    fn test_variable_declaration_same_scope_fails() {
+    #[tokio::test]
+    async fn test_variable_declaration_same_scope_fails() {
         let mut env = RuntimeEnvironment::new();
         env.memory_manager
             .declare_variable(Identifier::new("x".to_string()), VariableValue::Int(42))
@@ -124,7 +124,7 @@ mod tests {
             0,
         );
 
-        let result = var_decl.execute(&mut env);
+        let result = var_decl.execute(&mut env).await;
         assert!(result.is_err());
 
         let old_value = env

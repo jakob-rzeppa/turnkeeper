@@ -5,5 +5,8 @@ mod expression;
 mod statement;
 
 pub trait Executable<R> {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<R, RuntimeError>;
+    fn execute(
+        &self,
+        env: &mut RuntimeEnvironment,
+    ) -> impl std::future::Future<Output = Result<R, RuntimeError>>;
 }

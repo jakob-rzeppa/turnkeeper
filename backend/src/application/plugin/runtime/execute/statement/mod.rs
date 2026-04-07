@@ -10,13 +10,13 @@ mod variable_declaration_statement;
 mod while_statement;
 
 impl Executable<()> for Statement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         match self {
-            Statement::VariableDeclaration(var_decl) => var_decl.execute(env),
-            Statement::Assignment(assign) => assign.execute(env),
-            Statement::If(if_stmt) => if_stmt.execute(env),
-            Statement::WhileLoop(while_loop) => while_loop.execute(env),
-            Statement::Expression(expr_stmt) => expr_stmt.execute(env),
+            Statement::VariableDeclaration(var_decl) => var_decl.execute(env).await,
+            Statement::Assignment(assign) => assign.execute(env).await,
+            Statement::If(if_stmt) => if_stmt.execute(env).await,
+            Statement::WhileLoop(while_loop) => while_loop.execute(env).await,
+            Statement::Expression(expr_stmt) => expr_stmt.execute(env).await,
         }
     }
 }

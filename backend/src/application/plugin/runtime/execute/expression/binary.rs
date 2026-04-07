@@ -9,9 +9,9 @@ use crate::application::plugin::{
 };
 
 impl Executable<VariableValue> for BinaryExpression {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
-        let left_value = self.left().execute(env)?;
-        let right_value = self.right().execute(env)?;
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
+        let left_value = self.left().execute(env).await?;
+        let right_value = self.right().execute(env).await?;
 
         match (left_value.clone(), self.operator(), right_value.clone()) {
             // Addition

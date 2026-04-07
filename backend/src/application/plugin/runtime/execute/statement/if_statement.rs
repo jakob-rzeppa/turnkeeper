@@ -6,15 +6,15 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for IfStatement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let condition = self.condition();
-        let condition_value = condition.execute(env)?;
+        let condition_value = condition.execute(env).await?;
 
         match condition_value {
             VariableValue::Bool(true) => {
                 env.memory_manager.push_scope();
                 for stmt in self.then_statements() {
-                    match stmt.execute(env) {
+                    match Box::pin(stmt.execute(env)).await {
                         Ok(()) => {}
                         Err(err) => {
                             env.memory_manager.pop_scope();
@@ -27,11 +27,11 @@ impl Executable<()> for IfStatement {
             VariableValue::Bool(false) => {
                 for else_if in self.else_if_branches() {
                     let else_if_condition = else_if.condition();
-                    let else_if_condition_value = else_if_condition.execute(env)?;
+                    let else_if_condition_value = else_if_condition.execute(env).await?;
                     if let VariableValue::Bool(true) = else_if_condition_value {
                         env.memory_manager.push_scope();
                         for stmt in else_if.then_statements() {
-                            match stmt.execute(env) {
+                            match Box::pin(stmt.execute(env)).await {
                                 Ok(()) => {}
                                 Err(err) => {
                                     env.memory_manager.pop_scope();
@@ -53,7 +53,7 @@ impl Executable<()> for IfStatement {
                 if let Some(else_branch) = self.else_branch() {
                     env.memory_manager.push_scope();
                     for stmt in else_branch.then_statements() {
-                        match stmt.execute(env) {
+                        match Box::pin(stmt.execute(env)).await {
                             Ok(()) => {}
                             Err(err) => {
                                 env.memory_manager.pop_scope();

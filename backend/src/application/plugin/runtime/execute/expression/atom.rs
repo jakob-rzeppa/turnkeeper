@@ -9,7 +9,7 @@ use crate::application::plugin::{
 };
 
 impl Executable<VariableValue> for ExpressionAtom {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
         match self {
             ExpressionAtom::Literal(literal) => Ok(VariableValue::from(literal.value())),
             ExpressionAtom::Variable(var) => env

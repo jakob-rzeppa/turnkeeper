@@ -4,8 +4,8 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for ExpressionStatement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
-        self.expression().execute(env)?;
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+        self.expression().execute(env).await?;
         Ok(())
     }
 }

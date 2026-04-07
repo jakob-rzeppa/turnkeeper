@@ -18,13 +18,13 @@ impl Plugin {
     }
 
     #[allow(dead_code)]
-    pub fn execute(&self) -> Result<(), anyhow::Error> {
+    pub async fn execute(&self) -> Result<(), anyhow::Error> {
         let mut runtime_env = runtime::RuntimeEnvironment::new();
 
         let abstract_syntax_tree = parse_source_code(&self.source_code)?;
 
         // Runtime execution
-        runtime_env.run(&abstract_syntax_tree)?;
+        runtime_env.run(&abstract_syntax_tree).await?;
 
         Ok(())
     }

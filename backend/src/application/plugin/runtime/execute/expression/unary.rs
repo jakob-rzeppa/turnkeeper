@@ -9,8 +9,8 @@ use crate::application::plugin::{
 };
 
 impl Executable<VariableValue> for UnaryExpression {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
-        let operand_value = self.operand().execute(env)?;
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
+        let operand_value = self.operand().execute(env).await?;
 
         match (self.operator(), &operand_value) {
             (UnaryOperator::Negation, VariableValue::Int(value)) => Ok(VariableValue::Int(-value)),

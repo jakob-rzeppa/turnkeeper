@@ -7,9 +7,9 @@ use crate::application::plugin::{
 };
 
 impl Executable<()> for AssignmentStatement {
-    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+    async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
         let name = Identifier::from(self.identifier());
-        let value = self.value().execute(env)?;
+        let value = self.value().execute(env).await?;
 
         env.memory_manager
             .assign_variable(name, value)
@@ -27,8 +27,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_assignment() {
+    #[tokio::test]
+    async fn test_assignment() {
         let mut env = RuntimeEnvironment::new();
         env.memory_manager
             .declare_variable(Identifier::new("x".to_string()), VariableValue::Int(42))
@@ -36,7 +36,7 @@ mod tests {
 
         let assignment =
             AssignmentStatement::new("x", Expression::new_atom_literal_int(100, 0, 0), 0, 0);
-        assert!(assignment.execute(&mut env).is_ok());
+        assert!(assignment.execute(&mut env).await.is_ok());
         let stored_value = env
             .memory_manager
             .get_variable(&Identifier::new("x".to_string()))
@@ -44,17 +44,17 @@ mod tests {
         assert_eq!(stored_value, &VariableValue::Int(100));
     }
 
-    #[test]
-    fn test_assignment_missing_variable() {
+    #[tokio::test]
+    async fn test_assignment_missing_variable() {
         let mut env = RuntimeEnvironment::new();
 
         let assignment =
             AssignmentStatement::new("y", Expression::new_atom_literal_int(200, 0, 0), 0, 0);
-        assert!(assignment.execute(&mut env).is_err());
+        assert!(assignment.execute(&mut env).await.is_err());
     }
 
-    #[test]
-    fn test_assignment_type_mismatch() {
+    #[tokio::test]
+    async fn test_assignment_type_mismatch() {
         let mut env = RuntimeEnvironment::new();
         env.memory_manager
             .declare_variable(Identifier::new("z".to_string()), VariableValue::Int(42))
@@ -66,6 +66,6 @@ mod tests {
             0,
             0,
         );
-        assert!(assignment.execute(&mut env).is_err());
+        assert!(assignment.execute(&mut env).await.is_err());
     }
 }

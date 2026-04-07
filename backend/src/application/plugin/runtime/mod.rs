@@ -29,15 +29,15 @@ impl RuntimeEnvironment {
         }
     }
 
-    pub fn run(&mut self, ast: &Root) -> Result<(), RuntimeError> {
+    pub async fn run(&mut self, ast: &Root) -> Result<(), RuntimeError> {
         for statement in ast.statements() {
-            statement.execute(self)?;
+            statement.execute(self).await?;
         }
 
         Ok(())
     }
 
-    pub fn run_debug_mode(
+    pub async fn run_debug_mode(
         &mut self,
         ast: &Root,
         breakpoints: Vec<usize>,
@@ -46,7 +46,7 @@ impl RuntimeEnvironment {
     ) -> Result<(), RuntimeError> {
         self.debug_mode = Some(DebugMode::new(breakpoints, command_receiver, state_sender));
 
-        self.run(ast)?;
+        self.run(ast).await?;
 
         Ok(())
     }
@@ -58,8 +58,8 @@ mod tests {
 
     use super::*;
 
-    #[test]
-    fn test_runtime() {
+    #[tokio::test]
+    async fn test_runtime() {
         let code = r#"
             let x: int = 42;
             x = x + 1;
@@ -68,7 +68,7 @@ mod tests {
 
         let mut runtime = RuntimeEnvironment::new();
         let ast = parse_source_code(code).unwrap();
-        let result = runtime.run(&ast);
+        let result = runtime.run(&ast).await;
         assert!(result.is_ok());
     }
 }
