@@ -1,43 +1,45 @@
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::if_statement::IfStatement},
-    runtime::{RuntimeEnvironment, error::RuntimeError, memory::values::VariableValue},
+    runtime::{
+        RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
+    },
 };
 
-impl RuntimeEnvironment {
-    pub fn execute_if_statement(&mut self, stmt: &IfStatement) -> Result<(), RuntimeError> {
-        let condition = stmt.condition();
-        let condition_value = self.evaluate_expression(condition)?;
+impl Executable<()> for IfStatement {
+    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+        let condition = self.condition();
+        let condition_value = condition.execute(env)?;
 
         match condition_value {
             VariableValue::Bool(true) => {
-                self.memory_manager.push_scope();
-                for stmt in stmt.then_statements() {
-                    match self.execute_statement(stmt) {
+                env.memory_manager.push_scope();
+                for stmt in self.then_statements() {
+                    match stmt.execute(env) {
                         Ok(()) => {}
                         Err(err) => {
-                            self.memory_manager.pop_scope();
+                            env.memory_manager.pop_scope();
                             return Err(err);
                         }
                     }
                 }
-                self.memory_manager.pop_scope();
+                env.memory_manager.pop_scope();
             }
             VariableValue::Bool(false) => {
-                for else_if in stmt.else_if_branches() {
+                for else_if in self.else_if_branches() {
                     let else_if_condition = else_if.condition();
-                    let else_if_condition_value = self.evaluate_expression(else_if_condition)?;
+                    let else_if_condition_value = else_if_condition.execute(env)?;
                     if let VariableValue::Bool(true) = else_if_condition_value {
-                        self.memory_manager.push_scope();
+                        env.memory_manager.push_scope();
                         for stmt in else_if.then_statements() {
-                            match self.execute_statement(stmt) {
+                            match stmt.execute(env) {
                                 Ok(()) => {}
                                 Err(err) => {
-                                    self.memory_manager.pop_scope();
+                                    env.memory_manager.pop_scope();
                                     return Err(err);
                                 }
                             }
                         }
-                        self.memory_manager.pop_scope();
+                        env.memory_manager.pop_scope();
                         return Ok(());
                     } else if !matches!(else_if_condition_value, VariableValue::Bool(_)) {
                         return Err(RuntimeError::TypeMismatch {
@@ -48,18 +50,18 @@ impl RuntimeEnvironment {
                     }
                 }
 
-                if let Some(else_branch) = stmt.else_branch() {
-                    self.memory_manager.push_scope();
+                if let Some(else_branch) = self.else_branch() {
+                    env.memory_manager.push_scope();
                     for stmt in else_branch.then_statements() {
-                        match self.execute_statement(stmt) {
+                        match stmt.execute(env) {
                             Ok(()) => {}
                             Err(err) => {
-                                self.memory_manager.pop_scope();
+                                env.memory_manager.pop_scope();
                                 return Err(err);
                             }
                         }
                     }
-                    self.memory_manager.pop_scope();
+                    env.memory_manager.pop_scope();
                 }
             }
             _ => {

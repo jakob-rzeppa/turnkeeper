@@ -1,31 +1,30 @@
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::while_loop::WhileLoopStatement},
-    runtime::{RuntimeEnvironment, error::RuntimeError, memory::values::VariableValue},
+    runtime::{
+        RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
+    },
 };
 
-impl RuntimeEnvironment {
-    pub fn execute_while_statement(
-        &mut self,
-        stmt: &WhileLoopStatement,
-    ) -> Result<(), RuntimeError> {
-        let condition = stmt.condition();
+impl Executable<()> for WhileLoopStatement {
+    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+        let condition = self.condition();
 
         loop {
-            let condition_value = self.evaluate_expression(condition)?;
+            let condition_value = condition.execute(env)?;
 
             match condition_value {
                 VariableValue::Bool(true) => {
-                    self.memory_manager.push_scope();
-                    for stmt in stmt.body() {
-                        match self.execute_statement(stmt) {
+                    env.memory_manager.push_scope();
+                    for stmt in self.body() {
+                        match stmt.execute(env) {
                             Ok(()) => {}
                             Err(err) => {
-                                self.memory_manager.pop_scope();
+                                env.memory_manager.pop_scope();
                                 return Err(err);
                             }
                         }
                     }
-                    self.memory_manager.pop_scope();
+                    env.memory_manager.pop_scope();
                 }
                 VariableValue::Bool(false) => break,
                 _ => {

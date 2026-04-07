@@ -25,7 +25,7 @@ pub enum Expression {
 }
 
 impl Parsable for Expression {
-    fn is_next(ts: &TokenStream) -> bool {
+    fn is_next(_ts: &TokenStream) -> bool {
         true
     }
 

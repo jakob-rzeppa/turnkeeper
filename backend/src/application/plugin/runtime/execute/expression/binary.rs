@@ -1,81 +1,19 @@
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{
         Positioned,
-        expression::{
-            Expression,
-            atom::ExpressionAtom,
-            binary::{BinaryExpression, BinaryOperator},
-            unary::{UnaryExpression, UnaryOperator},
-        },
+        expression::binary::{BinaryExpression, BinaryOperator},
     },
     runtime::{
-        RuntimeEnvironment,
-        error::RuntimeError,
-        memory::{identifier::Identifier, values::VariableValue},
+        RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
     },
 };
 
-impl RuntimeEnvironment {
-    pub fn evaluate_expression(
-        &mut self,
-        expr: &Expression,
-    ) -> Result<VariableValue, RuntimeError> {
-        match expr {
-            Expression::Atom(atom) => self.evaluate_atom(atom),
-            Expression::Unary(unary_expr) => self.evaluate_unary(unary_expr),
-            Expression::Binary(binary_expr) => self.evaluate_binary(binary_expr),
-        }
-    }
+impl Executable<VariableValue> for BinaryExpression {
+    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<VariableValue, RuntimeError> {
+        let left_value = self.left().execute(env)?;
+        let right_value = self.right().execute(env)?;
 
-    fn evaluate_atom(&mut self, atom: &ExpressionAtom) -> Result<VariableValue, RuntimeError> {
-        match atom {
-            ExpressionAtom::Literal(literal) => Ok(VariableValue::from(literal.value())),
-            ExpressionAtom::Variable(var) => self
-                .memory_manager
-                .get_variable(&Identifier::from(var.identifier()))
-                .map_err(|err| RuntimeError::VariableNotFound {
-                    identifier: Identifier::from(var.identifier()),
-                    pos: var.position(),
-                })
-                .cloned(),
-            ExpressionAtom::FunctionCall(function_call) => unimplemented!(),
-        }
-    }
-
-    fn evaluate_unary(
-        &mut self,
-        unary_expr: &UnaryExpression,
-    ) -> Result<VariableValue, RuntimeError> {
-        let operand_value = self.evaluate_expression(unary_expr.operand())?;
-
-        match (unary_expr.operator(), &operand_value) {
-            (UnaryOperator::Negation, VariableValue::Int(value)) => Ok(VariableValue::Int(-value)),
-            (UnaryOperator::Negation, VariableValue::Float(value)) => {
-                Ok(VariableValue::Float(-value))
-            }
-            (UnaryOperator::LogicalNot, VariableValue::Bool(value)) => {
-                Ok(VariableValue::Bool(!value))
-            }
-            _ => Err(RuntimeError::UndefinedUnaryOperation {
-                operator: format!("{}", unary_expr.operator()),
-                operand: operand_value,
-                pos: unary_expr.position(),
-            }),
-        }
-    }
-
-    fn evaluate_binary(
-        &mut self,
-        binary_expr: &BinaryExpression,
-    ) -> Result<VariableValue, RuntimeError> {
-        let left_value = self.evaluate_expression(binary_expr.left())?;
-        let right_value = self.evaluate_expression(binary_expr.right())?;
-
-        match (
-            left_value.clone(),
-            binary_expr.operator(),
-            right_value.clone(),
-        ) {
+        match (left_value.clone(), self.operator(), right_value.clone()) {
             // Addition
             (VariableValue::Int(left), BinaryOperator::Addition, VariableValue::Int(right)) => {
                 Ok(VariableValue::Int(left + right))
@@ -115,7 +53,7 @@ impl RuntimeEnvironment {
             (VariableValue::Int(left), BinaryOperator::Division, VariableValue::Int(right)) => {
                 if right == 0 {
                     return Err(RuntimeError::DivisionByZero {
-                        pos: binary_expr.position(),
+                        pos: self.position(),
                     });
                 }
                 Ok(VariableValue::Int(left / right))
@@ -123,7 +61,7 @@ impl RuntimeEnvironment {
             (VariableValue::Float(left), BinaryOperator::Division, VariableValue::Float(right)) => {
                 if right == 0.0 {
                     return Err(RuntimeError::DivisionByZero {
-                        pos: binary_expr.position(),
+                        pos: self.position(),
                     });
                 }
                 Ok(VariableValue::Float(left / right))
@@ -133,7 +71,7 @@ impl RuntimeEnvironment {
             (VariableValue::Int(left), BinaryOperator::Modulo, VariableValue::Int(right)) => {
                 if right == 0 {
                     return Err(RuntimeError::DivisionByZero {
-                        pos: binary_expr.position(),
+                        pos: self.position(),
                     });
                 }
                 Ok(VariableValue::Int(left % right))
@@ -225,9 +163,9 @@ impl RuntimeEnvironment {
             ) => Ok(VariableValue::Bool(left >= right)),
             _ => Err(RuntimeError::UndefinedBinaryOperation {
                 left: left_value,
-                operator: format!("{}", binary_expr.operator()),
+                operator: format!("{}", self.operator()),
                 right: right_value,
-                pos: binary_expr.position(),
+                pos: self.position(),
             }),
         }
     }

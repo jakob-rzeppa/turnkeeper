@@ -1,19 +1,19 @@
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{Positioned, statement::assignment::AssignmentStatement},
-    runtime::{RuntimeEnvironment, error::RuntimeError, memory::identifier::Identifier},
+    runtime::{
+        RuntimeEnvironment, error::RuntimeError, execute::Executable,
+        memory::identifier::Identifier,
+    },
 };
 
-impl RuntimeEnvironment {
-    pub fn execute_assignment_statement(
-        &mut self,
-        assignment: &AssignmentStatement,
-    ) -> Result<(), RuntimeError> {
-        let name = Identifier::from(assignment.identifier());
-        let value = self.evaluate_expression(assignment.value())?;
+impl Executable<()> for AssignmentStatement {
+    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+        let name = Identifier::from(self.identifier());
+        let value = self.value().execute(env)?;
 
-        self.memory_manager
+        env.memory_manager
             .assign_variable(name, value)
-            .map_err(|err| RuntimeError::from_memory_error(err, assignment.position()))
+            .map_err(|err| RuntimeError::from_memory_error(err, self.position()))
     }
 }
 
@@ -36,7 +36,7 @@ mod tests {
 
         let assignment =
             AssignmentStatement::new("x", Expression::new_atom_literal_int(100, 0, 0), 0, 0);
-        assert!(env.execute_assignment_statement(&assignment).is_ok());
+        assert!(assignment.execute(&mut env).is_ok());
         let stored_value = env
             .memory_manager
             .get_variable(&Identifier::new("x".to_string()))
@@ -50,7 +50,7 @@ mod tests {
 
         let assignment =
             AssignmentStatement::new("y", Expression::new_atom_literal_int(200, 0, 0), 0, 0);
-        assert!(env.execute_assignment_statement(&assignment).is_err());
+        assert!(assignment.execute(&mut env).is_err());
     }
 
     #[test]
@@ -66,6 +66,6 @@ mod tests {
             0,
             0,
         );
-        assert!(env.execute_assignment_statement(&assignment).is_err());
+        assert!(assignment.execute(&mut env).is_err());
     }
 }

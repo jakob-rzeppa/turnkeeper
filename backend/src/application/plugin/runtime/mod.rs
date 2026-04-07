@@ -4,7 +4,8 @@ use crate::application::plugin::{
     debugger::commands::DebugCommand,
     parser::abstract_syntax_tree::root::Root,
     runtime::{
-        debug_mode::DebugMode, debug_state::DebugState, error::RuntimeError, memory::MemoryManager,
+        debug_mode::DebugMode, debug_state::DebugState, error::RuntimeError, execute::Executable,
+        memory::MemoryManager,
     },
 };
 
@@ -29,7 +30,7 @@ impl RuntimeEnvironment {
 
     pub fn run(&mut self, ast: &Root) -> Result<(), RuntimeError> {
         for statement in ast.statements() {
-            self.execute_statement(&statement)?;
+            statement.execute(self)?;
         }
 
         Ok(())

@@ -6,26 +6,24 @@ use crate::application::plugin::{
     runtime::{
         RuntimeEnvironment,
         error::RuntimeError,
+        execute::Executable,
         memory::{identifier::Identifier, values::VariableValue},
     },
 };
 
-impl RuntimeEnvironment {
-    pub fn execute_variable_declaration_statement(
-        &mut self,
-        var_decl: &VariableDeclarationStatement,
-    ) -> Result<(), RuntimeError> {
-        let identifier = Identifier::from(var_decl.identifier());
-        let var_type = var_decl.datatype();
-        let expression = var_decl.value();
-        let value = self.evaluate_expression(expression)?;
+impl Executable<()> for VariableDeclarationStatement {
+    fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
+        let identifier = Identifier::from(self.identifier());
+        let var_type = self.datatype();
+        let expression = self.value();
+        let value = self.value().execute(env)?;
 
         // Type checking
         match (&var_type, &value) {
             (Datatype::Integer, VariableValue::Int(_))
             | (Datatype::Float, VariableValue::Float(_))
             | (Datatype::String, VariableValue::String(_))
-            | (Datatype::Boolean, VariableValue::Bool(_)) => self
+            | (Datatype::Boolean, VariableValue::Bool(_)) => env
                 .memory_manager
                 .declare_variable(identifier, value)
                 .map_err(|err| RuntimeError::from_memory_error(err, expression.position())),
@@ -55,7 +53,7 @@ mod tests {
             0,
         );
 
-        let result = env.execute_variable_declaration_statement(&var_decl);
+        let result = var_decl.execute(&mut env);
         assert!(result.is_ok());
         let stored_value = env
             .memory_manager
@@ -75,7 +73,7 @@ mod tests {
             0,
         );
 
-        let result = env.execute_variable_declaration_statement(&var_decl);
+        let result = var_decl.execute(&mut env);
         assert!(result.is_err());
     }
 
@@ -95,7 +93,7 @@ mod tests {
             0,
         );
 
-        let result = env.execute_variable_declaration_statement(&var_decl);
+        let result = var_decl.execute(&mut env);
         assert!(result.is_ok());
         let stored_value = env
             .memory_manager
@@ -126,7 +124,7 @@ mod tests {
             0,
         );
 
-        let result = env.execute_variable_declaration_statement(&var_decl);
+        let result = var_decl.execute(&mut env);
         assert!(result.is_err());
 
         let old_value = env
