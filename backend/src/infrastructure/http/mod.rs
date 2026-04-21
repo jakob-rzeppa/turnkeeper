@@ -11,7 +11,7 @@ pub mod game;
 pub mod user;
 
 use crate::AppState;
-use crate::infrastructure::auth::middleware::user_auth_middleware;
+use crate::infrastructure::auth::middleware::auth_middleware;
 use crate::infrastructure::http::game::{games_create, games_delete, games_get};
 use crate::infrastructure::http::user::{list, login, register};
 use axum::routing::{delete, get, post};
@@ -28,28 +28,28 @@ pub fn get_routes(state: AppState) -> Router<AppState> {
             "/games",
             get(games_get).route_layer(middleware::from_fn_with_state(
                 state.clone(),
-                user_auth_middleware,
+                auth_middleware,
             )),
         )
         .route(
             "/games",
             post(games_create).route_layer(middleware::from_fn_with_state(
                 state.clone(),
-                user_auth_middleware,
+                auth_middleware,
             )),
         )
         .route(
             "/games/{id}",
             delete(games_delete).route_layer(middleware::from_fn_with_state(
                 state.clone(),
-                user_auth_middleware,
+                auth_middleware,
             )),
         )
         .route(
             "/users",
             get(list).route_layer(middleware::from_fn_with_state(
                 state.clone(),
-                user_auth_middleware,
+                auth_middleware,
             )),
         )
         // User routes

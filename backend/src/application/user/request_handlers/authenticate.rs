@@ -2,15 +2,15 @@
 //!
 //! Validates a user JWT token and confirms the user exists.
 
-use crate::application::user::contracts::{UserJwtValidatorContract, UserRepositoryContract};
-use crate::application::user::requests::{UserAuthenticateRequest};
-use crate::application::user::responses::{UserAuthenticationResponse};
+use crate::application::user::contracts::{JwtValidatorContract, UserRepositoryContract};
+use crate::application::user::requests::UserAuthenticateRequest;
+use crate::application::user::responses::UserAuthenticationResponse;
 use crate::domain::user::error::{UserError, UserErrorKind};
 
 pub struct UserAuthenticateRequestHandler<UserRepository, JwtValidator>
 where
     UserRepository: UserRepositoryContract + 'static,
-    JwtValidator: UserJwtValidatorContract + 'static,
+    JwtValidator: JwtValidatorContract + 'static,
 {
     repository: UserRepository,
     jwt: JwtValidator,
@@ -19,51 +19,56 @@ where
 impl<UserRepository, JwtValidator> UserAuthenticateRequestHandler<UserRepository, JwtValidator>
 where
     UserRepository: UserRepositoryContract + 'static,
-    JwtValidator: UserJwtValidatorContract + 'static,
+    JwtValidator: JwtValidatorContract + 'static,
 {
     pub fn new(repository: UserRepository, jwt: JwtValidator) -> Self {
         Self { repository, jwt }
     }
 
     /// Validates a JWT and checks that the referenced user still exists.
-    pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<UserAuthenticationResponse, UserError> {
+    pub async fn authenticate(
+        &self,
+        request: UserAuthenticateRequest,
+    ) -> Result<UserAuthenticationResponse, UserError> {
         let user_id = self.jwt.validate_token(&request.token)?;
 
         if !self.repository.check_if_exists(&user_id).await? {
             return Err(UserError::new(UserErrorKind::UserNotFound));
         }
 
-        Ok(UserAuthenticationResponse {
-            user_id,
-        })
+        Ok(UserAuthenticationResponse { user_id })
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use mockall::predicate;
-    use crate::application::user::contracts::{MockUserJwtValidatorContract, MockUserRepositoryContract};
+    use crate::application::user::contracts::{
+        MockJwtValidatorContract, MockUserRepositoryContract,
+    };
     use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
     use crate::domain::game::value_objects::id::Id;
     use crate::domain::user::error::{UserError, UserErrorKind};
+    use mockall::predicate;
 
     #[tokio::test]
     async fn test_valid_token_returns_user() {
         let mut user_repo = MockUserRepositoryContract::new();
-        let mut jwt_validator = MockUserJwtValidatorContract::new();
+        let mut jwt_validator = MockJwtValidatorContract::new();
 
         let user_id = Id::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
 
-        jwt_validator.expect_validate_token()
+        jwt_validator
+            .expect_validate_token()
             .times(1)
             .with(predicate::eq("test-token"))
             .returning(move |_| Ok(user_id));
 
-        user_repo.expect_check_if_exists()
+        user_repo
+            .expect_check_if_exists()
             .times(1)
             .with(predicate::eq(user_id))
             .returning(move |_| Box::pin(async move { Ok(true) }));
@@ -79,18 +84,18 @@ mod tests {
     #[tokio::test]
     async fn test_invalid_token_returns_error() {
         let mut user_repo = MockUserRepositoryContract::new();
-        let mut jwt_validator = MockUserJwtValidatorContract::new();
+        let mut jwt_validator = MockJwtValidatorContract::new();
         let request = UserAuthenticateRequest {
             token: "invalid-token".to_string(),
         };
 
-        jwt_validator.expect_validate_token()
+        jwt_validator
+            .expect_validate_token()
             .times(1)
             .with(predicate::eq("invalid-token"))
             .returning(|_| Err(UserError::new(UserErrorKind::InvalidCredentials)));
 
-        user_repo.expect_get_by_id()
-            .never();
+        user_repo.expect_get_by_id().never();
 
         let handler = UserAuthenticateRequestHandler::new(user_repo, jwt_validator);
         let result = handler.authenticate(request).await;
@@ -103,7 +108,7 @@ mod tests {
     #[tokio::test]
     async fn test_valid_token_no_matching_user_returns_error() {
         let mut user_repo = MockUserRepositoryContract::new();
-        let mut jwt_validator = MockUserJwtValidatorContract::new();
+        let mut jwt_validator = MockJwtValidatorContract::new();
 
         let user_id = Id::new();
         let request = UserAuthenticateRequest {
@@ -111,12 +116,14 @@ mod tests {
         };
 
         let user_id_clone = user_id.clone();
-        jwt_validator.expect_validate_token()
+        jwt_validator
+            .expect_validate_token()
             .times(1)
             .with(predicate::eq("test-token"))
             .returning(move |_| Ok(user_id_clone.clone()));
 
-        user_repo.expect_check_if_exists()
+        user_repo
+            .expect_check_if_exists()
             .times(1)
             .with(predicate::eq(user_id))
             .returning(move |_| Box::pin(async move { Ok(false) }));

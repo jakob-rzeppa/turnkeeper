@@ -63,7 +63,7 @@ pub trait UserRepositoryContract {
 /// - Include user ID in the token payload
 /// - Set appropriate expiration times
 #[mockall::automock]
-pub trait UserJwtGeneratorContract {
+pub trait JwtGeneratorContract {
     /// Generates a JWT token for a user.
     ///
     /// # Returns
@@ -94,7 +94,7 @@ pub trait UserJwtGeneratorContract {
 /// - The token hasn't expired
 /// - The token hasn't been tampered with
 #[mockall::automock]
-pub trait UserJwtValidatorContract {
+pub trait JwtValidatorContract {
     /// Validates a JWT token and extracts the user ID.
     ///
     /// # Arguments

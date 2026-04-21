@@ -28,7 +28,7 @@ pub async fn login(
 ) -> Result<LoginHttpResponse, HttpError> {
     let user_auth_handler = UserLoginRequestHandler::new(
         state.repository_manager.user(),
-        state.auth_manager.user_jwt_generator(),
+        state.auth_manager.jwt_generator(),
     );
 
     let request_dto = UserLoginRequest {
@@ -62,7 +62,7 @@ pub async fn register(
 ) -> Result<RegisterHttpResponse, HttpError> {
     let user_auth_handler = UserRegisterRequestHandler::new(
         state.repository_manager.user(),
-        state.auth_manager.user_jwt_generator(),
+        state.auth_manager.jwt_generator(),
     );
 
     let request_dto = UserRegisterRequest {
