@@ -52,7 +52,7 @@ mod tests {
     };
     use crate::application::user::request_handlers::login::UserLoginRequestHandler;
     use crate::application::user::requests::UserLoginRequest;
-    use crate::domain::game::value_objects::id::Id;
+    use crate::domain::common::identifier::Identifier;
     use crate::domain::user::entities::User;
     use crate::domain::user::error::{UserError, UserErrorKind};
     use std::sync::Arc;
@@ -69,7 +69,7 @@ mod tests {
             password: password.clone(),
         };
 
-        let user_id = Id::new();
+        let user_id = Identifier::new();
         let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
         user_repo.expect_get_by_name().times(1).returning(move |_| {
             let user = user.clone();
@@ -101,7 +101,7 @@ mod tests {
             password: password.clone(),
         };
 
-        let user_id = Id::new();
+        let user_id = Identifier::new();
         let user =
             User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
         user_repo.expect_get_by_name().times(1).returning(move |_| {

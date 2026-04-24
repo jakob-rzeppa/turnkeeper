@@ -1,12 +1,13 @@
-//! # Create Game Handler
-//!
-//! Creates a new game and persists it via the repository.
-
 use crate::application::game::contracts::GameRepositoryContract;
-use crate::application::game::requests::CreateGameRequest;
-use crate::domain::game::error::GameError;
-use crate::domain::game::value_objects::id::Id;
+use crate::application::game::error::GameApplicationError;
+use crate::domain::common::identifier::Identifier;
+use crate::domain::game::entities::game::Game;
 use std::sync::Arc;
+
+pub struct CreateGameRequest {
+    pub name: String,
+    pub description: String,
+}
 
 pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract> {
     repository: Arc<GameRepository>,
@@ -18,13 +19,47 @@ impl<GameRepository: GameRepositoryContract> CreateGameRequestHandler<GameReposi
     }
 
     /// Creates a game with a generated UUID and returns the new ID.
-    pub async fn create_game(&self, request: CreateGameRequest) -> Result<Id, GameError> {
-        let id = Id::new();
+    pub async fn create_game(
+        &self,
+        request: CreateGameRequest,
+    ) -> Result<Identifier, GameApplicationError> {
+        let game = Game::new(request.name, request.description);
 
-        self.repository
-            .create(id.clone(), request.name, request.gm_user_id)
-            .await?;
+        self.repository.save(&game).await?;
 
-        Ok(id)
+        Ok(game.id().clone())
+    }
+}
+
+#[cfg(test)]
+mod tests {
+    use super::*;
+    use crate::application::game::contracts::MockGameRepositoryContract;
+
+    #[tokio::test]
+    async fn test_create_game_successfully() {
+        let mut repository = MockGameRepositoryContract::new();
+
+        let request = CreateGameRequest {
+            name: "Test Game".to_string(),
+            description: "A test game description".to_string(),
+        };
+
+        // First call to check if game exists should return None
+        repository
+            .expect_get_by_id()
+            .times(1)
+            .returning(|_| Box::pin(async { Ok(None) }));
+
+        // Save should be called once
+        repository
+            .expect_save()
+            .times(1)
+            .returning(|_| Box::pin(async { Ok(()) }));
+
+        let handler = CreateGameRequestHandler::new(Arc::new(repository));
+        let result = handler.create_game(request).await;
+
+        assert!(result.is_ok());
     }
 }

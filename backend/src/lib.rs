@@ -3,7 +3,7 @@
 // //! Re-exports the core modules so they are accessible from integration tests
 // //! and from the binary entry-point in `main.rs`.
 
-// pub mod application;
+pub mod application;
 pub mod domain;
 // pub mod infrastructure;
 // pub mod util;

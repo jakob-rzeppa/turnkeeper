@@ -1,5 +1,5 @@
 use crate::domain::{
-    common::identifier::Identifier,
+    common::{date_time::DateTime, identifier::Identifier},
     game::entities::{
         action::Action,
         game::Game,
@@ -31,6 +31,9 @@ pub struct GameInstance {
     log: Log,
 
     source: Game,
+
+    created_at: DateTime,
+    last_played_at: DateTime,
 }
 
 impl GameInstance {
@@ -56,6 +59,8 @@ impl GameInstance {
             players: Vec::new(),
             source,
             gm_user_id,
+            created_at: DateTime::now(),
+            last_played_at: DateTime::now(),
         }
     }
 
@@ -72,6 +77,8 @@ impl GameInstance {
         log: Log,
         source: Game,
         gm_user_id: Identifier,
+        created_at: DateTime,
+        last_played_at: DateTime,
     ) -> Self {
         Self {
             id,
@@ -86,6 +93,8 @@ impl GameInstance {
             log,
             source,
             gm_user_id,
+            created_at,
+            last_played_at,
         }
     }
 }

@@ -1,4 +1,4 @@
-use sqlx::types::chrono::{DateTime, Local};
+use chrono::{DateTime, Local};
 
 use crate::domain::common::identifier::Identifier;
 

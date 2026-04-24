@@ -47,7 +47,7 @@ mod tests {
     };
     use crate::application::user::request_handlers::authenticate::UserAuthenticateRequestHandler;
     use crate::application::user::requests::UserAuthenticateRequest;
-    use crate::domain::game::value_objects::id::Id;
+    use crate::domain::common::identifier::Identifier;
     use crate::domain::user::error::{UserError, UserErrorKind};
     use mockall::predicate;
 
@@ -56,7 +56,7 @@ mod tests {
         let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockJwtValidatorContract::new();
 
-        let user_id = Id::new();
+        let user_id = Identifier::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
@@ -110,7 +110,7 @@ mod tests {
         let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_validator = MockJwtValidatorContract::new();
 
-        let user_id = Id::new();
+        let user_id = Identifier::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
