@@ -22,10 +22,10 @@ pub struct GameInstance {
 
     current_player_index: usize,
     round: u32,
-    game_stats: HashMap<String, GameStat>,
-    player_stats: HashMap<String, PlayerStat>,
-    actions: HashMap<String, Action>,
-    pages: HashMap<String, Page>,
+    game_stats: HashMap<Identifier, GameStat>,
+    player_stats: HashMap<Identifier, PlayerStat>,
+    actions: HashMap<Identifier, Action>,
+    pages: HashMap<Identifier, Page>,
 
     players: Vec<Player>,
 
@@ -37,10 +37,10 @@ pub struct GameInstance {
 impl GameInstance {
     pub fn new(
         name: String,
-        game_stats: HashMap<String, GameStat>,
-        player_stats: HashMap<String, PlayerStat>,
-        actions: HashMap<String, Action>,
-        pages: HashMap<String, Page>,
+        game_stats: HashMap<Identifier, GameStat>,
+        player_stats: HashMap<Identifier, PlayerStat>,
+        actions: HashMap<Identifier, Action>,
+        pages: HashMap<Identifier, Page>,
         source: Game,
     ) -> Self {
         Self {

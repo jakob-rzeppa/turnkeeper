@@ -18,6 +18,14 @@ impl GameInstance {
     }
 
     pub fn advance_turn(&mut self) {
-        unimplemented!()
+        if self.players.is_empty() {
+            return; // No players, do nothing
+        }
+
+        self.current_player_index += 1;
+        if self.current_player_index >= self.players.len() {
+            self.current_player_index = 0;
+            self.round += 1;
+        }
     }
 }

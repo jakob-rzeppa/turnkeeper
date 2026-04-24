@@ -12,6 +12,14 @@ impl Player {
         Self { id, user_id: None }
     }
 
+    pub fn id(&self) -> &Identifier {
+        &self.id
+    }
+
+    pub fn user_id(&self) -> Option<&Identifier> {
+        self.user_id.as_ref()
+    }
+
     pub fn attach_user(&mut self, user_id: Identifier) {
         self.user_id = Some(user_id);
     }

@@ -1,4 +1,7 @@
+use crate::domain::common::identifier::Identifier;
+
 pub struct Page {
+    id: Identifier,
     name: String,
 
     code: String,
