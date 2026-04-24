@@ -1,5 +1,3 @@
-use std::collections::HashMap;
-
 use crate::domain::{
     common::identifier::Identifier,
     game::entities::{
@@ -27,6 +25,7 @@ pub struct GameInstance {
     actions: Vec<Action>,
     pages: Vec<Page>,
 
+    gm_user_id: Identifier,
     players: Vec<Player>,
 
     log: Log,
@@ -37,6 +36,7 @@ pub struct GameInstance {
 impl GameInstance {
     pub fn new(
         name: String,
+        gm_user_id: Identifier,
         game_stats: Vec<GameStat>,
         player_stats: Vec<PlayerStat>,
         actions: Vec<Action>,
@@ -55,6 +55,7 @@ impl GameInstance {
             pages,
             players: Vec::new(),
             source,
+            gm_user_id,
         }
     }
 
@@ -70,6 +71,7 @@ impl GameInstance {
         players: Vec<Player>,
         log: Log,
         source: Game,
+        gm_user_id: Identifier,
     ) -> Self {
         Self {
             id,
@@ -83,6 +85,7 @@ impl GameInstance {
             players,
             log,
             source,
+            gm_user_id,
         }
     }
 }

@@ -62,6 +62,7 @@ mod tests {
     ) -> GameInstance {
         GameInstance::new(
             "Test Game".to_string(),
+            Identifier::new(),
             game_stats,
             player_stats,
             Vec::new(),
@@ -73,6 +74,7 @@ mod tests {
     fn create_test_game_instance_minimal() -> GameInstance {
         GameInstance::new(
             "Test Game".to_string(),
+            Identifier::new(),
             Vec::new(),
             Vec::new(),
             Vec::new(),
@@ -91,14 +93,14 @@ mod tests {
             game_stats.push(GameStat::new_raw(
                 stat_id.clone(),
                 "Score".to_string(),
-                StatValue::Integer(0),
-                StatValue::Integer(0),
+                StatValue::Int(0),
+                StatValue::Int(0),
                 GameStatVisibility::Public,
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());
 
-            let result = game_instance.set_game_stat_value(&stat_id, StatValue::Integer(42));
+            let result = game_instance.set_game_stat_value(&stat_id, StatValue::Int(42));
 
             assert!(result.is_ok());
         }
@@ -129,14 +131,14 @@ mod tests {
             game_stats.push(GameStat::new_raw(
                 stat_id.clone(),
                 "Active".to_string(),
-                StatValue::Boolean(false),
-                StatValue::Boolean(false),
+                StatValue::Bool(false),
+                StatValue::Bool(false),
                 GameStatVisibility::Public,
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());
 
-            let result = game_instance.set_game_stat_value(&stat_id, StatValue::Boolean(true));
+            let result = game_instance.set_game_stat_value(&stat_id, StatValue::Bool(true));
 
             assert!(result.is_ok());
         }
@@ -168,7 +170,7 @@ mod tests {
             let mut game_instance = create_test_game_instance(Vec::new(), Vec::new());
 
             let result =
-                game_instance.set_game_stat_value(&nonexistent_stat_id, StatValue::Integer(42));
+                game_instance.set_game_stat_value(&nonexistent_stat_id, StatValue::Int(42));
 
             assert!(result.is_err());
             assert!(matches!(

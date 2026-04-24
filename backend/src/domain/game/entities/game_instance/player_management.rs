@@ -102,6 +102,7 @@ mod tests {
     fn create_game_instance() -> GameInstance {
         GameInstance::new(
             "Test Game".to_string(),
+            Identifier::new(),
             Vec::new(),
             Vec::new(),
             Vec::new(),

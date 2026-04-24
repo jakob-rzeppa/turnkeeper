@@ -4,7 +4,10 @@ use crate::domain::{
         entities::game_instance::GameInstance,
         projections::{
             game_display_template::GameDisplayTemplateProjection,
-            game_instance_state::GameInstanceStateProjection,
+            game_instance_state::{
+                GameInstanceStateProjection, GameStatProjection, PlayerProjection,
+                PlayerStatProjection,
+            },
         },
     },
 };
@@ -20,6 +23,44 @@ impl GameInstance {
     /// This can be used to update the frontend with the latest game state.
     /// The game state is used to populate the pages with the updated state.
     pub fn get_state(&self, _user_id: Identifier) -> GameInstanceStateProjection {
-        GameInstanceStateProjection {}
+        // For now, we return everything to everyone, but in the future we will need to filter out some data based on the user's permissions and the visibility of the stats.
+        GameInstanceStateProjection {
+            round: self.round,
+            current_player_index: self.current_player_index,
+            game_stats: self
+                .game_stats
+                .iter()
+                .map(|s| GameStatProjection {
+                    id: s.id().clone(),
+                    name: s.name().into(),
+                    value: s.value().clone().into(),
+                    default: s.default().clone().into(),
+                    visibility: s.visibility().to_string(),
+                })
+                .collect(),
+            player_stats: self
+                .player_stats
+                .iter()
+                .map(|s| PlayerStatProjection {
+                    id: s.id().clone(),
+                    name: s.name().into(),
+                    values: s
+                        .values()
+                        .iter()
+                        .map(|(player_id, value)| (player_id.clone(), value.clone().into()))
+                        .collect(),
+                    default: s.default().clone().into(),
+                    visibility: s.visibility().to_string(),
+                })
+                .collect(),
+            players: self
+                .players
+                .iter()
+                .map(|p| PlayerProjection {
+                    id: p.id().clone(),
+                    user_id: p.user_id().cloned(),
+                })
+                .collect(),
+        }
     }
 }

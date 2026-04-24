@@ -11,6 +11,7 @@ use crate::domain::{
     },
 };
 
+#[derive(Clone, Debug)]
 pub struct GameStat {
     id: Identifier,
 
@@ -58,11 +59,28 @@ impl GameStat {
         &self.id
     }
 
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn value(&self) -> &StatValue {
+        &self.value
+    }
+
+    pub fn default(&self) -> &StatValue {
+        &self.default
+    }
+
+    pub fn visibility(&self) -> &GameStatVisibility {
+        &self.visibility
+    }
+
     pub fn set_value(&mut self, value: StatValue) {
         self.value = value;
     }
 }
 
+#[derive(Clone, Debug)]
 pub struct PlayerStat {
     id: Identifier,
 
@@ -110,6 +128,26 @@ impl PlayerStat {
 
     pub fn id(&self) -> &Identifier {
         &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn values(&self) -> &HashMap<Identifier, StatValue> {
+        &self.values
+    }
+
+    pub fn default(&self) -> &StatValue {
+        &self.default
+    }
+
+    pub fn visibility(&self) -> &PlayerStatVisibility {
+        &self.visibility
+    }
+
+    pub fn get_owning_player_value(&self, player_id: &Identifier) -> Option<&StatValue> {
+        self.values.get(player_id)
     }
 
     pub fn set_value_for_player(
