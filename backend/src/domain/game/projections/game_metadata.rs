@@ -1,4 +1,4 @@
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::{date_time::DateTime, identifier::Identifier};
 
 #[derive(Debug, Clone)]
 pub struct GameMetadataProjection {
@@ -6,6 +6,6 @@ pub struct GameMetadataProjection {
     pub name: String,
     pub description: String,
 
-    pub created_at: String,
-    pub updated_at: String,
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
 }

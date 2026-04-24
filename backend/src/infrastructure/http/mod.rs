@@ -8,6 +8,7 @@
 //! * `user` - User authentication handlers
 
 pub mod game;
+pub mod game_instance;
 pub mod user;
 
 use crate::AppState;

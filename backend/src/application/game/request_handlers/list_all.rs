@@ -17,7 +17,7 @@ impl<GameRepository: GameRepositoryContract> GameListAllRequestHandler<GameRepos
         Self { repository }
     }
 
-    pub async fn list_all_games(&self) -> Result<OverviewGameResponse, GameApplicationError> {
+    pub async fn list_all(&self) -> Result<OverviewGameResponse, GameApplicationError> {
         Ok(OverviewGameResponse {
             games_metadata: self.repository.list_all().await?,
         })
@@ -28,6 +28,7 @@ impl<GameRepository: GameRepositoryContract> GameListAllRequestHandler<GameRepos
 mod tests {
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
 
     #[tokio::test]
@@ -39,15 +40,15 @@ mod tests {
                 id: Identifier::new(),
                 name: "Game 1".to_string(),
                 description: "Description 1".to_string(),
-                created_at: "2024-01-01".to_string(),
-                updated_at: "2024-01-01".to_string(),
+                created_at: DateTime::parse_str("2024-01-01T00:00:00Z").unwrap(),
+                updated_at: DateTime::parse_str("2024-01-01T00:00:00Z").unwrap(),
             },
             GameMetadataProjection {
                 id: Identifier::new(),
                 name: "Game 2".to_string(),
                 description: "Description 2".to_string(),
-                created_at: "2024-01-02".to_string(),
-                updated_at: "2024-01-02".to_string(),
+                created_at: DateTime::parse_str("2024-01-02T00:00:00Z").unwrap(),
+                updated_at: DateTime::parse_str("2024-01-02T00:00:00Z").unwrap(),
             },
         ];
 
@@ -58,7 +59,7 @@ mod tests {
         });
 
         let handler = GameListAllRequestHandler::new(Arc::new(repository));
-        let result = handler.list_all_games().await;
+        let result = handler.list_all().await;
 
         assert!(result.is_ok());
         let response = result.unwrap();
@@ -77,7 +78,7 @@ mod tests {
             .returning(|| Box::pin(async { Ok(vec![]) }));
 
         let handler = GameListAllRequestHandler::new(Arc::new(repository));
-        let result = handler.list_all_games().await;
+        let result = handler.list_all().await;
 
         assert!(result.is_ok());
         let response = result.unwrap();

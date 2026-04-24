@@ -29,8 +29,8 @@ impl<GameRepository: GameRepositoryContract, GameInstanceRepository: GameInstanc
     CreateGameInstanceRequestHandler<GameRepository, GameInstanceRepository>
 {
     pub fn new(
-        game_repository: Arc<GameRepository>,
         game_instance_repository: Arc<GameInstanceRepository>,
+        game_repository: Arc<GameRepository>,
     ) -> Self {
         Self {
             game_repository,
@@ -117,8 +117,8 @@ mod tests {
         });
 
         let handler = CreateGameInstanceRequestHandler::new(
-            Arc::new(game_repository),
             Arc::new(game_instance_repository),
+            Arc::new(game_repository),
         );
         let result = handler.create_game(request).await;
 
@@ -150,8 +150,8 @@ mod tests {
         game_instance_repository.expect_save().never();
 
         let handler = CreateGameInstanceRequestHandler::new(
-            Arc::new(game_repository),
             Arc::new(game_instance_repository),
+            Arc::new(game_repository),
         );
         let result = handler.create_game(request).await;
 

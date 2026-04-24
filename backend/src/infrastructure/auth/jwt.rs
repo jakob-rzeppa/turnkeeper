@@ -1,5 +1,5 @@
 use crate::application::user::contracts::{JwtGeneratorContract, JwtValidatorContract};
-use crate::domain::game::value_objects::id::Id;
+use crate::domain::common::identifier::Identifier;
 use crate::domain::user::error::{UserError, UserErrorKind};
 use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
 use serde::{Deserialize, Serialize};
@@ -20,8 +20,8 @@ struct UserClaims {
     exp: usize, // Expiration time
 }
 
-impl From<Id> for UserClaims {
-    fn from(id: Id) -> Self {
+impl From<Identifier> for UserClaims {
+    fn from(id: Identifier) -> Self {
         let exp = SystemTime::now()
             .duration_since(UNIX_EPOCH)
             .expect("Time went backwards")
@@ -57,7 +57,7 @@ impl JwtGeneratorContract for JwtGenerator {
     /// - User ID in the claims
     /// - Expiration timestamp
     /// - Signature using the secret key
-    fn generate_token(&self, user_id: &Id) -> Result<String, UserError> {
+    fn generate_token(&self, user_id: &Identifier) -> Result<String, UserError> {
         let header = Header::new(Algorithm::HS256);
         let encoding_key = EncodingKey::from_secret(USER_JWT_SECRET.as_bytes());
 
@@ -94,7 +94,7 @@ impl JwtValidatorContract for JwtValidator {
     /// - Token signature is invalid
     /// - Token has expired
     /// - Token format is malformed
-    fn validate_token(&self, token: &str) -> Result<Id, UserError> {
+    fn validate_token(&self, token: &str) -> Result<Identifier, UserError> {
         let decoding_key = DecodingKey::from_secret(USER_JWT_SECRET.as_bytes());
         let validation = Validation::new(Algorithm::HS256);
 
@@ -102,7 +102,7 @@ impl JwtValidatorContract for JwtValidator {
             .map(|data| data.claims)
             .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?;
 
-        Ok(Id::parse_str(&claims.user_id)
+        Ok(Identifier::parse_str(&claims.user_id)
             .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
     }
 }
@@ -116,7 +116,7 @@ mod tests {
 
     #[test]
     fn generate_and_validate_jwt() {
-        let id = Id::new();
+        let id = Identifier::new();
 
         let token = JWT_GENERATOR.generate_token(&id).unwrap();
 

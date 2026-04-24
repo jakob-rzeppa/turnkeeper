@@ -45,12 +45,6 @@ mod tests {
             description: "A test game description".to_string(),
         };
 
-        // First call to check if game exists should return None
-        repository
-            .expect_get_by_id()
-            .times(1)
-            .returning(|_| Box::pin(async { Ok(None) }));
-
         // Save should be called once
         repository
             .expect_save()

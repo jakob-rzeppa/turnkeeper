@@ -26,5 +26,9 @@ pub trait GameInstanceRepositoryContract: Send + Sync + 'static {
         game_instance: &GameInstance,
     ) -> impl Future<Output = Result<(), DatabaseError>> + Send;
 
-    fn delete(&self, id: Identifier) -> impl Future<Output = Result<(), DatabaseError>> + Send;
+    fn delete(
+        &self,
+        game_id: Identifier,
+        instance_id: Identifier,
+    ) -> impl Future<Output = Result<(), DatabaseError>> + Send;
 }

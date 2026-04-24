@@ -1,10 +1,16 @@
 use crate::AppState;
-use crate::application::game::request_handlers::create::CreateGameRequestHandler;
-use crate::application::game::request_handlers::delete::DeleteGameRequestHandler;
-use crate::application::game::request_handlers::get_overview::GameGetOverviewRequestHandler;
-use crate::application::game::requests::{CreateGameRequest, DeleteGameRequest};
-use crate::domain::game::projections::game_metadata::GameMetadata;
-use crate::domain::game::value_objects::id::Id;
+use crate::application::game::request_handlers::create::{
+    CreateGameRequest, CreateGameRequestHandler,
+};
+use crate::application::game::request_handlers::delete::{
+    DeleteGameRequest, DeleteGameRequestHandler,
+};
+use crate::application::game::request_handlers::get_by_id::GameGetByIdRequestHandler;
+use crate::application::game::request_handlers::list_all::GameListAllRequestHandler;
+use crate::domain::common::date_time::DateTime;
+use crate::domain::common::identifier::Identifier;
+use crate::domain::game::projections::game::GameProjection;
+use crate::domain::game::projections::game_metadata::GameMetadataProjection;
 use crate::domain::user::entities::User;
 use crate::infrastructure::error::HttpError;
 use axum::Extension;
@@ -15,17 +21,23 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
 pub struct GamesGetResponseGameMetadata {
-    pub id: Id,
+    pub id: Identifier,
     pub name: String,
-    pub gm_user_id: Id,
+    pub description: String,
+
+    pub created_at: String,
+    pub updated_at: String,
 }
 
-impl From<GameMetadata> for GamesGetResponseGameMetadata {
-    fn from(metadata: GameMetadata) -> Self {
+impl From<GameMetadataProjection> for GamesGetResponseGameMetadata {
+    fn from(metadata: GameMetadataProjection) -> Self {
         Self {
             id: metadata.id,
             name: metadata.name,
-            gm_user_id: metadata.gm_user_id,
+            description: metadata.description,
+
+            created_at: metadata.created_at.to_string(),
+            updated_at: metadata.updated_at.to_string(),
         }
     }
 }
@@ -39,9 +51,9 @@ pub struct GamesGetResponse {
 ///
 /// Returns the metadata for all created games
 pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse, HttpError> {
-    let handler = GameGetOverviewRequestHandler::new(state.repository_manager.game());
+    let handler = GameListAllRequestHandler::new(state.repository_manager.game());
 
-    let games_overview = handler.get_overview().await?;
+    let games_overview = handler.list_all().await?;
 
     Ok(GamesGetResponse {
         games: games_overview
@@ -52,9 +64,49 @@ pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse
     })
 }
 
+#[derive(Serialize, JsonResponse, Debug)]
+pub struct GamesGetByIdResponse {
+    pub id: Identifier,
+    pub name: String,
+    pub description: String,
+
+    pub source_code: String,
+
+    pub created_at: DateTime,
+    pub updated_at: DateTime,
+}
+
+impl From<GameProjection> for GamesGetByIdResponse {
+    fn from(metadata: GameProjection) -> Self {
+        Self {
+            id: metadata.id,
+            name: metadata.name,
+            description: metadata.description,
+            source_code: metadata.source_code,
+            created_at: metadata.created_at,
+            updated_at: metadata.updated_at,
+        }
+    }
+}
+
+/// GET /games/{game_id}
+///
+/// Returns the full game projection for a game
+pub async fn games_get_by_id(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+) -> Result<GamesGetByIdResponse, HttpError> {
+    let handler = GameGetByIdRequestHandler::new(state.repository_manager.game());
+
+    let res = handler.get_by_id(id).await?;
+
+    Ok(res.game.into())
+}
+
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct GamesCreateHttpRequest {
     pub name: String,
+    pub description: String,
 }
 
 #[derive(Serialize, JsonResponse, Debug)]
@@ -67,7 +119,6 @@ pub struct GamesCreateHttpResponse {
 /// Creates a game and returns the initial game state
 pub async fn games_create(
     State(state): State<AppState>,
-    Extension(user): Extension<User>,
     request: GamesCreateHttpRequest,
 ) -> Result<GamesCreateHttpResponse, HttpError> {
     let handler = CreateGameRequestHandler::new(state.repository_manager.game());
@@ -75,7 +126,7 @@ pub async fn games_create(
     let id = handler
         .create_game(CreateGameRequest {
             name: request.name,
-            gm_user_id: *user.id(),
+            description: request.description,
         })
         .await?;
 
@@ -91,7 +142,7 @@ pub async fn games_delete(
 ) -> Result<StatusCode, HttpError> {
     let handler = DeleteGameRequestHandler::new(state.repository_manager.game());
 
-    let id = Id::parse_str(&id)?;
+    let id = Identifier::parse_str(&id)?;
 
     handler.delete_game(DeleteGameRequest { id }).await?;
 
