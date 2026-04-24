@@ -49,6 +49,10 @@ impl Game {
         &self.id
     }
 
+    pub fn source_code(&self) -> &str {
+        &self.source_code
+    }
+
     pub fn get_projection(&self) -> GameProjection {
         GameProjection {
             id: self.id.clone(),

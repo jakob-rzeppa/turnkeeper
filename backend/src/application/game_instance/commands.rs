@@ -24,6 +24,7 @@ pub enum GameSessionCommand {
         player_id: Identifier,
     },
 
+    // Actions
     ExecuteAction {
         action_id: Identifier,
         payload: String,

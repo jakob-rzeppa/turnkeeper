@@ -97,4 +97,8 @@ impl GameInstance {
             last_played_at,
         }
     }
+
+    pub fn id(&self) -> &Identifier {
+        &self.id
+    }
 }
