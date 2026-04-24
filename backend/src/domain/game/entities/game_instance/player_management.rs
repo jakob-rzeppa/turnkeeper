@@ -13,12 +13,8 @@ impl GameInstance {
     ///
     /// - The `id` must be unique among all players in the game.
     /// - The new player should be added to all existing tradables with a default value.
-    pub fn add_player(&mut self, id: Identifier) -> Result<(), GameInstanceError> {
-        if self.players.iter().any(|p| p.id() == &id) {
-            return Err(GameInstanceError::PlayerAlreadyExists(id.to_string()));
-        }
-
-        let player = Player::new(id.clone());
+    pub fn add_player(&mut self) -> Result<(), GameInstanceError> {
+        let player = Player::new();
         self.players.push(player);
 
         Ok(())
@@ -99,8 +95,6 @@ impl GameInstance {
 
 #[cfg(test)]
 mod tests {
-    use std::collections::HashMap;
-
     use crate::domain::game::entities::game::Game;
 
     use super::*;
@@ -108,10 +102,10 @@ mod tests {
     fn create_game_instance() -> GameInstance {
         GameInstance::new(
             "Test Game".to_string(),
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
-            HashMap::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
+            Vec::new(),
             Game::new("Test Game".to_string(), "Test Game".to_string()),
         )
     }
@@ -122,33 +116,10 @@ mod tests {
         #[test]
         fn test_add_player() {
             let mut game = create_game_instance();
-            let player_id = Identifier::new();
 
-            assert!(game.add_player(player_id).is_ok());
+            assert!(game.add_player().is_ok());
 
             assert_eq!(game.players.len(), 1);
-            assert_eq!(game.players[0].id(), &player_id);
-        }
-
-        #[test]
-        fn test_add_duplicate_player_fails() {
-            let mut game = create_game_instance();
-            let player_id = Identifier::new();
-
-            assert!(game.add_player(player_id).is_ok());
-
-            let result = game.add_player(player_id);
-            assert!(result.is_err());
-
-            match result {
-                Err(e) => {
-                    assert_eq!(
-                        e,
-                        GameInstanceError::PlayerAlreadyExists(player_id.to_string())
-                    );
-                }
-                Ok(_) => panic!("Expected error"),
-            }
         }
     }
 
@@ -158,13 +129,14 @@ mod tests {
         #[test]
         fn test_change_player_order() {
             let mut game = create_game_instance();
-            let player_id_1 = Identifier::new();
-            let player_id_2 = Identifier::new();
-            let player_id_3 = Identifier::new();
 
-            game.add_player(player_id_1).unwrap();
-            game.add_player(player_id_2).unwrap();
-            game.add_player(player_id_3).unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_id_1 = game.players[0].id().clone();
+            let player_id_2 = game.players[1].id().clone();
+            let player_id_3 = game.players[2].id().clone();
 
             game.change_player_order(vec![player_id_3, player_id_1, player_id_2])
                 .unwrap();
@@ -177,13 +149,13 @@ mod tests {
         #[test]
         fn test_change_player_order_fails_with_wrong_count() {
             let mut game = create_game_instance();
-            let player_id_1 = Identifier::new();
-            let player_id_2 = Identifier::new();
-            let player_id_3 = Identifier::new();
 
-            game.add_player(player_id_1).unwrap();
-            game.add_player(player_id_2).unwrap();
-            game.add_player(player_id_3).unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_id_1 = game.players[0].id().clone();
+            let player_id_2 = game.players[1].id().clone();
 
             let result = game.change_player_order(vec![player_id_1, player_id_2]);
             assert!(result.is_err());
@@ -192,11 +164,11 @@ mod tests {
         #[test]
         fn test_change_player_order_fails_with_duplicate_ids() {
             let mut game = create_game_instance();
-            let player_id_1 = Identifier::new();
-            let player_id_2 = Identifier::new();
 
-            game.add_player(player_id_1).unwrap();
-            game.add_player(player_id_2).unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_id_1 = game.players[0].id().clone();
 
             let result = game.change_player_order(vec![player_id_1, player_id_1]);
             assert!(result.is_err());
@@ -205,12 +177,12 @@ mod tests {
         #[test]
         fn test_change_player_order_fails_with_unknown_ids() {
             let mut game = create_game_instance();
-            let player_id_1 = Identifier::new();
-            let player_id_2 = Identifier::new();
-            let player_id_3 = Identifier::new();
 
-            game.add_player(player_id_1).unwrap();
-            game.add_player(player_id_2).unwrap();
+            game.add_player().unwrap();
+            game.add_player().unwrap();
+
+            let player_id_1 = game.players[0].id().clone();
+            let player_id_3 = Identifier::new(); // This ID does not exist in the game
 
             let result = game.change_player_order(vec![player_id_1, player_id_3]);
             assert!(result.is_err());

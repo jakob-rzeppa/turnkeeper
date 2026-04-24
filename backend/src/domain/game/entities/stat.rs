@@ -1,8 +1,13 @@
+use std::collections::HashMap;
+
 use crate::domain::{
     common::identifier::Identifier,
-    game::value_objects::{
-        stat_value::StatValue,
-        stat_visibility::{GameStatVisibility, PlayerStatVisibility},
+    game::{
+        error::GameInstanceError,
+        value_objects::{
+            stat_value::StatValue,
+            stat_visibility::{GameStatVisibility, PlayerStatVisibility},
+        },
     },
 };
 
@@ -12,14 +17,115 @@ pub struct GameStat {
     name: String,
     value: StatValue,
 
+    default: StatValue,
     visibility: GameStatVisibility,
+}
+
+impl GameStat {
+    /// Creates a new game stat with the given name, default value, and visibility.
+    ///
+    /// The `value` is initialized to the `default` value, and can be changed later using `set_value`.
+    pub fn new(name: String, default: StatValue, visibility: GameStatVisibility) -> Self {
+        Self {
+            id: Identifier::new(),
+            name,
+            value: default.clone(),
+            default,
+            visibility,
+        }
+    }
+
+    /// Creates a new game stat with the given raw values.
+    ///
+    /// This should only be used when loading a game instance from storage, where we already have the value for the stat.
+    pub fn new_raw(
+        id: Identifier,
+        name: String,
+        value: StatValue,
+        default: StatValue,
+        visibility: GameStatVisibility,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            value,
+            default,
+            visibility,
+        }
+    }
+
+    pub fn id(&self) -> &Identifier {
+        &self.id
+    }
+
+    pub fn set_value(&mut self, value: StatValue) {
+        self.value = value;
+    }
 }
 
 pub struct PlayerStat {
     id: Identifier,
 
     name: String,
-    value: StatValue,
+    values: HashMap<Identifier, StatValue>, // player_id -> value
 
+    default: StatValue,
     visibility: PlayerStatVisibility,
+}
+
+impl PlayerStat {
+    /// Creates a new player stat with the given name, default value, and visibility.
+    ///
+    /// The `values` map is initialized as empty, and values for each player will be set when they are added to the game.
+    ///
+    /// This should only be used when creating a new game instance.
+    pub fn new(name: String, default: StatValue, visibility: PlayerStatVisibility) -> Self {
+        Self {
+            id: Identifier::new(),
+            name,
+            values: HashMap::new(), // Values will be set for each player when they are added to the game
+            default,
+            visibility,
+        }
+    }
+
+    /// Creates a new player stat with the given raw values.
+    ///
+    /// This should only be used when loading a game instance from storage, where we already have the values for each player.
+    pub fn new_raw(
+        id: Identifier,
+        name: String,
+        values: HashMap<Identifier, StatValue>,
+        default: StatValue,
+        visibility: PlayerStatVisibility,
+    ) -> Self {
+        Self {
+            id,
+            name,
+            values,
+            default,
+            visibility,
+        }
+    }
+
+    pub fn id(&self) -> &Identifier {
+        &self.id
+    }
+
+    pub fn set_value_for_player(
+        &mut self,
+        player_id: &Identifier,
+        value: StatValue,
+    ) -> Result<(), GameInstanceError> {
+        if let None = self.values.get(player_id) {
+            return Err(GameInstanceError::PlayerInStatNotFound {
+                stat_id: self.id.clone(),
+                player_id: player_id.clone(),
+                stat_name: self.name.clone(),
+            });
+        }
+
+        self.values.insert(player_id.clone(), value);
+        Ok(())
+    }
 }

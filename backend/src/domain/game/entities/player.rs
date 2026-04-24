@@ -8,8 +8,15 @@ pub struct Player {
 
 impl Player {
     /// Creates a new anonymous player with no linked user and no stats.
-    pub fn new(id: Identifier) -> Self {
-        Self { id, user_id: None }
+    pub fn new() -> Self {
+        Self {
+            id: Identifier::new(),
+            user_id: None,
+        }
+    }
+
+    pub fn new_raw(id: Identifier, user_id: Option<Identifier>) -> Self {
+        Self { id, user_id }
     }
 
     pub fn id(&self) -> &Identifier {

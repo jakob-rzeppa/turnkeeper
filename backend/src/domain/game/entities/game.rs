@@ -18,4 +18,13 @@ impl Game {
             source_code: String::new(),
         }
     }
+
+    pub fn new_raw(id: Identifier, name: String, description: String, source_code: String) -> Self {
+        Self {
+            id,
+            name,
+            description,
+            source_code,
+        }
+    }
 }
