@@ -2,7 +2,7 @@
 //!
 //! Defines the User aggregate root.
 
-use crate::domain::game::value_objects::id::Id;
+use crate::domain::common::identifier::Identifier;
 use crate::domain::user::error::{UserError, UserErrorKind};
 use crate::domain::user::value_objects::user_name::UserName;
 use crate::domain::user::value_objects::user_password::UserPassword;
@@ -21,7 +21,7 @@ use crate::domain::user::value_objects::user_password::UserPassword;
 /// This is acceptable for the use case of a private game system.
 #[derive(Debug, Clone, PartialEq)]
 pub struct User {
-    id: Id,
+    id: Identifier,
     name: UserName,
     // the password is stored in plain text,
     // so the gm can look up a password if a user forgot it
@@ -42,23 +42,25 @@ impl User {
     /// Returns [`UserError`] if:
     /// - Name is empty or contains invalid characters
     /// - Password doesn't meet requirements
-    pub fn try_new(id: Id, name: String, password: String) -> Result<Self, UserError> {
-        let name = UserName::try_new(name).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
-        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
+    pub fn try_new(id: Identifier, name: String, password: String) -> Result<Self, UserError> {
+        let name = UserName::try_new(name)
+            .map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
+        let password = UserPassword::try_new(password)
+            .map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
 
         Ok(Self { id, name, password })
     }
 
     /// Returns the user's unique identifier.
-    pub fn id(&self) -> &Id {
+    pub fn id(&self) -> &Identifier {
         &self.id
     }
-    
+
     /// Returns the user's display name.
     pub fn name(&self) -> &str {
         self.name.as_str()
     }
-    
+
     /// Returns the user's password.
     ///
     /// # Security Note
@@ -80,10 +82,11 @@ impl User {
     /// - The password format is invalid
     /// - The password doesn't match
     pub fn check_password(&self, password: String) -> Result<(), UserError> {
-        let password = UserPassword::try_new(password).map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
+        let password = UserPassword::try_new(password)
+            .map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
 
         if password != self.password {
-            return Err(UserError::new(UserErrorKind::InvalidCredentials))
+            return Err(UserError::new(UserErrorKind::InvalidCredentials));
         }
 
         Ok(())
@@ -98,10 +101,11 @@ mod tests {
         #[test]
         fn test_valid_password() {
             let user = User::try_new(
-                Id::new(),
+                Identifier::new(),
                 "name".to_string(),
                 "password".to_string(),
-            ).unwrap();
+            )
+            .unwrap();
 
             let res = user.check_password("password".to_string());
 
@@ -111,10 +115,11 @@ mod tests {
         #[test]
         fn test_empty_password() {
             let user = User::try_new(
-                Id::new(),
+                Identifier::new(),
                 "name".to_string(),
                 "password".to_string(),
-            ).unwrap();
+            )
+            .unwrap();
 
             let res = user.check_password("".to_string());
 
@@ -126,10 +131,11 @@ mod tests {
         #[test]
         fn test_invalid_password() {
             let user = User::try_new(
-                Id::new(),
+                Identifier::new(),
                 "name".to_string(),
                 "password".to_string(),
-            ).unwrap();
+            )
+            .unwrap();
 
             let res = user.check_password("invalid".to_string());
 

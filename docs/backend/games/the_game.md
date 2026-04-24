@@ -15,10 +15,28 @@ classDiagram
         get_source_code() &str
     }
 
-    class State {
+    class GameStat {
+        visibility : GameStatVisibility
     }
-    Game *-- "1" State : state
-    State ..|> Plugin
+    Game *-- "0..*" GameStat : game_stats
+    GameStat ..|> Plugin
+
+    class GameStatVisibility <<enumeration>> {
+        PUBLIC
+        GM
+    }
+
+    class PlayerStat {
+        visibility : PlayerStatVisibility
+    }
+    Game *-- "0..*" PlayerStat : player_stats
+    PlayerStat ..|> Plugin
+
+    class PlayerStatVisibility <<enumeration>> {
+        PUBLIC
+        OWNER
+        GM
+    }
 
     class Action {
     }

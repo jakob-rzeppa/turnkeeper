@@ -1,8 +1,7 @@
-use crate::domain::game::value_objects::id::Id;
-use crate::domain::user::entities::User;
+use crate::domain::{common::identifier::Identifier, user::entities::User};
 
 pub struct UserListProjection {
-    pub id: Id,
+    pub id: Identifier,
     pub name: String,
 }
 
