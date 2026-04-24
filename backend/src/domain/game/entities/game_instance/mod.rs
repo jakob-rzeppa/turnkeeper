@@ -30,7 +30,7 @@ pub struct GameInstance {
 
     log: Log,
 
-    source: Game,
+    source_game: Game,
 
     created_at: DateTime,
     last_played_at: DateTime,
@@ -44,7 +44,7 @@ impl GameInstance {
         player_stats: Vec<PlayerStat>,
         actions: Vec<Action>,
         pages: Vec<Page>,
-        source: Game,
+        source_game: Game,
     ) -> Self {
         Self {
             id: Identifier::new(),
@@ -57,7 +57,7 @@ impl GameInstance {
             actions,
             pages,
             players: Vec::new(),
-            source,
+            source_game,
             gm_user_id,
             created_at: DateTime::now(),
             last_played_at: DateTime::now(),
@@ -75,7 +75,7 @@ impl GameInstance {
         pages: Vec<Page>,
         players: Vec<Player>,
         log: Log,
-        source: Game,
+        source_game: Game,
         gm_user_id: Identifier,
         created_at: DateTime,
         last_played_at: DateTime,
@@ -91,7 +91,7 @@ impl GameInstance {
             pages,
             players,
             log,
-            source,
+            source_game,
             gm_user_id,
             created_at,
             last_played_at,

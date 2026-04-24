@@ -1,11 +1,9 @@
-use chrono::{DateTime, Local};
-
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::{date_time::DateTime, identifier::Identifier};
 
 pub struct Log {
     id: Identifier,
 
-    entries: Vec<(LogEntry, DateTime<Local>)>,
+    entries: Vec<(LogEntry, DateTime)>,
 }
 
 enum LogEntry {

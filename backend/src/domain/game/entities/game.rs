@@ -3,6 +3,7 @@ use crate::domain::{
     game::projections::game::GameProjection,
 };
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct Game {
     id: Identifier,
 
@@ -49,8 +50,24 @@ impl Game {
         &self.id
     }
 
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn description(&self) -> &str {
+        &self.description
+    }
+
     pub fn source_code(&self) -> &str {
         &self.source_code
+    }
+
+    pub fn created_at(&self) -> &DateTime {
+        &self.created_at
+    }
+
+    pub fn updated_at(&self) -> &DateTime {
+        &self.updated_at
     }
 
     pub fn get_projection(&self) -> GameProjection {
