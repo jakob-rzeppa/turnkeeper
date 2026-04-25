@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useGameStore, type Player } from '../../game/gameStore';
+import { useGameStore, type Player } from '../gameStore';
 import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useModalStore } from '../../common/modal/modalStore';
 import AttatchUserToPlayerModal from './AttatchUserToPlayerModal.vue';
