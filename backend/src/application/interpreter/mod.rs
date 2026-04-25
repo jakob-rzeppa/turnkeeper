@@ -1,4 +1,4 @@
-use fnmock::derive::{fake_function, mock_function};
+use fnmock::derive::fake_function;
 
 use crate::{
     application::interpreter::error::GameParsingError,
@@ -10,20 +10,13 @@ use crate::{
 };
 
 pub mod error;
-
-pub struct Position {
-    line: usize,
-    column: usize,
-}
+pub mod parser;
+pub mod position;
 
 pub trait Parsable: Sized {
     fn is_next(ts: &TokenStream) -> bool;
 
     fn parse(ts: &mut TokenStream) -> Result<Self, GameParsingError>;
-}
-
-pub trait Positioned {
-    fn position(&self) -> Position;
 }
 
 pub struct TokenStream {
