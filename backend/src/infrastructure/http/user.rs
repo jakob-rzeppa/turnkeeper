@@ -19,7 +19,7 @@ pub struct LoginHttpResponse {
     token: String,
 }
 
-/// POST /user/login
+/// POST /login
 ///
 /// authenticates a user via username and password and returns a JSON WEB TOKEN
 pub async fn login(
@@ -53,7 +53,7 @@ pub struct RegisterHttpResponse {
     token: String,
 }
 
-/// POST /user/register
+/// POST /register
 ///
 /// registers a new user via username and password
 pub async fn register(
@@ -87,7 +87,7 @@ pub struct UserListHttpResponse {
     users: Vec<UserListHttpResponseUserListProjection>,
 }
 
-/// GET /gm/users and /user/users
+/// GET /users
 ///
 /// returns a list of all registered users
 pub async fn list(State(state): State<AppState>) -> Result<UserListHttpResponse, HttpError> {
