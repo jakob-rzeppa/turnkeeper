@@ -55,6 +55,31 @@ export const postWithAuth = <T>(endpoint: string, data: unknown): ResultAsync<T,
     );
 };
 
+export const patchWithAuth = <T>(endpoint: string, data: unknown): ResultAsync<T, HttpError> => {
+    const authStore = useAuthStore();
+
+    return ResultAsync.fromPromise(
+        axios
+            .patch<T>(API_BASE_URL + endpoint, data, {
+                headers: {
+                    Authorization: 'Bearer ' + authStore.token,
+                },
+            })
+            .then(res => res.data),
+        err => {
+            if (err instanceof AxiosError) {
+                return { message: err.response?.data?.error ?? err.message };
+            }
+
+            if (err instanceof Error) {
+                return { message: err.message };
+            }
+
+            return { message: 'Unknown error' };
+        }
+    );
+};
+
 export const deleteWithAuth = <T>(endpoint: string): ResultAsync<T, HttpError> => {
     const authStore = useAuthStore();
 

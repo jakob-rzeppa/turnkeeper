@@ -7,12 +7,14 @@ use crate::application::game::request_handlers::delete::{
 };
 use crate::application::game::request_handlers::get_by_id::GameGetByIdRequestHandler;
 use crate::application::game::request_handlers::list_all::GameListAllRequestHandler;
+use crate::application::game::request_handlers::set_source_code::SetSourceCodeRequestHandler;
 use crate::domain::common::date_time::DateTime;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::projections::game::GameProjection;
 use crate::domain::game::projections::game_metadata::GameMetadataProjection;
 use crate::infrastructure::error::HttpError;
 use axum::extract::{Path, State};
+use axum::handler;
 use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
@@ -129,6 +131,28 @@ pub async fn games_create(
         .await?;
 
     Ok(GamesCreateHttpResponse { id: id.to_string() })
+}
+
+#[derive(Deserialize, JsonRequest, Debug)]
+pub struct GamesUpdateSourceCodeHttpRequest {
+    pub source_code: String,
+}
+
+/// PATCH /games/{game_id}/source-code
+///
+/// Updates the source code of a game
+pub async fn games_update_source_code(
+    State(state): State<AppState>,
+    Path(id): Path<String>,
+    request: GamesUpdateSourceCodeHttpRequest,
+) -> Result<StatusCode, HttpError> {
+    let handler = SetSourceCodeRequestHandler::new(state.repository_manager.game());
+
+    let id = Identifier::parse_str(&id)?;
+
+    handler.set_source_code(id, request.source_code).await?;
+
+    Ok(StatusCode::NO_CONTENT)
 }
 
 /// DELETE /games/{game_id}

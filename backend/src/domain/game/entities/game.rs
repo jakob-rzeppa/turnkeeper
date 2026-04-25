@@ -80,4 +80,9 @@ impl Game {
             updated_at: self.updated_at.clone(),
         }
     }
+
+    pub fn set_source_code(&mut self, source_code: String) {
+        self.source_code = source_code;
+        self.updated_at = DateTime::now();
+    }
 }
