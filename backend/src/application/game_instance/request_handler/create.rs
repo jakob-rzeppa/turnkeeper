@@ -1,47 +1,27 @@
-use std::sync::Arc;
-
 use crate::{
     application::{
         game::contracts::GameRepositoryContract,
         game_instance::{
             contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
+            request_handler::GameInstanceRequestHandler,
         },
         interpreter::parse_game,
     },
     domain::{common::identifier::Identifier, game::entities::game_instance::GameInstance},
 };
 
-pub struct CreateGameInstanceRequest {
+pub struct GameInstanceCreateRequest {
     pub name: String,
     pub gm_user_id: Identifier,
     pub game_id: Identifier,
 }
 
-pub struct CreateGameInstanceRequestHandler<
-    GameRepository: GameRepositoryContract,
-    GameInstanceRepository: GameInstanceRepositoryContract,
-> {
-    game_repository: Arc<GameRepository>,
-    game_instance_repository: Arc<GameInstanceRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract, GameInstanceRepository: GameInstanceRepositoryContract>
-    CreateGameInstanceRequestHandler<GameRepository, GameInstanceRepository>
+impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
+    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
 {
-    pub fn new(
-        game_instance_repository: Arc<GameInstanceRepository>,
-        game_repository: Arc<GameRepository>,
-    ) -> Self {
-        Self {
-            game_repository,
-            game_instance_repository,
-        }
-    }
-
-    /// Creates a game with a generated UUID and returns the new ID.
-    pub async fn create_game(
+    pub async fn create(
         &self,
-        request: CreateGameInstanceRequest,
+        request: GameInstanceCreateRequest,
     ) -> Result<Identifier, GameInstanceApplicationError> {
         let game = self
             .game_repository
@@ -69,6 +49,8 @@ impl<GameRepository: GameRepositoryContract, GameInstanceRepository: GameInstanc
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
@@ -76,12 +58,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_game_instance_successfully() {
-        let mut game_repository = MockGameRepositoryContract::new();
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
+        let mut game_repository = MockGameRepositoryContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();
-        let request = CreateGameInstanceRequest {
+        let request = GameInstanceCreateRequest {
             name: "Test Game Instance".to_string(),
             gm_user_id: gm_user_id.clone(),
             game_id: game_id.clone(),
@@ -116,11 +98,11 @@ mod tests {
             })
         });
 
-        let handler = CreateGameInstanceRequestHandler::new(
+        let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
         );
-        let result = handler.create_game(request).await;
+        let result = handler.create(request).await;
 
         assert!(result.is_ok());
         let id = result.unwrap();
@@ -129,12 +111,12 @@ mod tests {
 
     #[tokio::test]
     async fn test_create_game_instance_game_not_found() {
-        let mut game_repository = MockGameRepositoryContract::new();
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
+        let mut game_repository = MockGameRepositoryContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();
-        let request = CreateGameInstanceRequest {
+        let request = GameInstanceCreateRequest {
             name: "Test Game Instance".to_string(),
             gm_user_id,
             game_id: game_id.clone(),
@@ -149,11 +131,11 @@ mod tests {
         // Save should never be called
         game_instance_repository.expect_save().never();
 
-        let handler = CreateGameInstanceRequestHandler::new(
+        let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
         );
-        let result = handler.create_game(request).await;
+        let result = handler.create(request).await;
 
         assert!(result.is_err());
         match result {

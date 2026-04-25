@@ -1,20 +1,13 @@
-use crate::AppState;
-use crate::application::game::request_handlers::create::{
-    CreateGameRequest, CreateGameRequestHandler,
-};
-use crate::application::game::request_handlers::delete::{
-    DeleteGameRequest, DeleteGameRequestHandler,
-};
-use crate::application::game::request_handlers::get_by_id::GameGetByIdRequestHandler;
-use crate::application::game::request_handlers::list_all::GameListAllRequestHandler;
-use crate::application::game::request_handlers::set_source_code::SetSourceCodeRequestHandler;
+use crate::application::game::request_handlers::create::CreateGameRequest;
+use crate::application::game::request_handlers::delete::DeleteGameRequest;
 use crate::domain::common::date_time::DateTime;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::projections::game::GameProjection;
 use crate::domain::game::projections::game_metadata::GameMetadataProjection;
+use crate::infrastructure::app_state::AppState;
 use crate::infrastructure::error::HttpError;
-use axum::extract::{Path, State};
-use axum::handler;
+use axum::extract::Path;
+use axum::extract::State;
 use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
@@ -51,9 +44,7 @@ pub struct GamesGetResponse {
 ///
 /// Returns the metadata for all created games
 pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse, HttpError> {
-    let handler = GameListAllRequestHandler::new(state.repository_manager.game());
-
-    let games_overview = handler.list_all().await?;
+    let games_overview = state.game_request_handler().list_all().await?;
 
     Ok(GamesGetResponse {
         games: games_overview
@@ -96,9 +87,10 @@ pub async fn games_get_by_id(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<GamesGetByIdResponse, HttpError> {
-    let handler = GameGetByIdRequestHandler::new(state.repository_manager.game());
-
-    let res = handler.get_by_id(Identifier::parse_str(&id)?).await?;
+    let res = state
+        .game_request_handler()
+        .get_by_id(Identifier::parse_str(&id)?)
+        .await?;
 
     Ok(res.game.into())
 }
@@ -121,10 +113,9 @@ pub async fn games_create(
     State(state): State<AppState>,
     request: GamesCreateHttpRequest,
 ) -> Result<GamesCreateHttpResponse, HttpError> {
-    let handler = CreateGameRequestHandler::new(state.repository_manager.game());
-
-    let id = handler
-        .create_game(CreateGameRequest {
+    let id = state
+        .game_request_handler()
+        .create(CreateGameRequest {
             name: request.name,
             description: request.description,
         })
@@ -146,11 +137,12 @@ pub async fn games_update_source_code(
     Path(id): Path<String>,
     request: GamesUpdateSourceCodeHttpRequest,
 ) -> Result<StatusCode, HttpError> {
-    let handler = SetSourceCodeRequestHandler::new(state.repository_manager.game());
-
     let id = Identifier::parse_str(&id)?;
 
-    handler.set_source_code(id, request.source_code).await?;
+    state
+        .game_request_handler()
+        .set_source_code(id, request.source_code)
+        .await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -162,11 +154,12 @@ pub async fn games_delete(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<StatusCode, HttpError> {
-    let handler = DeleteGameRequestHandler::new(state.repository_manager.game());
-
     let id = Identifier::parse_str(&id)?;
 
-    handler.delete_game(DeleteGameRequest { id }).await?;
+    state
+        .game_request_handler()
+        .delete(DeleteGameRequest { id })
+        .await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

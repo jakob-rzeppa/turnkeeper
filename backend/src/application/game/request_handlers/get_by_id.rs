@@ -1,27 +1,21 @@
 use crate::{
-    application::game::{contracts::GameRepositoryContract, error::GameApplicationError},
+    application::game::{
+        contracts::GameRepositoryContract, error::GameApplicationError,
+        request_handlers::GameRequestHandler,
+    },
     domain::{common::identifier::Identifier, game::projections::game::GameProjection},
 };
-use std::sync::Arc;
 
 pub struct GameGetByIdResponse {
     pub game: GameProjection,
 }
 
-pub struct GameGetByIdRequestHandler<GameRepository: GameRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract> GameGetByIdRequestHandler<GameRepository> {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
+impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
     pub async fn get_by_id(
         &self,
         id: Identifier,
     ) -> Result<GameGetByIdResponse, GameApplicationError> {
-        let game = self.repository.get_by_id(&id).await?;
+        let game = self.game_repository.get_by_id(&id).await?;
 
         if let Some(game) = game {
             Ok(GameGetByIdResponse {
@@ -35,6 +29,8 @@ impl<GameRepository: GameRepositoryContract> GameGetByIdRequestHandler<GameRepos
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::domain::common::date_time::DateTime;
@@ -63,7 +59,7 @@ mod tests {
                 })
             });
 
-        let handler = GameGetByIdRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository));
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_ok());
@@ -84,7 +80,7 @@ mod tests {
             .times(1)
             .returning(|_| Box::pin(async { Ok(None) }));
 
-        let handler = GameGetByIdRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository));
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_err());

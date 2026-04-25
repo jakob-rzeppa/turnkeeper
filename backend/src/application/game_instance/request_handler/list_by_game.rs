@@ -1,8 +1,10 @@
-use std::sync::Arc;
-
 use crate::{
-    application::game_instance::{
-        contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
+    application::{
+        game::contracts::GameRepositoryContract,
+        game_instance::{
+            contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
+            request_handler::GameInstanceRequestHandler,
+        },
     },
     domain::{
         common::identifier::Identifier,
@@ -18,36 +20,35 @@ pub struct GameInstanceListByGameResponse {
     pub games_metadata: Vec<GameInstanceMetadataProjection>,
 }
 
-pub struct GameInstanceListByGameRequestHandler<GameRepository: GameInstanceRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameInstanceRepositoryContract>
-    GameInstanceListByGameRequestHandler<GameRepository>
+impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
+    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
 {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
     pub async fn list_all_games(
         &self,
         request: GameInstanceListByGameRequest,
     ) -> Result<GameInstanceListByGameResponse, GameInstanceApplicationError> {
         Ok(GameInstanceListByGameResponse {
-            games_metadata: self.repository.list_by_game_id(request.game_id).await?,
+            games_metadata: self
+                .game_instance_repository
+                .list_by_game_id(request.game_id)
+                .await?,
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
+    use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
 
     #[tokio::test]
     async fn test_list_game_instances_success() {
-        let mut repository = MockGameInstanceRepositoryContract::new();
+        let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
+        let game_repository = MockGameRepositoryContract::new();
         let game_id = Identifier::new();
 
         let instances_metadata = vec![
@@ -74,7 +75,7 @@ mod tests {
         ];
 
         let instances_clone = instances_metadata.clone();
-        repository
+        game_instance_repository
             .expect_list_by_game_id()
             .times(1)
             .returning(move |_| {
@@ -82,7 +83,10 @@ mod tests {
                 Box::pin(async move { Ok(cloned) })
             });
 
-        let handler = GameInstanceListByGameRequestHandler::new(Arc::new(repository));
+        let handler = GameInstanceRequestHandler::new(
+            Arc::new(game_instance_repository),
+            Arc::new(game_repository),
+        );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),
         };
@@ -97,15 +101,19 @@ mod tests {
 
     #[tokio::test]
     async fn test_list_game_instances_empty() {
-        let mut repository = MockGameInstanceRepositoryContract::new();
+        let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
+        let game_repository = MockGameRepositoryContract::new();
         let game_id = Identifier::new();
 
-        repository
+        game_instance_repository
             .expect_list_by_game_id()
             .times(1)
             .returning(|_| Box::pin(async { Ok(vec![]) }));
 
-        let handler = GameInstanceListByGameRequestHandler::new(Arc::new(repository));
+        let handler = GameInstanceRequestHandler::new(
+            Arc::new(game_instance_repository),
+            Arc::new(game_repository),
+        );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),
         };

@@ -6,18 +6,16 @@ use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 
 use crate::{
-    AppState,
-    application::game_instance::request_handlers::{
-        create::{CreateGameInstanceRequest, CreateGameInstanceRequestHandler},
-        delete::{DeleteGameInstanceRequest, DeleteGameInstanceRequestHandler},
-        list_by_game::{GameInstanceListByGameRequest, GameInstanceListByGameRequestHandler},
+    application::game_instance::request_handler::{
+        create::GameInstanceCreateRequest, delete::GameInstanceDeleteRequest,
+        list_by_game::GameInstanceListByGameRequest,
     },
     domain::{
         common::identifier::Identifier,
         game::projections::game_instance_metadata::GameInstanceMetadataProjection,
         user::entities::User,
     },
-    infrastructure::error::HttpError,
+    infrastructure::{app_state::AppState, error::HttpError},
 };
 
 pub struct GameInstancesGetByGameIdResponse {
@@ -31,14 +29,14 @@ pub async fn game_instances_get_metadata_by_game_id(
     State(state): State<AppState>,
     Path(game_id): Path<String>,
 ) -> Result<GameInstancesGetByGameIdResponse, HttpError> {
-    let handler =
-        GameInstanceListByGameRequestHandler::new(state.repository_manager.game_instance());
-
     let request = GameInstanceListByGameRequest {
         game_id: game_id.into(),
     };
 
-    let response = handler.list_all_games(request).await?;
+    let response = state
+        .game_instance_request_handler()
+        .list_all_games(request)
+        .await?;
 
     Ok(GameInstancesGetByGameIdResponse {
         games: response.games_metadata,
@@ -62,18 +60,16 @@ pub async fn game_instances_post(
     Path(game_id): Path<String>,
     request: GameInstanceCreateHttpRequest,
 ) -> Result<GameInstanceCreateHttpResponse, HttpError> {
-    let handler = CreateGameInstanceRequestHandler::new(
-        state.repository_manager.game_instance(),
-        state.repository_manager.game(),
-    );
-
-    let request = CreateGameInstanceRequest {
+    let request = GameInstanceCreateRequest {
         name: request.name,
         gm_user_id: user.id().clone(),
         game_id: game_id.into(),
     };
 
-    let id = handler.create_game(request).await?;
+    let id = state
+        .game_instance_request_handler()
+        .create(request)
+        .await?;
 
     Ok(GameInstanceCreateHttpResponse { id })
 }
@@ -84,13 +80,12 @@ pub async fn game_instances_delete(
     Path(game_id): Path<String>,
     Path(instance_id): Path<String>,
 ) -> Result<(), HttpError> {
-    let handler = DeleteGameInstanceRequestHandler::new(state.repository_manager.game_instance());
-
     let game_id = Identifier::parse_str(&game_id)?;
     let instance_id = Identifier::parse_str(&instance_id)?;
 
-    handler
-        .delete(DeleteGameInstanceRequest {
+    state
+        .game_instance_request_handler()
+        .delete(GameInstanceDeleteRequest {
             game_id,
             instance_id,
         })

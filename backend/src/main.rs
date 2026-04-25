@@ -1,17 +1,13 @@
-//! # Turnkeeper Backend Server
-//!
-//! Binary entry-point that boots the Axum server.
-//! All shared logic lives in the library crate (`lib.rs`).
-
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
+use turnkeeper_backend::infrastructure::app_state::AppState;
 use turnkeeper_backend::infrastructure::auth::AuthManager;
 use turnkeeper_backend::infrastructure::persistence::db::create_pool;
 use turnkeeper_backend::infrastructure::persistence::repositories::RepositoryManager;
 // use turnkeeper_backend::infrastructure::websocket::game_session_manager::GameSessionManager;
 // use turnkeeper_backend::infrastructure::websocket::session_manager::GameSessionManager;
 // use turnkeeper_backend::infrastructure::websocket::ws_session_manager::WsSessionManager;
-use turnkeeper_backend::{AppState, build_app};
+use turnkeeper_backend::build_app;
 
 /// Main entry point for the Turnkeeper backend server.
 ///
@@ -45,35 +41,27 @@ async fn main() {
         .expect(format!("Failed to create database pool: {}", database_url).as_str());
     println!("[STARTUP] Database connected");
 
-    // Create Managers
-    println!("[STARTUP] Initializing managers...");
-    let repository_manager = RepositoryManager::new(db.clone());
-    let auth_manager = AuthManager::new();
-    // let ws_session_manager = WsSessionManager::new();
-    // let game_session_manager = GameSessionManager::new(repository_manager.game());
+    println!("[STARTUP] Creating AppState...");
+    let state = AppState::new(db.clone());
+    println!("[STARTUP] AppState created");
 
-    let state = AppState {
-        repository_manager,
-        auth_manager,
-        // //game_session_manager: GameSessionManager::new(),
-        // ws_session_manager,
-        // game_session_manager,
-    };
-
+    println!("[STARTUP] Building application router...");
     let app = build_app(state);
-
-    // Specify the address to bind to (0.0.0.0 to listen on all interfaces)
-    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
+    println!("[STARTUP] Application router built");
 
     // Create listener on address
-    println!("[STARTUP] Binding to address: {}", addr);
+    println!("[STARTUP] Binding TCP listener...");
+    // Specify the address to bind to (0.0.0.0 to listen on all interfaces)
+    let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
     let listener = TcpListener::bind(addr)
         .await
         .expect(format!("Failed to create TCP listener: {}", addr).as_str());
+    println!("[STARTUP] TCP listener bound on {}", addr);
 
     // Start the Axum server
-    println!("[STARTUP] Server running at {}", addr);
+    println!("[STARTUP] Starting server...");
     axum::serve(listener, app)
         .await
         .expect("Failed to launch server");
+    println!("[STARTUP] Server running at {}", addr);
 }

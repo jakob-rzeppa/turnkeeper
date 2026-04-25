@@ -1,31 +1,27 @@
 use crate::{
-    application::game::{contracts::GameRepositoryContract, error::GameApplicationError},
+    application::game::{
+        contracts::GameRepositoryContract, error::GameApplicationError,
+        request_handlers::GameRequestHandler,
+    },
     domain::game::projections::game_metadata::GameMetadataProjection,
 };
-use std::sync::Arc;
 
 pub struct OverviewGameResponse {
     pub games_metadata: Vec<GameMetadataProjection>,
 }
 
-pub struct GameListAllRequestHandler<GameRepository: GameRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract> GameListAllRequestHandler<GameRepository> {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
+impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
     pub async fn list_all(&self) -> Result<OverviewGameResponse, GameApplicationError> {
         Ok(OverviewGameResponse {
-            games_metadata: self.repository.list_all().await?,
+            games_metadata: self.game_repository.list_all().await?,
         })
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::domain::common::date_time::DateTime;
@@ -58,7 +54,7 @@ mod tests {
             Box::pin(async move { Ok(cloned) })
         });
 
-        let handler = GameListAllRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository));
         let result = handler.list_all().await;
 
         assert!(result.is_ok());
@@ -77,7 +73,7 @@ mod tests {
             .times(1)
             .returning(|| Box::pin(async { Ok(vec![]) }));
 
-        let handler = GameListAllRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository));
         let result = handler.list_all().await;
 
         assert!(result.is_ok());

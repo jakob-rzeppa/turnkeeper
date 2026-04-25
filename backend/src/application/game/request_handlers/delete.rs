@@ -1,27 +1,18 @@
 use crate::{
-    application::game::{contracts::GameRepositoryContract, error::GameApplicationError},
+    application::game::{
+        contracts::GameRepositoryContract, error::GameApplicationError,
+        request_handlers::GameRequestHandler,
+    },
     domain::common::identifier::Identifier,
 };
-use std::sync::Arc;
 
 pub struct DeleteGameRequest {
     pub id: Identifier,
 }
 
-pub struct DeleteGameRequestHandler<GameRepository: GameRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract> DeleteGameRequestHandler<GameRepository> {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
-    pub async fn delete_game(
-        &self,
-        request: DeleteGameRequest,
-    ) -> Result<(), GameApplicationError> {
-        self.repository.delete(&request.id).await?;
+impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
+    pub async fn delete(&self, request: DeleteGameRequest) -> Result<(), GameApplicationError> {
+        self.game_repository.delete(&request.id).await?;
 
         Ok(())
     }
@@ -29,6 +20,8 @@ impl<GameRepository: GameRepositoryContract> DeleteGameRequestHandler<GameReposi
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::domain::common::identifier::Identifier;
@@ -44,9 +37,9 @@ mod tests {
             .times(1)
             .returning(|_| Box::pin(async { Ok(()) }));
 
-        let handler = DeleteGameRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository));
         let request = DeleteGameRequest { id: game_id };
-        let result = handler.delete_game(request).await;
+        let result = handler.delete(request).await;
 
         assert!(result.is_ok());
     }

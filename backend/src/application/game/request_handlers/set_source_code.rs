@@ -1,28 +1,22 @@
 use crate::{
-    application::game::{contracts::GameRepositoryContract, error::GameApplicationError},
+    application::game::{
+        contracts::GameRepositoryContract, error::GameApplicationError,
+        request_handlers::GameRequestHandler,
+    },
     domain::common::identifier::Identifier,
 };
-use std::sync::Arc;
 
-pub struct SetSourceCodeRequestHandler<GameRepository: GameRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract> SetSourceCodeRequestHandler<GameRepository> {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
+impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
     pub async fn set_source_code(
         &self,
         id: Identifier,
         source_code: String,
     ) -> Result<(), GameApplicationError> {
-        let game = self.repository.get_by_id(&id).await?;
+        let game = self.game_repository.get_by_id(&id).await?;
 
         if let Some(mut game) = game {
             game.set_source_code(source_code);
-            self.repository.save(&game).await?;
+            self.game_repository.save(&game).await?;
             Ok(())
         } else {
             Err(GameApplicationError::GameNotFound)

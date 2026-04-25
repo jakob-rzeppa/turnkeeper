@@ -1,31 +1,23 @@
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::error::GameApplicationError;
+use crate::application::game::request_handlers::GameRequestHandler;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::entities::game::Game;
-use std::sync::Arc;
 
 pub struct CreateGameRequest {
     pub name: String,
     pub description: String,
 }
 
-pub struct CreateGameRequestHandler<GameRepository: GameRepositoryContract> {
-    repository: Arc<GameRepository>,
-}
-
-impl<GameRepository: GameRepositoryContract> CreateGameRequestHandler<GameRepository> {
-    pub fn new(repository: Arc<GameRepository>) -> Self {
-        Self { repository }
-    }
-
+impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
     /// Creates a game with a generated UUID and returns the new ID.
-    pub async fn create_game(
+    pub async fn create(
         &self,
         request: CreateGameRequest,
     ) -> Result<Identifier, GameApplicationError> {
         let game = Game::new(request.name, request.description);
 
-        self.repository.save(&game).await?;
+        self.game_repository.save(&game).await?;
 
         Ok(game.id().clone())
     }
@@ -33,6 +25,8 @@ impl<GameRepository: GameRepositoryContract> CreateGameRequestHandler<GameReposi
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
 
@@ -51,8 +45,8 @@ mod tests {
             .times(1)
             .returning(|_| Box::pin(async { Ok(()) }));
 
-        let handler = CreateGameRequestHandler::new(Arc::new(repository));
-        let result = handler.create_game(request).await;
+        let handler = GameRequestHandler::new(Arc::new(repository));
+        let result = handler.create(request).await;
 
         assert!(result.is_ok());
     }

@@ -2,32 +2,22 @@
 //!
 //! Creates a new user and returns a JWT token.
 
-use crate::application::user::contracts::{JwtGeneratorContract, UserRepositoryContract};
+use crate::application::user::contracts::{
+    JwtGeneratorContract, JwtValidatorContract, UserRepositoryContract,
+};
+use crate::application::user::request_handlers::UserRequestHandler;
 use crate::application::user::requests::UserRegisterRequest;
 use crate::application::user::responses::UserTokenResponse;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::UserError;
-use std::sync::Arc;
 
-pub struct UserRegisterRequestHandler<UserRepository, JwtGenerator>
-where
+impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
+    JwtValidator: JwtValidatorContract,
+> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
 {
-    repository: Arc<UserRepository>,
-    jwt: Arc<JwtGenerator>,
-}
-
-impl<UserRepository, JwtGenerator> UserRegisterRequestHandler<UserRepository, JwtGenerator>
-where
-    UserRepository: UserRepositoryContract,
-    JwtGenerator: JwtGeneratorContract,
-{
-    pub fn new(repository: Arc<UserRepository>, jwt: Arc<JwtGenerator>) -> Self {
-        Self { repository, jwt }
-    }
-
     /// Registers a new user and returns a JWT token.
     ///
     /// # Errors
@@ -40,24 +30,27 @@ where
     ) -> Result<UserTokenResponse, UserError> {
         let user = User::try_new(Identifier::new(), request.name, request.password)?;
 
-        self.repository.save(&user).await?;
+        self.user_repository.save(&user).await?;
 
-        let token = self.jwt.generate_token(user.id())?;
+        let token = self.jwt_generator.generate_token(user.id())?;
         Ok(UserTokenResponse { token })
     }
 }
 
 #[cfg(test)]
 mod tests {
+    use std::sync::Arc;
+
     use super::*;
     use crate::application::user::contracts::{
-        MockJwtGeneratorContract, MockUserRepositoryContract,
+        MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
     };
 
     #[tokio::test]
     async fn test_valid_call_save_and_return_token() {
         let mut user_repo = MockUserRepositoryContract::new();
         let mut jwt_generator = MockJwtGeneratorContract::new();
+        let jwt_validator = MockJwtValidatorContract::new();
 
         // Prepare test data
         let name = "test-user".to_string();
@@ -79,7 +72,11 @@ mod tests {
             .times(1)
             .returning(|_| Ok("test-token".to_string()));
 
-        let handler = UserRegisterRequestHandler::new(Arc::new(user_repo), Arc::new(jwt_generator));
+        let handler = UserRequestHandler::new(
+            Arc::new(user_repo),
+            Arc::new(jwt_generator),
+            Arc::new(jwt_validator),
+        );
         let result = handler.register(request).await;
 
         assert!(result.is_ok());
