@@ -26,19 +26,6 @@ const gamesStore = useGamesStore();
             </div>
 
             <div v-else-if="gamesStore.data.error !== null" class="alert alert-error shadow-lg">
-                <svg
-                    xmlns="http://www.w3.org/2000/svg"
-                    class="stroke-current shrink-0 h-6 w-6"
-                    fill="none"
-                    viewBox="0 0 24 24"
-                >
-                    <path
-                        stroke-linecap="round"
-                        stroke-linejoin="round"
-                        stroke-width="2"
-                        d="M10 14l-2-2m0 0l-2-2m2 2l2-2m-2 2l-2 2m2-2l2 2m-4-4a7 7 0 1014 0 7 7 0 00-14 0z"
-                    />
-                </svg>
                 <span>{{ gamesStore.data.error }}</span>
             </div>
 
@@ -69,7 +56,11 @@ const gamesStore = useGamesStore();
                                 </p>
                             </div>
                             <div class="card-actions justify-end mt-4">
-                                <button class="btn btn-sm btn-outline">View</button>
+                                <RouterLink
+                                    :to="{ name: 'game', params: { id: game.id } }"
+                                    class="btn btn-sm btn-outline"
+                                    >View</RouterLink
+                                >
                                 <button
                                     @click="
                                         modalStore.openModal(DeleteGameModal, {
