@@ -8,6 +8,50 @@ use crate::{
     },
 };
 
+struct GameRow {
+    id: String,
+    name: String,
+    description: String,
+    source_code: String,
+    created_at: String,
+    updated_at: String,
+}
+
+impl From<&Game> for GameRow {
+    fn from(game: &Game) -> Self {
+        Self {
+            id: game.id().to_string(),
+            name: game.name().to_string(),
+            description: game.description().to_string(),
+            source_code: game.source_code().to_string(),
+            created_at: game.created_at().to_string(),
+            updated_at: game.updated_at().to_string(),
+        }
+    }
+}
+
+impl TryInto<Game> for GameRow {
+    type Error = DatabaseError;
+
+    fn try_into(self) -> Result<Game, Self::Error> {
+        let id = Identifier::parse_str(&self.id)
+            .map_err(|e| DatabaseError::Custom(format!("Failed to parse id: {}", e)))?;
+        let created_at = crate::domain::common::date_time::DateTime::parse_str(&self.created_at)
+            .map_err(|e| DatabaseError::Custom(format!("Failed to parse created_at: {}", e)))?;
+        let updated_at = crate::domain::common::date_time::DateTime::parse_str(&self.updated_at)
+            .map_err(|e| DatabaseError::Custom(format!("Failed to parse updated_at: {}", e)))?;
+
+        Ok(Game::new_raw(
+            id,
+            self.name,
+            self.description,
+            self.source_code,
+            created_at,
+            updated_at,
+        ))
+    }
+}
+
 pub struct SqliteGameRepository {
     db: SqlitePool,
 }
@@ -20,19 +64,118 @@ impl SqliteGameRepository {
 
 impl GameRepositoryContract for SqliteGameRepository {
     async fn list_all(&self) -> Result<Vec<GameMetadataProjection>, DatabaseError> {
-        unimplemented!()
+        let mut conn =
+            self.db.acquire().await.map_err(|e| {
+                DatabaseError::Custom(format!("Failed to acquire connection: {}", e))
+            })?;
+
+        let rows = sqlx::query_as!(
+            GameRow,
+            r#"
+            SELECT 
+                id,
+                name,
+                description,
+                source_code,
+                created_at as "created_at!: String",
+                updated_at as "updated_at!: String"
+            FROM games
+            ORDER BY updated_at DESC
+            "#
+        )
+        .fetch_all(&mut *conn)
+        .await
+        .map_err(|e| DatabaseError::Custom(format!("Failed to fetch games: {}", e)))?;
+
+        let mut projections = Vec::new();
+        for row in rows {
+            let id = Identifier::parse_str(&row.id)
+                .map_err(|e| DatabaseError::Custom(format!("Failed to parse id: {}", e)))?;
+            let created_at = crate::domain::common::date_time::DateTime::parse_str(&row.created_at)
+                .map_err(|e| DatabaseError::Custom(format!("Failed to parse created_at: {}", e)))?;
+            let updated_at = crate::domain::common::date_time::DateTime::parse_str(&row.updated_at)
+                .map_err(|e| DatabaseError::Custom(format!("Failed to parse updated_at: {}", e)))?;
+
+            projections.push(GameMetadataProjection {
+                id,
+                name: row.name,
+                description: row.description,
+                created_at,
+                updated_at,
+            });
+        }
+
+        Ok(projections)
     }
 
     async fn get_by_id(&self, id: &Identifier) -> Result<Option<Game>, DatabaseError> {
-        unimplemented!()
+        let mut conn =
+            self.db.acquire().await.map_err(|e| {
+                DatabaseError::Custom(format!("Failed to acquire connection: {}", e))
+            })?;
+
+        let id_str = id.to_string();
+        let row = sqlx::query_as!(
+            GameRow,
+            r#"
+            SELECT 
+                id,
+                name,
+                description,
+                source_code,
+                created_at as "created_at!: String",
+                updated_at as "updated_at!: String"
+            FROM games 
+            WHERE id = $1
+            "#,
+            id_str
+        )
+        .fetch_optional(&mut *conn)
+        .await
+        .map_err(|e| DatabaseError::Custom(format!("Failed to fetch game: {}", e)))?;
+
+        match row {
+            Some(row) => Ok(Some(row.try_into()?)),
+            None => Ok(None),
+        }
     }
 
     async fn save(&self, game: &Game) -> Result<(), DatabaseError> {
-        unimplemented!()
+        let mut conn =
+            self.db.acquire().await.map_err(|e| {
+                DatabaseError::Custom(format!("Failed to acquire connection: {}", e))
+            })?;
+
+        let game_row = GameRow::from(game);
+        sqlx::query!(
+            "INSERT OR REPLACE INTO games (id, name, description, source_code, created_at, updated_at) VALUES ($1, $2, $3, $4, $5, $6)",
+            game_row.id,
+            game_row.name,
+            game_row.description,
+            game_row.source_code,
+            game_row.created_at,
+            game_row.updated_at
+        )
+        .execute(&mut *conn)
+        .await
+        .map_err(|e| DatabaseError::Custom(format!("Failed to save game: {}", e)))?;
+
+        Ok(())
     }
 
     async fn delete(&self, id: &Identifier) -> Result<(), DatabaseError> {
-        unimplemented!()
+        let mut conn =
+            self.db.acquire().await.map_err(|e| {
+                DatabaseError::Custom(format!("Failed to acquire connection: {}", e))
+            })?;
+
+        let id_str = id.to_string();
+        sqlx::query!("DELETE FROM games WHERE id = $1", id_str)
+            .execute(&mut *conn)
+            .await
+            .map_err(|e| DatabaseError::Custom(format!("Failed to delete game: {}", e)))?;
+
+        Ok(())
     }
 }
 

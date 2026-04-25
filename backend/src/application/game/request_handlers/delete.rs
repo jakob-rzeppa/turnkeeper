@@ -21,7 +21,7 @@ impl<GameRepository: GameRepositoryContract> DeleteGameRequestHandler<GameReposi
         &self,
         request: DeleteGameRequest,
     ) -> Result<(), GameApplicationError> {
-        self.repository.delete(request.id).await?;
+        self.repository.delete(&request.id).await?;
 
         Ok(())
     }

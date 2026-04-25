@@ -52,7 +52,7 @@ CREATE TABLE IF NOT EXISTS player_stats (
 );
 
 CREATE TABLE IF NOT EXISTS player_stat_values (
-    game_stat_id            VARCHAR(36)         NOT NULL,
+    player_stat_id          VARCHAR(36)         NOT NULL,
     player_id               VARCHAR(36)         NOT NULL,
 
     int_value               INT                 ,
@@ -60,8 +60,8 @@ CREATE TABLE IF NOT EXISTS player_stat_values (
     string_value            TEXT                ,
     bool_value              BOOLEAN             ,
 
-    PRIMARY KEY (game_stat_id, player_id),
-    FOREIGN KEY (game_stat_id) REFERENCES game_stats(id) ON DELETE CASCADE
+    PRIMARY KEY (player_stat_id, player_id),
+    FOREIGN KEY (player_stat_id) REFERENCES player_stats(id) ON DELETE CASCADE,
     FOREIGN KEY (player_id) REFERENCES players(id) ON DELETE CASCADE
 );
 
@@ -90,7 +90,7 @@ CREATE TABLE IF NOT EXISTS pages (
 CREATE TABLE IF NOT EXISTS players (
     id                      VARCHAR(36)         PRIMARY KEY NOT NULL,
     game_instance_id        VARCHAR(36)         NOT NULL,
-    user_id                 VARCHAR(36)         NOT NULL,
+    user_id                 VARCHAR(36)         ,
 
     FOREIGN KEY (game_instance_id) REFERENCES game_instances(id) ON DELETE CASCADE,
     FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE RESTRICT

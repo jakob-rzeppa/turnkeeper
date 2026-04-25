@@ -45,7 +45,7 @@ impl<GameRepository: GameRepositoryContract, GameInstanceRepository: GameInstanc
     ) -> Result<Identifier, GameInstanceApplicationError> {
         let game = self
             .game_repository
-            .get_by_id(request.game_id.clone())
+            .get_by_id(&request.game_id)
             .await?
             .ok_or_else(|| GameInstanceApplicationError::GameNotFound(request.game_id.clone()))?;
 

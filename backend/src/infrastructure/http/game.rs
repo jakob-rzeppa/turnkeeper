@@ -11,9 +11,7 @@ use crate::domain::common::date_time::DateTime;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::projections::game::GameProjection;
 use crate::domain::game::projections::game_metadata::GameMetadataProjection;
-use crate::domain::user::entities::User;
 use crate::infrastructure::error::HttpError;
-use axum::Extension;
 use axum::extract::{Path, State};
 use axum::http::StatusCode;
 use backend_derive::{JsonRequest, JsonResponse};
@@ -98,7 +96,7 @@ pub async fn games_get_by_id(
 ) -> Result<GamesGetByIdResponse, HttpError> {
     let handler = GameGetByIdRequestHandler::new(state.repository_manager.game());
 
-    let res = handler.get_by_id(id).await?;
+    let res = handler.get_by_id(Identifier::parse_str(&id)?).await?;
 
     Ok(res.game.into())
 }

@@ -1,6 +1,6 @@
 use crate::{
     application::game::{contracts::GameRepositoryContract, error::GameApplicationError},
-    domain::game::projections::game::GameProjection,
+    domain::{common::identifier::Identifier, game::projections::game::GameProjection},
 };
 use std::sync::Arc;
 
@@ -17,8 +17,11 @@ impl<GameRepository: GameRepositoryContract> GameGetByIdRequestHandler<GameRepos
         Self { repository }
     }
 
-    pub async fn get_by_id(&self, id: String) -> Result<GameGetByIdResponse, GameApplicationError> {
-        let game = self.repository.get_by_id(id.into()).await?;
+    pub async fn get_by_id(
+        &self,
+        id: Identifier,
+    ) -> Result<GameGetByIdResponse, GameApplicationError> {
+        let game = self.repository.get_by_id(&id).await?;
 
         if let Some(game) = game {
             Ok(GameGetByIdResponse {
@@ -61,7 +64,7 @@ mod tests {
             });
 
         let handler = GameGetByIdRequestHandler::new(Arc::new(repository));
-        let result = handler.get_by_id(game_id.to_string()).await;
+        let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_ok());
         let response = result.unwrap();
@@ -82,7 +85,7 @@ mod tests {
             .returning(|_| Box::pin(async { Ok(None) }));
 
         let handler = GameGetByIdRequestHandler::new(Arc::new(repository));
-        let result = handler.get_by_id(game_id.to_string()).await;
+        let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_err());
         match result {

@@ -36,4 +36,16 @@ impl Action {
     pub fn id(&self) -> &Identifier {
         &self.id
     }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn code(&self) -> &str {
+        &self.code
+    }
+
+    pub fn starting_line_number(&self) -> usize {
+        self.starting_line_number
+    }
 }

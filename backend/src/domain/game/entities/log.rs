@@ -7,8 +7,8 @@ pub struct Log {
     entries: Vec<(LogEntry, DateTime)>,
 }
 
-#[derive(Clone, Debug, PartialEq)]
-enum LogEntry {
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
+pub enum LogEntry {
     Action {
         user_id: Identifier,
         action_id: Identifier,
@@ -28,6 +28,18 @@ impl Log {
             id: Identifier::new(),
             entries: Vec::new(),
         }
+    }
+
+    pub fn new_raw(id: Identifier, entries: Vec<(LogEntry, DateTime)>) -> Self {
+        Self { id, entries }
+    }
+
+    pub fn id(&self) -> &Identifier {
+        &self.id
+    }
+
+    pub fn entries(&self) -> &Vec<(LogEntry, DateTime)> {
+        &self.entries
     }
 
     pub fn log_action(&mut self, user_id: Identifier, action_id: Identifier, payload: String) {
