@@ -14,6 +14,7 @@ pub mod player_management;
 pub mod projection_management;
 pub mod state_management;
 
+#[derive(Debug, Clone, PartialEq)]
 pub struct GameInstance {
     id: Identifier,
     name: String,
@@ -100,5 +101,57 @@ impl GameInstance {
 
     pub fn id(&self) -> &Identifier {
         &self.id
+    }
+
+    pub fn name(&self) -> &str {
+        &self.name
+    }
+
+    pub fn current_player_index(&self) -> usize {
+        self.current_player_index
+    }
+
+    pub fn round(&self) -> u32 {
+        self.round
+    }
+
+    pub fn game_stats(&self) -> &Vec<GameStat> {
+        &self.game_stats
+    }
+
+    pub fn player_stats(&self) -> &Vec<PlayerStat> {
+        &self.player_stats
+    }
+
+    pub fn actions(&self) -> &Vec<Action> {
+        &self.actions
+    }
+
+    pub fn pages(&self) -> &Vec<Page> {
+        &self.pages
+    }
+
+    pub fn players(&self) -> &Vec<Player> {
+        &self.players
+    }
+
+    pub fn log(&self) -> &Log {
+        &self.log
+    }
+
+    pub fn source_game(&self) -> &Game {
+        &self.source_game
+    }
+
+    pub fn gm_user_id(&self) -> &Identifier {
+        &self.gm_user_id
+    }
+
+    pub fn created_at(&self) -> &DateTime {
+        &self.created_at
+    }
+
+    pub fn last_played_at(&self) -> &DateTime {
+        &self.last_played_at
     }
 }

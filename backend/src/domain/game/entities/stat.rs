@@ -11,7 +11,7 @@ use crate::domain::{
     },
 };
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct GameStat {
     id: Identifier,
 
@@ -80,7 +80,7 @@ impl GameStat {
     }
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone, Debug, PartialEq)]
 pub struct PlayerStat {
     id: Identifier,
 
