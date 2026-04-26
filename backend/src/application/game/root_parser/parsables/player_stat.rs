@@ -25,7 +25,7 @@ impl Parsable<Token> for PlayerStat {
         ) && nth_is_token!(ts, 1, TokenVariant::Pstat)
     }
 
-    fn parse(ts: &mut TokenStream<Token>) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream<Token>, _source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
@@ -226,16 +226,10 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_no_type_decl() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("gold".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(100),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("public pstat gold = 100;");
 
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
+
         assert_eq!(pstat.name(), "gold");
         assert_eq!(pstat.default(), &StatValue::Int(100));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Public);
@@ -243,18 +237,10 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_with_type_decl_int() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Protected,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("experience".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::IntType,
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(0),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("protected pstat experience: int = 0;");
 
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
+
         assert_eq!(pstat.name(), "experience");
         assert_eq!(pstat.default(), &StatValue::Int(0));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Protected);
@@ -262,18 +248,10 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_with_type_decl_float() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Private,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("stamina".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::FloatType,
-            TokenVariant::Equal,
-            TokenVariant::FloatLiteral(50.0),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("private pstat stamina: float = 50.0;");
 
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
+
         assert_eq!(pstat.name(), "stamina");
         assert_eq!(pstat.default(), &StatValue::Float(50.0));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Private);
@@ -281,18 +259,11 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_with_type_decl_string() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Hidden,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("secret".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::StringType,
-            TokenVariant::Equal,
-            TokenVariant::StringLiteral("hidden_value".to_string()),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) =
+            test_token_stream!("hidden pstat secret: string = \"hidden_value\";");
 
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
+
         assert_eq!(pstat.name(), "secret");
         assert_eq!(
             pstat.default(),
@@ -303,18 +274,10 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_with_type_decl_bool() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Protected,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("hasSpecialAbility".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::BoolType,
-            TokenVariant::Equal,
-            TokenVariant::BoolLiteral(false),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) =
+            test_token_stream!("protected pstat hasSpecialAbility: bool = false;");
 
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.name(), "hasSpecialAbility");
         assert_eq!(pstat.default(), &StatValue::Bool(false));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Protected);
@@ -322,18 +285,10 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_type_mismatch() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("level".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::IntType,
-            TokenVariant::Equal,
-            TokenVariant::StringLiteral("not a number".to_string()),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) =
+            test_token_stream!("public pstat level: int = \"not a number\";");
 
-        let err = PlayerStat::parse(&mut ts).unwrap_err();
+        let err = PlayerStat::parse(&mut ts, &source_code).unwrap_err();
         match err {
             ParsingError::SyntaxError { message, .. } => {
                 assert_eq!(
@@ -348,51 +303,23 @@ mod tests {
     #[test]
     fn test_parse_pstat_all_visibility_levels() {
         // Test Protected
-        let mut ts = test_token_stream!(
-            TokenVariant::Protected,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("test".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Semicolon
-        );
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let (mut ts, source_code) = test_token_stream!("protected pstat test: int = 1;");
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Protected);
 
         // Test Public
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("test".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Semicolon
-        );
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let (mut ts, source_code) = test_token_stream!("public pstat test: int = 1;");
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Public);
 
         // Test Private
-        let mut ts = test_token_stream!(
-            TokenVariant::Private,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("test".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Semicolon
-        );
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let (mut ts, source_code) = test_token_stream!("private pstat test: int = 1;");
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Private);
 
         // Test Hidden
-        let mut ts = test_token_stream!(
-            TokenVariant::Hidden,
-            TokenVariant::Pstat,
-            TokenVariant::Identifier("test".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Semicolon
-        );
-        let pstat = PlayerStat::parse(&mut ts).unwrap();
+        let (mut ts, source_code) = test_token_stream!("hidden pstat test: int = 1;");
+        let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Hidden);
     }
 }

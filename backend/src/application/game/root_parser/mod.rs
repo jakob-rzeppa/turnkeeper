@@ -42,7 +42,7 @@ pub trait GameRootParserContract {
 
 impl GameRootParserContract for GameRootParser {
     fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, ParsingError> {
-        let tokens = self.lexer.lex_source_code(source_code)?;
+        let tokens = self.lexer.tokenize(source_code)?;
 
         let mut token_stream = TokenStream::new(tokens);
 
@@ -51,9 +51,9 @@ impl GameRootParserContract for GameRootParser {
 
         while token_stream.peek().is_some() {
             if PlayerStat::is_next(&token_stream) {
-                player_stats.push(PlayerStat::parse(&mut token_stream)?);
+                player_stats.push(PlayerStat::parse(&mut token_stream, source_code)?);
             } else if GameStat::is_next(&token_stream) {
-                game_stats.push(GameStat::parse(&mut token_stream)?);
+                game_stats.push(GameStat::parse(&mut token_stream, source_code)?);
             } else {
                 return Err(ParsingError::UnexpectedToken {
                     expected: "PlayerStat or GameStat".to_string(),

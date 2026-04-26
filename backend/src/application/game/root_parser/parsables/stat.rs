@@ -22,7 +22,7 @@ impl Parsable<Token> for GameStat {
         ) && nth_is_token!(ts, 1, TokenVariant::Stat)
     }
 
-    fn parse(ts: &mut TokenStream<Token>) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream<Token>, _source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
@@ -217,16 +217,9 @@ mod tests {
 
     #[test]
     fn test_parse_stat_no_type_decl() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("health".to_string()),
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(100),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("public stat health = 100;");
 
-        let stat = GameStat::parse(&mut ts).unwrap();
+        let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "health");
         assert_eq!(stat.default(), &StatValue::Int(100));
         assert_eq!(stat.visibility(), &GameStatVisibility::Public);
@@ -234,18 +227,9 @@ mod tests {
 
     #[test]
     fn test_parse_stat_with_type_decl_int() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Private,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("mana".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::IntType,
-            TokenVariant::Equal,
-            TokenVariant::IntLiteral(50),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("private stat mana: int = 50;");
 
-        let stat = GameStat::parse(&mut ts).unwrap();
+        let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "mana");
         assert_eq!(stat.default(), &StatValue::Int(50));
         assert_eq!(stat.visibility(), &GameStatVisibility::Private);
@@ -253,18 +237,9 @@ mod tests {
 
     #[test]
     fn test_parse_stat_with_type_decl_float() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Hidden,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("stamina".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::FloatType,
-            TokenVariant::Equal,
-            TokenVariant::FloatLiteral(75.5),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("hidden stat stamina: float = 75.5;");
 
-        let stat = GameStat::parse(&mut ts).unwrap();
+        let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "stamina");
         assert_eq!(stat.default(), &StatValue::Float(75.5));
         assert_eq!(stat.visibility(), &GameStatVisibility::Hidden);
@@ -272,18 +247,9 @@ mod tests {
 
     #[test]
     fn test_parse_stat_with_type_decl_string() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Hidden,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("status".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::StringType,
-            TokenVariant::Equal,
-            TokenVariant::StringLiteral("healthy".to_string()),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("hidden stat status: string = \"healthy\";");
 
-        let stat = GameStat::parse(&mut ts).unwrap();
+        let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "status");
         assert_eq!(stat.default(), &StatValue::String("healthy".to_string()));
         assert_eq!(stat.visibility(), &GameStatVisibility::Hidden);
@@ -291,18 +257,9 @@ mod tests {
 
     #[test]
     fn test_parse_stat_with_type_decl_bool() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("isAlive".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::BoolType,
-            TokenVariant::Equal,
-            TokenVariant::BoolLiteral(true),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) = test_token_stream!("public stat isAlive: bool = true;");
 
-        let stat = GameStat::parse(&mut ts).unwrap();
+        let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "isAlive");
         assert_eq!(stat.default(), &StatValue::Bool(true));
         assert_eq!(stat.visibility(), &GameStatVisibility::Public);
@@ -310,18 +267,10 @@ mod tests {
 
     #[test]
     fn test_parse_stat_type_mismatch() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Public,
-            TokenVariant::Stat,
-            TokenVariant::Identifier("health".to_string()),
-            TokenVariant::Colon,
-            TokenVariant::IntType,
-            TokenVariant::Equal,
-            TokenVariant::StringLiteral("not a number".to_string()),
-            TokenVariant::Semicolon
-        );
+        let (mut ts, source_code) =
+            test_token_stream!("public stat health: int = \"not a number\";");
 
-        let err = GameStat::parse(&mut ts).unwrap_err();
+        let err = GameStat::parse(&mut ts, &source_code).unwrap_err();
         match err {
             ParsingError::SyntaxError { message, .. } => {
                 assert_eq!(

@@ -15,7 +15,7 @@ impl Lexer {
         Self {}
     }
 
-    pub fn lex_source_code(&self, source_code: &str) -> Result<Vec<Token>, ParsingError> {
+    pub fn tokenize(&self, source_code: &str) -> Result<Vec<Token>, ParsingError> {
         let lexemes = scan_source_code(source_code);
 
         lexemes

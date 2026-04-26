@@ -118,19 +118,15 @@ pub(crate) use get_pos;
 /// The position (line) of the tokens will be incremented for each token, starting from 0. This is useful for testing the parser without having to go through the lexer.
 /// The first_char (column) of the tokens will be set to 0 for simplicity.
 macro_rules! test_token_stream {
-    ($($variant:expr),*) => {
-        {
-            let tokens = vec![$($variant),*]
-                .into_iter()
-                .enumerate()
-                .map(|(i, variant)| Token {
-                    variant,
-                    pos: crate::domain::common::position::Position::new(i, 0),
-                })
-                .collect::<Vec<_>>();
-
-            crate::application::common::parser::lexer::token_stream::TokenStream::new(tokens)
-        }
-    };
+    ($source_code:expr) => {{
+        (
+            crate::application::common::parser::lexer::token_stream::TokenStream::new(
+                crate::application::common::parser::lexer::Lexer::new()
+                    .tokenize($source_code)
+                    .expect("Failed to tokenize test source code"),
+            ),
+            $source_code.to_string(),
+        )
+    }};
 }
 pub(crate) use test_token_stream;
