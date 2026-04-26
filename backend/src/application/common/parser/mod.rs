@@ -1,5 +1,4 @@
-pub mod lexeme;
+pub mod error;
+pub mod lexer;
 pub mod macros;
 pub mod parsable;
-pub mod scanner;
-pub mod token_stream;

@@ -1,14 +1,12 @@
 use crate::{
-    application::{
-        common::parser::{
-            macros::{expect_token, get_pos, is_token, nth_is_token},
-            parsable::Parsable,
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{
+            token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        game::root_parser::{
-            error::GameParsingError,
-            token::{Token, TokenVariant},
-        },
+        macros::{expect_token, get_pos, is_token, nth_is_token},
+        parsable::Parsable,
     },
     domain::game::{
         entities::stat::GameStat,
@@ -17,8 +15,6 @@ use crate::{
 };
 
 impl Parsable<Token> for GameStat {
-    type Error = GameParsingError;
-
     fn is_next(ts: &TokenStream<Token>) -> bool {
         is_token!(
             ts,
@@ -26,7 +22,7 @@ impl Parsable<Token> for GameStat {
         ) && nth_is_token!(ts, 1, TokenVariant::Stat)
     }
 
-    fn parse(ts: &mut TokenStream<Token>) -> Result<Self, Self::Error> {
+    fn parse(ts: &mut TokenStream<Token>) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
@@ -43,14 +39,14 @@ impl Parsable<Token> for GameStat {
                 ..
             }) => GameStatVisibility::Public,
             Some(token) => {
-                return Err(Self::Error::UnexpectedToken {
+                return Err(ParsingError::UnexpectedToken {
                     expected: "Expected visibility modifier (hidden, private, public)".to_string(),
                     found: token.variant.clone(),
                     pos: token.pos,
                 });
             }
             None => {
-                return Err(Self::Error::UnexpectedEOF {
+                return Err(ParsingError::UnexpectedEOF {
                     expected: "Expected visibility modifier (hidden, private, public)".to_string(),
                 });
             }
@@ -68,14 +64,14 @@ impl Parsable<Token> for GameStat {
                 ..
             }) => name.clone(),
             Some(token) => {
-                return Err(Self::Error::UnexpectedToken {
+                return Err(ParsingError::UnexpectedToken {
                     expected: "Expected identifier for stat name".to_string(),
                     found: token.variant.clone(),
                     pos: token.pos,
                 });
             }
             None => {
-                return Err(Self::Error::UnexpectedEOF {
+                return Err(ParsingError::UnexpectedEOF {
                     expected: "Expected identifier for stat name".to_string(),
                 });
             }
@@ -100,7 +96,7 @@ impl Parsable<Token> for GameStat {
                     ) {
                         Some(token.variant.clone())
                     } else {
-                        return Err(Self::Error::UnexpectedToken {
+                        return Err(ParsingError::UnexpectedToken {
                             expected: "Expected type declaration (int, float, string, bool) after ':' in stat declaration".to_string(),
                             found: token.variant.clone(),
                             pos: token.pos,
@@ -108,7 +104,7 @@ impl Parsable<Token> for GameStat {
                     }
                 }
                 None => {
-                    return Err(Self::Error::UnexpectedEOF {
+                    return Err(ParsingError::UnexpectedEOF {
                         expected: "Expected type declaration (int, float, string, bool) after ':' in stat declaration".to_string(),
                     });
                 }
@@ -130,7 +126,7 @@ impl Parsable<Token> for GameStat {
                 TokenVariant::StringLiteral(s) => StatValue::String(s),
                 TokenVariant::BoolLiteral(b) => StatValue::Bool(b),
                 _ => {
-                    return Err(Self::Error::UnexpectedToken {
+                    return Err(ParsingError::UnexpectedToken {
                         expected: "Expected literal value (int, float, string, bool) after '=' in stat declaration".to_string(),
                         found: token.variant.clone(),
                         pos: token.pos,
@@ -138,7 +134,7 @@ impl Parsable<Token> for GameStat {
                 }
             },
             None => {
-                return Err(Self::Error::UnexpectedEOF {
+                return Err(ParsingError::UnexpectedEOF {
                     expected: "Expected literal value (int, float, string, bool) after '=' in stat declaration".to_string(),
                 });
             }
@@ -157,7 +153,7 @@ impl Parsable<Token> for GameStat {
                     if let StatValue::Int(_) = value {
                         // Type matches, continue
                     } else {
-                        return Err(Self::Error::SyntaxError {
+                        return Err(ParsingError::SyntaxError {
                             message: "Type mismatch: expected int literal for stat declared as int"
                                 .to_string(),
                             pos,
@@ -168,7 +164,7 @@ impl Parsable<Token> for GameStat {
                     if let StatValue::Float(_) = value {
                         // Type matches, continue
                     } else {
-                        return Err(Self::Error::SyntaxError {
+                        return Err(ParsingError::SyntaxError {
                             message:
                                 "Type mismatch: expected float literal for stat declared as float"
                                     .to_string(),
@@ -180,7 +176,7 @@ impl Parsable<Token> for GameStat {
                     if let StatValue::String(_) = value {
                         // Type matches, continue
                     } else {
-                        return Err(Self::Error::SyntaxError {
+                        return Err(ParsingError::SyntaxError {
                             message:
                                 "Type mismatch: expected string literal for stat declared as string"
                                     .to_string(),
@@ -192,7 +188,7 @@ impl Parsable<Token> for GameStat {
                     if let StatValue::Bool(_) = value {
                         // Type matches, continue
                     } else {
-                        return Err(Self::Error::SyntaxError {
+                        return Err(ParsingError::SyntaxError {
                             message:
                                 "Type mismatch: expected bool literal for stat declared as bool"
                                     .to_string(),
@@ -201,7 +197,7 @@ impl Parsable<Token> for GameStat {
                     }
                 }
                 _ => {
-                    return Err(Self::Error::SyntaxError {
+                    return Err(ParsingError::SyntaxError {
                         message: "Invalid type declaration in stat declaration".to_string(),
                         pos,
                     });
@@ -327,7 +323,7 @@ mod tests {
 
         let err = GameStat::parse(&mut ts).unwrap_err();
         match err {
-            GameParsingError::SyntaxError { message, .. } => {
+            ParsingError::SyntaxError { message, .. } => {
                 assert_eq!(
                     message,
                     "Type mismatch: expected int literal for stat declared as int"

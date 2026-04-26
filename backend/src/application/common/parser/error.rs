@@ -1,9 +1,9 @@
 use crate::{
-    application::game::root_parser::token::TokenVariant, domain::common::position::Position,
+    application::common::parser::lexer::token::TokenVariant, domain::common::position::Position,
 };
 
 #[derive(Debug, Clone, PartialEq, thiserror::Error)]
-pub enum GameParsingError {
+pub enum ParsingError {
     #[error("Invalid token at position {pos}: {message}")]
     InvalidToken { pos: Position, message: String },
     #[error("Syntax error at position {pos}: {message}")]

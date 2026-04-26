@@ -1,4 +1,4 @@
-use crate::application::game::root_parser::error::GameParsingError;
+use crate::application::common::parser::error::ParsingError;
 
 pub mod error;
 pub mod parser;
@@ -6,7 +6,7 @@ pub mod parser;
 pub trait Parsable: Sized {
     fn is_next(ts: &TokenStream) -> bool;
 
-    fn parse(ts: &mut TokenStream) -> Result<Self, GameParsingError>;
+    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError>;
 }
 
 pub struct TokenStream {

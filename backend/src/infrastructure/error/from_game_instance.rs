@@ -16,7 +16,7 @@ impl From<GameInstanceApplicationError> for HttpError {
             GameInstanceApplicationError::NotFound(id) => {
                 HttpError::NotFound(format!("Game instance with id {} not found", id))
             }
-            GameInstanceApplicationError::GameParsingError(msg) => {
+            GameInstanceApplicationError::ParsingError(msg) => {
                 eprintln!("Game parsing error: {}", msg);
                 HttpError::InternalServerError
             }

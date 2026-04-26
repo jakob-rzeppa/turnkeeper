@@ -1,7 +1,8 @@
 use crate::{
-    application::{
-        common::parser::{parsable::Parsable, scanner::Scanner, token_stream::TokenStream},
-        game::root_parser::error::GameParsingError,
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{Lexer, token_stream::TokenStream},
+        parsable::Parsable,
     },
     domain::game::entities::{
         action::Action,
@@ -10,12 +11,10 @@ use crate::{
     },
 };
 
-pub mod error;
 mod parsables {
     pub mod player_stat;
     pub mod stat;
 }
-mod token;
 
 pub struct GameParsingResult {
     pub game_stats: Vec<GameStat>,
@@ -25,30 +24,25 @@ pub struct GameParsingResult {
 }
 
 pub struct GameRootParser {
-    scanner: Scanner,
+    lexer: Lexer,
 }
 
 impl GameRootParser {
     pub fn new() -> Self {
         Self {
-            scanner: Scanner::new(),
+            lexer: Lexer::new(),
         }
     }
 }
 
 #[mockall::automock]
 pub trait GameRootParserContract {
-    fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, GameParsingError>;
+    fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, ParsingError>;
 }
 
 impl GameRootParserContract for GameRootParser {
-    fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, GameParsingError> {
-        let lexemes = self.scanner.scan_source_code(source_code);
-
-        let tokens = lexemes
-            .into_iter()
-            .map(|lexeme| token::Token::try_from(lexeme))
-            .collect::<Result<Vec<_>, _>>()?;
+    fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, ParsingError> {
+        let tokens = self.lexer.lex_source_code(source_code)?;
 
         let mut token_stream = TokenStream::new(tokens);
 
@@ -61,7 +55,7 @@ impl GameRootParserContract for GameRootParser {
             } else if GameStat::is_next(&token_stream) {
                 game_stats.push(GameStat::parse(&mut token_stream)?);
             } else {
-                return Err(GameParsingError::UnexpectedToken {
+                return Err(ParsingError::UnexpectedToken {
                     expected: "PlayerStat or GameStat".to_string(),
                     found: token_stream.peek().unwrap().variant.clone(),
                     pos: token_stream.peek().unwrap().pos,

@@ -1,34 +1,26 @@
 use crate::{
-    application::common::parser::lexeme::{Lexeme, LexemeVariant},
+    application::common::parser::lexer::lexeme::{Lexeme, LexemeVariant},
     domain::common::position::Position,
 };
 
-pub struct Scanner {}
+pub fn scan_source_code(source: &str) -> Vec<Lexeme> {
+    let mut lexemes: Vec<Lexeme> = Vec::new();
 
-impl Scanner {
-    pub fn new() -> Self {
-        Scanner {}
-    }
-
-    pub fn scan_source_code(&self, source: &str) -> Vec<Lexeme> {
-        let mut lexemes: Vec<Lexeme> = Vec::new();
-
-        let mut scanner = ScannerTransverser::new();
-        for char in source.chars() {
-            // Continue the current scanner FSM
-            let lexeme = scanner.step(char);
-            if let Some(lexeme) = lexeme {
-                lexemes.push(lexeme);
-            }
-        }
-
-        // Handle the final lexeme after processing all characters
-        if let Some(lexeme) = scanner.last_step() {
+    let mut scanner = ScannerTransverser::new();
+    for char in source.chars() {
+        // Continue the current scanner FSM
+        let lexeme = scanner.step(char);
+        if let Some(lexeme) = lexeme {
             lexemes.push(lexeme);
         }
-
-        lexemes
     }
+
+    // Handle the final lexeme after processing all characters
+    if let Some(lexeme) = scanner.last_step() {
+        lexemes.push(lexeme);
+    }
+
+    lexemes
 }
 
 struct ScannerTransverser {
@@ -261,8 +253,7 @@ mod tests {
     // Basic Text Tests
     #[test]
     fn test_single_word() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("hello");
+        let result = scan_source_code("hello");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -274,8 +265,7 @@ mod tests {
 
     #[test]
     fn test_multiple_words() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("hello world");
+        let result = scan_source_code("hello world");
         assert_eq!(
             result,
             vec![
@@ -293,8 +283,7 @@ mod tests {
 
     #[test]
     fn test_text_with_underscores() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("hello_world");
+        let result = scan_source_code("hello_world");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -306,8 +295,7 @@ mod tests {
 
     #[test]
     fn test_text_with_hyphens() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("hello-world");
+        let result = scan_source_code("hello-world");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -319,8 +307,7 @@ mod tests {
 
     #[test]
     fn test_text_with_numbers() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("test123");
+        let result = scan_source_code("test123");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -333,8 +320,7 @@ mod tests {
     // Number Tests
     #[test]
     fn test_single_digit() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("5");
+        let result = scan_source_code("5");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -346,8 +332,7 @@ mod tests {
 
     #[test]
     fn test_multi_digit_number() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("12345");
+        let result = scan_source_code("12345");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -359,8 +344,7 @@ mod tests {
 
     #[test]
     fn test_decimal_number() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("123.45");
+        let result = scan_source_code("123.45");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -372,8 +356,7 @@ mod tests {
 
     #[test]
     fn test_multiple_numbers() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("1 2 3");
+        let result = scan_source_code("1 2 3");
         assert_eq!(
             result,
             vec![
@@ -386,8 +369,7 @@ mod tests {
 
     #[test]
     fn test_zero_decimal() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("0.0");
+        let result = scan_source_code("0.0");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -400,8 +382,7 @@ mod tests {
     // Quote Tests
     #[test]
     fn test_simple_quoted_string() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"hello\"");
+        let result = scan_source_code("\"hello\"");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -413,8 +394,7 @@ mod tests {
 
     #[test]
     fn test_quoted_string_with_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"hello world\"");
+        let result = scan_source_code("\"hello world\"");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -426,8 +406,7 @@ mod tests {
 
     #[test]
     fn test_quoted_string_with_numbers() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"test 123\"");
+        let result = scan_source_code("\"test 123\"");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -439,8 +418,7 @@ mod tests {
 
     #[test]
     fn test_quoted_string_with_symbols() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"a+b\"");
+        let result = scan_source_code("\"a+b\"");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -452,8 +430,7 @@ mod tests {
 
     #[test]
     fn test_multiple_quoted_strings() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"first\" \"second\"");
+        let result = scan_source_code("\"first\" \"second\"");
         assert_eq!(
             result,
             vec![
@@ -471,8 +448,7 @@ mod tests {
 
     #[test]
     fn test_empty_quoted_string() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\"\"");
+        let result = scan_source_code("\"\"");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -485,8 +461,7 @@ mod tests {
     // Symbol Tests
     #[test]
     fn test_single_symbol() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("+");
+        let result = scan_source_code("+");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -498,8 +473,7 @@ mod tests {
 
     #[test]
     fn test_equals_symbol() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("=");
+        let result = scan_source_code("=");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -511,8 +485,7 @@ mod tests {
 
     #[test]
     fn test_multiple_single_symbols() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("+ - *");
+        let result = scan_source_code("+ - *");
         assert_eq!(
             result,
             vec![
@@ -525,8 +498,7 @@ mod tests {
 
     #[test]
     fn test_parentheses() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("( )");
+        let result = scan_source_code("( )");
         assert_eq!(
             result,
             vec![
@@ -538,8 +510,7 @@ mod tests {
 
     #[test]
     fn test_parentheses_no_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("()");
+        let result = scan_source_code("()");
         assert_eq!(
             result,
             vec![
@@ -551,8 +522,7 @@ mod tests {
 
     #[test]
     fn test_brackets() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("[ ]");
+        let result = scan_source_code("[ ]");
         assert_eq!(
             result,
             vec![
@@ -564,8 +534,7 @@ mod tests {
 
     #[test]
     fn test_brackets_no_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("[]");
+        let result = scan_source_code("[]");
         assert_eq!(
             result,
             vec![
@@ -577,8 +546,7 @@ mod tests {
 
     #[test]
     fn test_braces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("{ }");
+        let result = scan_source_code("{ }");
         assert_eq!(
             result,
             vec![
@@ -590,8 +558,7 @@ mod tests {
 
     #[test]
     fn test_braces_no_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("{}");
+        let result = scan_source_code("{}");
         assert_eq!(
             result,
             vec![
@@ -604,8 +571,7 @@ mod tests {
     // Double Symbol Tests
     #[test]
     fn test_double_equals() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("==");
+        let result = scan_source_code("==");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -617,8 +583,7 @@ mod tests {
 
     #[test]
     fn test_plus_equals() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("+=");
+        let result = scan_source_code("+=");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -631,44 +596,38 @@ mod tests {
     // Whitespace Tests
     #[test]
     fn test_empty_string() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("");
+        let result = scan_source_code("");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("   ");
+        let result = scan_source_code("   ");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_tabs() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\t\t");
+        let result = scan_source_code("\t\t");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_only_newlines() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("\n\n");
+        let result = scan_source_code("\n\n");
         assert_eq!(result, vec![]);
     }
 
     #[test]
     fn test_mixed_whitespace() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code(" \t\n ");
+        let result = scan_source_code(" \t\n ");
         assert_eq!(result, vec![]);
     }
 
     // Complex Expression Tests
     #[test]
     fn test_arithmetic_expression() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("10 + 5");
+        let result = scan_source_code("10 + 5");
         assert_eq!(
             result,
             vec![
@@ -681,8 +640,7 @@ mod tests {
 
     #[test]
     fn test_equation() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("x = 10");
+        let result = scan_source_code("x = 10");
         assert_eq!(
             result,
             vec![
@@ -695,8 +653,7 @@ mod tests {
 
     #[test]
     fn test_function_call() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("func(1, 2)");
+        let result = scan_source_code("func(1, 2)");
         assert_eq!(
             result,
             vec![
@@ -712,8 +669,7 @@ mod tests {
 
     #[test]
     fn test_function_call_no_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("func(1,2)");
+        let result = scan_source_code("func(1,2)");
         assert_eq!(
             result,
             vec![
@@ -729,8 +685,7 @@ mod tests {
 
     #[test]
     fn test_complex_comparison() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("if x >= 5 && y <= 10");
+        let result = scan_source_code("if x >= 5 && y <= 10");
         assert_eq!(
             result,
             vec![
@@ -760,8 +715,7 @@ mod tests {
 
     #[test]
     fn test_mathematical_expression() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("( a + b ) * c");
+        let result = scan_source_code("( a + b ) * c");
         assert_eq!(
             result,
             vec![
@@ -778,8 +732,7 @@ mod tests {
 
     #[test]
     fn test_string_with_text_and_numbers() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("price \"$100\"");
+        let result = scan_source_code("price \"$100\"");
         assert_eq!(
             result,
             vec![
@@ -797,8 +750,7 @@ mod tests {
 
     #[test]
     fn test_assignment_with_decimal() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("value = 3.14");
+        let result = scan_source_code("value = 3.14");
         assert_eq!(
             result,
             vec![
@@ -817,8 +769,7 @@ mod tests {
 
     #[test]
     fn test_array_initialization() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("[1,2,3]");
+        let result = scan_source_code("[1,2,3]");
         assert_eq!(
             result,
             vec![
@@ -835,8 +786,7 @@ mod tests {
 
     #[test]
     fn test_array_with_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("[ 1 , 2 , 3 ]");
+        let result = scan_source_code("[ 1 , 2 , 3 ]");
         assert_eq!(
             result,
             vec![
@@ -853,8 +803,7 @@ mod tests {
 
     #[test]
     fn test_all_operator_types() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("+ - * / % ^ ! &");
+        let result = scan_source_code("+ - * / % ^ ! &");
         assert_eq!(
             result,
             vec![
@@ -872,8 +821,7 @@ mod tests {
 
     #[test]
     fn test_not_equals() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("!=");
+        let result = scan_source_code("!=");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -886,10 +834,9 @@ mod tests {
     // Edge Cases
     #[test]
     fn test_number_followed_by_text() {
-        let scanner = Scanner::new();
         // Once scanner enters Number state, it can't transition to Text
         // This is expected behavior in the current implementation
-        let result = scanner.scan_source_code("123abc");
+        let result = scan_source_code("123abc");
         assert_eq!(
             result,
             vec![
@@ -904,8 +851,7 @@ mod tests {
 
     #[test]
     fn test_underscore_only() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("_");
+        let result = scan_source_code("_");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -917,8 +863,7 @@ mod tests {
 
     #[test]
     fn test_multiple_underscores() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("___");
+        let result = scan_source_code("___");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -930,8 +875,7 @@ mod tests {
 
     #[test]
     fn test_text_starts_with_number_like_char() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("_123text");
+        let result = scan_source_code("_123text");
         assert_eq!(
             result,
             vec![Lexeme::new(
@@ -943,9 +887,8 @@ mod tests {
 
     #[test]
     fn test_dot_after_non_number_becomes_token() {
-        let scanner = Scanner::new();
         // Dot is now recognized as a symbol
-        let result = scanner.scan_source_code("text.method");
+        let result = scan_source_code("text.method");
         assert_eq!(
             result,
             vec![
@@ -961,8 +904,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_separator() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("a ; b");
+        let result = scan_source_code("a ; b");
         assert_eq!(
             result,
             vec![
@@ -975,8 +917,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_separator_no_spaces() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("a;b");
+        let result = scan_source_code("a;b");
         assert_eq!(
             result,
             vec![
@@ -989,8 +930,7 @@ mod tests {
 
     #[test]
     fn test_semicolon_end_of_line() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("a;\nhello;");
+        let result = scan_source_code("a;\nhello;");
         assert_eq!(
             result,
             vec![
@@ -1007,8 +947,7 @@ mod tests {
 
     #[test]
     fn test_mixed_operators() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("a += 5; b -= 3; c *= 2; d /= 4; e %= 3; f ^= 2;");
+        let result = scan_source_code("a += 5; b -= 3; c *= 2; d /= 4; e %= 3; f ^= 2;");
         assert_eq!(
             result,
             vec![
@@ -1060,8 +999,7 @@ mod tests {
 
     #[test]
     fn test_function_definition() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("fn add(a: int, b: int) -> int { return a + b; }");
+        let result = scan_source_code("fn add(a: int, b: int) -> int { return a + b; }");
         assert_eq!(
             result,
             vec![
@@ -1097,8 +1035,7 @@ mod tests {
 
     #[test]
     fn test_reject_function_definition() {
-        let scanner = Scanner::new();
-        let result = scanner.scan_source_code("fn add(a: int, b: int) -> int? { return a + b; }");
+        let result = scan_source_code("fn add(a: int, b: int) -> int? { return a + b; }");
         assert_eq!(
             result,
             vec![

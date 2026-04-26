@@ -1,5 +1,5 @@
 use crate::{
-    application::{common::error::DatabaseError, game::root_parser::error::GameParsingError},
+    application::common::{error::DatabaseError, parser::error::ParsingError},
     domain::common::identifier::Identifier,
 };
 
@@ -12,5 +12,5 @@ pub enum GameInstanceApplicationError {
     #[error("Game with id {0} for creating game instance not found")]
     GameNotFound(Identifier),
     #[error("Error parsing game: {0}")]
-    GameParsingError(#[from] GameParsingError),
+    ParsingError(#[from] ParsingError),
 }

@@ -1,9 +1,9 @@
 use std::fmt::Display;
 
 use crate::{
-    application::{
-        common::parser::lexeme::{Lexeme, LexemeVariant},
-        game::root_parser::error::GameParsingError,
+    application::common::parser::{
+        error::ParsingError,
+        lexer::lexeme::{Lexeme, LexemeVariant},
     },
     domain::common::position::Position,
 };
@@ -53,6 +53,7 @@ pub enum TokenVariant {
     OpenBracket,  // [
     CloseBracket, // ]
     Comma,        // ,
+    Dot,          // .
     Semicolon,    // ;
 
     // --- FROM Number and DecimalNumber LEXEME ---
@@ -64,9 +65,9 @@ pub enum TokenVariant {
 }
 
 impl TryFrom<Lexeme> for Token {
-    type Error = GameParsingError;
+    type Error = ParsingError;
 
-    fn try_from(lexeme: Lexeme) -> Result<Self, Self::Error> {
+    fn try_from(lexeme: Lexeme) -> Result<Self, ParsingError> {
         let variant = match lexeme.lexeme {
             LexemeVariant::Text(text) => match text.as_str() {
                 "hidden" => TokenVariant::Hidden,
@@ -101,23 +102,24 @@ impl TryFrom<Lexeme> for Token {
                 "[" => TokenVariant::OpenBracket,
                 "]" => TokenVariant::CloseBracket,
                 "," => TokenVariant::Comma,
+                "." => TokenVariant::Dot,
                 ";" => TokenVariant::Semicolon,
                 _ => {
-                    return Err(GameParsingError::InvalidToken {
+                    return Err(ParsingError::InvalidToken {
                         pos: lexeme.pos,
                         message: format!("Unexpected symbol lexeme {}", symbol),
                     });
                 }
             },
             LexemeVariant::DoubleSymbol(double_symbol) => {
-                return Err(GameParsingError::InvalidToken {
+                return Err(ParsingError::InvalidToken {
                     pos: lexeme.pos,
                     message: format!("Unexpected double symbol lexeme {}", double_symbol),
                 });
             }
             LexemeVariant::Number(num) => {
                 TokenVariant::IntLiteral(num.parse::<i64>().map_err(|_| {
-                    GameParsingError::InvalidToken {
+                    ParsingError::InvalidToken {
                         pos: lexeme.pos.clone(),
                         message: format!("Invalid integer literal {}", num),
                     }
@@ -125,7 +127,7 @@ impl TryFrom<Lexeme> for Token {
             }
             LexemeVariant::DecimalNumber(num) => {
                 TokenVariant::FloatLiteral(num.parse::<f64>().map_err(|_| {
-                    GameParsingError::InvalidToken {
+                    ParsingError::InvalidToken {
                         pos: lexeme.pos.clone(),
                         message: format!("Invalid float literal {}", num),
                     }
@@ -169,6 +171,7 @@ impl Display for TokenVariant {
             TokenVariant::CloseBracket => write!(f, "]"),
             TokenVariant::Comma => write!(f, ","),
             TokenVariant::Semicolon => write!(f, ";"),
+            TokenVariant::Dot => write!(f, "."),
             TokenVariant::IntLiteral(num) => write!(f, "IntLiteral({})", num),
             TokenVariant::FloatLiteral(num) => write!(f, "FloatLiteral({})", num),
             TokenVariant::StringLiteral(s) => write!(f, "StringLiteral({})", s),

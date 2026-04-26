@@ -44,17 +44,21 @@ macro_rules! expect_token {
                 if matches!(&token.variant, $expected) {
                     token
                 } else {
-                    return Err(Self::Error::UnexpectedToken {
-                        expected: $expected_msg.to_string(),
-                        found: token.variant.clone(),
-                        pos: token.pos.clone(),
-                    });
+                    return Err(
+                        crate::application::common::parser::error::ParsingError::UnexpectedToken {
+                            expected: $expected_msg.to_string(),
+                            found: token.variant.clone(),
+                            pos: token.pos.clone(),
+                        },
+                    );
                 }
             }
             None => {
-                return Err(Self::Error::UnexpectedEOF {
-                    expected: $expected_msg.to_string(),
-                })
+                return Err(
+                    crate::application::common::parser::error::ParsingError::UnexpectedEOF {
+                        expected: $expected_msg.to_string(),
+                    },
+                )
             }
         }
     };
@@ -67,15 +71,27 @@ pub(crate) use expect_token;
 macro_rules! expect_parse {
     ($tokenstream:expr, $expected_parse:ty, $expected_msg:expr) => {{
         <$expected_parse>::parse($tokenstream).map_err(|err| match err {
-            Self::Error::UnexpectedToken { found, pos, .. } => Self::Error::UnexpectedToken {
+            crate::application::common::parser::error::ParsingError::UnexpectedToken {
+                found,
+                pos,
+                ..
+            } => crate::application::common::parser::error::ParsingError::UnexpectedToken {
                 expected: $expected_msg.to_string(),
                 found,
                 pos,
             },
-            Self::Error::UnexpectedEOF { .. } => Self::Error::UnexpectedEOF {
-                expected: $expected_msg.to_string(),
+            crate::application::common::parser::error::ParsingError::UnexpectedEOF { .. } => {
+                crate::application::common::parser::error::ParsingError::UnexpectedEOF {
+                    expected: $expected_msg.to_string(),
+                }
+            }
+            crate::application::common::parser::error::ParsingError::SyntaxError {
+                message,
+                pos,
+            } => crate::application::common::parser::error::ParsingError::SyntaxError {
+                message,
+                pos,
             },
-            Self::Error::SyntaxError { message, pos } => Self::Error::SyntaxError { message, pos },
         })?
     }};
 }
@@ -86,12 +102,11 @@ pub(crate) use expect_parse;
 /// Usage: `let pos = get_pos!(tokens, index)`
 macro_rules! get_pos {
     ($tokenstream:expr) => {
-        $tokenstream
-            .peek()
-            .map(|t| t.pos)
-            .ok_or_else(|| Self::Error::UnexpectedEOF {
+        $tokenstream.peek().map(|t| t.pos).ok_or_else(|| {
+            crate::application::common::parser::error::ParsingError::UnexpectedEOF {
                 expected: "Unexpected EOF".to_string(),
-            })?
+            }
+        })?
     };
 }
 pub(crate) use get_pos;
@@ -114,7 +129,7 @@ macro_rules! test_token_stream {
                 })
                 .collect::<Vec<_>>();
 
-            TokenStream::new(tokens)
+            crate::application::common::parser::lexer::token_stream::TokenStream::new(tokens)
         }
     };
 }
