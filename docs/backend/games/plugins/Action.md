@@ -7,10 +7,6 @@
 pstat gold: int = 2;
 // The game stat defendingMultiplier is set with a default of 1.5
 stat defendingMultiplier: float = 1.5;
-// The global variable battlesAllowed is set to true. The difference between this and stat is, that a global variable does not show in the gm game overview and can't be displayed in the pages. It still can be changed in the code.
-let battlesAllowed: boolean = true;
-// A const is a immutable variable and should be preferred to let if possible.
-const goldForBattleWinner: int = 200;
 
 // A action fight is defined.
 action fight(attackingPowerLevel: int, defendingPowerLevel: int, defendingPlayer: Player) {
@@ -35,7 +31,7 @@ action fight(attackingPowerLevel: int, defendingPowerLevel: int, defendingPlayer
 
 All Actions, Stats etc. must be defined at the root level of the code.
 
-### On Action
+## On Action
 
 ```rust
 // A action that is triggered by another action can't have parameters
@@ -48,19 +44,31 @@ action beforeFight before fight {
 }
 
 // A action can also be triggered by a turn advance (pre defined action)
-action doSomething on turnStart {}
+action doSomething on TurnStart {}
 
-action doSomething on turnEnd {}
+action doSomething on TurnEnd {}
 
 // The same for rounds
-action doSomething on roundStart {}
+action doSomething on RoundStart {}
 
-action doSomething on roundEnd {}
+action doSomething on RoundEnd {}
 ```
 
 When multiple actions are triggered simultaneously, their execution order is not guaranteed.
 
-### Game Object
+## Visibility
+
+- hidden: only from the code
+- private: only the gm
+- public: anyone
+
+```
+
+```
+
+Actions that are triggered by another action can't have visibility modifiers.
+
+## Game Object
 
 ```
 // The global game object

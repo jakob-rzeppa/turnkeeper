@@ -1,6 +1,6 @@
 use crate::{
     application::{
-        game::contracts::GameRepositoryContract,
+        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
         game_instance::{
             contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
             request_handler::GameInstanceRequestHandler,
@@ -20,8 +20,11 @@ pub struct GameInstanceListByGameResponse {
     pub games_metadata: Vec<GameInstanceMetadataProjection>,
 }
 
-impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
-    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
+impl<
+    GameInstanceRepository: GameInstanceRepositoryContract,
+    GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
+> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
 {
     pub async fn list_all_games(
         &self,
@@ -42,6 +45,7 @@ mod tests {
 
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::root_parser::MockGameRootParserContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
 
@@ -49,6 +53,7 @@ mod tests {
     async fn test_list_game_instances_success() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
         let game_id = Identifier::new();
 
         let instances_metadata = vec![
@@ -86,6 +91,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
+            Arc::new(game_root_parser),
         );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),
@@ -103,6 +109,7 @@ mod tests {
     async fn test_list_game_instances_empty() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
         let game_id = Identifier::new();
 
         game_instance_repository
@@ -113,6 +120,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
+            Arc::new(game_root_parser),
         );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),

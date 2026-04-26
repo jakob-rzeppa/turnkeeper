@@ -1,6 +1,6 @@
 use crate::{
     application::{
-        game::contracts::GameRepositoryContract,
+        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
         game_instance::{
             contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
             request_handler::GameInstanceRequestHandler,
@@ -14,8 +14,11 @@ pub struct GameInstanceDeleteRequest {
     pub instance_id: Identifier,
 }
 
-impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
-    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
+impl<
+    GameInstanceRepository: GameInstanceRepositoryContract,
+    GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
+> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
 {
     pub async fn delete(
         &self,
@@ -35,7 +38,7 @@ mod tests {
 
     use super::*;
     use crate::application::{
-        game::contracts::MockGameRepositoryContract,
+        game::{contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract},
         game_instance::contracts::MockGameInstanceRepositoryContract,
     };
 
@@ -43,6 +46,7 @@ mod tests {
     async fn test_delete_game_instance_success() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
         let game_id = Identifier::new();
         let game_instance_id = Identifier::new();
 
@@ -54,6 +58,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
+            Arc::new(game_root_parser),
         );
         let request = GameInstanceDeleteRequest {
             game_id,

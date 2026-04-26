@@ -10,7 +10,7 @@ use sqlx::{Pool, Sqlite};
 
 use crate::{
     application::{
-        game::request_handlers::GameRequestHandler,
+        game::{request_handlers::GameRequestHandler, root_parser::GameRootParser},
         game_instance::request_handler::GameInstanceRequestHandler,
         user::request_handlers::UserRequestHandler,
     },
@@ -27,8 +27,11 @@ use crate::{
 #[derive(Clone)]
 pub struct AppState {
     game_request_handler: GameRequestHandler<SqliteGameRepository>,
-    game_instance_request_handler:
-        GameInstanceRequestHandler<SqliteGameInstanceRepository, SqliteGameRepository>,
+    game_instance_request_handler: GameInstanceRequestHandler<
+        SqliteGameInstanceRepository,
+        SqliteGameRepository,
+        GameRootParser,
+    >,
     user_request_handler: UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator>,
 }
 
@@ -40,12 +43,14 @@ impl AppState {
         let sqlite_user_repository = Arc::new(SqliteUserRepository::new(db_pool.clone()));
         let jwt_generator = Arc::new(JwtGenerator::new());
         let jwt_validator = Arc::new(JwtValidator::new());
+        let game_root_parser = Arc::new(GameRootParser::new());
 
         Self {
             game_request_handler: GameRequestHandler::new(sqlite_game_repository.clone()),
             game_instance_request_handler: GameInstanceRequestHandler::new(
                 sqlite_game_instance_repository,
                 sqlite_game_repository,
+                game_root_parser,
             ),
             user_request_handler: UserRequestHandler::new(
                 sqlite_user_repository.clone(),
@@ -61,7 +66,11 @@ impl AppState {
 
     pub fn game_instance_request_handler(
         &self,
-    ) -> GameInstanceRequestHandler<SqliteGameInstanceRepository, SqliteGameRepository> {
+    ) -> GameInstanceRequestHandler<
+        SqliteGameInstanceRepository,
+        SqliteGameRepository,
+        GameRootParser,
+    > {
         self.game_instance_request_handler.clone()
     }
 

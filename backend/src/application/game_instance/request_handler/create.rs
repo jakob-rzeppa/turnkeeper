@@ -1,11 +1,10 @@
 use crate::{
     application::{
-        game::contracts::GameRepositoryContract,
+        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
         game_instance::{
             contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
             request_handler::GameInstanceRequestHandler,
         },
-        interpreter::parse_game,
     },
     domain::{common::identifier::Identifier, game::entities::game_instance::GameInstance},
 };
@@ -16,8 +15,11 @@ pub struct GameInstanceCreateRequest {
     pub game_id: Identifier,
 }
 
-impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
-    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
+impl<
+    GameInstanceRepository: GameInstanceRepositoryContract,
+    GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
+> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
 {
     pub async fn create(
         &self,
@@ -29,7 +31,7 @@ impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: Gam
             .await?
             .ok_or_else(|| GameInstanceApplicationError::GameNotFound(request.game_id.clone()))?;
 
-        let game_parsing_result = parse_game(game.source_code())?;
+        let game_parsing_result = self.game_root_parser.parse_game(game.source_code())?;
 
         let game_instance = GameInstance::new(
             request.name,
@@ -53,13 +55,14 @@ mod tests {
 
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::root_parser::{GameParsingResult, MockGameRootParserContract};
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
-    use crate::application::interpreter::{GameParsingResult, parse_game_fake};
 
     #[tokio::test]
     async fn test_create_game_instance_successfully() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let mut game_repository = MockGameRepositoryContract::new();
+        let mut game_root_parser = MockGameRootParserContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();
@@ -88,19 +91,23 @@ mod tests {
             .times(1)
             .returning(|_| Box::pin(async { Ok(()) }));
 
-        // Fake the game parsing to return empty collections
-        parse_game_fake::setup(|_| {
-            Ok(GameParsingResult {
-                game_stats: Vec::new(),
-                player_stats: Vec::new(),
-                actions: Vec::new(),
-                pages: Vec::new(),
-            })
-        });
+        // Mock the game root parser
+        game_root_parser
+            .expect_parse_game()
+            .times(1)
+            .returning(|_| {
+                Ok(GameParsingResult {
+                    game_stats: Vec::new(),
+                    player_stats: Vec::new(),
+                    actions: Vec::new(),
+                    pages: Vec::new(),
+                })
+            });
 
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
+            Arc::new(game_root_parser),
         );
         let result = handler.create(request).await;
 
@@ -113,6 +120,7 @@ mod tests {
     async fn test_create_game_instance_game_not_found() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let mut game_repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();
@@ -134,6 +142,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
+            Arc::new(game_root_parser),
         );
         let result = handler.create(request).await;
 

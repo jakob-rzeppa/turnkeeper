@@ -1,13 +1,13 @@
-use crate::application::interpreter::position::Position;
+use crate::domain::common::position::Position;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Lexeme {
-    pub lexeme: LexemeType,
+    pub lexeme: LexemeVariant,
     pub pos: Position,
 }
 
 impl Lexeme {
-    pub fn new(lexeme: LexemeType, pos: Position) -> Self {
+    pub fn new(lexeme: LexemeVariant, pos: Position) -> Self {
         Lexeme { lexeme, pos }
     }
 
@@ -29,10 +29,10 @@ impl Lexeme {
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum LexemeType {
+pub enum LexemeVariant {
     Text(String),
     Number(String),
-    NumberWithDot(String),
+    DecimalNumber(String),
     Quote(String),
     Symbol(String),
     DoubleSymbol(String),

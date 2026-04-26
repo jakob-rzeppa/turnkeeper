@@ -53,7 +53,7 @@ classDiagram
 
 The Plugins are the core defining elements of each game.
 
-First the [State](./plugins/State.md) provides the data stores for game state persistance. It describes what should be saved in the game. For example the field _gold_ for each player.
+First the [Stats](./plugins/Stats.md) provides the data stats for game state persistance. It describes what should be saved in the game. For example the field _gold_ for each player.
 
 The [Actions](./plugins/Command.md) then add functionality to the game. They are the fundamental operations performed in a game and change the game state. Actions can call other actions from within and might have a trigger (global event like TurnStart or other action). Examples might be _SendGold_, _OnTurnStart_, _CollectTaxes_.
 

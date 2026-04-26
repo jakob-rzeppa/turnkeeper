@@ -1,17 +1,7 @@
-use fnmock::derive::fake_function;
-
-use crate::{
-    application::interpreter::error::GameParsingError,
-    domain::game::entities::{
-        action::Action,
-        page::Page,
-        stat::{GameStat, PlayerStat},
-    },
-};
+use crate::application::game::root_parser::error::GameParsingError;
 
 pub mod error;
 pub mod parser;
-pub mod position;
 
 pub trait Parsable: Sized {
     fn is_next(ts: &TokenStream) -> bool;
@@ -22,16 +12,4 @@ pub trait Parsable: Sized {
 pub struct TokenStream {
     tokens: Vec<()>,
     index: usize,
-}
-
-pub struct GameParsingResult {
-    pub game_stats: Vec<GameStat>,
-    pub player_stats: Vec<PlayerStat>,
-    pub actions: Vec<Action>,
-    pub pages: Vec<Page>,
-}
-
-#[fake_function]
-pub fn parse_game(source_code: &str) -> Result<GameParsingResult, GameParsingError> {
-    unimplemented!()
 }

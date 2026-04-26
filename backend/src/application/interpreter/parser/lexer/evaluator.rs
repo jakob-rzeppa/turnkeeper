@@ -1,7 +1,4 @@
-use crate::application::interpreter::parser::lexer::{
-    lexeme::{Lexeme, LexemeType},
-    token::{Token, TokenVariant},
-};
+use crate::application::interpreter::parser::lexer::token::{Token, TokenVariant};
 
 pub struct Evaluator {}
 

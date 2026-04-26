@@ -1,5 +1,5 @@
 use crate::{
-    application::{common::error::DatabaseError, interpreter::error::GameParsingError},
+    application::{common::error::DatabaseError, game::root_parser::error::GameParsingError},
     domain::common::identifier::Identifier,
 };
 

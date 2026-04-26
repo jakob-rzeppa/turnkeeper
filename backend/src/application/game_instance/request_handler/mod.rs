@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use crate::application::{
-    game::contracts::GameRepositoryContract,
+    game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
     game_instance::contracts::GameInstanceRepositoryContract,
 };
 
@@ -12,32 +12,43 @@ pub mod list_by_game;
 pub struct GameInstanceRequestHandler<
     GameInstanceRepository: GameInstanceRepositoryContract,
     GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
 > {
     game_instance_repository: Arc<GameInstanceRepository>,
     game_repository: Arc<GameRepository>,
+    game_root_parser: Arc<GameRootParser>,
 }
 
-impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
-    GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
+impl<
+    GameInstanceRepository: GameInstanceRepositoryContract,
+    GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
+> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
 {
     pub fn new(
         game_instance_repository: Arc<GameInstanceRepository>,
         game_repository: Arc<GameRepository>,
+        game_root_parser: Arc<GameRootParser>,
     ) -> Self {
         Self {
             game_instance_repository,
             game_repository,
+            game_root_parser,
         }
     }
 }
 
-impl<GameInstanceRepository: GameInstanceRepositoryContract, GameRepository: GameRepositoryContract>
-    Clone for GameInstanceRequestHandler<GameInstanceRepository, GameRepository>
+impl<
+    GameInstanceRepository: GameInstanceRepositoryContract,
+    GameRepository: GameRepositoryContract,
+    GameRootParser: GameRootParserContract,
+> Clone for GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
 {
     fn clone(&self) -> Self {
         Self {
             game_instance_repository: self.game_instance_repository.clone(),
             game_repository: self.game_repository.clone(),
+            game_root_parser: self.game_root_parser.clone(),
         }
     }
 }
