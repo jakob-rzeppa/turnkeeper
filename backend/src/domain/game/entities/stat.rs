@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::domain::{
-    common::identifier::Identifier,
+    common::{identifier::Identifier, position::Position},
     game::{
         error::GameInstanceError,
         value_objects::{
@@ -20,19 +20,27 @@ pub struct GameStat {
 
     default: StatValue,
     visibility: GameStatVisibility,
+
+    pos: Position,
 }
 
 impl GameStat {
     /// Creates a new game stat with the given name, default value, and visibility.
     ///
     /// The `value` is initialized to the `default` value, and can be changed later using `set_value`.
-    pub fn new(name: String, default: StatValue, visibility: GameStatVisibility) -> Self {
+    pub fn new(
+        name: String,
+        default: StatValue,
+        visibility: GameStatVisibility,
+        pos: Position,
+    ) -> Self {
         Self {
             id: Identifier::new(),
             name,
             value: default.clone(),
             default,
             visibility,
+            pos,
         }
     }
 
@@ -45,6 +53,7 @@ impl GameStat {
         value: StatValue,
         default: StatValue,
         visibility: GameStatVisibility,
+        pos: Position,
     ) -> Self {
         Self {
             id,
@@ -52,6 +61,7 @@ impl GameStat {
             value,
             default,
             visibility,
+            pos,
         }
     }
 
@@ -75,6 +85,10 @@ impl GameStat {
         &self.visibility
     }
 
+    pub fn pos(&self) -> &Position {
+        &self.pos
+    }
+
     pub fn set_value(&mut self, value: StatValue) {
         self.value = value;
     }
@@ -89,6 +103,8 @@ pub struct PlayerStat {
 
     default: StatValue,
     visibility: PlayerStatVisibility,
+
+    pos: Position,
 }
 
 impl PlayerStat {
@@ -97,13 +113,19 @@ impl PlayerStat {
     /// The `values` map is initialized as empty, and values for each player will be set when they are added to the game.
     ///
     /// This should only be used when creating a new game instance.
-    pub fn new(name: String, default: StatValue, visibility: PlayerStatVisibility) -> Self {
+    pub fn new(
+        name: String,
+        default: StatValue,
+        visibility: PlayerStatVisibility,
+        pos: Position,
+    ) -> Self {
         Self {
             id: Identifier::new(),
             name,
             values: HashMap::new(), // Values will be set for each player when they are added to the game
             default,
             visibility,
+            pos,
         }
     }
 
@@ -116,6 +138,7 @@ impl PlayerStat {
         values: HashMap<Identifier, StatValue>,
         default: StatValue,
         visibility: PlayerStatVisibility,
+        pos: Position,
     ) -> Self {
         Self {
             id,
@@ -123,6 +146,7 @@ impl PlayerStat {
             values,
             default,
             visibility,
+            pos,
         }
     }
 
@@ -144,6 +168,10 @@ impl PlayerStat {
 
     pub fn visibility(&self) -> &PlayerStatVisibility {
         &self.visibility
+    }
+
+    pub fn pos(&self) -> &Position {
+        &self.pos
     }
 
     pub fn get_owning_player_value(&self, player_id: &Identifier) -> Option<&StatValue> {

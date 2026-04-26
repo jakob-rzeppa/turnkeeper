@@ -12,7 +12,7 @@ use crate::domain::{
 
 pub mod player_management;
 pub mod projection_management;
-pub mod state_management;
+pub mod stats_management;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct GameInstance {

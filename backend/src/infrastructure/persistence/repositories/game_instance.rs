@@ -128,7 +128,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                     r#"
                     SELECT id, name, int_value, float_value, string_value, bool_value,
                            default_int_value, default_float_value, default_string_value, default_bool_value,
-                           visibility
+                           visibility, pos
                     FROM game_stats WHERE game_instance_id = ?
                     "#
                 )
@@ -188,12 +188,17 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                         _ => return Err(DatabaseError::Custom(format!("Invalid visibility: {}", visibility_str))),
                     };
 
+                    let pos_str: String = stat_row.get("pos");
+                    let pos = crate::domain::common::position::Position::from_str(&pos_str)
+                        .ok_or_else(|| DatabaseError::Custom(format!("Failed to parse position: {}", pos_str)))?;
+
                     game_stats.push(crate::domain::game::entities::stat::GameStat::new_raw(
                         stat_id_parsed,
                         stat_name,
                         value,
                         default_value,
                         visibility,
+                        pos,
                     ));
                 }
 
@@ -202,7 +207,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                     r#"
                     SELECT id, name, 
                            default_int_value, default_float_value, default_string_value, default_bool_value,
-                           visibility
+                           visibility, pos
                     FROM player_stats WHERE game_instance_id = ?
                     "#
                 )
@@ -246,6 +251,10 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                         "Private" => crate::domain::game::value_objects::stat_visibility::PlayerStatVisibility::Private,
                         _ => return Err(DatabaseError::Custom(format!("Invalid player stat visibility: {}", visibility_str))),
                     };
+
+                    let pos_str: String = pstat_row.get("pos");
+                    let pos = crate::domain::common::position::Position::from_str(&pos_str)
+                        .ok_or_else(|| DatabaseError::Custom(format!("Failed to parse position: {}", pos_str)))?;
 
                     // Load player stat values
                     let values_rows = sqlx::query(
@@ -296,13 +305,14 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                         values,
                         default_value,
                         visibility,
+                        pos,
                     ));
                 }
 
                 // Load actions
                 let actions_rows = sqlx::query(
                     r#"
-                    SELECT id, name, code, starting_line_number
+                    SELECT id, name, source_code, pos
                     FROM actions WHERE game_instance_id = ?
                     "#,
                 )
@@ -315,25 +325,28 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                 for action_row in actions_rows {
                     let action_id: String = action_row.get("id");
                     let action_name: String = action_row.get("name");
-                    let code: String = action_row.get("code");
-                    let starting_line_number: i64 = action_row.get("starting_line_number");
+                    let source_code: String = action_row.get("source_code");
+                    let pos_str: String = action_row.get("pos");
 
                     let action_id_parsed = Identifier::parse_str(&action_id).map_err(|e| {
                         DatabaseError::Custom(format!("Failed to parse action id: {}", e))
                     })?;
 
+                    let pos = crate::domain::common::position::Position::from_str(&pos_str)
+                        .ok_or_else(|| DatabaseError::Custom(format!("Failed to parse position: {}", pos_str)))?;
+
                     actions.push(crate::domain::game::entities::action::Action::new_raw(
                         action_id_parsed,
                         action_name,
-                        code,
-                        starting_line_number as usize,
+                        source_code,
+                        pos,
                     ));
                 }
 
                 // Load pages
                 let pages_rows = sqlx::query(
                     r#"
-                    SELECT id, name, code, starting_line_number
+                    SELECT id, name, source_code, pos
                     FROM pages WHERE game_instance_id = ?
                     "#,
                 )
@@ -346,18 +359,21 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                 for page_row in pages_rows {
                     let page_id: String = page_row.get("id");
                     let page_name: String = page_row.get("name");
-                    let code: String = page_row.get("code");
-                    let starting_line_number: i64 = page_row.get("starting_line_number");
+                    let source_code: String = page_row.get("source_code");
+                    let pos_str: String = page_row.get("pos");
 
                     let page_id_parsed = Identifier::parse_str(&page_id).map_err(|e| {
                         DatabaseError::Custom(format!("Failed to parse page id: {}", e))
                     })?;
 
+                    let pos = crate::domain::common::position::Position::from_str(&pos_str)
+                        .ok_or_else(|| DatabaseError::Custom(format!("Failed to parse position: {}", pos_str)))?;
+
                     pages.push(crate::domain::game::entities::page::Page::new_raw(
                         page_id_parsed,
                         page_name,
-                        code,
-                        starting_line_number as usize,
+                        source_code,
+                        pos,
                     ));
                 }
 
@@ -651,8 +667,10 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                 }
             };
 
+            let pos_str = stat.pos().to_string();
+
             sqlx::query(
-                "INSERT INTO game_stats (id, game_instance_id, name, int_value, float_value, string_value, bool_value, default_int_value, default_float_value, default_string_value, default_bool_value, visibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO game_stats (id, game_instance_id, name, int_value, float_value, string_value, bool_value, default_int_value, default_float_value, default_string_value, default_bool_value, visibility, pos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(&stat_id)
             .bind(&id)
@@ -666,6 +684,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
             .bind(def_str)
             .bind(def_bool)
             .bind(&visibility)
+            .bind(&pos_str)
             .execute(&mut *tx)
             .await
             .map_err(|e| DatabaseError::Custom(format!("Failed to save game stat: {}", e)))?;
@@ -705,8 +724,10 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
                 }
             };
 
+            let pos_str = player_stat.pos().to_string();
+
             sqlx::query(
-                "INSERT INTO player_stats (id, game_instance_id, name, default_int_value, default_float_value, default_string_value, default_bool_value, visibility) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+                "INSERT INTO player_stats (id, game_instance_id, name, default_int_value, default_float_value, default_string_value, default_bool_value, visibility, pos) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)"
             )
             .bind(&pstat_id)
             .bind(&id)
@@ -716,6 +737,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
             .bind(def_str)
             .bind(def_bool)
             .bind(&visibility)
+            .bind(&pos_str)
             .execute(&mut *tx)
             .await
             .map_err(|e| DatabaseError::Custom(format!("Failed to save player stat: {}", e)))?;
@@ -762,17 +784,17 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
         for action in game_instance.actions() {
             let action_id = action.id().to_string();
             let action_name = action.name();
-            let code = action.code();
-            let starting_line_number = action.starting_line_number() as i64;
+            let source_code = action.source_code();
+            let pos = action.pos().to_string();
 
             sqlx::query(
-                "INSERT INTO actions (id, game_instance_id, name, code, starting_line_number) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO actions (id, game_instance_id, name, source_code, pos) VALUES (?, ?, ?, ?, ?)"
             )
             .bind(&action_id)
             .bind(&id)
             .bind(&action_name)
-            .bind(&code)
-            .bind(starting_line_number)
+            .bind(&source_code)
+            .bind(&pos)
             .execute(&mut *tx)
             .await
             .map_err(|e| DatabaseError::Custom(format!("Failed to save action: {}", e)))?;
@@ -788,17 +810,17 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
         for page in game_instance.pages() {
             let page_id = page.id().to_string();
             let page_name = page.name();
-            let code = page.code();
-            let starting_line_number = page.starting_line_number() as i64;
+            let source_code = page.source_code();
+            let pos = page.pos().to_string();
 
             sqlx::query(
-                "INSERT INTO pages (id, game_instance_id, name, code, starting_line_number) VALUES (?, ?, ?, ?, ?)"
+                "INSERT INTO pages (id, game_instance_id, name, source_code, pos) VALUES (?, ?, ?, ?, ?)"
             )
             .bind(&page_id)
             .bind(&id)
             .bind(&page_name)
-            .bind(&code)
-            .bind(starting_line_number)
+            .bind(&source_code)
+            .bind(&pos)
             .execute(&mut *tx)
             .await
             .map_err(|e| DatabaseError::Custom(format!("Failed to save page: {}", e)))?;
@@ -934,7 +956,7 @@ mod tests {
             Identifier::new(),
             "Test Action".to_string(),
             "print('This is a test action')".to_string(),
-            1,
+            crate::domain::common::position::Position::new(0, 0),
         );
 
         let mut log = Log::new();
@@ -958,6 +980,7 @@ mod tests {
                     StatValue::Int(0),
                     StatValue::Int(100),
                     GameStatVisibility::Public,
+                    crate::domain::common::position::Position::new(0, 0),
                 ),
                 GameStat::new_raw(
                     Identifier::new(),
@@ -965,6 +988,7 @@ mod tests {
                     StatValue::Int(30),
                     StatValue::Int(5),
                     GameStatVisibility::Private,
+                    crate::domain::common::position::Position::new(0, 0),
                 ),
             ],
             vec![
@@ -980,6 +1004,7 @@ mod tests {
                     .collect::<HashMap<_, _>>(),
                     StatValue::Int(0),
                     PlayerStatVisibility::Public,
+                    crate::domain::common::position::Position::new(0, 0),
                 ),
                 PlayerStat::new_raw(
                     Identifier::new(),
@@ -993,6 +1018,7 @@ mod tests {
                     .collect::<HashMap<_, _>>(),
                     StatValue::Int(0),
                     PlayerStatVisibility::Protected,
+                    crate::domain::common::position::Position::new(0, 0),
                 ),
             ],
             vec![test_action],
@@ -1000,7 +1026,7 @@ mod tests {
                 Identifier::new(),
                 "testPage".to_string(),
                 "page testPage {}".to_string(),
-                4,
+                crate::domain::common::position::Position::new(0, 0),
             )],
             vec![
                 Player::new_raw(player_id_1, None),
@@ -1122,11 +1148,11 @@ mod tests {
         {
             assert_eq!(retrieved_action.id(), original_action.id());
             assert_eq!(retrieved_action.name(), original_action.name());
-            assert_eq!(retrieved_action.code(), original_action.code());
             assert_eq!(
-                retrieved_action.starting_line_number(),
-                original_action.starting_line_number()
+                retrieved_action.source_code(),
+                original_action.source_code()
             );
+            assert_eq!(retrieved_action.pos(), original_action.pos());
         }
 
         // Check pages
@@ -1141,11 +1167,8 @@ mod tests {
         {
             assert_eq!(retrieved_page.id(), original_page.id());
             assert_eq!(retrieved_page.name(), original_page.name());
-            assert_eq!(retrieved_page.code(), original_page.code());
-            assert_eq!(
-                retrieved_page.starting_line_number(),
-                original_page.starting_line_number()
-            );
+            assert_eq!(retrieved_page.source_code(), original_page.source_code());
+            assert_eq!(retrieved_page.pos(), original_page.pos());
         }
 
         // Check players

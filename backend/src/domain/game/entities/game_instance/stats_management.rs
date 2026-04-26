@@ -84,6 +84,8 @@ mod tests {
     }
 
     mod set_game_stat_value {
+        use crate::domain::common::position::Position;
+
         use super::*;
 
         #[test]
@@ -96,6 +98,7 @@ mod tests {
                 StatValue::Int(0),
                 StatValue::Int(0),
                 GameStatVisibility::Public,
+                Position::new(1, 1),
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());
@@ -115,6 +118,7 @@ mod tests {
                 StatValue::Float(0.0),
                 StatValue::Float(0.0),
                 GameStatVisibility::Public,
+                Position::new(1, 1),
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());
@@ -134,6 +138,7 @@ mod tests {
                 StatValue::Bool(false),
                 StatValue::Bool(false),
                 GameStatVisibility::Public,
+                Position::new(1, 1),
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());
@@ -153,6 +158,7 @@ mod tests {
                 StatValue::String("inactive".to_string()),
                 StatValue::String("inactive".to_string()),
                 GameStatVisibility::Public,
+                Position::new(1, 1),
             ));
 
             let mut game_instance = create_test_game_instance(game_stats, Vec::new());

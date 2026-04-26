@@ -1,35 +1,30 @@
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::{identifier::Identifier, position::Position};
 
 #[derive(Clone, Debug, PartialEq)]
 pub struct Page {
     id: Identifier,
     name: String,
 
-    code: String,
-    starting_line_number: usize,
+    source_code: String,
+    pos: Position,
 }
 
 impl Page {
-    pub fn new(name: String, code: String, starting_line_number: usize) -> Self {
+    pub fn new(name: String, source_code: String, pos: Position) -> Self {
         Self {
             id: Identifier::new(),
             name,
-            code,
-            starting_line_number,
+            source_code,
+            pos,
         }
     }
 
-    pub fn new_raw(
-        id: Identifier,
-        name: String,
-        code: String,
-        starting_line_number: usize,
-    ) -> Self {
+    pub fn new_raw(id: Identifier, name: String, source_code: String, pos: Position) -> Self {
         Self {
             id,
             name,
-            code,
-            starting_line_number,
+            source_code,
+            pos,
         }
     }
 
@@ -41,11 +36,11 @@ impl Page {
         &self.name
     }
 
-    pub fn code(&self) -> &str {
-        &self.code
+    pub fn source_code(&self) -> &str {
+        &self.source_code
     }
 
-    pub fn starting_line_number(&self) -> usize {
-        self.starting_line_number
+    pub fn pos(&self) -> &Position {
+        &self.pos
     }
 }

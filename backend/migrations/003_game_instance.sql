@@ -33,6 +33,8 @@ CREATE TABLE IF NOT EXISTS game_stats (
 
     visibility              VARCHAR(20)         NOT NULL,
 
+    pos                     VARCHAR(255)        NOT NULL,
+
     FOREIGN KEY (game_instance_id) REFERENCES game_instances(id) ON DELETE CASCADE
 );
 
@@ -47,6 +49,8 @@ CREATE TABLE IF NOT EXISTS player_stats (
     default_bool_value      BOOLEAN             ,
 
     visibility              VARCHAR(20)         NOT NULL,
+
+    pos                     VARCHAR(255)        NOT NULL,
 
     FOREIGN KEY (game_instance_id) REFERENCES game_instances(id) ON DELETE CASCADE
 );
@@ -70,8 +74,8 @@ CREATE TABLE IF NOT EXISTS actions (
     game_instance_id        VARCHAR(36)         NOT NULL,
     name                    VARCHAR(255)        NOT NULL,
 
-    code                    TEXT                NOT NULL,
-    starting_line_number    INT                 NOT NULL,
+    source_code             TEXT                NOT NULL,
+    pos                     VARCHAR(255)        NOT NULL,
 
     FOREIGN KEY (game_instance_id) REFERENCES game_instances(id) ON DELETE CASCADE
 );
@@ -81,8 +85,8 @@ CREATE TABLE IF NOT EXISTS pages (
     game_instance_id        VARCHAR(36)         NOT NULL,
     name                    VARCHAR(255)        NOT NULL,
 
-    code                    TEXT                NOT NULL,
-    starting_line_number    INT                 NOT NULL,
+    source_code             TEXT                NOT NULL,
+    pos                     VARCHAR(255)        NOT NULL,
 
     FOREIGN KEY (game_instance_id) REFERENCES game_instances(id) ON DELETE CASCADE
 );
