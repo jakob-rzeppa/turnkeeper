@@ -42,7 +42,7 @@ macro_rules! expect_token {
         match $tokenstream.next() {
             Some(token) => {
                 if matches!(&token.variant, $expected) {
-                    token
+                    token.clone()
                 } else {
                     return Err(
                         crate::application::common::parser::error::ParsingError::UnexpectedToken {
@@ -65,37 +65,25 @@ macro_rules! expect_token {
 }
 pub(crate) use expect_token;
 
-/// Macro to expect and parse a specific type
-///
-/// Usage: `let name = expect_parse!(tokens, index, Identifier, "variable name")`
-macro_rules! expect_parse {
-    ($tokenstream:expr, $expected_parse:ty, $expected_msg:expr) => {{
-        <$expected_parse>::parse($tokenstream).map_err(|err| match err {
-            crate::application::common::parser::error::ParsingError::UnexpectedToken {
-                found,
-                pos,
-                ..
-            } => crate::application::common::parser::error::ParsingError::UnexpectedToken {
-                expected: $expected_msg.to_string(),
+macro_rules! change_err_msg {
+    ($err:expr, $msg:expr) => {
+        match $err {
+            ParsingError::UnexpectedToken { found, pos, .. } => ParsingError::UnexpectedToken {
+                expected: $msg.to_string(),
                 found,
                 pos,
             },
-            crate::application::common::parser::error::ParsingError::UnexpectedEOF { .. } => {
-                crate::application::common::parser::error::ParsingError::UnexpectedEOF {
-                    expected: $expected_msg.to_string(),
-                }
+            ParsingError::UnexpectedEOF { .. } => ParsingError::UnexpectedEOF {
+                expected: $msg.to_string(),
+            },
+            ParsingError::SyntaxError { message, pos } => {
+                ParsingError::SyntaxError { message, pos }
             }
-            crate::application::common::parser::error::ParsingError::SyntaxError {
-                message,
-                pos,
-            } => crate::application::common::parser::error::ParsingError::SyntaxError {
-                message,
-                pos,
-            },
-        })?
-    }};
+            _ => $err, // Pass through any other errors unchanged
+        }
+    };
 }
-pub(crate) use expect_parse;
+pub(crate) use change_err_msg;
 
 /// Macro to get the position of the current token for error reporting
 ///

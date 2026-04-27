@@ -46,6 +46,14 @@ impl Action {
         &self.name
     }
 
+    pub fn parameters(&self) -> &Vec<(String, VariableType)> {
+        &self.parameters
+    }
+
+    pub fn execution_triggers(&self) -> &Vec<ExecutionTrigger> {
+        &self.execution_triggers
+    }
+
     pub fn visibility(&self) -> &ActionVisibility {
         &self.visibility
     }
