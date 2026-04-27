@@ -53,6 +53,11 @@ pub enum TokenVariant {
     Dot,          // .
     Semicolon,    // ;
     Pipe,         // |
+    Plus,         // +
+    Minus,        // -
+    Asterisk,     // *
+    Slash,        // /
+    Percent,      // %
 
     // --- FROM Number and DecimalNumber LEXEME ---
     IntLiteral(i64),
@@ -100,6 +105,11 @@ impl TryFrom<Lexeme> for Token {
                 "." => TokenVariant::Dot,
                 ";" => TokenVariant::Semicolon,
                 "|" => TokenVariant::Pipe,
+                "+" => TokenVariant::Plus,
+                "-" => TokenVariant::Minus,
+                "*" => TokenVariant::Asterisk,
+                "/" => TokenVariant::Slash,
+                "%" => TokenVariant::Percent,
                 _ => {
                     return Err(ParsingError::InvalidToken {
                         pos: lexeme.pos,
@@ -174,6 +184,11 @@ impl Display for TokenVariant {
             TokenVariant::StringType => write!(f, "string"),
             TokenVariant::BoolType => write!(f, "bool"),
             TokenVariant::Pipe => write!(f, "|"),
+            TokenVariant::Plus => write!(f, "+"),
+            TokenVariant::Minus => write!(f, "-"),
+            TokenVariant::Asterisk => write!(f, "*"),
+            TokenVariant::Slash => write!(f, "/"),
+            TokenVariant::Percent => write!(f, "%"),
         }
     }
 }

@@ -512,22 +512,26 @@ mod tests {
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_protected_visibility_fails() {
         let (mut ts, source_code) =
             test_token_stream!("protected action my_action { let x: int = 5; }");
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_missing_visibility_fails() {
         let (mut ts, source_code) = test_token_stream!("action my_action { let x: int = 5; }");
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_missing_name_fails() {
         let (mut ts, source_code) = test_token_stream!("public action { let x: int = 5; }");
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_invalid_trigger_type_fails() {
         let (mut ts, source_code) = test_token_stream!(
             "public action my_action trigger invalid_trigger { let x: int = 5; }"
@@ -535,6 +539,7 @@ mod tests {
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_missing_parameter_comma_fails() {
         let (mut ts, source_code) = test_token_stream!(
             "public action my_action(param1: int param2: string) { let x: int = 5; }"
@@ -542,6 +547,7 @@ mod tests {
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
+    #[test]
     fn test_action_with_missing_parameter_colon_fails() {
         let (mut ts, source_code) = test_token_stream!(
             "public action my_action(param1 int, param2: string) { let x: int = 5; }"

@@ -49,12 +49,15 @@ impl GameRootParserContract for GameRootParser {
 
         let mut game_stats = Vec::new();
         let mut player_stats = Vec::new();
+        let mut actions = Vec::new();
 
         while token_stream.peek().is_some() {
             if PlayerStat::is_next(&token_stream) {
                 player_stats.push(PlayerStat::parse(&mut token_stream, source_code)?);
             } else if GameStat::is_next(&token_stream) {
                 game_stats.push(GameStat::parse(&mut token_stream, source_code)?);
+            } else if Action::is_next(&token_stream) {
+                actions.push(Action::parse(&mut token_stream, source_code)?);
             } else {
                 return Err(ParsingError::UnexpectedToken {
                     expected: "PlayerStat or GameStat".to_string(),
@@ -67,7 +70,7 @@ impl GameRootParserContract for GameRootParser {
         Ok(GameParsingResult {
             game_stats,
             player_stats,
-            actions: Vec::new(),
+            actions,
             pages: Vec::new(),
         })
     }
@@ -76,8 +79,8 @@ impl GameRootParserContract for GameRootParser {
 #[cfg(test)]
 mod tests {
     use crate::domain::game::value_objects::{
-        data::VariableValue,
-        visibility::{GameStatVisibility, PlayerStatVisibility},
+        data::{VariableType, VariableValue},
+        visibility::{ActionVisibility, GameStatVisibility, PlayerStatVisibility},
     };
 
     use super::*;
@@ -86,14 +89,14 @@ mod tests {
     fn test_parse_game() {
         let parser = GameRootParser::new();
 
-        let source_code = r#"
-            protected pstat health: float = 10.0;
-            public stat score = 0;
-        "#;
+        let source_code = r#"protected pstat health: float = 10.0;
+public stat score = 0;
 
-        let result = parser.parse_game(source_code);
-        assert!(result.is_ok());
-        let result = result.unwrap();
+public action heal(amount: float) {
+    health = health + amount;
+}"#;
+
+        let result = parser.parse_game(source_code).unwrap();
 
         assert_eq!(result.player_stats.len(), 1);
         let health_stat = &result.player_stats[0];
@@ -106,5 +109,22 @@ mod tests {
         assert_eq!(score_stat.name(), "score");
         assert_eq!(score_stat.default(), &VariableValue::Int(0));
         assert_eq!(score_stat.visibility(), &GameStatVisibility::Public);
+
+        assert_eq!(result.actions.len(), 1);
+        let heal_action = &result.actions[0];
+        assert_eq!(heal_action.name(), "heal");
+        assert_eq!(
+            heal_action.parameters(),
+            &vec![("amount".to_string(), VariableType::Float)]
+        );
+        assert_eq!(heal_action.execution_triggers().len(), 0);
+        assert_eq!(heal_action.visibility(), &ActionVisibility::Public);
+        assert_eq!(
+            heal_action.source_code(),
+            r#"public action heal(amount: float) {
+    health = health + amount;
+}"#
+            .to_string()
+        );
     }
 }

@@ -1069,4 +1069,40 @@ mod tests {
             ]
         );
     }
+
+    #[test]
+    fn test_ignores_spaces_before_text() {
+        let result = scan_source_code("   hello");
+        assert_eq!(
+            result,
+            vec![Lexeme::new(
+                LexemeVariant::Text("hello".to_string()),
+                Position::new(0, 3)
+            )]
+        );
+    }
+
+    #[test]
+    fn test_ignores_spaces_after_text() {
+        let result = scan_source_code("hello   ");
+        assert_eq!(
+            result,
+            vec![Lexeme::new(
+                LexemeVariant::Text("hello".to_string()),
+                Position::new(0, 0)
+            )]
+        );
+    }
+
+    #[test]
+    fn test_ignores_spaces_around_symbol() {
+        let result = scan_source_code("   +   ");
+        assert_eq!(
+            result,
+            vec![Lexeme::new(
+                LexemeVariant::Symbol("+".to_string()),
+                Position::new(0, 3)
+            )]
+        );
+    }
 }
