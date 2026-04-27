@@ -1,7 +1,7 @@
 import { ref } from 'vue';
 import { useAuthStore } from './authStore';
 import axios from 'axios';
-import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
+import { API_BASE_URL } from '../api/httpApi';
 
 export function useAuth() {
     const authStore = useAuthStore();
@@ -33,8 +33,8 @@ export function useAuth() {
             const response = await axios.post<{ token: string }>(API_BASE_URL + endpoint, payload);
 
             authStore.setToken(response.data.token);
-        } catch (err: unknown) {
-            error.value = 'Login failed: ' + apiErrorToMessage(err);
+        } catch {
+            error.value = 'Login failed';
         } finally {
             loading.value = false;
         }

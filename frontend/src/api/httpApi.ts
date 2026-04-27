@@ -1,118 +1,72 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, type AxiosResponse } from 'axios';
 import { ResultAsync } from 'neverthrow';
 import { useAuthStore } from '../auth/authStore';
-import type { HttpError } from '../errors/httpError';
 
 export const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://localhost:8080';
 
-export const getWithAuth = <T>(endpoint: string): ResultAsync<T, HttpError> => {
+interface ErrorResponse {
+    error: string;
+}
+
+const getAuthHeader = () => {
     const authStore = useAuthStore();
-
-    return ResultAsync.fromPromise(
-        axios
-            .get<T>(API_BASE_URL + endpoint, {
-                headers: {
-                    Authorization: 'Bearer ' + authStore.token,
-                },
-            })
-            .then(res => res.data),
-        err => {
-            if (err instanceof AxiosError) {
-                return { message: err.response?.data?.error ?? err.message };
-            }
-
-            if (err instanceof Error) {
-                return { message: err.message };
-            }
-
-            return { message: 'Unknown error' };
-        }
-    );
+    return {
+        headers: {
+            Authorization: 'Bearer ' + authStore.token,
+        },
+    };
 };
 
-export const postWithAuth = <T>(endpoint: string, data: unknown): ResultAsync<T, HttpError> => {
-    const authStore = useAuthStore();
-
-    return ResultAsync.fromPromise(
-        axios
-            .post<T>(API_BASE_URL + endpoint, data, {
-                headers: {
-                    Authorization: 'Bearer ' + authStore.token,
-                },
-            })
-            .then(res => res.data),
-        err => {
-            if (err instanceof AxiosError) {
-                return { message: err.response?.data?.error ?? err.message };
-            }
-
-            if (err instanceof Error) {
-                return { message: err.message };
-            }
-
-            return { message: 'Unknown error' };
-        }
-    );
+const isErrorResponse = (res: unknown): res is ErrorResponse => {
+    if (typeof res !== 'object' || res === null) return false;
+    const r = res as Record<string, unknown>;
+    return 'error' in r && typeof r.error === 'string';
 };
 
-export const patchWithAuth = <T>(endpoint: string, data: unknown): ResultAsync<T, HttpError> => {
-    const authStore = useAuthStore();
-
-    return ResultAsync.fromPromise(
-        axios
-            .patch<T>(API_BASE_URL + endpoint, data, {
-                headers: {
-                    Authorization: 'Bearer ' + authStore.token,
-                },
-            })
-            .then(res => res.data),
-        err => {
-            if (err instanceof AxiosError) {
-                return { message: err.response?.data?.error ?? err.message };
-            }
-
-            if (err instanceof Error) {
-                return { message: err.message };
-            }
-
-            return { message: 'Unknown error' };
+const handleApiError = (err: unknown): string => {
+    if (err instanceof AxiosError) {
+        if (isErrorResponse(err.response?.data)) {
+            return err.response.data.error;
         }
-    );
-};
 
-export const deleteWithAuth = <T>(endpoint: string): ResultAsync<T, HttpError> => {
-    const authStore = useAuthStore();
-
-    return ResultAsync.fromPromise(
-        axios
-            .delete<T>(API_BASE_URL + endpoint, {
-                headers: {
-                    Authorization: 'Bearer ' + authStore.token,
-                },
-            })
-            .then(res => res.data),
-        err => {
-            if (err instanceof AxiosError) {
-                return { message: err.response?.data?.error ?? err.message };
-            }
-
-            if (err instanceof Error) {
-                return { message: err.message };
-            }
-
-            return { message: 'Unknown error' };
-        }
-    );
-};
-
-export function apiErrorToMessage(error: unknown): string {
-    if (error instanceof AxiosError) {
-        return error.response?.data?.error ?? error.message;
+        return err.message;
     }
 
-    if (error instanceof Error) {
-        return error.message;
+    if (err instanceof Error) {
+        return err.message;
     }
 
     return 'Unknown error';
-}
+};
+
+export const getWithAuth = <T>(endpoint: string): ResultAsync<AxiosResponse<T>, string> => {
+    return ResultAsync.fromPromise(axios.get<T>(API_BASE_URL + endpoint, getAuthHeader()), err =>
+        handleApiError(err)
+    );
+};
+
+export const postWithAuth = <T>(
+    endpoint: string,
+    data: unknown
+): ResultAsync<AxiosResponse<T>, string> => {
+    return ResultAsync.fromPromise(
+        axios.post<T>(API_BASE_URL + endpoint, data, getAuthHeader()),
+        err => handleApiError(err)
+    );
+};
+
+export const patchWithAuth = <T>(
+    endpoint: string,
+    data: unknown
+): ResultAsync<AxiosResponse<T>, string> => {
+    return ResultAsync.fromPromise(
+        axios.patch<T>(API_BASE_URL + endpoint, data, getAuthHeader()),
+        err => handleApiError(err)
+    );
+};
+
+export const deleteWithAuth = <T>(endpoint: string): ResultAsync<AxiosResponse<T>, string> => {
+    return ResultAsync.fromPromise(axios.delete<T>(API_BASE_URL + endpoint, getAuthHeader()), err =>
+        handleApiError(err)
+    );
+};

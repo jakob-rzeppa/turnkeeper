@@ -13,6 +13,7 @@ pub mod user;
 
 use crate::AppState;
 use crate::infrastructure::auth::middleware::auth_middleware;
+use crate::infrastructure::error::HttpError;
 use crate::infrastructure::http::game::{
     games_create, games_delete, games_get, games_get_by_id, games_update_source_code,
 };
@@ -95,4 +96,9 @@ pub fn get_routes(state: AppState) -> Router<AppState> {
         // User routes
         .route("/login", post(login))
         .route("/register", post(register))
+        .fallback(fallback_handler)
+}
+
+async fn fallback_handler() -> Result<String, HttpError> {
+    Err(HttpError::NotFound("Endpoint not found".to_string()))
 }

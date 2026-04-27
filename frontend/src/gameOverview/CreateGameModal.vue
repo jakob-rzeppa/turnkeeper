@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
+import { API_BASE_URL } from '../api/httpApi';
 import axios from 'axios';
 import { useAuthStore } from '../auth/authStore';
 
@@ -35,8 +35,8 @@ async function handleCreateGameClick() {
         emit('create');
         emit('unlock');
         emit('close');
-    } catch (e: unknown) {
-        error.value = 'Failed to create game: ' + apiErrorToMessage(e);
+    } catch {
+        error.value = 'Failed to create game';
     } finally {
         loading.value = false;
         emit('unlock');

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { postWithAuth } from '../api/httpApi';
+import { createGameInstance } from '../api/requests/gameInstances/createGameInstance';
 
 const props = defineProps<{
     gameId: string;
@@ -11,18 +11,16 @@ const emit = defineEmits(['created', 'close']);
 
 const name = ref('');
 
-const createGameInstance = async () => {
+const handleCreateGameInstance = async () => {
     const gameInstanceName = name.value.trim();
 
-    const res = await postWithAuth<{ id: string }>(`/games/${props.gameId}/instances`, {
-        name: gameInstanceName,
-    });
+    const res = await createGameInstance(props.gameId, gameInstanceName);
 
     if (res.isOk()) {
         emit('created');
         emit('close');
     } else {
-        alert(`Failed to create game instance: ${res.error.message}`);
+        alert(`Failed to create game instance: ${res.error}`);
     }
 };
 </script>
@@ -30,7 +28,7 @@ const createGameInstance = async () => {
 <template>
     <h3 class="font-bold text-lg mb-6">Create New Game Instance for "{{ gameName }}"</h3>
 
-    <form @submit.prevent="createGameInstance" class="space-y-4">
+    <form @submit.prevent="handleCreateGameInstance" class="space-y-4">
         <div class="form-control w-full">
             <label class="label">
                 <span class="label-text font-semibold">Game Instance Name</span>

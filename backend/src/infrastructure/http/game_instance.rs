@@ -1,6 +1,7 @@
 use axum::{
     Extension,
     extract::{Path, State},
+    http::StatusCode,
 };
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
@@ -79,7 +80,7 @@ pub async fn game_instances_post(
 pub async fn game_instances_delete(
     State(state): State<AppState>,
     Path((game_id, instance_id)): Path<(String, String)>,
-) -> Result<(), HttpError> {
+) -> Result<StatusCode, HttpError> {
     let game_id = Identifier::parse_str(&game_id)?;
     let instance_id = Identifier::parse_str(&instance_id)?;
 
@@ -91,5 +92,5 @@ pub async fn game_instances_delete(
         })
         .await?;
 
-    Ok(())
+    Ok(StatusCode::NO_CONTENT)
 }

@@ -1,17 +1,27 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useGamesStore } from './useGamesStore';
+import { createGame } from '../api/requests/games/createGame';
 
-const emit = defineEmits(['close']);
-
-const gamesStore = useGamesStore();
+const emit = defineEmits(['close', 'create']);
 
 const name = ref('');
 const description = ref('');
 
+const isCreating = ref(false);
+
 const submit = async () => {
-    await gamesStore.createGame(name.value, description.value);
-    emit('close');
+    isCreating.value = true;
+
+    const res = await createGame(name.value, description.value);
+
+    if (res.isOk()) {
+        isCreating.value = false;
+        emit('create');
+        emit('close');
+    } else {
+        isCreating.value = false;
+        alert(`Failed to create game: ${res.error}`);
+    }
 };
 </script>
 
@@ -50,7 +60,10 @@ const submit = async () => {
                     <button type="button" @click="emit('close')" class="btn btn-ghost">
                         Cancel
                     </button>
-                    <button type="submit" class="btn btn-primary">Create Game</button>
+                    <button type="submit" :disabled="isCreating" class="btn btn-primary">
+                        <span v-if="isCreating" class="loading loading-spinner loading-sm"></span>
+                        <span v-else>Create Game</span>
+                    </button>
                 </div>
             </form>
         </div>

@@ -1,53 +1,44 @@
 <script setup lang="ts">
 import { onMounted, ref } from 'vue';
 import type { GameDetails } from '../types/game';
-import { getWithAuth } from '../api/httpApi';
+import { getGameDetails } from '../api/requests/games/getGameDetails';
+import { getGameInstances } from '../api/requests/gameInstances/getGameInstances';
 import { useRoute } from 'vue-router';
 import type { GameInstanceMetadata } from '../types/gameInstances';
 import { useModalStore } from '../common/modal/modalStore';
 import CreateGameInstanceModal from '../gameInstances/CreateGameInstanceModal.vue';
 import DeleteGameInstanceModal from '../gameInstances/DeleteGameInstanceModal.vue';
+import type { DataState } from '../types/util';
 
 const route = useRoute();
 const modalStore = useModalStore();
 
-const game = ref<
-    | { loading: true }
-    | { loading: false; error: string }
-    | { loading: false; error: null; data: GameDetails }
->({ loading: true });
-const gameInstances = ref<
-    | { loading: true }
-    | { loading: false; error: string }
-    | { loading: false; error: null; data: GameInstanceMetadata[] }
->({ loading: true });
+const game = ref<DataState<GameDetails>>({ status: 'loading' });
+const gameInstances = ref<DataState<GameInstanceMetadata[]>>({ status: 'loading' });
 
 const loadGameInstances = async () => {
-    const gameInstancesResponse = await getWithAuth<{ game_instances: GameInstanceMetadata[] }>(
-        `/games/${route.params.id}/instances`
-    );
+    const gameInstancesResponse = await getGameInstances(route.params.id as string);
 
     if (gameInstancesResponse.isOk()) {
         gameInstances.value = {
-            loading: false,
-            error: null,
-            data: gameInstancesResponse.value.game_instances,
+            status: 'success',
+            data: gameInstancesResponse.value,
         };
     } else {
-        gameInstances.value = { loading: false, error: gameInstancesResponse.error.message };
+        gameInstances.value = { status: 'error', error: gameInstancesResponse.error };
     }
 };
 
 const loadGame = async () => {
-    game.value = { loading: true };
-    gameInstances.value = { loading: true };
-    const gameResponse = await getWithAuth<GameDetails>(`/games/${route.params.id}`);
+    game.value = { status: 'loading' };
+    gameInstances.value = { status: 'loading' };
+    const gameResponse = await getGameDetails(route.params.id as string);
 
     if (gameResponse.isOk()) {
-        game.value = { loading: false, error: null, data: gameResponse.value };
+        game.value = { status: 'success', data: gameResponse.value };
     } else {
-        game.value = { loading: false, error: gameResponse.error.message };
-        gameInstances.value = { loading: false, error: 'Failed to load game.' };
+        game.value = { status: 'error', error: gameResponse.error };
+        gameInstances.value = { status: 'error', error: 'Failed to load game.' };
         return;
     }
 
@@ -62,11 +53,11 @@ onMounted(() => {
 <template>
     <div class="min-h-screen bg-base-200 p-8">
         <div class="max-w-6xl mx-auto">
-            <div v-if="game.loading === true" class="flex justify-center">
+            <div v-if="game.status === 'loading'" class="flex justify-center">
                 <span class="loading loading-spinner loading-lg text-primary"></span>
             </div>
 
-            <div v-else-if="game.error !== null" class="alert alert-error shadow-lg">
+            <div v-else-if="game.status === 'error'" class="alert alert-error shadow-lg">
                 <span>{{ game.error }}</span>
             </div>
 
@@ -96,15 +87,23 @@ onMounted(() => {
 
                 <h2 class="text-2xl font-bold text-base-content mb-4">Game Instances</h2>
 
-                <div v-if="gameInstances.loading === true" class="flex justify-center">
+                <div v-if="gameInstances.status === 'loading'" class="flex justify-center">
                     <span class="loading loading-spinner loading-lg text-primary"></span>
                 </div>
 
-                <div v-else-if="gameInstances.error !== null" class="alert alert-error shadow-lg">
+                <div
+                    v-else-if="gameInstances.status === 'error'"
+                    class="alert alert-error shadow-lg"
+                >
                     <span>{{ gameInstances.error }}</span>
                 </div>
 
-                <div v-else-if="gameInstances.data.length === 0" class="alert alert-info shadow-lg">
+                <div
+                    v-else-if="
+                        gameInstances.status === 'success' && gameInstances.data.length === 0
+                    "
+                    class="alert alert-info shadow-lg"
+                >
                     <span>No game instances found.</span>
                 </div>
 

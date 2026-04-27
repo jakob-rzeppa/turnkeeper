@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { deleteWithAuth } from '../api/httpApi';
+import { deleteGameInstance } from '../api/requests/gameInstances/deleteGameInstance';
 
 interface Props {
     gameId: string;
@@ -16,17 +16,15 @@ const isDeleting = ref(false);
 
 const handleDelete = async () => {
     isDeleting.value = true;
-    const res = await deleteWithAuth(
-        '/games/' + props.gameId + '/instances/' + props.gameInstanceId
-    );
+    const res = await deleteGameInstance(props.gameId, props.gameInstanceId);
 
     if (res.isOk()) {
         isDeleting.value = false;
         emit('deleted');
         emit('close');
     } else {
-        alert(`Failed to delete game instance: ${res.error.message}`);
         isDeleting.value = false;
+        alert(`Failed to delete game instance: ${res.error}`);
     }
 };
 </script>

@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { ref } from 'vue';
-import { useGamesStore } from './useGamesStore';
+import { deleteGame } from '../api/requests/games/deleteGame';
 
 interface Props {
     gameId: string;
@@ -9,17 +9,23 @@ interface Props {
 
 const props = defineProps<Props>();
 
-const emit = defineEmits(['close']);
+const emit = defineEmits(['close', 'delete']);
 
-const gamesStore = useGamesStore();
 const isDeleting = ref(false);
 
 const handleDelete = async () => {
     isDeleting.value = true;
 
-    await gamesStore.deleteGame(props.gameId);
-    isDeleting.value = false;
-    emit('close');
+    const res = await deleteGame(props.gameId);
+
+    if (res.isOk()) {
+        isDeleting.value = false;
+        emit('delete');
+        emit('close');
+    } else {
+        isDeleting.value = false;
+        alert(`Failed to delete game: ${res.error}`);
+    }
 };
 </script>
 
@@ -29,8 +35,8 @@ const handleDelete = async () => {
     <div class="alert alert-warning mb-6">
         <span
             >Are you sure you want to delete <strong>{{ gameName }}</strong
-            >? This action cannot be undone.</span
-        >
+            >? This action cannot be undone.
+        </span>
     </div>
 
     <div class="modal-action">

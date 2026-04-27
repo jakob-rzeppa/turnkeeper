@@ -2,42 +2,38 @@
 import { onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { GameDetails } from '../types/game';
-import { getWithAuth, patchWithAuth } from '../api/httpApi';
+import { getGameDetails } from '../api/requests/games/getGameDetails';
+import { updateSourceCode } from '../api/requests/games/updateSourceCode';
+import type { DataState } from '../types/util';
 
 const route = useRoute();
 
-const game = ref<
-    | { loading: true }
-    | { loading: false; error: string }
-    | { loading: false; error: null; data: GameDetails }
->({ loading: true });
+const game = ref<DataState<GameDetails>>({ status: 'loading' });
 
 const sourceCode = ref<string>('');
 
 const loadGame = async () => {
-    game.value = { loading: true };
-    const res = await getWithAuth<GameDetails>(`/games/${route.params.id}`);
+    game.value = { status: 'loading' };
+    const res = await getGameDetails(route.params.id as string);
 
     if (res.isOk()) {
-        game.value = { loading: false, error: null, data: res.value };
+        game.value = { status: 'success', data: res.value };
         sourceCode.value = res.value.source_code;
     } else {
-        game.value = { loading: false, error: res.error.message };
+        game.value = { status: 'error', error: res.error };
     }
 };
 
-const updateSourceCode = async (newSourceCode: string) => {
-    if (game.value.loading === true || game.value.error !== null) return;
-    game.value = { loading: true };
+const handleUpdateSourceCode = async (newSourceCode: string) => {
+    if (game.value.status === 'loading' || game.value.status === 'error') return;
+    game.value = { status: 'loading' };
 
-    const res = await patchWithAuth(`/games/${route.params.id}/source-code`, {
-        source_code: newSourceCode,
-    });
+    const res = await updateSourceCode(route.params.id as string, newSourceCode);
 
     if (res.isOk()) {
         loadGame();
     } else {
-        game.value = { loading: false, error: res.error.message };
+        game.value = { status: 'error', error: res.error };
     }
 };
 
@@ -49,11 +45,11 @@ onMounted(() => {
 <template>
     <div class="min-h-screen bg-base-200 p-8">
         <div class="max-w-6xl mx-auto">
-            <div v-if="game.loading === true" class="flex justify-center">
+            <div v-if="game.status === 'loading'" class="flex justify-center">
                 <span class="loading loading-spinner loading-lg text-primary"></span>
             </div>
 
-            <div v-else-if="game.error !== null" class="alert alert-error shadow-lg">
+            <div v-else-if="game.status === 'error'" class="alert alert-error shadow-lg">
                 <span>{{ game.error }}</span>
             </div>
 
@@ -81,7 +77,7 @@ onMounted(() => {
                 rows="10"
                 class="textarea textarea-bordered w-full mb-4"
             ></textarea>
-            <button @click="updateSourceCode(sourceCode)" class="btn btn-primary">
+            <button @click="handleUpdateSourceCode(sourceCode)" class="btn btn-primary">
                 Update Source Code
             </button>
         </div>

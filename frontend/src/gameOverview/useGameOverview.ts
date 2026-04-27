@@ -1,6 +1,6 @@
 import { ref } from 'vue';
 import type { GameMetadata } from '../types/game';
-import { API_BASE_URL, apiErrorToMessage } from '../api/httpApi';
+import { API_BASE_URL } from '../api/httpApi';
 import axios from 'axios';
 import { useAuthStore } from '../auth/authStore';
 
@@ -22,8 +22,8 @@ export const useGameOverview = () => {
                 },
             });
             games.value = response.data.games;
-        } catch (err: unknown) {
-            error.value = 'Failed to fetch games: ' + apiErrorToMessage(err);
+        } catch {
+            error.value = 'Failed to fetch games: ';
         } finally {
             loading.value = false;
         }
