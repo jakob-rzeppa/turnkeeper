@@ -18,8 +18,9 @@ use crate::{
     infrastructure::{app_state::AppState, error::HttpError},
 };
 
+#[derive(Serialize, JsonResponse, Debug)]
 pub struct GameInstancesGetByGameIdResponse {
-    pub games: Vec<GameInstanceMetadataProjection>,
+    pub game_instances: Vec<GameInstanceMetadataProjection>,
 }
 
 /// GET /games/{game_id}/instances
@@ -39,7 +40,7 @@ pub async fn game_instances_get_metadata_by_game_id(
         .await?;
 
     Ok(GameInstancesGetByGameIdResponse {
-        games: response.games_metadata,
+        game_instances: response.games_metadata,
     })
 }
 
@@ -77,8 +78,7 @@ pub async fn game_instances_post(
 /// DELETE /games/{game_id}/instances/{instance_id}
 pub async fn game_instances_delete(
     State(state): State<AppState>,
-    Path(game_id): Path<String>,
-    Path(instance_id): Path<String>,
+    Path((game_id, instance_id)): Path<(String, String)>,
 ) -> Result<(), HttpError> {
     let game_id = Identifier::parse_str(&game_id)?;
     let instance_id = Identifier::parse_str(&instance_id)?;

@@ -16,6 +16,9 @@ use crate::infrastructure::auth::middleware::auth_middleware;
 use crate::infrastructure::http::game::{
     games_create, games_delete, games_get, games_get_by_id, games_update_source_code,
 };
+use crate::infrastructure::http::game_instance::{
+    game_instances_delete, game_instances_get_metadata_by_game_id, game_instances_post,
+};
 use crate::infrastructure::http::user::{list, login, register};
 use axum::routing::{delete, get, patch, post};
 use axum::{Router, middleware};
@@ -58,6 +61,26 @@ pub fn get_routes(state: AppState) -> Router<AppState> {
         .route(
             "/games/{id}",
             delete(games_delete).route_layer(middleware::from_fn_with_state(
+                state.clone(),
+                auth_middleware,
+            )),
+        )
+        .route(
+            "/games/{game_id}/instances",
+            get(game_instances_get_metadata_by_game_id).route_layer(
+                middleware::from_fn_with_state(state.clone(), auth_middleware),
+            ),
+        )
+        .route(
+            "/games/{game_id}/instances",
+            post(game_instances_post).route_layer(middleware::from_fn_with_state(
+                state.clone(),
+                auth_middleware,
+            )),
+        )
+        .route(
+            "/games/{game_id}/instances/{instance_id}",
+            delete(game_instances_delete).route_layer(middleware::from_fn_with_state(
                 state.clone(),
                 auth_middleware,
             )),
