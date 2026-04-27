@@ -43,15 +43,19 @@ action beforeFight before fight {
 
 }
 
-// A action can also be triggered by a turn advance (pre defined action)
-action doSomething on TurnStart {}
+action afterAndBeforeFight after fight | before fight {
 
-action doSomething on TurnEnd {}
+}
+
+// A action can also be triggered by a turn advance (pre defined action)
+action doSomething before TurnAdvance {}
+
+action doSomething after TurnAdvance {}
 
 // The same for rounds
-action doSomething on RoundStart {}
+action doSomething before RoundAdvance {}
 
-action doSomething on RoundEnd {}
+action doSomething after RoundAdvance {}
 ```
 
 When multiple actions are triggered simultaneously, their execution order is not guaranteed.

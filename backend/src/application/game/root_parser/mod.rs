@@ -4,7 +4,7 @@ use crate::{
         lexer::{Lexer, token_stream::TokenStream},
         parsable::Parsable,
     },
-    domain::game::entities::{
+    domain::game::entities::weak::{
         action::Action,
         page::Page,
         stat::{GameStat, PlayerStat},
@@ -12,8 +12,9 @@ use crate::{
 };
 
 mod parsables {
-    pub mod player_stat;
-    pub mod stat;
+    mod action;
+    mod player_stat;
+    mod stat;
 }
 
 pub struct GameParsingResult {
@@ -75,8 +76,8 @@ impl GameRootParserContract for GameRootParser {
 #[cfg(test)]
 mod tests {
     use crate::domain::game::value_objects::{
-        stat_value::StatValue,
-        stat_visibility::{GameStatVisibility, PlayerStatVisibility},
+        data::VariableValue,
+        visibility::{GameStatVisibility, PlayerStatVisibility},
     };
 
     use super::*;
@@ -97,13 +98,13 @@ mod tests {
         assert_eq!(result.player_stats.len(), 1);
         let health_stat = &result.player_stats[0];
         assert_eq!(health_stat.name(), "health");
-        assert_eq!(health_stat.default(), &StatValue::Float(10.0));
+        assert_eq!(health_stat.default(), &VariableValue::Float(10.0));
         assert_eq!(health_stat.visibility(), &PlayerStatVisibility::Protected);
 
         assert_eq!(result.game_stats.len(), 1);
         let score_stat = &result.game_stats[0];
         assert_eq!(score_stat.name(), "score");
-        assert_eq!(score_stat.default(), &StatValue::Int(0));
+        assert_eq!(score_stat.default(), &VariableValue::Int(0));
         assert_eq!(score_stat.visibility(), &GameStatVisibility::Public);
     }
 }

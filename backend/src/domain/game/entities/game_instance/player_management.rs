@@ -1,7 +1,7 @@
 use crate::domain::{
     common::identifier::Identifier,
     game::{
-        entities::{game_instance::GameInstance, player::Player},
+        entities::{game_instance::GameInstance, weak::player::Player},
         error::GameInstanceError,
     },
 };
@@ -11,8 +11,7 @@ impl GameInstance {
     ///
     /// # Invariants
     ///
-    /// - The `id` must be unique among all players in the game.
-    /// - The new player should be added to all existing tradables with a default value.
+    /// - The `name` must be unique among all players in the game.
     pub fn add_player(&mut self) -> Result<(), GameInstanceError> {
         let player = Player::new();
         self.players.push(player);
@@ -29,23 +28,23 @@ impl GameInstance {
     /// unknown player IDs.
     pub fn change_player_order(
         &mut self,
-        ids_in_order: Vec<Identifier>,
+        names_in_order: Vec<String>,
     ) -> Result<(), GameInstanceError> {
-        if ids_in_order.len() != self.players.len() {
-            return Err(GameInstanceError::InvalidPlayerOrder);
+        if names_in_order.len() != self.players.len() {
+            return Err(GameInstanceError::InvalidPlayerOrder(names_in_order));
         }
 
         let mut new_players = Vec::with_capacity(self.players.len());
-        for id in ids_in_order {
-            // Check for duplicate IDs in the input list
-            if new_players.iter().any(|p: &Player| p.id() == &id) {
-                return Err(GameInstanceError::InvalidPlayerOrder);
+        for name in names_in_order.clone() {
+            // Check for duplicate names in the input list
+            if new_players.iter().any(|p: &Player| p.name() == &name) {
+                return Err(GameInstanceError::InvalidPlayerOrder(names_in_order));
             }
 
-            if let Some(player) = self.players.iter().find(|p| p.id() == &id) {
+            if let Some(player) = self.players.iter().find(|p| p.name() == &name) {
                 new_players.push(player.clone());
             } else {
-                return Err(GameInstanceError::InvalidPlayerOrder);
+                return Err(GameInstanceError::InvalidPlayerOrder(names_in_order));
             }
         }
 
@@ -65,30 +64,30 @@ impl GameInstance {
     pub fn attach_user_to_player(
         &mut self,
         user_id: Identifier,
-        player_id: Identifier,
+        player_name: String,
     ) -> Result<(), GameInstanceError> {
         if self.players.iter().any(|p| p.user_id() == Some(&user_id)) {
             return Err(GameInstanceError::UserAlreadyAttachedToAnotherPlayer);
         }
 
-        if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
+        if let Some(player) = self.players.iter_mut().find(|p| p.name() == &player_name) {
             player.attach_user(user_id);
             Ok(())
         } else {
-            Err(GameInstanceError::PlayerNotFound(player_id.to_string()))
+            Err(GameInstanceError::PlayerNotFound(player_name))
         }
     }
 
     /// Detaches any user from the specified player.
     pub fn detach_user_from_player(
         &mut self,
-        player_id: Identifier,
+        player_name: String,
     ) -> Result<(), GameInstanceError> {
-        if let Some(player) = self.players.iter_mut().find(|p| p.id() == &player_id) {
+        if let Some(player) = self.players.iter_mut().find(|p| p.name() == &player_name) {
             player.detach_user();
             Ok(())
         } else {
-            Err(GameInstanceError::PlayerNotFound(player_id.to_string()))
+            Err(GameInstanceError::PlayerNotFound(player_name))
         }
     }
 }
@@ -135,16 +134,20 @@ mod tests {
             game.add_player().unwrap();
             game.add_player().unwrap();
 
-            let player_id_1 = game.players[0].id().clone();
-            let player_id_2 = game.players[1].id().clone();
-            let player_id_3 = game.players[2].id().clone();
+            let player_name_1 = game.players[0].name().to_string();
+            let player_name_2 = game.players[1].name().to_string();
+            let player_name_3 = game.players[2].name().to_string();
 
-            game.change_player_order(vec![player_id_3, player_id_1, player_id_2])
-                .unwrap();
+            game.change_player_order(vec![
+                player_name_3.clone(),
+                player_name_1.clone(),
+                player_name_2.clone(),
+            ])
+            .unwrap();
 
-            assert_eq!(game.players[0].id(), &player_id_3);
-            assert_eq!(game.players[1].id(), &player_id_1);
-            assert_eq!(game.players[2].id(), &player_id_2);
+            assert_eq!(game.players[0].name(), &player_name_3);
+            assert_eq!(game.players[1].name(), &player_name_1);
+            assert_eq!(game.players[2].name(), &player_name_2);
         }
 
         #[test]
@@ -155,10 +158,10 @@ mod tests {
             game.add_player().unwrap();
             game.add_player().unwrap();
 
-            let player_id_1 = game.players[0].id().clone();
-            let player_id_2 = game.players[1].id().clone();
+            let player_name_1 = game.players[0].name().to_string();
+            let player_name_2 = game.players[1].name().to_string();
 
-            let result = game.change_player_order(vec![player_id_1, player_id_2]);
+            let result = game.change_player_order(vec![player_name_1, player_name_2]);
             assert!(result.is_err());
         }
 
@@ -169,9 +172,9 @@ mod tests {
             game.add_player().unwrap();
             game.add_player().unwrap();
 
-            let player_id_1 = game.players[0].id().clone();
+            let player_name_1 = game.players[0].name().to_string();
 
-            let result = game.change_player_order(vec![player_id_1, player_id_1]);
+            let result = game.change_player_order(vec![player_name_1.clone(), player_name_1]);
             assert!(result.is_err());
         }
 
@@ -182,10 +185,10 @@ mod tests {
             game.add_player().unwrap();
             game.add_player().unwrap();
 
-            let player_id_1 = game.players[0].id().clone();
-            let player_id_3 = Identifier::new(); // This ID does not exist in the game
+            let player_name_1 = game.players[0].name().to_string();
+            let player_name_3 = "Unknown Player".to_string(); // This name does not exist in the game
 
-            let result = game.change_player_order(vec![player_id_1, player_id_3]);
+            let result = game.change_player_order(vec![player_name_1, player_name_3]);
             assert!(result.is_err());
         }
     }

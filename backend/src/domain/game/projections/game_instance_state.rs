@@ -1,4 +1,4 @@
-use crate::domain::{common::identifier::Identifier, game::value_objects::stat_value::StatValue};
+use crate::domain::{common::identifier::Identifier, game::value_objects::data::VariableValue};
 
 pub struct StatValueProjection {
     pub int_value: Option<i64>,
@@ -7,28 +7,28 @@ pub struct StatValueProjection {
     pub bool_value: Option<bool>,
 }
 
-impl From<StatValue> for StatValueProjection {
-    fn from(value: StatValue) -> Self {
+impl From<VariableValue> for StatValueProjection {
+    fn from(value: VariableValue) -> Self {
         match value {
-            StatValue::Int(v) => StatValueProjection {
+            VariableValue::Int(v) => StatValueProjection {
                 int_value: Some(v),
                 float_value: None,
                 str_value: None,
                 bool_value: None,
             },
-            StatValue::Float(v) => StatValueProjection {
+            VariableValue::Float(v) => StatValueProjection {
                 int_value: None,
                 float_value: Some(v),
                 str_value: None,
                 bool_value: None,
             },
-            StatValue::String(v) => StatValueProjection {
+            VariableValue::String(v) => StatValueProjection {
                 int_value: None,
                 float_value: None,
                 str_value: Some(v),
                 bool_value: None,
             },
-            StatValue::Bool(v) => StatValueProjection {
+            VariableValue::Bool(v) => StatValueProjection {
                 int_value: None,
                 float_value: None,
                 str_value: None,
@@ -39,7 +39,6 @@ impl From<StatValue> for StatValueProjection {
 }
 
 pub struct GameStatProjection {
-    pub id: Identifier,
     pub name: String,
     pub value: StatValueProjection,
     pub default: StatValueProjection,
@@ -47,15 +46,14 @@ pub struct GameStatProjection {
 }
 
 pub struct PlayerStatProjection {
-    pub id: Identifier,
     pub name: String,
-    pub values: Vec<(Identifier, StatValueProjection)>, // Vec of (player_id, value)
+    pub values: Vec<(String, StatValueProjection)>, // Vec of (player_name, value)
     pub default: StatValueProjection,
     pub visibility: String,
 }
 
 pub struct PlayerProjection {
-    pub id: Identifier,
+    pub name: String,
     pub user_id: Option<Identifier>,
 }
 

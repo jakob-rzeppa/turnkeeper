@@ -6,6 +6,7 @@
 //!
 //! * [`db`] - Database connection pool creation and management
 //! * [`repositories`] - Repository implementations for data access
+//! * [`models`] - SQLx record structs for database tables
 //!
 //! ## Database
 //!

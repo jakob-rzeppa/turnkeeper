@@ -5,24 +5,24 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{expect_token, get_pos, is_token, nth_is_token},
+        macros::{expect_token, get_pos, nth_is_token},
         parsable::Parsable,
     },
     domain::game::{
-        entities::stat::GameStat,
-        value_objects::{stat_value::StatValue, stat_visibility::GameStatVisibility},
+        entities::weak::stat::GameStat,
+        value_objects::{
+            data::{VariableType, VariableValue},
+            visibility::GameStatVisibility,
+        },
     },
 };
 
-impl Parsable<Token> for GameStat {
-    fn is_next(ts: &TokenStream<Token>) -> bool {
-        is_token!(
-            ts,
-            TokenVariant::Hidden | TokenVariant::Private | TokenVariant::Public
-        ) && nth_is_token!(ts, 1, TokenVariant::Stat)
+impl Parsable for GameStat {
+    fn is_next(ts: &TokenStream) -> bool {
+        nth_is_token!(ts, 1, TokenVariant::Stat)
     }
 
-    fn parse(ts: &mut TokenStream<Token>, _source_code: &str) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream, _source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
@@ -78,7 +78,7 @@ impl Parsable<Token> for GameStat {
         };
 
         // Optional: Check for a colon after the stat name, which could indicate a type declaration.
-        let type_decl = if let Some(Token {
+        let datatype = if let Some(Token {
             variant: TokenVariant::Colon,
             ..
         }) = ts.peek()
@@ -86,26 +86,22 @@ impl Parsable<Token> for GameStat {
             ts.next(); // Consume the colon
 
             match ts.next() {
-                Some(token) => {
-                    if matches!(
-                        token.variant,
-                        TokenVariant::IntType
-                            | TokenVariant::FloatType
-                            | TokenVariant::StringType
-                            | TokenVariant::BoolType
-                    ) {
-                        Some(token.variant.clone())
-                    } else {
+                Some(token) => match token.variant {
+                    TokenVariant::IntType => Some(VariableType::Int),
+                    TokenVariant::FloatType => Some(VariableType::Float),
+                    TokenVariant::StringType => Some(VariableType::String),
+                    TokenVariant::BoolType => Some(VariableType::Bool),
+                    _ => {
                         return Err(ParsingError::UnexpectedToken {
-                            expected: "Expected type declaration (int, float, string, bool) after ':' in stat declaration".to_string(),
-                            found: token.variant.clone(),
-                            pos: token.pos,
-                        });
+                                expected: "Expected type declaration (int, float, string, bool) after ':' in player stat declaration".to_string(),
+                                found: token.variant.clone(),
+                                pos: token.pos,
+                            });
                     }
-                }
+                },
                 None => {
                     return Err(ParsingError::UnexpectedEOF {
-                        expected: "Expected type declaration (int, float, string, bool) after ':' in stat declaration".to_string(),
+                        expected: "Expected type declaration (int, float, string, bool) after ':' in player stat declaration".to_string(),
                     });
                 }
             }
@@ -119,12 +115,12 @@ impl Parsable<Token> for GameStat {
             "Expected '=' after stat name (and optional type declaration) in stat declaration"
         );
 
-        let value: StatValue = match ts.next() {
+        let value: VariableValue = match ts.next() {
             Some(token) => match token.variant.clone() {
-                TokenVariant::IntLiteral(num) => StatValue::Int(num),
-                TokenVariant::FloatLiteral(num) => StatValue::Float(num),
-                TokenVariant::StringLiteral(s) => StatValue::String(s),
-                TokenVariant::BoolLiteral(b) => StatValue::Bool(b),
+                TokenVariant::IntLiteral(num) => VariableValue::Int(num),
+                TokenVariant::FloatLiteral(num) => VariableValue::Float(num),
+                TokenVariant::StringLiteral(s) => VariableValue::String(s),
+                TokenVariant::BoolLiteral(b) => VariableValue::Bool(b),
                 _ => {
                     return Err(ParsingError::UnexpectedToken {
                         expected: "Expected literal value (int, float, string, bool) after '=' in stat declaration".to_string(),
@@ -146,66 +142,24 @@ impl Parsable<Token> for GameStat {
             "Expected ';' at the end of player stat declaration"
         );
 
-        // Optional: Check for a semicolon at the end of the stat declaration
-        if let Some(type_decl) = type_decl {
-            match type_decl {
-                TokenVariant::IntType => {
-                    if let StatValue::Int(_) = value {
-                        // Type matches, continue
-                    } else {
-                        return Err(ParsingError::SyntaxError {
-                            message: "Type mismatch: expected int literal for stat declared as int"
-                                .to_string(),
-                            pos,
-                        });
-                    }
-                }
-                TokenVariant::FloatType => {
-                    if let StatValue::Float(_) = value {
-                        // Type matches, continue
-                    } else {
-                        return Err(ParsingError::SyntaxError {
-                            message:
-                                "Type mismatch: expected float literal for stat declared as float"
-                                    .to_string(),
-                            pos,
-                        });
-                    }
-                }
-                TokenVariant::StringType => {
-                    if let StatValue::String(_) = value {
-                        // Type matches, continue
-                    } else {
-                        return Err(ParsingError::SyntaxError {
-                            message:
-                                "Type mismatch: expected string literal for stat declared as string"
-                                    .to_string(),
-                            pos,
-                        });
-                    }
-                }
-                TokenVariant::BoolType => {
-                    if let StatValue::Bool(_) = value {
-                        // Type matches, continue
-                    } else {
-                        return Err(ParsingError::SyntaxError {
-                            message:
-                                "Type mismatch: expected bool literal for stat declared as bool"
-                                    .to_string(),
-                            pos,
-                        });
-                    }
-                }
-                _ => {
-                    return Err(ParsingError::SyntaxError {
-                        message: "Invalid type declaration in stat declaration".to_string(),
-                        pos,
-                    });
-                }
+        // Check for type match between declared type and provided value and if no type declaration is provided, infer the type from the value.
+        let datatype = if let Some(declared_type) = datatype {
+            if !value.is_type(&declared_type) {
+                return Err(ParsingError::SyntaxError {
+                    message: format!(
+                        "Type mismatch: expected {:?} literal for player stat declared as {:?}",
+                        declared_type, declared_type
+                    ),
+                    pos,
+                });
             }
-        }
 
-        Ok(GameStat::new(name, value, visibility, pos))
+            declared_type
+        } else {
+            value.datatype()
+        };
+
+        Ok(GameStat::new(name, datatype, value, visibility, pos))
     }
 }
 
@@ -221,7 +175,7 @@ mod tests {
 
         let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "health");
-        assert_eq!(stat.default(), &StatValue::Int(100));
+        assert_eq!(stat.default(), &VariableValue::Int(100));
         assert_eq!(stat.visibility(), &GameStatVisibility::Public);
     }
 
@@ -231,7 +185,7 @@ mod tests {
 
         let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "mana");
-        assert_eq!(stat.default(), &StatValue::Int(50));
+        assert_eq!(stat.default(), &VariableValue::Int(50));
         assert_eq!(stat.visibility(), &GameStatVisibility::Private);
     }
 
@@ -241,7 +195,7 @@ mod tests {
 
         let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "stamina");
-        assert_eq!(stat.default(), &StatValue::Float(75.5));
+        assert_eq!(stat.default(), &VariableValue::Float(75.5));
         assert_eq!(stat.visibility(), &GameStatVisibility::Hidden);
     }
 
@@ -251,7 +205,10 @@ mod tests {
 
         let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "status");
-        assert_eq!(stat.default(), &StatValue::String("healthy".to_string()));
+        assert_eq!(
+            stat.default(),
+            &VariableValue::String("healthy".to_string())
+        );
         assert_eq!(stat.visibility(), &GameStatVisibility::Hidden);
     }
 
@@ -261,7 +218,7 @@ mod tests {
 
         let stat = GameStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(stat.name(), "isAlive");
-        assert_eq!(stat.default(), &StatValue::Bool(true));
+        assert_eq!(stat.default(), &VariableValue::Bool(true));
         assert_eq!(stat.visibility(), &GameStatVisibility::Public);
     }
 

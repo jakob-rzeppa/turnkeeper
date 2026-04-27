@@ -1,9 +1,11 @@
-pub struct TokenStream<Token> {
+use crate::application::common::parser::lexer::token::Token;
+
+pub struct TokenStream {
     tokens: Vec<Token>,
     index: usize,
 }
 
-impl<Token> TokenStream<Token> {
+impl TokenStream {
     pub fn new(tokens: Vec<Token>) -> Self {
         Self { tokens, index: 0 }
     }

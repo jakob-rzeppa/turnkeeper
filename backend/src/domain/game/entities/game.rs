@@ -1,9 +1,9 @@
 use crate::domain::{
     common::{date_time::DateTime, identifier::Identifier},
-    game::projections::game::GameProjection,
+    game::projections::{game::GameProjection, game_metadata::GameMetadataProjection},
 };
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game {
     id: Identifier,
 
@@ -84,5 +84,15 @@ impl Game {
     pub fn set_source_code(&mut self, source_code: String) {
         self.source_code = source_code;
         self.updated_at = DateTime::now();
+    }
+
+    pub fn get_metadata_projection(&self) -> GameMetadataProjection {
+        GameMetadataProjection {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            description: self.description.clone(),
+            created_at: self.created_at.clone(),
+            updated_at: self.updated_at.clone(),
+        }
     }
 }

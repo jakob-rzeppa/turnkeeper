@@ -1,5 +1,3 @@
-use crate::domain::common::identifier::Identifier;
-
 #[derive(Debug, PartialEq, thiserror::Error)]
 pub enum ExecutionError {
     #[error("Action not found: {0}")]
@@ -19,19 +17,18 @@ pub enum GameInstanceError {
     #[error("Player not found: {0}")]
     PlayerNotFound(String),
 
-    #[error("Stat with id {0} not found")]
-    StatNotFound(Identifier),
-    #[error("Player stat with id {0} not found")]
-    PlayerStatNotFound(Identifier),
-    #[error("Player with id {player_id} not found in stat {stat_name} (id: {stat_id})")]
+    #[error("Stat {0} not found")]
+    StatNotFound(String),
+    #[error("Player stat {0} not found")]
+    PlayerStatNotFound(String),
+    #[error("Player {player_name} not found in stat {stat_name}")]
     PlayerInStatNotFound {
-        player_id: Identifier,
-        stat_id: Identifier,
+        player_name: String,
         stat_name: String,
     },
 
-    #[error("Invalid player order")]
-    InvalidPlayerOrder,
+    #[error("Invalid player order provided: {0:?}")]
+    InvalidPlayerOrder(Vec<String>),
     #[error("User already attached to another player")]
     UserAlreadyAttachedToAnotherPlayer,
 }

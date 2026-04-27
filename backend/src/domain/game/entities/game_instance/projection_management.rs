@@ -4,6 +4,7 @@ use crate::domain::{
         entities::game_instance::GameInstance,
         projections::{
             game_display_template::GameDisplayTemplateProjection,
+            game_instance_metadata::GameInstanceMetadataProjection,
             game_instance_state::{
                 GameInstanceStateProjection, GameStatProjection, PlayerProjection,
                 PlayerStatProjection,
@@ -31,7 +32,6 @@ impl GameInstance {
                 .game_stats
                 .iter()
                 .map(|s| GameStatProjection {
-                    id: s.id().clone(),
                     name: s.name().into(),
                     value: s.value().clone().into(),
                     default: s.default().clone().into(),
@@ -42,12 +42,11 @@ impl GameInstance {
                 .player_stats
                 .iter()
                 .map(|s| PlayerStatProjection {
-                    id: s.id().clone(),
                     name: s.name().into(),
                     values: s
                         .values()
                         .iter()
-                        .map(|(player_id, value)| (player_id.clone(), value.clone().into()))
+                        .map(|(player_name, value)| (player_name.clone(), value.clone().into()))
                         .collect(),
                     default: s.default().clone().into(),
                     visibility: s.visibility().to_string(),
@@ -57,10 +56,23 @@ impl GameInstance {
                 .players
                 .iter()
                 .map(|p| PlayerProjection {
-                    id: p.id().clone(),
+                    name: p.name().to_string(),
                     user_id: p.user_id().cloned(),
                 })
                 .collect(),
+        }
+    }
+
+    pub fn get_metadata_projection(&self) -> GameInstanceMetadataProjection {
+        GameInstanceMetadataProjection {
+            id: self.id.clone(),
+            name: self.name.clone(),
+            game_id: self.source_game.id().clone(),
+            gm_user_id: self.gm_user_id.clone(),
+            created_at: self.created_at.clone(),
+            last_played_at: self.last_played_at.clone(),
+            player_count: self.players.len(),
+            current_round: self.round,
         }
     }
 }

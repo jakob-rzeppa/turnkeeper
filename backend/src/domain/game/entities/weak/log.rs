@@ -1,9 +1,7 @@
 use crate::domain::common::{date_time::DateTime, identifier::Identifier};
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Log {
-    id: Identifier,
-
     entries: Vec<(LogEntry, DateTime)>,
 }
 
@@ -25,17 +23,12 @@ pub enum LogEntry {
 impl Log {
     pub fn new() -> Self {
         Self {
-            id: Identifier::new(),
             entries: Vec::new(),
         }
     }
 
-    pub fn new_raw(id: Identifier, entries: Vec<(LogEntry, DateTime)>) -> Self {
-        Self { id, entries }
-    }
-
-    pub fn id(&self) -> &Identifier {
-        &self.id
+    pub fn new_raw(entries: Vec<(LogEntry, DateTime)>) -> Self {
+        Self { entries }
     }
 
     pub fn entries(&self) -> &Vec<(LogEntry, DateTime)> {

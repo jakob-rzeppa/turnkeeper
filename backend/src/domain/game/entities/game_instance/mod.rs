@@ -1,20 +1,25 @@
-use crate::domain::{
-    common::{date_time::DateTime, identifier::Identifier},
-    game::entities::{
-        action::Action,
-        game::Game,
-        log::Log,
-        page::Page,
-        player::Player,
-        stat::{GameStat, PlayerStat},
+use crate::{
+    domain::{
+        common::{date_time::DateTime, identifier::Identifier},
+        game::entities::{
+            game::Game,
+            weak::{
+                action::Action,
+                log::Log,
+                page::Page,
+                player::Player,
+                stat::{GameStat, PlayerStat},
+            },
+        },
     },
+    util::unordered_equal::equals_unordered,
 };
 
 pub mod player_management;
 pub mod projection_management;
 pub mod stats_management;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct GameInstance {
     id: Identifier,
     name: String,
@@ -153,5 +158,24 @@ impl GameInstance {
 
     pub fn last_played_at(&self) -> &DateTime {
         &self.last_played_at
+    }
+}
+
+impl PartialEq for GameInstance {
+    fn eq(&self, other: &Self) -> bool {
+        self.id == other.id
+            && self.name == other.name
+            && self.current_player_index == other.current_player_index
+            && self.round == other.round
+            && equals_unordered(&self.game_stats, &other.game_stats)
+            && equals_unordered(&self.player_stats, &other.player_stats)
+            && equals_unordered(&self.actions, &other.actions)
+            && equals_unordered(&self.pages, &other.pages)
+            && equals_unordered(&self.players, &other.players)
+            && self.log == other.log
+            && self.source_game == other.source_game
+            && self.gm_user_id == other.gm_user_id
+            && self.created_at == other.created_at
+            && self.last_played_at == other.last_played_at
     }
 }

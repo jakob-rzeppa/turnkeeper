@@ -1,24 +1,23 @@
 use std::collections::HashMap;
 
 use crate::domain::{
-    common::{identifier::Identifier, position::Position},
+    common::position::Position,
     game::{
         error::GameInstanceError,
         value_objects::{
-            stat_value::StatValue,
-            stat_visibility::{GameStatVisibility, PlayerStatVisibility},
+            data::{VariableType, VariableValue},
+            visibility::{GameStatVisibility, PlayerStatVisibility},
         },
     },
 };
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GameStat {
-    id: Identifier,
-
     name: String,
-    value: StatValue,
+    datatype: VariableType,
+    value: VariableValue,
 
-    default: StatValue,
+    default: VariableValue,
     visibility: GameStatVisibility,
 
     pos: Position,
@@ -30,13 +29,14 @@ impl GameStat {
     /// The `value` is initialized to the `default` value, and can be changed later using `set_value`.
     pub fn new(
         name: String,
-        default: StatValue,
+        datatype: VariableType,
+        default: VariableValue,
         visibility: GameStatVisibility,
         pos: Position,
     ) -> Self {
         Self {
-            id: Identifier::new(),
             name,
+            datatype,
             value: default.clone(),
             default,
             visibility,
@@ -48,16 +48,16 @@ impl GameStat {
     ///
     /// This should only be used when loading a game instance from storage, where we already have the value for the stat.
     pub fn new_raw(
-        id: Identifier,
         name: String,
-        value: StatValue,
-        default: StatValue,
+        datatype: VariableType,
+        value: VariableValue,
+        default: VariableValue,
         visibility: GameStatVisibility,
         pos: Position,
     ) -> Self {
         Self {
-            id,
             name,
+            datatype,
             value,
             default,
             visibility,
@@ -65,19 +65,19 @@ impl GameStat {
         }
     }
 
-    pub fn id(&self) -> &Identifier {
-        &self.id
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn value(&self) -> &StatValue {
+    pub fn datatype(&self) -> &VariableType {
+        &self.datatype
+    }
+
+    pub fn value(&self) -> &VariableValue {
         &self.value
     }
 
-    pub fn default(&self) -> &StatValue {
+    pub fn default(&self) -> &VariableValue {
         &self.default
     }
 
@@ -89,19 +89,18 @@ impl GameStat {
         &self.pos
     }
 
-    pub fn set_value(&mut self, value: StatValue) {
+    pub fn set_value(&mut self, value: VariableValue) {
         self.value = value;
     }
 }
 
-#[derive(Clone, Debug, PartialEq)]
+#[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PlayerStat {
-    id: Identifier,
-
     name: String,
-    values: HashMap<Identifier, StatValue>, // player_id -> value
+    datatype: VariableType,
+    values: HashMap<String, VariableValue>, // player_name -> value
 
-    default: StatValue,
+    default: VariableValue,
     visibility: PlayerStatVisibility,
 
     pos: Position,
@@ -115,13 +114,19 @@ impl PlayerStat {
     /// This should only be used when creating a new game instance.
     pub fn new(
         name: String,
-        default: StatValue,
+        datatype: VariableType,
+        default: VariableValue,
         visibility: PlayerStatVisibility,
         pos: Position,
     ) -> Self {
+        assert!(
+            default.is_type(&datatype),
+            "Default value must match the datatype of the stat"
+        );
+
         Self {
-            id: Identifier::new(),
             name,
+            datatype,
             values: HashMap::new(), // Values will be set for each player when they are added to the game
             default,
             visibility,
@@ -133,16 +138,16 @@ impl PlayerStat {
     ///
     /// This should only be used when loading a game instance from storage, where we already have the values for each player.
     pub fn new_raw(
-        id: Identifier,
         name: String,
-        values: HashMap<Identifier, StatValue>,
-        default: StatValue,
+        datatype: VariableType,
+        values: HashMap<String, VariableValue>, // player_name -> value
+        default: VariableValue,
         visibility: PlayerStatVisibility,
         pos: Position,
     ) -> Self {
         Self {
-            id,
             name,
+            datatype,
             values,
             default,
             visibility,
@@ -150,19 +155,19 @@ impl PlayerStat {
         }
     }
 
-    pub fn id(&self) -> &Identifier {
-        &self.id
-    }
-
     pub fn name(&self) -> &str {
         &self.name
     }
 
-    pub fn values(&self) -> &HashMap<Identifier, StatValue> {
+    pub fn datatype(&self) -> &VariableType {
+        &self.datatype
+    }
+
+    pub fn values(&self) -> &HashMap<String, VariableValue> {
         &self.values
     }
 
-    pub fn default(&self) -> &StatValue {
+    pub fn default(&self) -> &VariableValue {
         &self.default
     }
 
@@ -174,24 +179,23 @@ impl PlayerStat {
         &self.pos
     }
 
-    pub fn get_owning_player_value(&self, player_id: &Identifier) -> Option<&StatValue> {
-        self.values.get(player_id)
+    pub fn get_owning_player_value(&self, player_name: &String) -> Option<&VariableValue> {
+        self.values.get(player_name)
     }
 
     pub fn set_value_for_player(
         &mut self,
-        player_id: &Identifier,
-        value: StatValue,
+        player_name: &str,
+        value: VariableValue,
     ) -> Result<(), GameInstanceError> {
-        if let None = self.values.get(player_id) {
+        if let None = self.values.get(player_name) {
             return Err(GameInstanceError::PlayerInStatNotFound {
-                stat_id: self.id.clone(),
-                player_id: player_id.clone(),
+                player_name: player_name.to_string(),
                 stat_name: self.name.clone(),
             });
         }
 
-        self.values.insert(player_id.clone(), value);
+        self.values.insert(player_name.to_string(), value);
         Ok(())
     }
 }
