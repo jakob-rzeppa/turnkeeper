@@ -100,6 +100,28 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
         }
     }
 
+    async fn game_has_instances(&self, game_id: Identifier) -> Result<bool, DatabaseError> {
+        let game_instances = sqlx::query!(
+            r#"
+            SELECT COUNT(*) as count FROM game_instances
+            "#
+        )
+        .fetch_one(&self.db)
+        .await
+        .map_err(|e| {
+            DatabaseError::Unknown(format!(
+                "Database error while checking for GameInstances for game {}: {}",
+                game_id, e
+            ))
+        })?;
+
+        if game_instances.count > 0 {
+            Ok(true)
+        } else {
+            Ok(false)
+        }
+    }
+
     async fn save(&self, game_instance: &GameInstance) -> Result<(), DatabaseError> {
         let id = game_instance.id().to_string();
         let serialized = serde_json::to_string(game_instance).map_err(|e| {
@@ -397,5 +419,33 @@ mod tests {
             ],
             &projections
         ));
+    }
+
+    #[tokio::test]
+    async fn test_game_has_instances() {
+        let (game_instance_repo, game_repo, user_repo) = create_repositories().await;
+        let gm_user = create_user();
+        let player_user = create_user();
+        user_repo.save(&gm_user).await.unwrap();
+        user_repo.save(&player_user).await.unwrap();
+        let game = create_game();
+        game_repo.save(&game).await.unwrap();
+
+        assert!(
+            !game_instance_repo
+                .game_has_instances(game.id().clone())
+                .await
+                .unwrap()
+        );
+
+        let game_instance = create_game_instance(&game, &gm_user, &player_user);
+        game_instance_repo.save(&game_instance).await.unwrap();
+
+        assert!(
+            game_instance_repo
+                .game_has_instances(game.id().clone())
+                .await
+                .unwrap()
+        );
     }
 }

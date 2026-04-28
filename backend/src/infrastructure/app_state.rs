@@ -44,6 +44,7 @@ impl AppState {
         Self {
             game_request_handler: GameRequestHandler::new(
                 sqlite_game_repository.clone(),
+                sqlite_game_instance_repository.clone(),
                 game_root_parser.clone(),
             ),
             game_instance_request_handler: GameInstanceRequestHandler::new(

@@ -31,6 +31,7 @@ mod tests {
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game::root_parser::MockGameRootParserContract;
+    use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
     use crate::domain::game::entities::game::Game;
@@ -38,6 +39,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_game_by_id_success() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameRootParserContract::new();
         let game_id = Identifier::new();
 
@@ -56,7 +58,11 @@ mod tests {
                 )))
             });
 
-        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
+        let handler = GameRequestHandler::new(
+            Arc::new(repository),
+            Arc::new(game_instance_repository),
+            Arc::new(game_root_parser),
+        );
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_ok());
@@ -71,6 +77,7 @@ mod tests {
     async fn test_get_game_by_id_not_found() {
         let mut repository = MockGameRepositoryContract::new();
         let game_id = Identifier::new();
+        let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameRootParserContract::new();
 
         repository
@@ -78,7 +85,11 @@ mod tests {
             .times(1)
             .returning(|_| Ok(None));
 
-        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
+        let handler = GameRequestHandler::new(
+            Arc::new(repository),
+            Arc::new(game_instance_repository),
+            Arc::new(game_root_parser),
+        );
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_err());

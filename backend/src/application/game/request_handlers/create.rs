@@ -27,13 +27,15 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::game::{
-        contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract,
+    use crate::application::{
+        game::{contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract},
+        game_instance::contracts::MockGameInstanceRepositoryContract,
     };
 
     #[tokio::test]
     async fn test_create_game_successfully() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameRootParserContract::new();
 
         let request = CreateGameRequest {
@@ -44,7 +46,11 @@ mod tests {
         // Save should be called once
         repository.expect_save().times(1).returning(|_| Ok(()));
 
-        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
+        let handler = GameRequestHandler::new(
+            Arc::new(repository),
+            Arc::new(game_instance_repository),
+            Arc::new(game_root_parser),
+        );
         let result = handler.create(request).await;
 
         assert!(result.is_ok());

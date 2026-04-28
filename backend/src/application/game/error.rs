@@ -6,4 +6,6 @@ pub enum GameApplicationError {
     DatabaseError(#[from] DatabaseError),
     #[error("Game not found")]
     GameNotFound,
+    #[error("Game has active instances and cannot be deleted")]
+    GameHasInstances,
 }

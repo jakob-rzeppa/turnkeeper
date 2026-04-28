@@ -22,12 +22,14 @@ mod tests {
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game::root_parser::MockGameRootParserContract;
+    use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
 
     #[tokio::test]
     async fn test_list_all_games_success() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameRootParserContract::new();
 
         let games_metadata = vec![
@@ -53,7 +55,11 @@ mod tests {
             Ok(cloned)
         });
 
-        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
+        let handler = GameRequestHandler::new(
+            Arc::new(repository),
+            Arc::new(game_instance_repository),
+            Arc::new(game_root_parser),
+        );
         let result = handler.list_all().await;
 
         assert!(result.is_ok());
@@ -66,6 +72,7 @@ mod tests {
     #[tokio::test]
     async fn test_list_all_games_empty() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameRootParserContract::new();
 
         repository
@@ -73,7 +80,11 @@ mod tests {
             .times(1)
             .returning(|| Ok(vec![]));
 
-        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
+        let handler = GameRequestHandler::new(
+            Arc::new(repository),
+            Arc::new(game_instance_repository),
+            Arc::new(game_root_parser),
+        );
         let result = handler.list_all().await;
 
         assert!(result.is_ok());

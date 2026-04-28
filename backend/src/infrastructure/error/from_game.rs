@@ -8,6 +8,9 @@ impl From<GameApplicationError> for HttpError {
                 HttpError::InternalServerError
             }
             GameApplicationError::GameNotFound => HttpError::NotFound("Game not found".into()),
+            GameApplicationError::GameHasInstances => {
+                HttpError::Conflict("Cannot delete game with existing instances".into())
+            }
         }
     }
 }
