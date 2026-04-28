@@ -64,6 +64,7 @@ mod tests {
         assert!(result.is_ok());
     }
 
+    #[tokio::test]
     async fn test_delete_game_with_instances() {
         let mut game_repository = MockGameRepositoryContract::new();
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();

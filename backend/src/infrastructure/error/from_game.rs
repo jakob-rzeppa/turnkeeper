@@ -7,10 +7,8 @@ impl From<GameApplicationError> for HttpError {
                 eprintln!("Database error: {:?}", e);
                 HttpError::InternalServerError
             }
-            GameApplicationError::GameNotFound => HttpError::NotFound("Game not found".into()),
-            GameApplicationError::GameHasInstances => {
-                HttpError::Conflict("Cannot delete game with existing instances".into())
-            }
+            GameApplicationError::GameNotFound => HttpError::NotFound(e.to_string()),
+            GameApplicationError::GameHasInstances => HttpError::Conflict(e.to_string()),
         }
     }
 }
