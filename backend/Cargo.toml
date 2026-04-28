@@ -37,6 +37,9 @@ thiserror = "2.0.17"
 # Env
 dotenv = "0.15.0"
 
+# Async
+async-trait = "0.1"
+
 # Mocking
 mockall = "0.14.0"
 fnmock = { git = "https://github.com/jakob-rzeppa/fnmock.git", version = "0.1.0" }

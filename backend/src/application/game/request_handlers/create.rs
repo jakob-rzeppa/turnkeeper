@@ -1,7 +1,5 @@
-use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::error::GameApplicationError;
 use crate::application::game::request_handlers::GameRequestHandler;
-use crate::application::game::root_parser::GameRootParserContract;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::entities::game::Game;
 
@@ -10,9 +8,7 @@ pub struct CreateGameRequest {
     pub description: String,
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     /// Creates a game with a generated UUID and returns the new ID.
     pub async fn create(
         &self,
@@ -46,10 +42,7 @@ mod tests {
         };
 
         // Save should be called once
-        repository
-            .expect_save()
-            .times(1)
-            .returning(|_| Box::pin(async { Ok(()) }));
+        repository.expect_save().times(1).returning(|_| Ok(()));
 
         let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.create(request).await;

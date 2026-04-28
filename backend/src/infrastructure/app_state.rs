@@ -26,12 +26,8 @@ use crate::{
 /// Application state shared across all HTTP handlers and WebSocket connections.
 #[derive(Clone)]
 pub struct AppState {
-    game_request_handler: GameRequestHandler<SqliteGameRepository, GameRootParser>,
-    game_instance_request_handler: GameInstanceRequestHandler<
-        SqliteGameInstanceRepository,
-        SqliteGameRepository,
-        GameRootParser,
-    >,
+    game_request_handler: GameRequestHandler,
+    game_instance_request_handler: GameInstanceRequestHandler,
     user_request_handler: UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator>,
 }
 
@@ -63,17 +59,11 @@ impl AppState {
         }
     }
 
-    pub fn game_request_handler(&self) -> GameRequestHandler<SqliteGameRepository, GameRootParser> {
+    pub fn game_request_handler(&self) -> GameRequestHandler {
         self.game_request_handler.clone()
     }
 
-    pub fn game_instance_request_handler(
-        &self,
-    ) -> GameInstanceRequestHandler<
-        SqliteGameInstanceRepository,
-        SqliteGameRepository,
-        GameRootParser,
-    > {
+    pub fn game_instance_request_handler(&self) -> GameInstanceRequestHandler {
         self.game_instance_request_handler.clone()
     }
 

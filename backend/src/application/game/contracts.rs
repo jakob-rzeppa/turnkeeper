@@ -1,3 +1,5 @@
+use async_trait::async_trait;
+
 use crate::{
     application::common::error::DatabaseError,
     domain::{
@@ -7,17 +9,13 @@ use crate::{
 };
 
 #[mockall::automock]
+#[async_trait]
 pub trait GameRepositoryContract: Send + Sync + 'static {
-    fn get_by_id(
-        &self,
-        id: &Identifier,
-    ) -> impl Future<Output = Result<Option<Game>, DatabaseError>> + Send;
+    async fn get_by_id(&self, id: &Identifier) -> Result<Option<Game>, DatabaseError>;
 
-    fn list_all(
-        &self,
-    ) -> impl Future<Output = Result<Vec<GameMetadataProjection>, DatabaseError>> + Send;
+    async fn list_all(&self) -> Result<Vec<GameMetadataProjection>, DatabaseError>;
 
-    fn save(&self, game: &Game) -> impl Future<Output = Result<(), DatabaseError>> + Send;
+    async fn save(&self, game: &Game) -> Result<(), DatabaseError>;
 
-    fn delete(&self, id: &Identifier) -> impl Future<Output = Result<(), DatabaseError>> + Send;
+    async fn delete(&self, id: &Identifier) -> Result<(), DatabaseError>;
 }

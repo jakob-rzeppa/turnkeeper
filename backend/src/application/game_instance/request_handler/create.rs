@@ -1,10 +1,6 @@
 use crate::{
-    application::{
-        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
-        game_instance::{
-            contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
-            request_handler::GameInstanceRequestHandler,
-        },
+    application::game_instance::{
+        error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
     domain::{common::identifier::Identifier, game::entities::game_instance::GameInstance},
 };
@@ -15,12 +11,7 @@ pub struct GameInstanceCreateRequest {
     pub game_id: Identifier,
 }
 
-impl<
-    GameInstanceRepository: GameInstanceRepositoryContract,
-    GameRepository: GameRepositoryContract,
-    GameRootParser: GameRootParserContract,
-> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
-{
+impl GameInstanceRequestHandler {
     pub async fn create(
         &self,
         request: GameInstanceCreateRequest,
@@ -82,14 +73,14 @@ mod tests {
                     "Test Game".to_string(),
                     "Test Description".to_string(),
                 );
-                Box::pin(async move { Ok(Some(game)) })
+                Ok(Some(game))
             });
 
         // Mock the game instance repository save
         game_instance_repository
             .expect_save()
             .times(1)
-            .returning(|_| Box::pin(async { Ok(()) }));
+            .returning(|_| Ok(()));
 
         // Mock the game root parser
         game_root_parser
@@ -134,7 +125,7 @@ mod tests {
         game_repository
             .expect_get_by_id()
             .times(1)
-            .returning(|_| Box::pin(async { Ok(None) }));
+            .returning(|_| Ok(None));
 
         // Save should never be called
         game_instance_repository.expect_save().never();

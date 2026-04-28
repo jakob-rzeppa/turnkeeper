@@ -1,10 +1,7 @@
 use crate::{
     application::{
         common::parser::error::ParsingError,
-        game::{
-            contracts::GameRepositoryContract, error::GameApplicationError,
-            request_handlers::GameRequestHandler, root_parser::GameRootParserContract,
-        },
+        game::{error::GameApplicationError, request_handlers::GameRequestHandler},
     },
     domain::{
         common::identifier::Identifier,
@@ -28,9 +25,7 @@ pub enum CheckSourceCodeResponse {
     },
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     pub async fn check_source_code(
         &self,
         game_id: Identifier,

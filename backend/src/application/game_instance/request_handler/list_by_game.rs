@@ -1,10 +1,6 @@
 use crate::{
-    application::{
-        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
-        game_instance::{
-            contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
-            request_handler::GameInstanceRequestHandler,
-        },
+    application::game_instance::{
+        error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
     domain::{
         common::identifier::Identifier,
@@ -20,12 +16,7 @@ pub struct GameInstanceListByGameResponse {
     pub games_metadata: Vec<GameInstanceMetadataProjection>,
 }
 
-impl<
-    GameInstanceRepository: GameInstanceRepositoryContract,
-    GameRepository: GameRepositoryContract,
-    GameRootParser: GameRootParserContract,
-> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
-{
+impl GameInstanceRequestHandler {
     pub async fn list_all_games(
         &self,
         request: GameInstanceListByGameRequest,
@@ -85,7 +76,7 @@ mod tests {
             .times(1)
             .returning(move |_| {
                 let cloned = instances_clone.clone();
-                Box::pin(async move { Ok(cloned) })
+                Ok(cloned)
             });
 
         let handler = GameInstanceRequestHandler::new(
@@ -115,7 +106,7 @@ mod tests {
         game_instance_repository
             .expect_list_by_game_id()
             .times(1)
-            .returning(|_| Box::pin(async { Ok(vec![]) }));
+            .returning(|_| Ok(vec![]));
 
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),

@@ -11,20 +11,15 @@ pub mod get_by_id;
 pub mod list_all;
 pub mod set_source_code;
 
-pub struct GameRequestHandler<
-    GameRepository: GameRepositoryContract,
-    GameRootParser: GameRootParserContract,
-> {
-    game_repository: Arc<GameRepository>,
-    game_root_parser: Arc<GameRootParser>,
+pub struct GameRequestHandler {
+    game_repository: Arc<dyn GameRepositoryContract>,
+    game_root_parser: Arc<dyn GameRootParserContract>,
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     pub fn new(
-        game_repository: Arc<GameRepository>,
-        game_root_parser: Arc<GameRootParser>,
+        game_repository: Arc<dyn GameRepositoryContract>,
+        game_root_parser: Arc<dyn GameRootParserContract>,
     ) -> Self {
         Self {
             game_repository,
@@ -33,9 +28,7 @@ impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContr
     }
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract> Clone
-    for GameRequestHandler<GameRepository, GameRootParser>
-{
+impl Clone for GameRequestHandler {
     fn clone(&self) -> Self {
         Self {
             game_repository: self.game_repository.clone(),

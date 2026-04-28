@@ -1,10 +1,6 @@
 use crate::{
-    application::{
-        game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
-        game_instance::{
-            contracts::GameInstanceRepositoryContract, error::GameInstanceApplicationError,
-            request_handler::GameInstanceRequestHandler,
-        },
+    application::game_instance::{
+        error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
     domain::common::identifier::Identifier,
 };
@@ -14,12 +10,7 @@ pub struct GameInstanceDeleteRequest {
     pub instance_id: Identifier,
 }
 
-impl<
-    GameInstanceRepository: GameInstanceRepositoryContract,
-    GameRepository: GameRepositoryContract,
-    GameRootParser: GameRootParserContract,
-> GameInstanceRequestHandler<GameInstanceRepository, GameRepository, GameRootParser>
-{
+impl GameInstanceRequestHandler {
     pub async fn delete(
         &self,
         request: GameInstanceDeleteRequest,
@@ -53,7 +44,7 @@ mod tests {
         game_instance_repository
             .expect_delete()
             .times(1)
-            .returning(|_, _| Box::pin(async { Ok(()) }));
+            .returning(|_, _| Ok(()));
 
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),

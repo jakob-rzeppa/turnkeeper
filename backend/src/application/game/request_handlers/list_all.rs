@@ -1,8 +1,5 @@
 use crate::{
-    application::game::{
-        contracts::GameRepositoryContract, error::GameApplicationError,
-        request_handlers::GameRequestHandler, root_parser::GameRootParserContract,
-    },
+    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
     domain::game::projections::game_metadata::GameMetadataProjection,
 };
 
@@ -10,9 +7,7 @@ pub struct OverviewGameResponse {
     pub games_metadata: Vec<GameMetadataProjection>,
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     pub async fn list_all(&self) -> Result<OverviewGameResponse, GameApplicationError> {
         Ok(OverviewGameResponse {
             games_metadata: self.game_repository.list_all().await?,
@@ -55,7 +50,7 @@ mod tests {
         let games_metadata_clone = games_metadata.clone();
         repository.expect_list_all().times(1).returning(move || {
             let cloned = games_metadata_clone.clone();
-            Box::pin(async move { Ok(cloned) })
+            Ok(cloned)
         });
 
         let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
@@ -76,7 +71,7 @@ mod tests {
         repository
             .expect_list_all()
             .times(1)
-            .returning(|| Box::pin(async { Ok(vec![]) }));
+            .returning(|| Ok(vec![]));
 
         let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.list_all().await;

@@ -37,7 +37,7 @@ impl GameRootParser {
 }
 
 #[mockall::automock]
-pub trait GameRootParserContract {
+pub trait GameRootParserContract: Send + Sync + 'static {
     fn parse_game(&self, source_code: &str) -> Result<GameParsingResult, ParsingError>;
 }
 

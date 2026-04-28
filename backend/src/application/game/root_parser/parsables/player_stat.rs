@@ -153,7 +153,7 @@ impl Parsable for PlayerStat {
             if !value.is_type(&declared_type) {
                 return Err(ParsingError::SyntaxError {
                     message: format!(
-                        "Type mismatch: expected {:?} literal for player stat declared as {:?}",
+                        "Type mismatch: expected {} literal for player stat declared as {}",
                         declared_type, declared_type
                     ),
                     pos,

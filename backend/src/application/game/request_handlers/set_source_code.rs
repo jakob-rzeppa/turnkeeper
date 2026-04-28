@@ -1,14 +1,9 @@
 use crate::{
-    application::game::{
-        contracts::GameRepositoryContract, error::GameApplicationError,
-        request_handlers::GameRequestHandler, root_parser::GameRootParserContract,
-    },
+    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
     domain::common::identifier::Identifier,
 };
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     pub async fn set_source_code(
         &self,
         id: Identifier,

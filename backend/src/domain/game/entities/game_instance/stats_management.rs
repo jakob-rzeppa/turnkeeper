@@ -1,9 +1,6 @@
-use crate::domain::{
-    common::identifier::Identifier,
-    game::{
-        entities::game_instance::GameInstance, error::GameInstanceError,
-        value_objects::data::VariableValue,
-    },
+use crate::domain::game::{
+    entities::game_instance::GameInstance, error::GameInstanceError,
+    value_objects::data::VariableValue,
 };
 
 impl GameInstance {

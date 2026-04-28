@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use sqlx::SqlitePool;
 
 use crate::{
@@ -62,6 +63,7 @@ impl SqliteGameRepository {
     }
 }
 
+#[async_trait]
 impl GameRepositoryContract for SqliteGameRepository {
     async fn list_all(&self) -> Result<Vec<GameMetadataProjection>, DatabaseError> {
         let rows = sqlx::query!(

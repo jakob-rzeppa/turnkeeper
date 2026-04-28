@@ -1,8 +1,5 @@
 use crate::{
-    application::game::{
-        contracts::GameRepositoryContract, error::GameApplicationError,
-        request_handlers::GameRequestHandler, root_parser::GameRootParserContract,
-    },
+    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
     domain::{common::identifier::Identifier, game::projections::game::GameProjection},
 };
 
@@ -10,9 +7,7 @@ pub struct GameGetByIdResponse {
     pub game: GameProjection,
 }
 
-impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
-    GameRequestHandler<GameRepository, GameRootParser>
-{
+impl GameRequestHandler {
     pub async fn get_by_id(
         &self,
         id: Identifier,
@@ -51,16 +46,14 @@ mod tests {
             .withf(move |_| true)
             .times(1)
             .returning(move |_| {
-                Box::pin(async move {
-                    Ok(Some(Game::new_raw(
-                        game_id.clone(),
-                        "Test Game".to_string(),
-                        "Test Description".to_string(),
-                        "Test Source Code".to_string(),
-                        DateTime::now(),
-                        DateTime::now(),
-                    )))
-                })
+                Ok(Some(Game::new_raw(
+                    game_id.clone(),
+                    "Test Game".to_string(),
+                    "Test Description".to_string(),
+                    "Test Source Code".to_string(),
+                    DateTime::now(),
+                    DateTime::now(),
+                )))
             });
 
         let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
@@ -83,7 +76,7 @@ mod tests {
         repository
             .expect_get_by_id()
             .times(1)
-            .returning(|_| Box::pin(async { Ok(None) }));
+            .returning(|_| Ok(None));
 
         let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.get_by_id(game_id).await;

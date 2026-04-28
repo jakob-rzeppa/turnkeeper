@@ -1,3 +1,4 @@
+use async_trait::async_trait;
 use sqlx::SqlitePool;
 
 use crate::{
@@ -23,6 +24,7 @@ impl SqliteGameInstanceRepository {
     }
 }
 
+#[async_trait]
 impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
     async fn list_by_game_id(
         &self,
