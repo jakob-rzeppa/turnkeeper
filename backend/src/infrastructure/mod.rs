@@ -4,3 +4,4 @@ pub mod http;
 pub mod persistence;
 // pub mod websocket;
 pub mod app_state;
+pub mod logger;
