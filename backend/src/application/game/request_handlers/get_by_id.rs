@@ -1,7 +1,7 @@
 use crate::{
     application::game::{
         contracts::GameRepositoryContract, error::GameApplicationError,
-        request_handlers::GameRequestHandler,
+        request_handlers::GameRequestHandler, root_parser::GameRootParserContract,
     },
     domain::{common::identifier::Identifier, game::projections::game::GameProjection},
 };
@@ -10,7 +10,9 @@ pub struct GameGetByIdResponse {
     pub game: GameProjection,
 }
 
-impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
+impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
+    GameRequestHandler<GameRepository, GameRootParser>
+{
     pub async fn get_by_id(
         &self,
         id: Identifier,
@@ -33,6 +35,7 @@ mod tests {
 
     use super::*;
     use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::root_parser::MockGameRootParserContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
     use crate::domain::game::entities::game::Game;
@@ -40,6 +43,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_game_by_id_success() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
         let game_id = Identifier::new();
 
         repository
@@ -59,7 +63,7 @@ mod tests {
                 })
             });
 
-        let handler = GameRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_ok());
@@ -74,13 +78,14 @@ mod tests {
     async fn test_get_game_by_id_not_found() {
         let mut repository = MockGameRepositoryContract::new();
         let game_id = Identifier::new();
+        let game_root_parser = MockGameRootParserContract::new();
 
         repository
             .expect_get_by_id()
             .times(1)
             .returning(|_| Box::pin(async { Ok(None) }));
 
-        let handler = GameRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.get_by_id(game_id).await;
 
         assert!(result.is_err());

@@ -29,7 +29,7 @@ impl Position {
         (self.line, self.column)
     }
 
-    pub fn from_str(pos_str: &str) -> Option<Self> {
+    pub fn parse_str(pos_str: &str) -> Option<Self> {
         let parts: Vec<&str> = pos_str
             .trim_matches(|c| c == '(' || c == ')')
             .split(',')
@@ -64,7 +64,7 @@ impl<'de> Deserialize<'de> for Position {
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        Position::from_str(&s).ok_or_else(|| serde::de::Error::custom("Invalid position format"))
+        Position::parse_str(&s).ok_or_else(|| serde::de::Error::custom("Invalid position format"))
     }
 }
 

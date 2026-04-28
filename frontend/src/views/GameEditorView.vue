@@ -1,16 +1,24 @@
 <script setup lang="ts">
-import { onMounted, ref } from 'vue';
+import { computed, onMounted, ref } from 'vue';
 import { useRoute } from 'vue-router';
 import type { GameDetails } from '../types/game';
 import { getGameDetails } from '../api/requests/games/getGameDetails';
 import { updateSourceCode } from '../api/requests/games/updateSourceCode';
+import { checkGame } from '../api/requests/games/checkGame';
 import type { DataState } from '../types/util';
+import type { CheckGamesResponse } from '../api/requests/games/checkGame';
 
 const route = useRoute();
 
 const game = ref<DataState<GameDetails>>({ status: 'loading' });
+const checkResult = ref<DataState<CheckGamesResponse> | null>(null);
 
 const sourceCode = ref<string>('');
+
+const isSaved = computed(() => {
+    if (game.value.status !== 'success') return false;
+    return sourceCode.value === game.value.data.source_code;
+});
 
 const loadGame = async () => {
     game.value = { status: 'loading' };
@@ -34,6 +42,17 @@ const handleUpdateSourceCode = async (newSourceCode: string) => {
         loadGame();
     } else {
         game.value = { status: 'error', error: res.error };
+    }
+};
+
+const checkSourceCode = async () => {
+    checkResult.value = { status: 'loading' };
+    const res = await checkGame(route.params.id as string);
+
+    if (res.isOk()) {
+        checkResult.value = { status: 'success', data: res.value };
+    } else {
+        checkResult.value = { status: 'error', error: res.error };
     }
 };
 
@@ -80,6 +99,47 @@ onMounted(() => {
             <button @click="handleUpdateSourceCode(sourceCode)" class="btn btn-primary">
                 Update Source Code
             </button>
+            <button :disabled="!isSaved" @click="checkSourceCode" class="btn btn-secondary ml-2">
+                Check Source Code
+            </button>
+
+            <div v-if="checkResult" class="mt-8">
+                <div v-if="checkResult.status === 'loading'" class="flex justify-center">
+                    <span class="loading loading-spinner loading-lg text-primary"></span>
+                </div>
+
+                <div v-else-if="checkResult.status === 'error'" class="alert alert-error shadow-lg">
+                    <span>{{ checkResult.error }}</span>
+                </div>
+
+                <div
+                    v-else-if="checkResult.data.is_valid === false"
+                    class="alert alert-error shadow-lg"
+                >
+                    <div>
+                        <p class="font-semibold mb-2">Validation Errors:</p>
+                        <ul class="list-disc list-inside">
+                            <li v-for="(error, index) in checkResult.data.errors" :key="index">
+                                {{ error }}
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
+                <div v-else class="alert alert-success shadow-lg">
+                    <div class="max-w-full">
+                        <p class="font-semibold mb-2">Source Code is Valid!</p>
+                        <details class="collapse bg-base-300">
+                            <summary class="collapse-title font-semibold">Output Details</summary>
+                            <div class="collapse-content">
+                                <pre class="bg-base-100 p-4 rounded overflow-auto text-xs">{{
+                                    JSON.stringify(checkResult.data.output, null, 2)
+                                }}</pre>
+                            </div>
+                        </details>
+                    </div>
+                </div>
+            </div>
         </div>
         <div class="flex flex-row justify-center">
             <RouterLink :to="{ name: 'game-overview' }" class="btn btn-link btn-warning"

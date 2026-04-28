@@ -1,4 +1,7 @@
-use crate::domain::{common::position::Position, game::value_objects::visibility::PageVisibility};
+use crate::domain::{
+    common::position::Position,
+    game::{projections::page::PageMetadataProjection, value_objects::visibility::PageVisibility},
+};
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Page {
@@ -53,5 +56,14 @@ impl Page {
 
     pub fn pos(&self) -> &Position {
         &self.pos
+    }
+
+    pub fn get_metadata_projection(&self) -> PageMetadataProjection {
+        PageMetadataProjection {
+            name: self.name.clone(),
+            visibility: self.visibility.clone(),
+            source_code: self.source_code.clone(),
+            pos: self.pos.clone(),
+        }
     }
 }

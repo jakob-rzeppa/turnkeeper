@@ -26,7 +26,7 @@ use crate::{
 /// Application state shared across all HTTP handlers and WebSocket connections.
 #[derive(Clone)]
 pub struct AppState {
-    game_request_handler: GameRequestHandler<SqliteGameRepository>,
+    game_request_handler: GameRequestHandler<SqliteGameRepository, GameRootParser>,
     game_instance_request_handler: GameInstanceRequestHandler<
         SqliteGameInstanceRepository,
         SqliteGameRepository,
@@ -46,7 +46,10 @@ impl AppState {
         let game_root_parser = Arc::new(GameRootParser::new());
 
         Self {
-            game_request_handler: GameRequestHandler::new(sqlite_game_repository.clone()),
+            game_request_handler: GameRequestHandler::new(
+                sqlite_game_repository.clone(),
+                game_root_parser.clone(),
+            ),
             game_instance_request_handler: GameInstanceRequestHandler::new(
                 sqlite_game_instance_repository,
                 sqlite_game_repository,
@@ -60,7 +63,7 @@ impl AppState {
         }
     }
 
-    pub fn game_request_handler(&self) -> GameRequestHandler<SqliteGameRepository> {
+    pub fn game_request_handler(&self) -> GameRequestHandler<SqliteGameRepository, GameRootParser> {
         self.game_request_handler.clone()
     }
 

@@ -6,8 +6,8 @@ use crate::domain::{
             game_display_template::GameDisplayTemplateProjection,
             game_instance_metadata::GameInstanceMetadataProjection,
             game_instance_state::{
-                GameInstanceStateProjection, GameStatProjection, PlayerProjection,
-                PlayerStatProjection,
+                GameInstanceStateProjection, GameStatStateProjection, PlayerProjection,
+                PlayerStatStateProjection,
             },
         },
     },
@@ -31,7 +31,7 @@ impl GameInstance {
             game_stats: self
                 .game_stats
                 .iter()
-                .map(|s| GameStatProjection {
+                .map(|s| GameStatStateProjection {
                     name: s.name().into(),
                     value: s.value().clone().into(),
                     default: s.default().clone().into(),
@@ -41,7 +41,7 @@ impl GameInstance {
             player_stats: self
                 .player_stats
                 .iter()
-                .map(|s| PlayerStatProjection {
+                .map(|s| PlayerStatStateProjection {
                     name: s.name().into(),
                     values: s
                         .values()

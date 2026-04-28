@@ -80,6 +80,7 @@ impl GameRootParserContract for GameRootParser {
 mod tests {
     use crate::domain::game::value_objects::{
         data::{VariableType, VariableValue},
+        parameter::Parameter,
         visibility::{ActionVisibility, GameStatVisibility, PlayerStatVisibility},
     };
 
@@ -115,7 +116,7 @@ public action heal(amount: float) {
         assert_eq!(heal_action.name(), "heal");
         assert_eq!(
             heal_action.parameters(),
-            &vec![("amount".to_string(), VariableType::Float)]
+            &vec![Parameter::new("amount".to_string(), VariableType::Float)]
         );
         assert_eq!(heal_action.execution_triggers().len(), 0);
         assert_eq!(heal_action.visibility(), &ActionVisibility::Public);

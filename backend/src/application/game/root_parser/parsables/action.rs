@@ -11,7 +11,8 @@ use crate::{
     domain::game::{
         entities::weak::action::Action,
         value_objects::{
-            data::VariableType, execution_trigger::ExecutionTrigger, visibility::ActionVisibility,
+            data::VariableType, execution_trigger::ExecutionTrigger, parameter::Parameter,
+            visibility::ActionVisibility,
         },
     },
 };
@@ -172,7 +173,7 @@ impl Action {
     fn parse_parameters(
         ts: &mut TokenStream,
         source_code: &str,
-    ) -> Result<Vec<(String, VariableType)>, ParsingError> {
+    ) -> Result<Vec<Parameter>, ParsingError> {
         expect_token!(
             ts,
             TokenVariant::OpenParen,
@@ -215,7 +216,7 @@ impl Action {
                 change_err_msg!(err, "Expected parameter type (int, float, string, bool)")
             })?;
 
-            parameters.push((param_name, param_type));
+            parameters.push(Parameter::new(param_name, param_type));
 
             // If the next token is a comma, consume it and continue parsing the next parameter
             if is_token!(ts, TokenVariant::Comma) {
@@ -408,10 +409,10 @@ mod tests {
         assert_eq!(action.name(), "my_action");
         assert_eq!(action.visibility(), &ActionVisibility::Private);
         assert_eq!(action.parameters().len(), 2);
-        assert_eq!(action.parameters()[0].0, "param1");
-        assert_eq!(action.parameters()[0].1, VariableType::Int);
-        assert_eq!(action.parameters()[1].0, "param2");
-        assert_eq!(action.parameters()[1].1, VariableType::String);
+        assert_eq!(action.parameters()[0].name(), "param1");
+        assert_eq!(action.parameters()[0].datatype(), &VariableType::Int);
+        assert_eq!(action.parameters()[1].name(), "param2");
+        assert_eq!(action.parameters()[1].datatype(), &VariableType::String);
         assert!(action.execution_triggers().is_empty());
         assert_eq!(action.source_code(), source_code);
     }

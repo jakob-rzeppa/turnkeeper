@@ -1,14 +1,21 @@
+use crate::application::game::request_handlers::check_source_code::CheckSourceCodeResponse;
 use crate::application::game::request_handlers::create::CreateGameRequest;
 use crate::application::game::request_handlers::delete::DeleteGameRequest;
 use crate::domain::common::date_time::DateTime;
 use crate::domain::common::identifier::Identifier;
+use crate::domain::game::projections::action::ActionMetadataProjection;
 use crate::domain::game::projections::game::GameProjection;
 use crate::domain::game::projections::game_metadata::GameMetadataProjection;
+use crate::domain::game::projections::page::PageMetadataProjection;
+use crate::domain::game::projections::stat::GameStatMetadataProjection;
+use crate::domain::game::projections::stat::PlayerStatMetadataProjection;
 use crate::infrastructure::app_state::AppState;
 use crate::infrastructure::error::HttpError;
 use axum::extract::Path;
 use axum::extract::State;
 use axum::http::StatusCode;
+use axum::response::IntoResponse;
+use axum::response::Response;
 use backend_derive::{JsonRequest, JsonResponse};
 use serde::{Deserialize, Serialize};
 
@@ -145,6 +152,64 @@ pub async fn games_update_source_code(
         .await?;
 
     Ok(StatusCode::NO_CONTENT)
+}
+
+#[derive(Serialize, Debug)]
+struct GamesCheckSourceCodeValidRequestOutput {
+    game_stats: Vec<GameStatMetadataProjection>,
+    player_stats: Vec<PlayerStatMetadataProjection>,
+    actions: Vec<ActionMetadataProjection>,
+    pages: Vec<PageMetadataProjection>,
+}
+
+#[derive(Serialize, JsonResponse, Debug)]
+struct GamesCheckSourceCodeValidResponse {
+    is_valid: bool,
+    output: GamesCheckSourceCodeValidRequestOutput,
+}
+
+#[derive(Serialize, JsonResponse, Debug)]
+struct GamesCheckSourceCodeInvalidResponse {
+    is_valid: bool,
+    errors: Vec<String>,
+}
+
+/// GET /games/{game_id}/check
+///
+/// Checks if the source code of a game is valid and can be parsed
+pub async fn games_check_source_code(
+    State(state): State<AppState>,
+    Path(game_id): Path<String>,
+) -> Result<Response, HttpError> {
+    let game_id = Identifier::parse_str(&game_id)?;
+
+    let response = state
+        .game_request_handler()
+        .check_source_code(game_id)
+        .await?;
+
+    match response {
+        CheckSourceCodeResponse::Valid {
+            game_stats,
+            player_stats,
+            actions,
+            pages,
+        } => Ok(GamesCheckSourceCodeValidResponse {
+            is_valid: true,
+            output: GamesCheckSourceCodeValidRequestOutput {
+                game_stats,
+                player_stats,
+                actions,
+                pages,
+            },
+        }
+        .into_response()),
+        CheckSourceCodeResponse::Invalid { errors } => Ok(GamesCheckSourceCodeInvalidResponse {
+            is_valid: false,
+            errors: errors.into_iter().map(|e| e.to_string()).collect(),
+        }
+        .into_response()),
+    }
 }
 
 /// DELETE /games/{game_id}

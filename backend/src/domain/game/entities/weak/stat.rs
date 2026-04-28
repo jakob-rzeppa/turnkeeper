@@ -4,6 +4,7 @@ use crate::domain::{
     common::position::Position,
     game::{
         error::GameInstanceError,
+        projections::stat::{GameStatMetadataProjection, PlayerStatMetadataProjection},
         value_objects::{
             data::{VariableType, VariableValue},
             visibility::{GameStatVisibility, PlayerStatVisibility},
@@ -91,6 +92,16 @@ impl GameStat {
 
     pub fn set_value(&mut self, value: VariableValue) {
         self.value = value;
+    }
+
+    pub fn get_metadata_projection(&self) -> GameStatMetadataProjection {
+        GameStatMetadataProjection {
+            name: self.name.clone(),
+            datatype: self.datatype.clone(),
+            default: self.default.clone(),
+            visibility: self.visibility.clone(),
+            pos: self.pos.clone(),
+        }
     }
 }
 
@@ -197,5 +208,15 @@ impl PlayerStat {
 
         self.values.insert(player_name.to_string(), value);
         Ok(())
+    }
+
+    pub fn get_metadata_projection(&self) -> PlayerStatMetadataProjection {
+        PlayerStatMetadataProjection {
+            name: self.name.clone(),
+            datatype: self.datatype.clone(),
+            default: self.default.clone(),
+            visibility: self.visibility.clone(),
+            pos: self.pos.clone(),
+        }
     }
 }

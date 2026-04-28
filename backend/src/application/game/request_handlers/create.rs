@@ -1,6 +1,7 @@
 use crate::application::game::contracts::GameRepositoryContract;
 use crate::application::game::error::GameApplicationError;
 use crate::application::game::request_handlers::GameRequestHandler;
+use crate::application::game::root_parser::GameRootParserContract;
 use crate::domain::common::identifier::Identifier;
 use crate::domain::game::entities::game::Game;
 
@@ -9,7 +10,9 @@ pub struct CreateGameRequest {
     pub description: String,
 }
 
-impl<GameRepository: GameRepositoryContract> GameRequestHandler<GameRepository> {
+impl<GameRepository: GameRepositoryContract, GameRootParser: GameRootParserContract>
+    GameRequestHandler<GameRepository, GameRootParser>
+{
     /// Creates a game with a generated UUID and returns the new ID.
     pub async fn create(
         &self,
@@ -28,11 +31,14 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::{
+        contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract,
+    };
 
     #[tokio::test]
     async fn test_create_game_successfully() {
         let mut repository = MockGameRepositoryContract::new();
+        let game_root_parser = MockGameRootParserContract::new();
 
         let request = CreateGameRequest {
             name: "Test Game".to_string(),
@@ -45,7 +51,7 @@ mod tests {
             .times(1)
             .returning(|_| Box::pin(async { Ok(()) }));
 
-        let handler = GameRequestHandler::new(Arc::new(repository));
+        let handler = GameRequestHandler::new(Arc::new(repository), Arc::new(game_root_parser));
         let result = handler.create(request).await;
 
         assert!(result.is_ok());

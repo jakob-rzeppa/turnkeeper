@@ -1,7 +1,10 @@
 use crate::domain::{
     common::position::Position,
-    game::value_objects::{
-        data::VariableType, execution_trigger::ExecutionTrigger, visibility::ActionVisibility,
+    game::{
+        projections::action::ActionMetadataProjection,
+        value_objects::{
+            execution_trigger::ExecutionTrigger, parameter::Parameter, visibility::ActionVisibility,
+        },
     },
 };
 
@@ -10,7 +13,7 @@ pub struct Action {
     name: String,
 
     // A Action can either have parameters or execution triggers. This is because a triggered Action is executed automatically and therefore cannot have parameters, while a non-triggered Action is executed manually and can have parameters.
-    parameters: Vec<(String, VariableType)>, // Optional vec of (param_name, param_type)
+    parameters: Vec<Parameter>, // Optional vec of parameters
     execution_triggers: Vec<ExecutionTrigger>, // Optional triggers for the action
 
     visibility: ActionVisibility,
@@ -22,7 +25,7 @@ pub struct Action {
 impl Action {
     pub fn new(
         name: String,
-        parameters: Vec<(String, VariableType)>,
+        parameters: Vec<Parameter>,
         execution_triggers: Vec<ExecutionTrigger>,
         visibility: ActionVisibility,
         source_code: String,
@@ -46,7 +49,7 @@ impl Action {
         &self.name
     }
 
-    pub fn parameters(&self) -> &Vec<(String, VariableType)> {
+    pub fn parameters(&self) -> &Vec<Parameter> {
         &self.parameters
     }
 
@@ -64,5 +67,16 @@ impl Action {
 
     pub fn pos(&self) -> &Position {
         &self.pos
+    }
+
+    pub fn get_metadata_projection(&self) -> ActionMetadataProjection {
+        ActionMetadataProjection {
+            name: self.name.clone(),
+            parameters: self.parameters.clone(),
+            execution_triggers: self.execution_triggers.clone(),
+            visibility: self.visibility.clone(),
+            source_code: self.source_code.clone(),
+            pos: self.pos.clone(),
+        }
     }
 }

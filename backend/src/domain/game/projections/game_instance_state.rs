@@ -38,14 +38,14 @@ impl From<VariableValue> for StatValueProjection {
     }
 }
 
-pub struct GameStatProjection {
+pub struct GameStatStateProjection {
     pub name: String,
     pub value: StatValueProjection,
     pub default: StatValueProjection,
     pub visibility: String,
 }
 
-pub struct PlayerStatProjection {
+pub struct PlayerStatStateProjection {
     pub name: String,
     pub values: Vec<(String, StatValueProjection)>, // Vec of (player_name, value)
     pub default: StatValueProjection,
@@ -60,7 +60,7 @@ pub struct PlayerProjection {
 pub struct GameInstanceStateProjection {
     pub round: u32,
     pub current_player_index: usize,
-    pub game_stats: Vec<GameStatProjection>,
-    pub player_stats: Vec<PlayerStatProjection>,
+    pub game_stats: Vec<GameStatStateProjection>,
+    pub player_stats: Vec<PlayerStatStateProjection>,
     pub players: Vec<PlayerProjection>,
 }
