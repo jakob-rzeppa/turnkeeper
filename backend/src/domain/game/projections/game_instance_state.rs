@@ -1,5 +1,8 @@
+use serde::{Deserialize, Serialize};
+
 use crate::domain::{common::identifier::Identifier, game::value_objects::data::VariableValue};
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatValueProjection {
     pub int_value: Option<i64>,
     pub float_value: Option<f64>,
@@ -38,6 +41,7 @@ impl From<VariableValue> for StatValueProjection {
     }
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameStatStateProjection {
     pub name: String,
     pub value: StatValueProjection,
@@ -45,6 +49,7 @@ pub struct GameStatStateProjection {
     pub visibility: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerStatStateProjection {
     pub name: String,
     pub values: Vec<(String, StatValueProjection)>, // Vec of (player_name, value)
@@ -52,11 +57,13 @@ pub struct PlayerStatStateProjection {
     pub visibility: String,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerProjection {
     pub name: String,
     pub user_id: Option<Identifier>,
 }
 
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct GameInstanceStateProjection {
     pub round: u32,
     pub current_player_index: usize,

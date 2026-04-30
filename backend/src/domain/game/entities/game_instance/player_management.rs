@@ -90,6 +90,17 @@ impl GameInstance {
             Err(GameInstanceError::PlayerNotFound(player_name))
         }
     }
+
+    pub fn get_player_names(&self) -> Vec<String> {
+        self.players.iter().map(|p| p.name().to_string()).collect()
+    }
+
+    pub fn get_attatched_user_ids(&self) -> Vec<Identifier> {
+        self.players
+            .iter()
+            .filter_map(|p| p.user_id().cloned())
+            .collect()
+    }
 }
 
 #[cfg(test)]
@@ -191,5 +202,30 @@ mod tests {
             let result = game.change_player_order(vec![player_name_1, player_name_3]);
             assert!(result.is_err());
         }
+    }
+
+    #[test]
+    fn test_get_attached_user_ids() {
+        let mut game = create_game_instance();
+
+        game.add_player().unwrap();
+        game.add_player().unwrap();
+
+        // No attachments yet, should return an empty list
+        let user_ids = game.get_attatched_user_ids();
+        assert_eq!(user_ids.len(), 0);
+
+        game.get_player_names();
+        game.attach_user_to_player(Identifier::new(), game.players[0].name().to_string())
+            .unwrap();
+
+        let user_ids = game.get_attatched_user_ids();
+        assert_eq!(user_ids.len(), 1);
+
+        game.attach_user_to_player(Identifier::new(), game.players[1].name().to_string())
+            .unwrap();
+
+        let user_ids = game.get_attatched_user_ids();
+        assert_eq!(user_ids.len(), 2);
     }
 }

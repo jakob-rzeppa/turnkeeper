@@ -23,7 +23,7 @@ impl GameInstance {
     /// Returns the current state of the game instance for the specified user, including any relevant data.
     /// This can be used to update the frontend with the latest game state.
     /// The game state is used to populate the pages with the updated state.
-    pub fn get_state(&self, _user_id: Identifier) -> GameInstanceStateProjection {
+    pub fn get_state(&self, _user_id: &Identifier) -> GameInstanceStateProjection {
         // For now, we return everything to everyone, but in the future we will need to filter out some data based on the user's permissions and the visibility of the stats.
         GameInstanceStateProjection {
             round: self.round,

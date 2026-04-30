@@ -1,129 +1,240 @@
-//! # Game Session
-//!
-//! A `GameSession` represents an active, in-memory instance of a single game.
-//! It owns the [`GameRuntime`] and manages real-time communication with
-//! the connected Game Master (GM) and user players over WebSocket connections.
-
 use std::sync::Arc;
 
-use crate::application::common::channels::mpsc::{
-    MpscChannel, MpscChannelReceiver, MpscChannelSender,
-};
-use crate::application::common::channels::targeted_broadcast::{
-    TargetedBroadcast, TargetedBroadcastReceiverCreator, TargetedBroadcastSender,
-};
-use crate::application::game::commands::GameCommand;
-use crate::application::game::contracts::GameRepositoryContract;
-use crate::application::game::dto::OutgoingConnectionMessageDto;
-use crate::application::game::runtime::GameRuntime;
-use crate::domain::game::error::GameError;
-use crate::domain::game::value_objects::id::Id;
+use tokio::task::JoinHandle;
 
-/// An active in-memory game session.
-///
-/// Owns the [`GameRuntime`] and manages connections
-/// from the GM and multiple user players.
-pub struct GameSession<GameRepository: GameRepositoryContract> {
-    /// The live game runtime that holds all current game state.
-    runtime: GameRuntime,
-    /// Shared repository used for persistence operations.
-    game_repo: Arc<GameRepository>,
+use crate::{
+    application::{
+        common::channels::{
+            mpsc::{MpscChannel, MpscChannelSender},
+            targeted_broadcast::{TargetedBroadcast, TargetedBroadcastReceiverCreator},
+        },
+        game_instance::{
+            commands::GameSessionCommand,
+            contracts::GameInstanceRepositoryContract,
+            dto::{IncomingMessageDto, OutgoingMessageDto},
+            error::GameInstanceApplicationError,
+        },
+    },
+    domain::common::identifier::Identifier,
+};
 
-    /// The user command receiver (user_id, command)
-    command_receiver: MpscChannelReceiver<GameCommand>,
-    // The broadcast sender for sending game state updates to connected clients.
-    game_state_broadcaster: TargetedBroadcastSender<Id, OutgoingConnectionMessageDto>,
+pub struct GameSession {
+    /// The task handle for the session task, which continuously processes incoming commands and updates the game instance state.
+    task_handle: Option<JoinHandle<()>>,
+    /// The shutdown sender is used to signal the session task to shut down gracefully when the GameSession is stopped.
+    shutdown_sender: Option<tokio::sync::oneshot::Sender<()>>,
+    // Both need to be kept in a Option, because they are consumed when stopping the session and the session is only dropped when session stopped gracefully. This means we need to set them to None after consuming them.
 }
 
-impl<GameRepository: GameRepositoryContract> GameSession<GameRepository> {
+impl GameSession {
     pub async fn spawn_session(
-        game_id: Id,
-        game_repo: Arc<GameRepository>,
+        game_id: Identifier,
+        game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
     ) -> Result<
         (
-            MpscChannelSender<GameCommand>,
-            TargetedBroadcastReceiverCreator<Id, OutgoingConnectionMessageDto>,
+            Self,
+            MpscChannelSender<IncomingMessageDto>,
+            TargetedBroadcastReceiverCreator<Identifier, OutgoingMessageDto>,
         ),
-        GameError,
+        GameInstanceApplicationError,
     > {
-        let metadata = game_repo.get_metadata_by_id(game_id).await?;
-        let mut runtime = GameRuntime::new(metadata);
-
-        let history = game_repo.get_game_history(game_id).await?;
-        for command in history {
-            runtime
-                .handle_command(command)
-                .await
-                .expect("Database contains invalid state.");
-        }
-
-        let (command_sender, command_receiver) = MpscChannel::new();
-        let (game_state_broadcaster, game_state_broadcast_receiver_creator) =
-            TargetedBroadcast::new();
-
-        let mut session = Self {
-            runtime,
-            game_repo,
-            command_receiver,
-            game_state_broadcaster,
-        };
+        let (incoming_sender, mut incoming_receiver) = MpscChannel::new();
+        let (outgoing_sender, outgoing_sender_creator) = TargetedBroadcast::new();
+        let (shutdown_sender, mut shutdown_receiver) = tokio::sync::oneshot::channel::<()>();
 
         // Spawn a task to continuously process incoming commands
-        tokio::spawn(async move {
-            while let Some(command) = session.command_receiver.recv().await {
-                session.handle_command(command).await;
+        let task_handle = tokio::spawn(async move {
+            let mut game_instance = match game_instance_repository.get_by_id(game_id).await {
+                Ok(Some(instance)) => instance,
+                Ok(None) => {
+                    eprintln!("Game instance with id {} not found", game_id);
+                    return;
+                }
+                Err(e) => {
+                    eprintln!(
+                        "Database error while fetching game instance {}: {}",
+                        game_id, e
+                    );
+                    return;
+                }
+            };
+
+            // Process incoming messages until the channel is closed (i.e., the senders are dropped)
+            while let Some(msg) = incoming_receiver.recv().await {
+                match msg {
+                    IncomingMessageDto::Command {
+                        command,
+                        sending_user_id,
+                    } => match command {
+                        GameSessionCommand::Connect => {
+                            let res = outgoing_sender
+                                .send_to(
+                                    sending_user_id,
+                                    OutgoingMessageDto::DisplayTemplate(
+                                        game_instance.get_display_template(sending_user_id),
+                                    ),
+                                )
+                                .await;
+                            if let Err(e) = res {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(format!(
+                                            "Sending display template failed: {}",
+                                            e
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
+                        GameSessionCommand::AddPlayer => {
+                            let res = game_instance.add_player();
+                            if let Err(e) = res {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(format!(
+                                            "Adding player failed: {}",
+                                            e
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
+                        GameSessionCommand::ChangePlayerOrder { names_in_order } => {
+                            let res = game_instance.change_player_order(names_in_order);
+                            if let Err(e) = res {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(format!(
+                                            "Changing player order failed: {}",
+                                            e
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
+                        GameSessionCommand::AttachUserToPlayer { user_id, player } => {
+                            let res = game_instance.attach_user_to_player(user_id, player);
+                            if let Err(e) = res {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(format!(
+                                            "Attaching user to player failed: {}",
+                                            e
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
+                        GameSessionCommand::DetachUserFromPlayer { player } => {
+                            let res = game_instance.detach_user_from_player(player);
+                            if let Err(e) = res {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(format!(
+                                            "Detaching user from player failed: {}",
+                                            e
+                                        )),
+                                    )
+                                    .await;
+                            }
+                        }
+                        GameSessionCommand::AdvanceTurn => {
+                            game_instance.advance_turn();
+                        }
+                        GameSessionCommand::Debug(msg) => {
+                            println!("Debug command received: {}", msg);
+                        }
+                        GameSessionCommand::ExecuteAction { action, payload } => {
+                            unimplemented!(
+                                "Action execution not implemented yet: {} with payload {}",
+                                action,
+                                payload
+                            );
+                        }
+                    },
+                }
+
+                // Try to save the updated game instance after processing the command, but don't crash the session if saving fails
+                // Instead, broadcast the error and continue processing further commands
+                match game_instance_repository.save(&game_instance).await {
+                    Ok(()) => {}
+                    Err(e) => {
+                        _ = outgoing_sender.broadcast(OutgoingMessageDto::Error(format!(
+                            "Game Instance couldn't be saved: {}",
+                            e
+                        )));
+                    }
+                }
+
+                // Send the updated state to the gm
+                _ = outgoing_sender.send_to(
+                    game_instance.gm_user_id().clone(),
+                    OutgoingMessageDto::State(game_instance.get_state(game_instance.gm_user_id())),
+                ); // Ignore errors since the gm might not be attached to a player and thus not receive state updates
+
+                // Send the updated state to all attached players
+                for user_id in game_instance.get_attatched_user_ids() {
+                    _ = outgoing_sender.send_to(
+                        user_id,
+                        OutgoingMessageDto::State(game_instance.get_state(&user_id)),
+                    ); // Ignore errors since some users might not be attached to a player and thus not receive state updates
+                }
+
+                // Check for shutdown signal without blocking, so that we can shut down the session gracefully when requested
+                match shutdown_receiver.try_recv() {
+                    Ok(_) | Err(tokio::sync::oneshot::error::TryRecvError::Closed) => {
+                        println!("Shutdown signal received, stopping game session task");
+
+                        match game_instance_repository.save(&game_instance).await {
+                            Ok(()) => {}
+                            Err(e) => {
+                                eprintln!("Game Instance couldn't be saved during shutdown: {}", e);
+                            }
+                        }
+
+                        break;
+                    }
+                    Err(tokio::sync::oneshot::error::TryRecvError::Empty) => {} // No shutdown signal, continue processing
+                }
             }
+
+            // On shutdown, try to save the final state of the game instance, but ignore any errors since we're shutting down anyway
+            _ = game_instance_repository.save(&game_instance).await;
         });
 
-        Ok((command_sender, game_state_broadcast_receiver_creator))
+        Ok((
+            Self {
+                task_handle: Some(task_handle),
+                shutdown_sender: Some(shutdown_sender),
+            },
+            incoming_sender,
+            outgoing_sender_creator,
+        ))
     }
 
-    async fn handle_command(&mut self, command: GameCommand) {
-        match self.runtime.handle_command(command.clone()).await {
-            Ok(_) => {
-                // Persist the game state only if the command was handled successfully
-                self.game_repo
-                    .log_command(self.runtime.get_id(), command)
-                    .await
-                    .expect("Failed to log command to database.");
+    /// Stops the game session by sending a shutdown signal to the session task and waiting for it to finish.
+    /// This allows the session task to shut down gracefully, ensuring that any in-flight commands are processed and the final state of the game instance is saved before the task is terminated.
+    /// Since it consumes self, it ensures, that GameSession is also dropped.
+    pub async fn stop(mut self) {
+        if let Some(shutdown_sender) = self.shutdown_sender.take() {
+            let _ = shutdown_sender.send(()); // Ignore error since it just means the session task has already been shut down
+            if let Some(handle) = self.task_handle.take() {
+                let _ = handle.await; // Wait for the session task to finish, but ignore any errors since we're shutting down anyway
             }
-            Err(e) => {
-                eprintln!("Failed to handle command: {:?}", e);
-
-                self.game_state_broadcaster
-                    .send_to(
-                        self.runtime.get_gm_user_id(),
-                        OutgoingConnectionMessageDto::GameError(e.into()),
-                    )
-                    .await
-                    .expect("Failed to send error message to GM.");
-            }
-        };
-
-        self.broadcast_game_state().await;
+        }
     }
+}
 
-    async fn broadcast_game_state(&self) {
-        // For the gm we can send the full game projection, which includes all details.
-        let game_state = self.runtime.get_gm_game_projection();
-        self.game_state_broadcaster
-            .send_to(
-                self.runtime.get_gm_user_id(),
-                OutgoingConnectionMessageDto::FullGameProjection(game_state),
-            )
-            .await
-            .expect("Broadcasting full game state failed.");
-
-        // For the players we send a projection that hides secret information.
-        for user_id in self.runtime.get_user_ids() {
-            let game_state = self.runtime.get_player_game_projection(&user_id);
-            self.game_state_broadcaster
-                .send_to(
-                    user_id,
-                    OutgoingConnectionMessageDto::PlayerGameProjection(game_state),
-                )
-                .await
-                .expect("Broadcasting player game state failed.");
+/// Ensure that the session task is aborted when the GameSession is dropped.
+impl Drop for GameSession {
+    fn drop(&mut self) {
+        if let Some(handle) = self.task_handle.take() {
+            let _ = handle.abort();
         }
     }
 }

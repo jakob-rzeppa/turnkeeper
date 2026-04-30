@@ -11,24 +11,16 @@ pub enum GameSessionCommand {
     Connect,
 
     // Turn / Round
-    NextTurn,
+    AdvanceTurn,
 
     // Player
     AddPlayer,
-    ChangePlayerOrder(Vec<Identifier>),
-    AttachUserToPlayer {
-        player_id: Identifier,
-        user_id: Identifier,
-    },
-    DetachUserFromPlayer {
-        player_id: Identifier,
-    },
+    ChangePlayerOrder { names_in_order: Vec<String> },
+    AttachUserToPlayer { player: String, user_id: Identifier },
+    DetachUserFromPlayer { player: String },
 
     // Actions
-    ExecuteAction {
-        action_id: Identifier,
-        payload: String,
-    },
+    ExecuteAction { action: String, payload: String },
 
     // Debug
     Debug(String),
