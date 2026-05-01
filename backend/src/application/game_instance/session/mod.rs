@@ -88,6 +88,18 @@ impl GameSession {
                             }
                         }
                         GameSessionCommand::AddPlayer => {
+                            if &sending_user_id != game_instance.gm_user_id() {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(
+                                            "Only the GM can add players".to_string(),
+                                        ),
+                                    )
+                                    .await;
+                                continue;
+                            }
+
                             let res = game_instance.add_player();
                             if let Err(e) = res {
                                 _ = outgoing_sender
@@ -102,6 +114,18 @@ impl GameSession {
                             }
                         }
                         GameSessionCommand::ChangePlayerOrder { names_in_order } => {
+                            if &sending_user_id != game_instance.gm_user_id() {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(
+                                            "Only the GM can change player order".to_string(),
+                                        ),
+                                    )
+                                    .await;
+                                continue;
+                            }
+
                             let res = game_instance.change_player_order(names_in_order);
                             if let Err(e) = res {
                                 _ = outgoing_sender
@@ -116,6 +140,18 @@ impl GameSession {
                             }
                         }
                         GameSessionCommand::AttachUserToPlayer { user_id, player } => {
+                            if &sending_user_id != game_instance.gm_user_id() {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(
+                                            "Only the GM can attach users to players".to_string(),
+                                        ),
+                                    )
+                                    .await;
+                                continue;
+                            }
+
                             let res = game_instance.attach_user_to_player(user_id, player);
                             if let Err(e) = res {
                                 _ = outgoing_sender
@@ -130,6 +166,18 @@ impl GameSession {
                             }
                         }
                         GameSessionCommand::DetachUserFromPlayer { player } => {
+                            if &sending_user_id != game_instance.gm_user_id() {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(
+                                            "Only the GM can detach users from players".to_string(),
+                                        ),
+                                    )
+                                    .await;
+                                continue;
+                            }
+
                             let res = game_instance.detach_user_from_player(player);
                             if let Err(e) = res {
                                 _ = outgoing_sender
@@ -144,6 +192,18 @@ impl GameSession {
                             }
                         }
                         GameSessionCommand::AdvanceTurn => {
+                            if &sending_user_id != game_instance.gm_user_id() {
+                                _ = outgoing_sender
+                                    .send_to(
+                                        sending_user_id,
+                                        OutgoingMessageDto::Error(
+                                            "Only the GM can advance the turn".to_string(),
+                                        ),
+                                    )
+                                    .await;
+                                continue;
+                            }
+
                             game_instance.advance_turn();
                         }
                         GameSessionCommand::Debug(msg) => {
