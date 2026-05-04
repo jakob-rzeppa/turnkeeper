@@ -11,12 +11,6 @@ use crate::{
     },
 };
 
-mod parsables {
-    mod action;
-    mod player_stat;
-    mod stat;
-}
-
 pub struct GameParsingResult {
     pub game_stats: Vec<GameStat>,
     pub player_stats: Vec<PlayerStat>,
