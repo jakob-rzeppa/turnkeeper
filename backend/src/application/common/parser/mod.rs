@@ -4,5 +4,7 @@ pub mod macros;
 pub mod parsable;
 
 pub mod parsables {
-    pub mod variable_type;
+    pub mod atoms {
+        pub mod variable_type;
+    }
 }
