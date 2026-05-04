@@ -5,7 +5,7 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{expect_token, get_pos, nth_is_token},
+        macros::{change_err_msg, expect_token, get_pos, nth_is_token},
         parsable::Parsable,
     },
     domain::game::{
@@ -22,7 +22,7 @@ impl Parsable for GameStat {
         nth_is_token!(ts, 1, TokenVariant::Stat)
     }
 
-    fn parse(ts: &mut TokenStream, _source_code: &str) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
@@ -85,26 +85,9 @@ impl Parsable for GameStat {
         {
             ts.next(); // Consume the colon
 
-            match ts.next() {
-                Some(token) => match token.variant {
-                    TokenVariant::IntType => Some(VariableType::Int),
-                    TokenVariant::FloatType => Some(VariableType::Float),
-                    TokenVariant::StringType => Some(VariableType::String),
-                    TokenVariant::BoolType => Some(VariableType::Bool),
-                    _ => {
-                        return Err(ParsingError::UnexpectedToken {
-                                expected: "Expected type declaration (int, float, string, bool) after ':' in player stat declaration".to_string(),
-                                found: token.variant.clone(),
-                                pos: token.pos,
-                            });
-                    }
-                },
-                None => {
-                    return Err(ParsingError::UnexpectedEOF {
-                        expected: "Expected type declaration (int, float, string, bool) after ':' in player stat declaration".to_string(),
-                    });
-                }
-            }
+            Some(VariableType::parse(ts, source_code).map_err(|err|
+                change_err_msg!(err, "Expected type declaration (int, float, string, bool) after ':' in stat declaration")
+            )?)
         } else {
             None
         };
