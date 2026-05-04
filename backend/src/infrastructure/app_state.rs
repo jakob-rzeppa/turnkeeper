@@ -10,9 +10,7 @@ use sqlx::{Pool, Sqlite};
 
 use crate::{
     application::{
-        game::{request_handlers::GameRequestHandler, root_parser::GameRootParser},
-        game_instance::request_handler::GameInstanceRequestHandler,
-        user::request_handlers::UserRequestHandler,
+        common::parser::GameParser, game::request_handlers::GameRequestHandler, game_instance::request_handler::GameInstanceRequestHandler, user::request_handlers::UserRequestHandler
     },
     infrastructure::{
         auth::jwt::{JwtGenerator, JwtValidator},
@@ -39,7 +37,7 @@ impl AppState {
         let sqlite_user_repository = Arc::new(SqliteUserRepository::new(db_pool.clone()));
         let jwt_generator = Arc::new(JwtGenerator::new());
         let jwt_validator = Arc::new(JwtValidator::new());
-        let game_root_parser = Arc::new(GameRootParser::new());
+        let game_root_parser = Arc::new(GameParser::new());
 
         Self {
             game_request_handler: GameRequestHandler::new(

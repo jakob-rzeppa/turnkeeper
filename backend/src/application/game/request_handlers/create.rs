@@ -28,15 +28,14 @@ mod tests {
 
     use super::*;
     use crate::application::{
-        game::{contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract},
-        game_instance::contracts::MockGameInstanceRepositoryContract,
+        common::parser::MockGameParserContract, game::contracts::MockGameRepositoryContract, game_instance::contracts::MockGameInstanceRepositoryContract
     };
 
     #[tokio::test]
     async fn test_create_game_successfully() {
         let mut repository = MockGameRepositoryContract::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         let request = CreateGameRequest {
             name: "Test Game".to_string(),

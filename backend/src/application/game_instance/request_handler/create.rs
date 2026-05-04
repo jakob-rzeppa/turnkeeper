@@ -45,15 +45,15 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
+    use crate::application::common::parser::{GameParsingResult, MockGameParserContract};
     use crate::application::game::contracts::MockGameRepositoryContract;
-    use crate::application::game::root_parser::{GameParsingResult, MockGameRootParserContract};
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
 
     #[tokio::test]
     async fn test_create_game_instance_successfully() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let mut game_repository = MockGameRepositoryContract::new();
-        let mut game_root_parser = MockGameRootParserContract::new();
+        let mut game_root_parser = MockGameParserContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();
@@ -111,7 +111,7 @@ mod tests {
     async fn test_create_game_instance_game_not_found() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let mut game_repository = MockGameRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         let game_id = Identifier::new();
         let gm_user_id = Identifier::new();

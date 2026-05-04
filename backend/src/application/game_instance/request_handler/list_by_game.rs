@@ -35,8 +35,8 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::game::contracts::MockGameRepositoryContract;
-    use crate::application::game::root_parser::MockGameRootParserContract;
+    use crate::application::common::parser::MockGameParserContract;
+use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
 
@@ -44,7 +44,7 @@ mod tests {
     async fn test_list_game_instances_success() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
         let game_id = Identifier::new();
 
         let instances_metadata = vec![
@@ -100,7 +100,7 @@ mod tests {
     async fn test_list_game_instances_empty() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
         let game_id = Identifier::new();
 
         game_instance_repository

@@ -20,8 +20,8 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::game::contracts::MockGameRepositoryContract;
-    use crate::application::game::root_parser::MockGameRootParserContract;
+    use crate::application::common::parser::MockGameParserContract;
+use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
@@ -30,7 +30,7 @@ mod tests {
     async fn test_list_all_games_success() {
         let mut repository = MockGameRepositoryContract::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         let games_metadata = vec![
             GameMetadataProjection {
@@ -73,7 +73,7 @@ mod tests {
     async fn test_list_all_games_empty() {
         let mut repository = MockGameRepositoryContract::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         repository
             .expect_list_all()

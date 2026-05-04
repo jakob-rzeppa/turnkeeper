@@ -34,8 +34,7 @@ mod tests {
     use std::sync::Arc;
 
     use crate::application::{
-        game::{contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract},
-        game_instance::contracts::MockGameInstanceRepositoryContract,
+        common::parser::MockGameParserContract, game::contracts::MockGameRepositoryContract, game_instance::contracts::MockGameInstanceRepositoryContract
     };
 
     use super::*;
@@ -44,7 +43,7 @@ mod tests {
     async fn test_set_source_code_success() {
         let mut game_repository = MockGameRepositoryContract::new();
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         game_instance_repository
             .expect_game_has_instances()
@@ -88,7 +87,7 @@ mod tests {
     async fn test_set_source_code_game_has_instances() {
         let mut game_repository = MockGameRepositoryContract::new();
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         game_instance_repository
             .expect_game_has_instances()

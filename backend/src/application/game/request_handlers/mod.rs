@@ -1,8 +1,7 @@
 use std::sync::Arc;
 
 use crate::application::{
-    game::{contracts::GameRepositoryContract, root_parser::GameRootParserContract},
-    game_instance::contracts::GameInstanceRepositoryContract,
+    common::parser::GameParserContract, game::contracts::GameRepositoryContract, game_instance::contracts::GameInstanceRepositoryContract
 };
 
 pub mod check_source_code;
@@ -15,14 +14,14 @@ pub mod set_source_code;
 pub struct GameRequestHandler {
     game_repository: Arc<dyn GameRepositoryContract>,
     game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
-    game_root_parser: Arc<dyn GameRootParserContract>,
+    game_root_parser: Arc<dyn GameParserContract>,
 }
 
 impl GameRequestHandler {
     pub fn new(
         game_repository: Arc<dyn GameRepositoryContract>,
         game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
-        game_root_parser: Arc<dyn GameRootParserContract>,
+        game_root_parser: Arc<dyn GameParserContract>,
     ) -> Self {
         Self {
             game_repository,

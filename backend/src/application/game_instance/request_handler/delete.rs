@@ -29,15 +29,14 @@ mod tests {
 
     use super::*;
     use crate::application::{
-        game::{contracts::MockGameRepositoryContract, root_parser::MockGameRootParserContract},
-        game_instance::contracts::MockGameInstanceRepositoryContract,
+        common::parser::MockGameParserContract, game::contracts::MockGameRepositoryContract, game_instance::contracts::MockGameInstanceRepositoryContract
     };
 
     #[tokio::test]
     async fn test_delete_game_instance_success() {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
         let game_id = Identifier::new();
         let game_instance_id = Identifier::new();
 

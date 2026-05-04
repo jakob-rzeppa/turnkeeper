@@ -5,8 +5,7 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token},
-        parsable::Parsable,
+        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable,
     },
     domain::game::{
         entities::weak::action::Action,

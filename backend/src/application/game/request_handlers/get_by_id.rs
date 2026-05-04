@@ -29,8 +29,8 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::game::contracts::MockGameRepositoryContract;
-    use crate::application::game::root_parser::MockGameRootParserContract;
+    use crate::application::common::parser::MockGameParserContract;
+use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Identifier;
@@ -40,7 +40,7 @@ mod tests {
     async fn test_get_game_by_id_success() {
         let mut repository = MockGameRepositoryContract::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
         let game_id = Identifier::new();
 
         repository
@@ -78,7 +78,7 @@ mod tests {
         let mut repository = MockGameRepositoryContract::new();
         let game_id = Identifier::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
-        let game_root_parser = MockGameRootParserContract::new();
+        let game_root_parser = MockGameParserContract::new();
 
         repository
             .expect_get_by_id()
