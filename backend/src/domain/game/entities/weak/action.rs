@@ -1,4 +1,4 @@
-use crate::domain::{
+use crate::{application::common::parser::parsables::statement::Statement, domain::{
     common::position::Position,
     game::{
         projections::action::ActionMetadataProjection,
@@ -6,7 +6,7 @@ use crate::domain::{
             execution_trigger::ExecutionTrigger, parameter::Parameter, visibility::ActionVisibility,
         },
     },
-};
+}};
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Action {
@@ -18,7 +18,9 @@ pub struct Action {
 
     visibility: ActionVisibility,
 
-    source_code: String,
+    execution_block: Vec<Statement>, // The block of statements that are executed when the action is executed
+
+    source_code: String, // The original source code for the action, used for error reporting and debugging
     pos: Position,
 }
 
@@ -28,6 +30,7 @@ impl Action {
         parameters: Vec<Parameter>,
         execution_triggers: Vec<ExecutionTrigger>,
         visibility: ActionVisibility,
+        execution_block: Vec<Statement>,
         source_code: String,
         pos: Position,
     ) -> Self {
@@ -40,6 +43,7 @@ impl Action {
             parameters,
             execution_triggers,
             visibility,
+            execution_block,
             source_code,
             pos,
         }
@@ -59,6 +63,10 @@ impl Action {
 
     pub fn visibility(&self) -> &ActionVisibility {
         &self.visibility
+    }
+
+    pub fn execution_block(&self) -> &Vec<Statement> {
+        &self.execution_block
     }
 
     pub fn source_code(&self) -> &str {

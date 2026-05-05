@@ -1,6 +1,6 @@
 use crate::{application::common::parser::{error::ParsingError, lexer::{token::{Token, TokenVariant}, token_stream::TokenStream}, macros::{get_pos, is_token}, parsable::Parsable}, domain::{common::position::{self, Position, Positioned}, game::value_objects::data::Value}};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum ExpressionAtom {
     Literal(Value, Position),
     Variable(String, Position),

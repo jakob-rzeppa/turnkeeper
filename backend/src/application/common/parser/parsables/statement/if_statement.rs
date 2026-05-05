@@ -1,6 +1,6 @@
 use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::{expression::Expression, statement::Statement}}, domain::common::position::{Position, Positioned}};
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct IfStatement {
     condition: Expression,
     then_branch: Vec<Statement>,
@@ -9,13 +9,13 @@ pub struct IfStatement {
     pos: Position,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ElseBranch {
     then_branch: Vec<Statement>,
     pos: Position,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct ElseIfBranch {
     condition: Expression,
     then_branch: Vec<Statement>,

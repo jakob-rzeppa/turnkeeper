@@ -3,7 +3,7 @@ use std::fmt::Display;
 use crate::{application::common::parser::{lexer::token::{Token, TokenVariant}, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
 
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct BinaryExpression {
     left: Box<Expression>,
     operator: BinaryOperator,
@@ -31,7 +31,7 @@ impl Positioned for BinaryExpression {
     }
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum BinaryOperator {
     Addition,
     Subtraction,

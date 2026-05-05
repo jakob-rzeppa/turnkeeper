@@ -10,7 +10,7 @@ pub mod if_statement;
 pub mod variable_declaration;
 pub mod while_loop;
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum Statement {
     VariableDeclaration(VariableDeclarationStatement),
     Assignment(AssignmentStatement),

@@ -3,14 +3,14 @@ use std::fmt::Display;
 use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::{Expression, atom::ExpressionAtom}}, domain::common::position::{Position, Positioned}};
 
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct UnaryExpression {
     operator: UnaryOperator,
     operand: Box<Expression>,
     pos: Position,
 }
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum UnaryOperator {
     Negation,
     LogicalNot,

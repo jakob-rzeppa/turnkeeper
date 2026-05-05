@@ -185,9 +185,7 @@ mod tests {
 
     use crate::{
         application::{
-            game::contracts::GameRepositoryContract,
-            game_instance::contracts::GameInstanceRepositoryContract,
-            user::contracts::UserRepositoryContract,
+            common::parser::parsables::{expression::Expression, statement::Statement}, game::contracts::GameRepositoryContract, game_instance::contracts::GameInstanceRepositoryContract, user::contracts::UserRepositoryContract
         },
         domain::{
             common::{date_time::DateTime, identifier::Id, position::Position},
@@ -264,12 +262,20 @@ mod tests {
     }
 
     fn create_action() -> Action {
+        let name = get_random_string();
         Action::new(
-            get_random_string(),
+            name.clone(),
             vec![],
             vec![],
             ActionVisibility::Public,
-            "fn execute() {}".to_string(),
+            vec![Statement::new_variable_declaration(
+                "x",
+                Datatype::Int,
+                Expression::new_atom_literal_int(5, 0, 22),
+                0,
+                14,
+            )],
+            format!("action {} {{ let x = 5; }}", name),
             Position::new(1, 1),
         )
     }

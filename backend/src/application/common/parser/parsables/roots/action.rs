@@ -5,7 +5,7 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable,
+        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable, parsables::statement::Statement,
     },
     domain::game::{
         entities::weak::action::Action,
@@ -116,32 +116,10 @@ impl Parsable for Action {
             "Expected '{' to start action body"
         );
 
-        let mut brace_count = 1;
-        loop {
-            // Check the next token
-            match ts.peek() {
-                Some(Token {
-                    variant: TokenVariant::OpenBrace,
-                    ..
-                }) => brace_count += 1,
-                Some(Token {
-                    variant: TokenVariant::CloseBrace,
-                    ..
-                }) => {
-                    brace_count -= 1;
-                    if brace_count == 0 {
-                        break;
-                    }
-                }
-                Some(_) => {}
-                None => {
-                    return Err(ParsingError::UnexpectedEOF {
-                        expected: "Expected matching '}' to close action body".to_string(),
-                    });
-                }
-            }
-
-            ts.next(); // Consume the token and continue
+        let mut statements = Vec::new();
+        while Statement::is_next(ts) {
+            // Skip over the statements in the action body without parsing them, since we will parse the action body separately when the action is executed
+            statements.push(Statement::parse(ts, source_code)?);
         }
 
         let closing_brace = expect_token!(
@@ -151,16 +129,17 @@ impl Parsable for Action {
         );
 
         // Extract the source code for the action body from the original source code using the positions of the opening and closing braces
-        let body_start_pos = pos;
-        let body_end_pos = closing_brace.pos;
+        let start_pos = pos;
+        let end_pos = closing_brace.pos;
         let action_source_code =
-            extract_source_code_range(source_code, body_start_pos, body_end_pos)?;
+            extract_source_code_range(source_code, start_pos, end_pos)?;
 
         Ok(Action::new(
             name,
             parameters,
             execution_triggers,
             visibility,
+            statements,
             action_source_code,
             pos,
         ))
@@ -379,7 +358,7 @@ fn extract_source_code_range(
 
 #[cfg(test)]
 mod tests {
-    use crate::application::common::parser::macros::test_token_stream;
+    use crate::application::common::parser::{macros::test_token_stream, parsables::expression::Expression};
 
     use super::*;
 
@@ -394,6 +373,13 @@ mod tests {
         assert_eq!(action.visibility(), &ActionVisibility::Public);
         assert!(action.parameters().is_empty());
         assert!(action.execution_triggers().is_empty());
+        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
+            "x",
+            Datatype::Int,
+            Expression::new_atom_literal_int(5, 0, 39),
+            0,
+            26,
+        )]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -413,6 +399,13 @@ mod tests {
         assert_eq!(action.parameters()[1].name(), "param2");
         assert_eq!(action.parameters()[1].datatype(), &Datatype::String);
         assert!(action.execution_triggers().is_empty());
+        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
+            "x",
+            Datatype::Int,
+            Expression::new_atom_literal_int(5, 0, 69),
+            0,
+            56,
+        )]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -436,6 +429,13 @@ mod tests {
             action.execution_triggers()[1],
             ExecutionTrigger::BeforeAction("my_other_trigger".into())
         );
+        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
+            "x",
+            Datatype::Int,
+            Expression::new_atom_literal_int(5, 0, 82),
+            0,
+            69,
+        )]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -474,6 +474,13 @@ mod tests {
             action.execution_triggers()[3],
             ExecutionTrigger::AfterRoundAdvance
         );
+        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
+            "x",
+            Datatype::Int,
+            Expression::new_atom_literal_int(5, 6, 29),
+            6,
+            16,
+        )]);
         assert_eq!(action.source_code(), source_code);
     }
 

@@ -2,7 +2,7 @@ use crate::{application::common::parser::{error::ParsingError, lexer::{token::To
 
 
 
-#[derive(Debug, Clone, PartialEq)]
+#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct VariableDeclarationStatement {
     name: String,
     var_type: Datatype,
