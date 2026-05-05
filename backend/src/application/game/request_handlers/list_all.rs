@@ -24,7 +24,7 @@ mod tests {
 use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
-    use crate::domain::common::identifier::Identifier;
+    use crate::domain::common::identifier::Id;
 
     #[tokio::test]
     async fn test_list_all_games_success() {
@@ -34,14 +34,14 @@ use crate::application::game::contracts::MockGameRepositoryContract;
 
         let games_metadata = vec![
             GameMetadataProjection {
-                id: Identifier::new(),
+                id: Id::new(),
                 name: "Game 1".to_string(),
                 description: "Description 1".to_string(),
                 created_at: DateTime::parse_str("2024-01-01T00:00:00Z").unwrap(),
                 updated_at: DateTime::parse_str("2024-01-01T00:00:00Z").unwrap(),
             },
             GameMetadataProjection {
-                id: Identifier::new(),
+                id: Id::new(),
                 name: "Game 2".to_string(),
                 description: "Description 2".to_string(),
                 created_at: DateTime::parse_str("2024-01-02T00:00:00Z").unwrap(),

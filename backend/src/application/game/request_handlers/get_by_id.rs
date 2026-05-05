@@ -1,6 +1,6 @@
 use crate::{
     application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
-    domain::{common::identifier::Identifier, game::projections::game::GameProjection},
+    domain::{common::identifier::Id, game::projections::game::GameProjection},
 };
 
 pub struct GameGetByIdResponse {
@@ -10,7 +10,7 @@ pub struct GameGetByIdResponse {
 impl GameRequestHandler {
     pub async fn get_by_id(
         &self,
-        id: Identifier,
+        id: Id,
     ) -> Result<GameGetByIdResponse, GameApplicationError> {
         let game = self.game_repository.get_by_id(&id).await?;
 
@@ -33,7 +33,7 @@ mod tests {
 use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
-    use crate::domain::common::identifier::Identifier;
+    use crate::domain::common::identifier::Id;
     use crate::domain::game::entities::game::Game;
 
     #[tokio::test]
@@ -41,7 +41,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let mut repository = MockGameRepositoryContract::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
-        let game_id = Identifier::new();
+        let game_id = Id::new();
 
         repository
             .expect_get_by_id()
@@ -76,7 +76,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
     #[tokio::test]
     async fn test_get_game_by_id_not_found() {
         let mut repository = MockGameRepositoryContract::new();
-        let game_id = Identifier::new();
+        let game_id = Id::new();
         let game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
 

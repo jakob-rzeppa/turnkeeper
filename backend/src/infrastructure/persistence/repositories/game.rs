@@ -4,7 +4,7 @@ use sqlx::SqlitePool;
 use crate::{
     application::{common::error::DatabaseError, game::contracts::GameRepositoryContract},
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::{entities::game::Game, projections::game_metadata::GameMetadataProjection},
     },
 };
@@ -35,7 +35,7 @@ impl TryInto<Game> for GameRow {
     type Error = DatabaseError;
 
     fn try_into(self) -> Result<Game, Self::Error> {
-        let id = Identifier::parse_str(&self.id)
+        let id = Id::parse_str(&self.id)
             .map_err(|e| DatabaseError::Unknown(format!("Failed to parse id: {}", e)))?;
         let created_at = crate::domain::common::date_time::DateTime::parse_str(&self.created_at)
             .map_err(|e| DatabaseError::Unknown(format!("Failed to parse created_at: {}", e)))?;
@@ -99,7 +99,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(metadata_list)
     }
 
-    async fn get_by_id(&self, id: &Identifier) -> Result<Option<Game>, DatabaseError> {
+    async fn get_by_id(&self, id: &Id) -> Result<Option<Game>, DatabaseError> {
         let id_str = id.to_string();
 
         let row = sqlx::query!(
@@ -162,7 +162,7 @@ impl GameRepositoryContract for SqliteGameRepository {
         Ok(())
     }
 
-    async fn delete(&self, id: &Identifier) -> Result<(), DatabaseError> {
+    async fn delete(&self, id: &Id) -> Result<(), DatabaseError> {
         let id_string = id.to_string();
 
         sqlx::query!(
@@ -197,7 +197,7 @@ mod tests {
 
         // Create a new game
         let game = Game::new_raw(
-            Identifier::new(),
+            Id::new(),
             "Test Game".to_string(),
             "A test game description".to_string(),
             "print('Hello, World!')".to_string(),
@@ -223,7 +223,7 @@ mod tests {
 
         // Create a new game
         let game1 = Game::new_raw(
-            Identifier::new(),
+            Id::new(),
             "Test Game 1".to_string(),
             "A test game description".to_string(),
             "print('Hello, World!')".to_string(),
@@ -231,7 +231,7 @@ mod tests {
             crate::domain::common::date_time::DateTime::now(),
         );
         let game2 = Game::new_raw(
-            Identifier::new(),
+            Id::new(),
             "Test Game 2".to_string(),
             "A test game description".to_string(),
             "print('Hello, World!')".to_string(),
@@ -267,7 +267,7 @@ mod tests {
 
         // Create a new game
         let game = Game::new_raw(
-            Identifier::new(),
+            Id::new(),
             "Test Game".to_string(),
             "A test game description".to_string(),
             "print('Hello, World!')".to_string(),

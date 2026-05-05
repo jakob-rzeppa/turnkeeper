@@ -4,7 +4,7 @@ use crate::{
         game::{error::GameApplicationError, request_handlers::GameRequestHandler},
     },
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::projections::{
             action::ActionMetadataProjection,
             page::PageMetadataProjection,
@@ -28,7 +28,7 @@ pub enum CheckSourceCodeResponse {
 impl GameRequestHandler {
     pub async fn check_source_code(
         &self,
-        game_id: Identifier,
+        game_id: Id,
     ) -> Result<CheckSourceCodeResponse, GameApplicationError> {
         let game = self
             .game_repository

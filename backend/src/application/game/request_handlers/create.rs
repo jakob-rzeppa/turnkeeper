@@ -1,6 +1,6 @@
 use crate::application::game::error::GameApplicationError;
 use crate::application::game::request_handlers::GameRequestHandler;
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 use crate::domain::game::entities::game::Game;
 
 pub struct CreateGameRequest {
@@ -13,7 +13,7 @@ impl GameRequestHandler {
     pub async fn create(
         &self,
         request: CreateGameRequest,
-    ) -> Result<Identifier, GameApplicationError> {
+    ) -> Result<Id, GameApplicationError> {
         let game = Game::new(request.name, request.description);
 
         self.game_repository.save(&game).await?;

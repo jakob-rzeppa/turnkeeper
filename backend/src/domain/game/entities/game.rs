@@ -1,11 +1,11 @@
 use crate::domain::{
-    common::{date_time::DateTime, identifier::Identifier},
+    common::{date_time::DateTime, identifier::Id},
     game::projections::{game::GameProjection, game_metadata::GameMetadataProjection},
 };
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Game {
-    id: Identifier,
+    id: Id,
 
     name: String,
     description: String,
@@ -19,7 +19,7 @@ pub struct Game {
 impl Game {
     pub fn new(name: String, description: String) -> Self {
         Self {
-            id: Identifier::new(),
+            id: Id::new(),
             name,
             description,
             source_code: String::new(),
@@ -29,7 +29,7 @@ impl Game {
     }
 
     pub fn new_raw(
-        id: Identifier,
+        id: Id,
         name: String,
         description: String,
         source_code: String,
@@ -46,7 +46,7 @@ impl Game {
         }
     }
 
-    pub fn id(&self) -> &Identifier {
+    pub fn id(&self) -> &Id {
         &self.id
     }
 

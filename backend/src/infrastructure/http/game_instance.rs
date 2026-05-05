@@ -12,7 +12,7 @@ use crate::{
         list_by_game::GameInstanceListByGameRequest,
     },
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::projections::game_instance_metadata::GameInstanceMetadataProjection,
         user::entities::User,
     },
@@ -52,7 +52,7 @@ pub struct GameInstanceCreateHttpRequest {
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct GameInstanceCreateHttpResponse {
-    pub id: Identifier,
+    pub id: Id,
 }
 
 /// POST /games/{game_id}/instances
@@ -81,8 +81,8 @@ pub async fn game_instances_delete(
     State(state): State<AppState>,
     Path((game_id, instance_id)): Path<(String, String)>,
 ) -> Result<StatusCode, HttpError> {
-    let game_id = Identifier::parse_str(&game_id)?;
-    let instance_id = Identifier::parse_str(&instance_id)?;
+    let game_id = Id::parse_str(&game_id)?;
+    let instance_id = Id::parse_str(&instance_id)?;
 
     state
         .game_instance_request_handler()

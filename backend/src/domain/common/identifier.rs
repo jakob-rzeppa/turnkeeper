@@ -7,11 +7,11 @@ use uuid::Uuid;
 pub struct UuidParseError(String);
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
-pub struct Identifier {
+pub struct Id {
     id: Uuid,
 }
 
-impl Identifier {
+impl Id {
     pub fn new() -> Self {
         Self { id: Uuid::new_v4() }
     }
@@ -27,19 +27,19 @@ impl Identifier {
     }
 }
 
-impl From<String> for Identifier {
+impl From<String> for Id {
     fn from(id: String) -> Self {
         Self::parse_str(&id).expect("Could not convert value to id")
     }
 }
 
-impl Display for Identifier {
+impl Display for Id {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         write!(f, "{}", self.id)
     }
 }
 
-impl Serialize for Identifier {
+impl Serialize for Id {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -48,7 +48,7 @@ impl Serialize for Identifier {
     }
 }
 
-impl<'de> Deserialize<'de> for Identifier {
+impl<'de> Deserialize<'de> for Id {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,

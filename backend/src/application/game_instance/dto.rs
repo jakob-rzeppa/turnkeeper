@@ -3,7 +3,7 @@ use std::fmt::Display;
 use crate::{
     application::game_instance::commands::GameSessionCommand,
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::projections::{
             game_display_template::GameDisplayTemplateProjection,
             game_instance_state::GameInstanceStateProjection,
@@ -15,7 +15,7 @@ use crate::{
 pub enum IncomingMessageDto {
     Command {
         command: GameSessionCommand,
-        sending_user_id: Identifier,
+        sending_user_id: Id,
     },
 }
 

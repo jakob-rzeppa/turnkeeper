@@ -2,7 +2,7 @@
 //!
 //! Response DTOs for user authentication.
 
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 
 #[derive(Debug)]
 pub struct UserTokenResponse {
@@ -11,7 +11,7 @@ pub struct UserTokenResponse {
 
 #[derive(Debug)]
 pub struct UserAuthenticationResponse {
-    pub user_id: Identifier,
+    pub user_id: Id,
 }
 
 #[derive(Debug)]

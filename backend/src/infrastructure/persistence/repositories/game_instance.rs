@@ -6,7 +6,7 @@ use crate::{
         common::error::DatabaseError, game_instance::contracts::GameInstanceRepositoryContract,
     },
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::{
             entities::game_instance::GameInstance,
             projections::game_instance_metadata::GameInstanceMetadataProjection,
@@ -28,7 +28,7 @@ impl SqliteGameInstanceRepository {
 impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
     async fn list_by_game_id(
         &self,
-        game_id: Identifier,
+        game_id: Id,
     ) -> Result<Vec<GameInstanceMetadataProjection>, DatabaseError> {
         let game_instances = sqlx::query!(
             r#"
@@ -67,7 +67,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
         Ok(metadata_list)
     }
 
-    async fn get_by_id(&self, id: Identifier) -> Result<Option<GameInstance>, DatabaseError> {
+    async fn get_by_id(&self, id: Id) -> Result<Option<GameInstance>, DatabaseError> {
         let id_str = id.to_string();
 
         let row = sqlx::query!(
@@ -100,7 +100,7 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
         }
     }
 
-    async fn game_has_instances(&self, game_id: Identifier) -> Result<bool, DatabaseError> {
+    async fn game_has_instances(&self, game_id: Id) -> Result<bool, DatabaseError> {
         let game_instances = sqlx::query!(
             r#"
             SELECT COUNT(*) as count FROM game_instances
@@ -154,8 +154,8 @@ impl GameInstanceRepositoryContract for SqliteGameInstanceRepository {
 
     async fn delete(
         &self,
-        _game_id: Identifier,
-        instance_id: Identifier,
+        _game_id: Id,
+        instance_id: Id,
     ) -> Result<(), DatabaseError> {
         let id_str = instance_id.to_string();
 
@@ -190,7 +190,7 @@ mod tests {
             user::contracts::UserRepositoryContract,
         },
         domain::{
-            common::{date_time::DateTime, identifier::Identifier, position::Position},
+            common::{date_time::DateTime, identifier::Id, position::Position},
             game::{
                 entities::{
                     game::Game,
@@ -223,18 +223,18 @@ mod tests {
     };
 
     fn get_random_string() -> String {
-        Identifier::new().to_string()
+        Id::new().to_string()
     }
 
     fn create_user() -> User {
-        User::try_new(Identifier::new(), get_random_string(), get_random_string()).unwrap()
+        User::try_new(Id::new(), get_random_string(), get_random_string()).unwrap()
     }
 
     fn create_player() -> Player {
         Player::new()
     }
 
-    fn create_player_with_user(user_id: &Identifier) -> Player {
+    fn create_player_with_user(user_id: &Id) -> Player {
         Player::new_raw(get_random_string(), Some(user_id.clone()))
     }
 
@@ -289,7 +289,7 @@ mod tests {
 
     fn create_game() -> Game {
         Game::new_raw(
-            Identifier::new(),
+            Id::new(),
             get_random_string(),
             get_random_string(),
             get_random_string(),
@@ -303,7 +303,7 @@ mod tests {
         let player2 = create_player();
 
         GameInstance::new_raw(
-            Identifier::new(),
+            Id::new(),
             get_random_string(),
             1,
             5,

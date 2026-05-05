@@ -15,7 +15,7 @@ use crate::{
             error::GameInstanceApplicationError,
         },
     },
-    domain::common::identifier::Identifier,
+    domain::common::identifier::Id,
 };
 
 pub struct GameSession {
@@ -28,13 +28,13 @@ pub struct GameSession {
 
 impl GameSession {
     pub async fn spawn_session(
-        game_id: Identifier,
+        game_id: Id,
         game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
     ) -> Result<
         (
             Self,
             MpscChannelSender<IncomingMessageDto>,
-            TargetedBroadcastReceiverCreator<Identifier, OutgoingMessageDto>,
+            TargetedBroadcastReceiverCreator<Id, OutgoingMessageDto>,
         ),
         GameInstanceApplicationError,
     > {

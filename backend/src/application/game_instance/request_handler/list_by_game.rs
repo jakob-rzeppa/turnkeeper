@@ -3,13 +3,13 @@ use crate::{
         error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
     domain::{
-        common::identifier::Identifier,
+        common::identifier::Id,
         game::projections::game_instance_metadata::GameInstanceMetadataProjection,
     },
 };
 
 pub struct GameInstanceListByGameRequest {
-    pub game_id: Identifier,
+    pub game_id: Id,
 }
 
 pub struct GameInstanceListByGameResponse {
@@ -45,26 +45,26 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
-        let game_id = Identifier::new();
+        let game_id = Id::new();
 
         let instances_metadata = vec![
             GameInstanceMetadataProjection {
-                id: Identifier::new(),
+                id: Id::new(),
                 name: "Instance 1".to_string(),
                 game_id: game_id.clone(),
                 player_count: 3,
                 current_round: 1,
-                gm_user_id: Identifier::new(),
+                gm_user_id: Id::new(),
                 created_at: DateTime::now(),
                 last_played_at: DateTime::now(),
             },
             GameInstanceMetadataProjection {
-                id: Identifier::new(),
+                id: Id::new(),
                 name: "Instance 2".to_string(),
                 game_id: game_id.clone(),
                 player_count: 4,
                 current_round: 2,
-                gm_user_id: Identifier::new(),
+                gm_user_id: Id::new(),
                 created_at: DateTime::now(),
                 last_played_at: DateTime::now(),
             },
@@ -101,7 +101,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
-        let game_id = Identifier::new();
+        let game_id = Id::new();
 
         game_instance_repository
             .expect_list_by_game_id()

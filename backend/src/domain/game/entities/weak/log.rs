@@ -1,4 +1,4 @@
-use crate::domain::common::{date_time::DateTime, identifier::Identifier};
+use crate::domain::common::{date_time::DateTime, identifier::Id};
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Log {
@@ -8,8 +8,8 @@ pub struct Log {
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub enum LogEntry {
     Action {
-        user_id: Identifier,
-        action_id: Identifier,
+        user_id: Id,
+        action_id: Id,
         payload: String,
     },
     System {
@@ -35,7 +35,7 @@ impl Log {
         &self.entries
     }
 
-    pub fn log_action(&mut self, user_id: Identifier, action_id: Identifier, payload: String) {
+    pub fn log_action(&mut self, user_id: Id, action_id: Id, payload: String) {
         self.entries.push((
             LogEntry::Action {
                 user_id,

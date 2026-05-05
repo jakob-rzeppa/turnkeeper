@@ -2,7 +2,7 @@ use crate::application::game::request_handlers::check_source_code::CheckSourceCo
 use crate::application::game::request_handlers::create::CreateGameRequest;
 use crate::application::game::request_handlers::delete::DeleteGameRequest;
 use crate::domain::common::date_time::DateTime;
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 use crate::domain::game::projections::action::ActionMetadataProjection;
 use crate::domain::game::projections::game::GameProjection;
 use crate::domain::game::projections::game_metadata::GameMetadataProjection;
@@ -21,7 +21,7 @@ use serde::{Deserialize, Serialize};
 
 #[derive(Serialize, Debug)]
 pub struct GamesGetResponseGameMetadata {
-    pub id: Identifier,
+    pub id: Id,
     pub name: String,
     pub description: String,
 
@@ -64,7 +64,7 @@ pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct GamesGetByIdResponse {
-    pub id: Identifier,
+    pub id: Id,
     pub name: String,
     pub description: String,
 
@@ -96,7 +96,7 @@ pub async fn games_get_by_id(
 ) -> Result<GamesGetByIdResponse, HttpError> {
     let res = state
         .game_request_handler()
-        .get_by_id(Identifier::parse_str(&id)?)
+        .get_by_id(Id::parse_str(&id)?)
         .await?;
 
     Ok(res.game.into())
@@ -144,7 +144,7 @@ pub async fn games_update_source_code(
     Path(id): Path<String>,
     request: GamesUpdateSourceCodeHttpRequest,
 ) -> Result<StatusCode, HttpError> {
-    let id = Identifier::parse_str(&id)?;
+    let id = Id::parse_str(&id)?;
 
     state
         .game_request_handler()
@@ -181,7 +181,7 @@ pub async fn games_check_source_code(
     State(state): State<AppState>,
     Path(game_id): Path<String>,
 ) -> Result<Response, HttpError> {
-    let game_id = Identifier::parse_str(&game_id)?;
+    let game_id = Id::parse_str(&game_id)?;
 
     let response = state
         .game_request_handler()
@@ -219,7 +219,7 @@ pub async fn games_delete(
     State(state): State<AppState>,
     Path(id): Path<String>,
 ) -> Result<StatusCode, HttpError> {
-    let id = Identifier::parse_str(&id)?;
+    let id = Id::parse_str(&id)?;
 
     state
         .game_request_handler()

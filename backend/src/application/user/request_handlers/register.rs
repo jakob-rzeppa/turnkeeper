@@ -8,7 +8,7 @@ use crate::application::user::contracts::{
 use crate::application::user::request_handlers::UserRequestHandler;
 use crate::application::user::requests::UserRegisterRequest;
 use crate::application::user::responses::UserTokenResponse;
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::UserError;
 
@@ -28,7 +28,7 @@ impl<
         &self,
         request: UserRegisterRequest,
     ) -> Result<UserTokenResponse, UserError> {
-        let user = User::try_new(Identifier::new(), request.name, request.password)?;
+        let user = User::try_new(Id::new(), request.name, request.password)?;
 
         self.user_repository.save(&user).await?;
 

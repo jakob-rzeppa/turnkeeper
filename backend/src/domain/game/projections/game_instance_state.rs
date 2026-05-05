@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{common::identifier::Identifier, game::value_objects::data::Value};
+use crate::domain::{common::identifier::Id, game::value_objects::data::Value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatValueProjection {
@@ -60,7 +60,7 @@ pub struct PlayerStatStateProjection {
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct PlayerProjection {
     pub name: String,
-    pub user_id: Option<Identifier>,
+    pub user_id: Option<Id>,
 }
 
 #[derive(Debug, Clone, Serialize, Deserialize)]

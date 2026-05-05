@@ -33,7 +33,7 @@ mod tests {
         application::user::contracts::{
             MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
         },
-        domain::{common::identifier::Identifier, user::error::UserErrorKind},
+        domain::{common::identifier::Id, user::error::UserErrorKind},
     };
 
     use super::*;
@@ -52,7 +52,7 @@ mod tests {
             password: password.clone(),
         };
 
-        let user_id = Identifier::new();
+        let user_id = Id::new();
         let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
         user_repo.expect_get_by_name().times(1).returning(move |_| {
             let user = user.clone();
@@ -89,7 +89,7 @@ mod tests {
             password: password.clone(),
         };
 
-        let user_id = Identifier::new();
+        let user_id = Id::new();
         let user =
             User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
         user_repo.expect_get_by_name().times(1).returning(move |_| {

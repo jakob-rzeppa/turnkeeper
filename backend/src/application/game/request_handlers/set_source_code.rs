@@ -1,12 +1,12 @@
 use crate::{
     application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
-    domain::common::identifier::Identifier,
+    domain::common::identifier::Id,
 };
 
 impl GameRequestHandler {
     pub async fn set_source_code(
         &self,
-        id: Identifier,
+        id: Id,
         source_code: String,
     ) -> Result<(), GameApplicationError> {
         if self
@@ -56,7 +56,7 @@ mod tests {
             .times(1)
             .returning(move |_| {
                 Ok(Some(crate::domain::game::entities::game::Game::new_raw(
-                    Identifier::new(),
+                    Id::new(),
                     "Test Game".to_string(),
                     "Test Description".to_string(),
                     "Old Source Code".to_string(),
@@ -78,7 +78,7 @@ mod tests {
         );
 
         handler
-            .set_source_code(Identifier::new(), "New Source Code".to_string())
+            .set_source_code(Id::new(), "New Source Code".to_string())
             .await
             .unwrap();
     }
@@ -105,7 +105,7 @@ mod tests {
         );
 
         let result = handler
-            .set_source_code(Identifier::new(), "New Source Code".to_string())
+            .set_source_code(Id::new(), "New Source Code".to_string())
             .await
             .unwrap_err();
 

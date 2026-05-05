@@ -1,10 +1,10 @@
 use crate::{
     application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
-    domain::common::identifier::Identifier,
+    domain::common::identifier::Id,
 };
 
 pub struct DeleteGameRequest {
-    pub id: Identifier,
+    pub id: Id,
 }
 
 impl GameRequestHandler {
@@ -31,7 +31,7 @@ mod tests {
     use crate::application::common::parser::MockGameParserContract;
 use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
-    use crate::domain::common::identifier::Identifier;
+    use crate::domain::common::identifier::Id;
 
     #[tokio::test]
     async fn test_delete_game_success() {
@@ -39,7 +39,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
 
-        let game_id = Identifier::new();
+        let game_id = Id::new();
 
         repository
             .expect_delete()
@@ -70,7 +70,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
 
-        let game_id = Identifier::new();
+        let game_id = Id::new();
 
         game_repository.expect_delete().never();
 

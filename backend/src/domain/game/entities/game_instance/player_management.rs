@@ -1,5 +1,5 @@
 use crate::domain::{
-    common::identifier::Identifier,
+    common::identifier::Id,
     game::{
         entities::{game_instance::GameInstance, weak::player::Player},
         error::GameInstanceError,
@@ -63,7 +63,7 @@ impl GameInstance {
     /// The user is not validated here. If a user doesn't exist, it will be displayed as "User not found" in the UI, but it won't cause an error at this stage, since we don't care about the user details.
     pub fn attach_user_to_player(
         &mut self,
-        user_id: Identifier,
+        user_id: Id,
         player_name: String,
     ) -> Result<(), GameInstanceError> {
         if self.players.iter().any(|p| p.user_id() == Some(&user_id)) {
@@ -95,7 +95,7 @@ impl GameInstance {
         self.players.iter().map(|p| p.name().to_string()).collect()
     }
 
-    pub fn get_attatched_user_ids(&self) -> Vec<Identifier> {
+    pub fn get_attatched_user_ids(&self) -> Vec<Id> {
         self.players
             .iter()
             .filter_map(|p| p.user_id().cloned())
@@ -112,7 +112,7 @@ mod tests {
     fn create_game_instance() -> GameInstance {
         GameInstance::new(
             "Test Game".to_string(),
-            Identifier::new(),
+            Id::new(),
             Vec::new(),
             Vec::new(),
             Vec::new(),
@@ -216,13 +216,13 @@ mod tests {
         assert_eq!(user_ids.len(), 0);
 
         game.get_player_names();
-        game.attach_user_to_player(Identifier::new(), game.players[0].name().to_string())
+        game.attach_user_to_player(Id::new(), game.players[0].name().to_string())
             .unwrap();
 
         let user_ids = game.get_attatched_user_ids();
         assert_eq!(user_ids.len(), 1);
 
-        game.attach_user_to_player(Identifier::new(), game.players[1].name().to_string())
+        game.attach_user_to_player(Id::new(), game.players[1].name().to_string())
             .unwrap();
 
         let user_ids = game.get_attatched_user_ids();

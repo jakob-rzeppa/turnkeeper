@@ -2,20 +2,20 @@ use crate::{
     application::game_instance::{
         error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
-    domain::{common::identifier::Identifier, game::entities::game_instance::GameInstance},
+    domain::{common::identifier::Id, game::entities::game_instance::GameInstance},
 };
 
 pub struct GameInstanceCreateRequest {
     pub name: String,
-    pub gm_user_id: Identifier,
-    pub game_id: Identifier,
+    pub gm_user_id: Id,
+    pub game_id: Id,
 }
 
 impl GameInstanceRequestHandler {
     pub async fn create(
         &self,
         request: GameInstanceCreateRequest,
-    ) -> Result<Identifier, GameInstanceApplicationError> {
+    ) -> Result<Id, GameInstanceApplicationError> {
         let game = self
             .game_repository
             .get_by_id(&request.game_id)
@@ -55,8 +55,8 @@ mod tests {
         let mut game_repository = MockGameRepositoryContract::new();
         let mut game_root_parser = MockGameParserContract::new();
 
-        let game_id = Identifier::new();
-        let gm_user_id = Identifier::new();
+        let game_id = Id::new();
+        let gm_user_id = Id::new();
         let request = GameInstanceCreateRequest {
             name: "Test Game Instance".to_string(),
             gm_user_id: gm_user_id.clone(),
@@ -113,8 +113,8 @@ mod tests {
         let mut game_repository = MockGameRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
 
-        let game_id = Identifier::new();
-        let gm_user_id = Identifier::new();
+        let game_id = Id::new();
+        let gm_user_id = Id::new();
         let request = GameInstanceCreateRequest {
             name: "Test Game Instance".to_string(),
             gm_user_id,

@@ -1,6 +1,6 @@
 use crate::{
     domain::{
-        common::{date_time::DateTime, identifier::Identifier},
+        common::{date_time::DateTime, identifier::Id},
         game::entities::{
             game::Game,
             weak::{
@@ -21,7 +21,7 @@ pub mod stats_management;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct GameInstance {
-    id: Identifier,
+    id: Id,
     name: String,
 
     current_player_index: usize,
@@ -31,7 +31,7 @@ pub struct GameInstance {
     actions: Vec<Action>,
     pages: Vec<Page>,
 
-    gm_user_id: Identifier,
+    gm_user_id: Id,
     players: Vec<Player>,
 
     log: Log,
@@ -45,7 +45,7 @@ pub struct GameInstance {
 impl GameInstance {
     pub fn new(
         name: String,
-        gm_user_id: Identifier,
+        gm_user_id: Id,
         game_stats: Vec<GameStat>,
         player_stats: Vec<PlayerStat>,
         actions: Vec<Action>,
@@ -53,7 +53,7 @@ impl GameInstance {
         source_game: Game,
     ) -> Self {
         Self {
-            id: Identifier::new(),
+            id: Id::new(),
             name,
             log: Log::new(),
             current_player_index: 0,
@@ -71,7 +71,7 @@ impl GameInstance {
     }
 
     pub fn new_raw(
-        id: Identifier,
+        id: Id,
         name: String,
         current_player_index: usize,
         round: u32,
@@ -82,7 +82,7 @@ impl GameInstance {
         players: Vec<Player>,
         log: Log,
         source_game: Game,
-        gm_user_id: Identifier,
+        gm_user_id: Id,
         created_at: DateTime,
         last_played_at: DateTime,
     ) -> Self {
@@ -104,7 +104,7 @@ impl GameInstance {
         }
     }
 
-    pub fn id(&self) -> &Identifier {
+    pub fn id(&self) -> &Id {
         &self.id
     }
 
@@ -148,7 +148,7 @@ impl GameInstance {
         &self.source_game
     }
 
-    pub fn gm_user_id(&self) -> &Identifier {
+    pub fn gm_user_id(&self) -> &Id {
         &self.gm_user_id
     }
 

@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 
 /// A command that mutates the game aggregate's state.
 ///
@@ -16,7 +16,7 @@ pub enum GameSessionCommand {
     // Player
     AddPlayer,
     ChangePlayerOrder { names_in_order: Vec<String> },
-    AttachUserToPlayer { player: String, user_id: Identifier },
+    AttachUserToPlayer { player: String, user_id: Id },
     DetachUserFromPlayer { player: String },
 
     // Actions

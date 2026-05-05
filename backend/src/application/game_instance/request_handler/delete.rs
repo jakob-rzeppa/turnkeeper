@@ -2,12 +2,12 @@ use crate::{
     application::game_instance::{
         error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
     },
-    domain::common::identifier::Identifier,
+    domain::common::identifier::Id,
 };
 
 pub struct GameInstanceDeleteRequest {
-    pub game_id: Identifier,
-    pub instance_id: Identifier,
+    pub game_id: Id,
+    pub instance_id: Id,
 }
 
 impl GameInstanceRequestHandler {
@@ -37,8 +37,8 @@ mod tests {
         let mut game_instance_repository = MockGameInstanceRepositoryContract::new();
         let game_repository = MockGameRepositoryContract::new();
         let game_root_parser = MockGameParserContract::new();
-        let game_id = Identifier::new();
-        let game_instance_id = Identifier::new();
+        let game_id = Id::new();
+        let game_instance_id = Id::new();
 
         game_instance_repository
             .expect_delete()

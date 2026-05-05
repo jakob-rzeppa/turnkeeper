@@ -1,21 +1,21 @@
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 
 #[derive(Debug, PartialEq, Clone, serde::Serialize, serde::Deserialize)]
 pub struct Player {
     name: String,
-    user_id: Option<Identifier>,
+    user_id: Option<Id>,
 }
 
 impl Player {
     /// Creates a new anonymous player with no linked user and no stats.
     pub fn new() -> Self {
         Self {
-            name: format!("Anonymous Player {0}", Identifier::new().to_string()), // For now, we can generate a random name using an identifier. In the future, we might add a name generator to add some variety to the names. The name can be changed later.
+            name: format!("Anonymous Player {0}", Id::new().to_string()), // For now, we can generate a random name using an identifier. In the future, we might add a name generator to add some variety to the names. The name can be changed later.
             user_id: None,
         }
     }
 
-    pub fn new_raw(name: String, user_id: Option<Identifier>) -> Self {
+    pub fn new_raw(name: String, user_id: Option<Id>) -> Self {
         Self { name, user_id }
     }
 
@@ -23,11 +23,11 @@ impl Player {
         &self.name
     }
 
-    pub fn user_id(&self) -> Option<&Identifier> {
+    pub fn user_id(&self) -> Option<&Id> {
         self.user_id.as_ref()
     }
 
-    pub fn attach_user(&mut self, user_id: Identifier) {
+    pub fn attach_user(&mut self, user_id: Id) {
         self.user_id = Some(user_id);
     }
 

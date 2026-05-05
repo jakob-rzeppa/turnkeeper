@@ -38,7 +38,7 @@ mod tests {
         application::user::contracts::{
             MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
         },
-        domain::common::identifier::Identifier,
+        domain::common::identifier::Id,
     };
 
     use super::*;
@@ -50,7 +50,7 @@ mod tests {
         let jwt_generator = MockJwtGeneratorContract::new();
         let mut jwt_validator = MockJwtValidatorContract::new();
 
-        let user_id = Identifier::new();
+        let user_id = Id::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };
@@ -128,7 +128,7 @@ mod tests {
         let jwt_generator = MockJwtGeneratorContract::new();
         let mut jwt_validator = MockJwtValidatorContract::new();
 
-        let user_id = Identifier::new();
+        let user_id = Id::new();
         let request = UserAuthenticateRequest {
             token: "test-token".to_string(),
         };

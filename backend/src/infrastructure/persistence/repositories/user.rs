@@ -1,5 +1,5 @@
 use crate::application::user::contracts::UserRepositoryContract;
-use crate::domain::common::identifier::Identifier;
+use crate::domain::common::identifier::Id;
 use crate::domain::user::entities::User;
 use crate::domain::user::error::{UserError, UserErrorKind};
 use sqlx::{Acquire, SqlitePool};
@@ -25,7 +25,7 @@ impl TryInto<User> for UserRow {
 
     fn try_into(self) -> Result<User, Self::Error> {
         User::try_new(
-            Identifier::parse_str(&self.id)
+            Id::parse_str(&self.id)
                 .map_err(|e| UserError::with_source(UserErrorKind::DatabaseError, Box::new(e)))?,
             self.name,
             self.password,
@@ -44,7 +44,7 @@ impl SqliteUserRepository {
 }
 
 impl UserRepositoryContract for SqliteUserRepository {
-    async fn check_if_exists(&self, id: &Identifier) -> Result<bool, UserError> {
+    async fn check_if_exists(&self, id: &Id) -> Result<bool, UserError> {
         let mut conn = self
             .db
             .acquire()
@@ -60,7 +60,7 @@ impl UserRepositoryContract for SqliteUserRepository {
         Ok(res.is_some())
     }
 
-    async fn get_by_id(&self, id: &Identifier) -> Result<User, UserError> {
+    async fn get_by_id(&self, id: &Id) -> Result<User, UserError> {
         let mut conn = self
             .db
             .acquire()
@@ -174,7 +174,7 @@ mod tests {
 
     #[tokio::test]
     async fn test_save_and_get_by_id() {
-        let uuid = Identifier::new();
+        let uuid = Id::new();
         let user = User::try_new(
             uuid.clone(),
             "test-name".to_string(),
@@ -194,7 +194,7 @@ mod tests {
     #[tokio::test]
     async fn test_save_and_get_by_name() {
         let user = User::try_new(
-            Identifier::new(),
+            Id::new(),
             "test-name".to_string(),
             "test-password".to_string(),
         )
@@ -212,13 +212,13 @@ mod tests {
     #[tokio::test]
     async fn test_save_and_get_all() {
         let user = User::try_new(
-            Identifier::new(),
+            Id::new(),
             "test-name".to_string(),
             "test-password".to_string(),
         )
         .unwrap();
         let user2 = User::try_new(
-            Identifier::new(),
+            Id::new(),
             "test2-name".to_string(),
             "test2-password".to_string(),
         )
@@ -240,7 +240,7 @@ mod tests {
     #[tokio::test]
     async fn test_get_by_id_no_user() {
         let repo = SqliteUserRepository::new(create_test_pool().await);
-        let id = Identifier::new();
+        let id = Id::new();
 
         let user = repo.get_by_id(&id).await;
 
@@ -267,9 +267,9 @@ mod tests {
         let name = "test-name".to_string();
 
         let user1 =
-            User::try_new(Identifier::new(), name.clone(), "test-password".to_string()).unwrap();
+            User::try_new(Id::new(), name.clone(), "test-password".to_string()).unwrap();
         let user2 = User::try_new(
-            Identifier::new(),
+            Id::new(),
             name.clone(),
             "test-password-2".to_string(),
         )
