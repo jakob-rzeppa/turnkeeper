@@ -145,7 +145,7 @@ impl ScannerTransverser {
     }
 
     fn step_symbol(&mut self, char: char) -> Option<LexemeVariant> {
-        if Lexeme::chars_are_double_symbol(&self.buffer, char) {
+        if Lexeme::chars_are_double_symbol(self.buffer.chars().last().unwrap_or('\0'), char) {
             self.state = ScannerTransverserState::DoubleSymbol;
             self.buffer.push(char);
             None

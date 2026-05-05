@@ -36,6 +36,11 @@ pub enum TokenVariant {
     StringType,
     BoolType,
 
+    If,
+    Else,
+    While,
+    Let,
+
     BoolLiteral(bool),
 
     Identifier(String),
@@ -55,9 +60,20 @@ pub enum TokenVariant {
     Pipe,         // |
     Plus,         // +
     Minus,        // -
-    Asterisk,     // *
+    Star,         // *
     Slash,        // /
     Percent,      // %
+    Caret,        // ^
+    Exclamation,   // !
+
+    And,        // &&
+    Or,          // ||
+    EqualEqual,    // ==
+    NotEqual,      // !=
+    LessThan,      // <
+    LessThanEqual, // <=
+    GreaterThan,   // >
+    GreaterThanEqual, // >=
 
     // --- FROM Number and DecimalNumber LEXEME ---
     IntLiteral(i64),
@@ -90,6 +106,10 @@ impl TryFrom<Lexeme> for Token {
                 "bool" => TokenVariant::BoolType,
                 "true" => TokenVariant::BoolLiteral(true),
                 "false" => TokenVariant::BoolLiteral(false),
+                "if" => TokenVariant::If,
+                "else" => TokenVariant::Else,
+                "while" => TokenVariant::While,
+                "let" => TokenVariant::Let,
                 _ => TokenVariant::Identifier(text),
             },
             LexemeVariant::Symbol(symbol) => match symbol.as_str() {
@@ -107,9 +127,13 @@ impl TryFrom<Lexeme> for Token {
                 "|" => TokenVariant::Pipe,
                 "+" => TokenVariant::Plus,
                 "-" => TokenVariant::Minus,
-                "*" => TokenVariant::Asterisk,
+                "*" => TokenVariant::Star,
                 "/" => TokenVariant::Slash,
                 "%" => TokenVariant::Percent,
+                "^" => TokenVariant::Caret,
+                "!" => TokenVariant::Exclamation,
+                "<" => TokenVariant::LessThan,
+                ">" => TokenVariant::GreaterThan,
                 _ => {
                     return Err(ParsingError::InvalidToken {
                         pos: lexeme.pos,
@@ -117,11 +141,21 @@ impl TryFrom<Lexeme> for Token {
                     });
                 }
             },
-            LexemeVariant::DoubleSymbol(double_symbol) => {
-                return Err(ParsingError::InvalidToken {
-                    pos: lexeme.pos,
-                    message: format!("Unexpected double symbol lexeme {}", double_symbol),
-                });
+            LexemeVariant::DoubleSymbol(double_symbol) => match double_symbol.as_str() {
+                "&&" => TokenVariant::And,  
+                "||" => TokenVariant::Or,
+                "==" => TokenVariant::EqualEqual,
+                "!=" => TokenVariant::NotEqual,
+                "<" => TokenVariant::LessThan,
+                "<=" => TokenVariant::LessThanEqual,
+                ">" => TokenVariant::GreaterThan,
+                ">=" => TokenVariant::GreaterThanEqual,
+                _ => {
+                    return Err(ParsingError::InvalidToken {
+                        pos: lexeme.pos,
+                        message: format!("Unexpected double symbol lexeme {}", double_symbol),
+                    });
+                }
             }
             LexemeVariant::Number(num) => {
                 TokenVariant::IntLiteral(num.parse::<i64>().map_err(|_| {
@@ -186,9 +220,23 @@ impl Display for TokenVariant {
             TokenVariant::Pipe => write!(f, "|"),
             TokenVariant::Plus => write!(f, "+"),
             TokenVariant::Minus => write!(f, "-"),
-            TokenVariant::Asterisk => write!(f, "*"),
+            TokenVariant::Star => write!(f, "*"),
             TokenVariant::Slash => write!(f, "/"),
             TokenVariant::Percent => write!(f, "%"),
+            TokenVariant::Caret => write!(f, "^"),
+            TokenVariant::Exclamation => write!(f, "!"),
+            TokenVariant::And => write!(f, "&&"),
+            TokenVariant::Or => write!(f, "||"),
+            TokenVariant::EqualEqual => write!(f, "=="),
+            TokenVariant::NotEqual => write!(f, "!="),
+            TokenVariant::LessThan => write!(f, "<"),
+            TokenVariant::LessThanEqual => write!(f, "<="),
+            TokenVariant::GreaterThan => write!(f, ">"),
+            TokenVariant::GreaterThanEqual => write!(f, ">="),
+            TokenVariant::If => write!(f, "if"),
+            TokenVariant::Else => write!(f, "else"),
+            TokenVariant::While => write!(f, "while"),
+            TokenVariant::Let => write!(f, "let"),
         }
     }
 }

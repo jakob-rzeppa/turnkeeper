@@ -1,10 +1,7 @@
 use std::fmt::Display;
 
-use crate::application::plugin::{
-    common::Position,
-    lexer::token::{Token, TokenVariant},
-    parser::abstract_syntax_tree::{Positioned, expression::Expression},
-};
+use crate::{application::common::parser::{lexer::token::{Token, TokenVariant}, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct BinaryExpression {
@@ -64,10 +61,10 @@ impl BinaryOperator {
             TokenVariant::Or => Some(BinaryOperator::LogicalOr),
             TokenVariant::EqualEqual => Some(BinaryOperator::Equal),
             TokenVariant::NotEqual => Some(BinaryOperator::NotEqual),
-            TokenVariant::Less => Some(BinaryOperator::LessThan),
-            TokenVariant::LessEqual => Some(BinaryOperator::LessThanOrEqual),
-            TokenVariant::Greater => Some(BinaryOperator::GreaterThan),
-            TokenVariant::GreaterEqual => Some(BinaryOperator::GreaterThanOrEqual),
+            TokenVariant::LessThan => Some(BinaryOperator::LessThan),
+            TokenVariant::LessThanEqual => Some(BinaryOperator::LessThanOrEqual),
+            TokenVariant::GreaterThan => Some(BinaryOperator::GreaterThan),
+            TokenVariant::GreaterThanEqual => Some(BinaryOperator::GreaterThanOrEqual),
             TokenVariant::Caret => Some(BinaryOperator::Power),
             _ => None,
         }

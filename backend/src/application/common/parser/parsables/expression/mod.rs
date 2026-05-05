@@ -1,17 +1,4 @@
-use crate::application::plugin::{
-    lexer::token::TokenVariant,
-    parser::{
-        abstract_syntax_tree::{
-            Parsable, Positioned, TokenStream,
-            expression::{
-                atom::ExpressionAtom,
-                binary::{BinaryExpression, BinaryOperator},
-                unary::UnaryExpression,
-            },
-        },
-        error::ParsingError,
-    },
-};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::UnaryExpression}}, domain::common::position::{Position, Positioned}};
 
 pub mod atom;
 pub mod binary;
@@ -29,42 +16,42 @@ impl Parsable for Expression {
         true
     }
 
-    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
-        Self::pratt_parse(ts, 0)
+    fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
+        Self::pratt_parse(ts, source_code, 0)
     }
 }
 
 impl Expression {
-    fn pratt_parse(ts: &mut TokenStream, min_bp: u8) -> Result<Self, ParsingError> {
+    fn pratt_parse(ts: &mut TokenStream, source_code: &str, min_bp: u8) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
-        let mut left = if is_token!(ts, TokenVariant::LeftParen) {
+        let mut left = if is_token!(ts, TokenVariant::OpenParen) {
             ts.next(); // consume '('
 
-            let expr = Self::pratt_parse(ts, 0)?;
+            let expr = Self::pratt_parse(ts, source_code, 0)?;
 
             expect_token!(
                 ts,
-                TokenVariant::RightParen,
-                "')' after parenthesized expression"
+                TokenVariant::CloseParen,
+                "Expected ')' after parenthesized expression"
             );
 
             expr
         } else if UnaryExpression::is_next(ts) {
-            Expression::Unary(UnaryExpression::parse(ts)?)
+            Expression::Unary(UnaryExpression::parse(ts, source_code)?)
         } else if ExpressionAtom::is_next(ts) {
-            Expression::Atom(ExpressionAtom::parse(ts)?)
+            Expression::Atom(ExpressionAtom::parse(ts, source_code)?)
         } else {
             let next = ts.next();
 
             return match next {
                 Some(t) => Err(ParsingError::UnexpectedToken {
-                    expected: "identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
+                    expected: "Expected identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
                     found: t.variant.clone(),
                     pos,
                 }),
                 None => Err(ParsingError::UnexpectedEOF {
-                    expected: "identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
+                    expected: "Expected identifier, literal, unary operator or '(' at the beginning of a expression".to_string(),
                 }),
             };
         };
@@ -85,7 +72,7 @@ impl Expression {
             }
             ts.next(); // Now we can consume the operator
 
-            let right = Self::pratt_parse(ts, r_bp)?;
+            let right = Self::pratt_parse(ts, source_code, r_bp)?;
 
             left = Expression::Binary(BinaryExpression::new(left, operator, right, pos));
         }
@@ -95,7 +82,7 @@ impl Expression {
 }
 
 impl Positioned for Expression {
-    fn position(&self) -> crate::application::plugin::common::Position {
+    fn position(&self) -> Position {
         match self {
             Expression::Atom(atom) => atom.position(),
             Expression::Unary(unary) => unary.position(),
@@ -141,7 +128,7 @@ impl Expression {
         line: usize,
         first_char: usize,
     ) -> Self {
-        use crate::application::plugin::common::Position;
+        use Position;
 
         Expression::Binary(BinaryExpression::new(
             left,
@@ -154,34 +141,35 @@ impl Expression {
 
 #[cfg(test)]
 mod tests {
+    use crate::application::common::parser::macros::test_token_stream;
     use super::*;
 
     // === Atom Tests ===
 
     #[test]
     fn test_literal_int() {
-        let mut ts = test_token_stream!(TokenVariant::IntLiteral(42));
+        let (mut ts, source_code) = test_token_stream!("42");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(parsed, Expression::new_atom_literal_int(42, 0, 0));
     }
 
     #[test]
     fn test_literal_float() {
-        let mut ts = test_token_stream!(TokenVariant::FloatLiteral(3.14));
+        let (mut ts, source_code) = test_token_stream!("3.14");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(parsed, Expression::new_atom_literal_float(3.14, 0, 0));
     }
 
     #[test]
     fn test_literal_string() {
-        let mut ts = test_token_stream!(TokenVariant::StringLiteral("hello".to_string()));
+        let (mut ts, source_code) = test_token_stream!("\"hello\"");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_atom_literal_string("hello".to_string(), 0, 0)
@@ -190,19 +178,19 @@ mod tests {
 
     #[test]
     fn test_literal_bool() {
-        let mut ts = test_token_stream!(TokenVariant::BoolLiteral(true));
+        let (mut ts, source_code) = test_token_stream!("true");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(parsed, Expression::new_atom_literal_bool(true, 0, 0));
     }
 
     #[test]
     fn test_variable() {
-        let mut ts = test_token_stream!(TokenVariant::Identifier("x".to_string()));
+        let (mut ts, source_code) = test_token_stream!("x");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(parsed, Expression::new_atom_variable("x", 0, 0));
     }
 
@@ -210,25 +198,25 @@ mod tests {
 
     #[test]
     fn test_unary_negation() {
-        let mut ts = test_token_stream!(TokenVariant::Minus, TokenVariant::IntLiteral(5));
+        let (mut ts, source_code) = test_token_stream!("-5");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_unary_negation(Expression::new_atom_literal_int(5, 1, 0), 0, 0)
+            Expression::new_unary_negation(Expression::new_atom_literal_int(5, 0, 1), 0, 0)
         );
     }
 
     #[test]
     fn test_unary_not() {
-        let mut ts = test_token_stream!(TokenVariant::Not, TokenVariant::BoolLiteral(true));
+        let (mut ts, source_code) = test_token_stream!("!true");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_unary_logical_not(Expression::new_atom_literal_bool(true, 1, 0), 0, 0)
+            Expression::new_unary_logical_not(Expression::new_atom_literal_bool(true, 0, 1), 0, 0)
         );
     }
 
@@ -236,20 +224,16 @@ mod tests {
 
     #[test]
     fn test_binary_addition() {
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(2)
-        );
+        let (mut ts, source_code) = test_token_stream!("1 + 2");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_int(1, 0, 0),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(2, 2, 0),
+                Expression::new_atom_literal_int(2, 0, 4),
                 0,
                 0
             )
@@ -258,20 +242,16 @@ mod tests {
 
     #[test]
     fn test_binary_multiplication() {
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(3),
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(4)
-        );
+        let (mut ts, source_code) = test_token_stream!("3 * 4");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_int(3, 0, 0),
                 BinaryOperator::Multiplication,
-                Expression::new_atom_literal_int(4, 2, 0),
+                Expression::new_atom_literal_int(4, 0, 4),
                 0,
                 0
             )
@@ -280,20 +260,16 @@ mod tests {
 
     #[test]
     fn test_binary_comparison() {
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(5),
-            TokenVariant::LessEqual,
-            TokenVariant::IntLiteral(10)
-        );
+        let (mut ts, source_code) = test_token_stream!("5 <= 10");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_int(5, 0, 0),
                 BinaryOperator::LessThanOrEqual,
-                Expression::new_atom_literal_int(10, 2, 0),
+                Expression::new_atom_literal_int(10, 0, 5),
                 0,
                 0
             )
@@ -302,20 +278,16 @@ mod tests {
 
     #[test]
     fn test_binary_logical_and() {
-        let mut ts = test_token_stream!(
-            TokenVariant::BoolLiteral(true),
-            TokenVariant::And,
-            TokenVariant::BoolLiteral(false)
-        );
+        let (mut ts, source_code) = test_token_stream!("true && false");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_bool(true, 0, 0),
                 BinaryOperator::LogicalAnd,
-                Expression::new_atom_literal_bool(false, 2, 0),
+                Expression::new_atom_literal_bool(false, 0, 8),
                 0,
                 0
             )
@@ -326,28 +298,21 @@ mod tests {
 
     #[test]
     fn test_precedence_mul_over_add() {
-        // 1 + 2 * 3 should parse as 1 + (2 * 3)
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(2),
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(3)
-        );
+        let (mut ts, source_code) = test_token_stream!("1 + 2 * 3");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_int(1, 0, 0),
                 BinaryOperator::Addition,
                 Expression::new_binary(
-                    Expression::new_atom_literal_int(2, 2, 0),
+                    Expression::new_atom_literal_int(2, 0, 4),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(3, 4, 0),
-                    2,
-                    0
+                    Expression::new_atom_literal_int(3, 0, 8),
+                    0,
+                    4
                 ),
                 0,
                 0
@@ -357,29 +322,22 @@ mod tests {
 
     #[test]
     fn test_precedence_mul_before_add() {
-        // 2 * 3 + 1 should parse as (2 * 3) + 1
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(2),
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(3),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(1)
-        );
+        let (mut ts, source_code) = test_token_stream!("2 * 3 + 1");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
                     Expression::new_atom_literal_int(2, 0, 0),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(3, 2, 0),
+                    Expression::new_atom_literal_int(3, 0, 4),
                     0,
                     0
                 ),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(1, 4, 0),
+                Expression::new_atom_literal_int(1, 0, 8),
                 0,
                 0
             )
@@ -388,29 +346,22 @@ mod tests {
 
     #[test]
     fn test_left_associativity() {
-        // 1 - 2 - 3 should parse as (1 - 2) - 3
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Minus,
-            TokenVariant::IntLiteral(2),
-            TokenVariant::Minus,
-            TokenVariant::IntLiteral(3)
-        );
+        let (mut ts, source_code) = test_token_stream!("1 - 2 - 3");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
                     Expression::new_atom_literal_int(1, 0, 0),
                     BinaryOperator::Subtraction,
-                    Expression::new_atom_literal_int(2, 2, 0),
+                    Expression::new_atom_literal_int(2, 0, 4),
                     0,
                     0
                 ),
                 BinaryOperator::Subtraction,
-                Expression::new_atom_literal_int(3, 4, 0),
+                Expression::new_atom_literal_int(3, 0, 8),
                 0,
                 0
             )
@@ -419,28 +370,21 @@ mod tests {
 
     #[test]
     fn test_right_associativity_power() {
-        // 2 ^ 3 ^ 4 should parse as 2 ^ (3 ^ 4)
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(2),
-            TokenVariant::Caret,
-            TokenVariant::IntLiteral(3),
-            TokenVariant::Caret,
-            TokenVariant::IntLiteral(4)
-        );
+        let (mut ts, source_code) = test_token_stream!("2 ^ 3 ^ 4");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_atom_literal_int(2, 0, 0),
                 BinaryOperator::Power,
                 Expression::new_binary(
-                    Expression::new_atom_literal_int(3, 2, 0),
+                    Expression::new_atom_literal_int(3, 0, 4),
                     BinaryOperator::Power,
-                    Expression::new_atom_literal_int(4, 4, 0),
-                    2,
-                    0
+                    Expression::new_atom_literal_int(4, 0, 8),
+                    0,
+                    4
                 ),
                 0,
                 0
@@ -452,31 +396,22 @@ mod tests {
 
     #[test]
     fn test_parentheses_override_precedence() {
-        // (1 + 2) * 3 should parse as (1 + 2) * 3
-        let mut ts = test_token_stream!(
-            TokenVariant::LeftParen,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(2),
-            TokenVariant::RightParen,
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(3)
-        );
+        let (mut ts, source_code) = test_token_stream!("(1 + 2) * 3");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
-                    Expression::new_atom_literal_int(1, 1, 0),
+                    Expression::new_atom_literal_int(1, 0, 1),
                     BinaryOperator::Addition,
-                    Expression::new_atom_literal_int(2, 3, 0),
-                    1,
-                    0
+                    Expression::new_atom_literal_int(2, 0, 5),
+                    0,
+                    1
                 ),
                 BinaryOperator::Multiplication,
-                Expression::new_atom_literal_int(3, 6, 0),
+                Expression::new_atom_literal_int(3, 0, 10),
                 0,
                 0
             )
@@ -485,27 +420,18 @@ mod tests {
 
     #[test]
     fn test_nested_parentheses() {
-        // ((1 + 2))
-        let mut ts = test_token_stream!(
-            TokenVariant::LeftParen,
-            TokenVariant::LeftParen,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(2),
-            TokenVariant::RightParen,
-            TokenVariant::RightParen
-        );
+        let (mut ts, source_code) = test_token_stream!("((1 + 2))");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
-                Expression::new_atom_literal_int(1, 2, 0),
+                Expression::new_atom_literal_int(1, 0, 2),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(2, 4, 0),
-                2,
-                0
+                Expression::new_atom_literal_int(2, 0, 6),
+                0,
+                2
             )
         );
     }
@@ -514,21 +440,10 @@ mod tests {
 
     #[test]
     fn test_complex_arithmetic() {
-        // 1 + 2 * 3 - 4 / 2 should parse as (1 + (2 * 3)) - (4 / 2)
-        let mut ts = test_token_stream!(
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(2),
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(3),
-            TokenVariant::Minus,
-            TokenVariant::IntLiteral(4),
-            TokenVariant::Slash,
-            TokenVariant::IntLiteral(2)
-        );
+        let (mut ts, source_code) = test_token_stream!("1 + 2 * 3 - 4 / 2");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
@@ -536,22 +451,22 @@ mod tests {
                     Expression::new_atom_literal_int(1, 0, 0),
                     BinaryOperator::Addition,
                     Expression::new_binary(
-                        Expression::new_atom_literal_int(2, 2, 0),
+                        Expression::new_atom_literal_int(2, 0, 4),
                         BinaryOperator::Multiplication,
-                        Expression::new_atom_literal_int(3, 4, 0),
-                        2,
-                        0
+                        Expression::new_atom_literal_int(3, 0, 8),
+                        0,
+                        4
                     ),
                     0,
                     0
                 ),
                 BinaryOperator::Subtraction,
                 Expression::new_binary(
-                    Expression::new_atom_literal_int(4, 6, 0),
+                    Expression::new_atom_literal_int(4, 0, 12),
                     BinaryOperator::Division,
-                    Expression::new_atom_literal_int(2, 8, 0),
-                    6,
-                    0
+                    Expression::new_atom_literal_int(2, 0, 16),
+                    0,
+                    12
                 ),
                 0,
                 0
@@ -561,29 +476,22 @@ mod tests {
 
     #[test]
     fn test_complex_logical() {
-        // a && b || c should parse as (a && b) || c
-        let mut ts = test_token_stream!(
-            TokenVariant::Identifier("a".to_string()),
-            TokenVariant::And,
-            TokenVariant::Identifier("b".to_string()),
-            TokenVariant::Or,
-            TokenVariant::Identifier("c".to_string())
-        );
+        let (mut ts, source_code) = test_token_stream!("a && b || c");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
                     Expression::new_atom_variable("a", 0, 0),
                     BinaryOperator::LogicalAnd,
-                    Expression::new_atom_variable("b", 2, 0),
+                    Expression::new_atom_variable("b", 0, 5),
                     0,
                     0
                 ),
                 BinaryOperator::LogicalOr,
-                Expression::new_atom_variable("c", 4, 0),
+                Expression::new_atom_variable("c", 0, 10),
                 0,
                 0
             )
@@ -592,36 +500,27 @@ mod tests {
 
     #[test]
     fn test_comparison_with_arithmetic() {
-        // x + 1 < y * 2 should parse as (x + 1) < (y * 2)
-        let mut ts = test_token_stream!(
-            TokenVariant::Identifier("x".to_string()),
-            TokenVariant::Plus,
-            TokenVariant::IntLiteral(1),
-            TokenVariant::Less,
-            TokenVariant::Identifier("y".to_string()),
-            TokenVariant::Star,
-            TokenVariant::IntLiteral(2)
-        );
+        let (mut ts, source_code) = test_token_stream!("x + 1 < y * 2");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
                     Expression::new_atom_variable("x", 0, 0),
                     BinaryOperator::Addition,
-                    Expression::new_atom_literal_int(1, 2, 0),
+                    Expression::new_atom_literal_int(1, 0, 4),
                     0,
                     0
                 ),
                 BinaryOperator::LessThan,
                 Expression::new_binary(
-                    Expression::new_atom_variable("y", 4, 0),
+                    Expression::new_atom_variable("y", 0, 8),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(2, 6, 0),
-                    4,
-                    0
+                    Expression::new_atom_literal_int(2, 0, 12),
+                    0,
+                    8
                 ),
                 0,
                 0
@@ -631,22 +530,16 @@ mod tests {
 
     #[test]
     fn test_unary_in_binary() {
-        // -a + b
-        let mut ts = test_token_stream!(
-            TokenVariant::Minus,
-            TokenVariant::Identifier("a".to_string()),
-            TokenVariant::Plus,
-            TokenVariant::Identifier("b".to_string())
-        );
+        let (mut ts, source_code) = test_token_stream!("-a + b");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
-                Expression::new_unary_negation(Expression::new_atom_variable("a", 1, 0), 0, 0),
+                Expression::new_unary_negation(Expression::new_atom_variable("a", 0, 1), 0, 0),
                 BinaryOperator::Addition,
-                Expression::new_atom_variable("b", 3, 0),
+                Expression::new_atom_variable("b", 0, 5),
                 0,
                 0
             )
@@ -655,48 +548,34 @@ mod tests {
 
     #[test]
     fn test_full_expression() {
-        // (a + b) * c == d && !e
-        let mut ts = test_token_stream!(
-            TokenVariant::LeftParen,
-            TokenVariant::Identifier("a".to_string()),
-            TokenVariant::Plus,
-            TokenVariant::Identifier("b".to_string()),
-            TokenVariant::RightParen,
-            TokenVariant::Star,
-            TokenVariant::Identifier("c".to_string()),
-            TokenVariant::EqualEqual,
-            TokenVariant::Identifier("d".to_string()),
-            TokenVariant::And,
-            TokenVariant::Not,
-            TokenVariant::Identifier("e".to_string())
-        );
+        let (mut ts, source_code) = test_token_stream!("(a + b) * c == d && !e");
 
         assert!(Expression::is_next(&ts));
-        let parsed = Expression::parse(&mut ts).unwrap();
+        let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
             Expression::new_binary(
                 Expression::new_binary(
                     Expression::new_binary(
                         Expression::new_binary(
-                            Expression::new_atom_variable("a", 1, 0),
+                            Expression::new_atom_variable("a", 0, 1),
                             BinaryOperator::Addition,
-                            Expression::new_atom_variable("b", 3, 0),
-                            1,
-                            0
+                            Expression::new_atom_variable("b", 0, 5),
+                            0,
+                            1
                         ),
                         BinaryOperator::Multiplication,
-                        Expression::new_atom_variable("c", 6, 0),
+                        Expression::new_atom_variable("c", 0, 10),
                         0,
                         0
                     ),
                     BinaryOperator::Equal,
-                    Expression::new_atom_variable("d", 8, 0),
+                    Expression::new_atom_variable("d", 0, 15),
                     0,
                     0
                 ),
                 BinaryOperator::LogicalAnd,
-                Expression::new_unary_logical_not(Expression::new_atom_variable("e", 11, 0), 10, 0),
+                Expression::new_unary_logical_not(Expression::new_atom_variable("e", 0, 21), 0, 20),
                 0,
                 0
             )

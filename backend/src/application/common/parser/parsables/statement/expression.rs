@@ -1,11 +1,6 @@
-use crate::application::plugin::{
-    common::Position,
-    lexer::token::TokenVariant,
-    parser::{
-        abstract_syntax_tree::{Parsable, Positioned, TokenStream, expression::Expression},
-        error::ParsingError,
-    },
-};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos}, parsable::Parsable, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
+
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct ExpressionStatement {
@@ -24,10 +19,12 @@ impl Parsable for ExpressionStatement {
         Expression::is_next(ts)
     }
 
-    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
-        let expression = expect_parse!(ts, Expression, "expression in expression statement");
+        let expression = Expression::parse(ts, source_code).map_err(|err| 
+            change_err_msg!(err, "Expected expression in expression statement")
+        )?;
 
         expect_token!(
             ts,

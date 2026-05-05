@@ -19,7 +19,7 @@ impl Lexeme {
         symbols.contains(&char)
     }
 
-    pub fn chars_are_double_symbol(first: &str, second: char) -> bool {
+    pub fn chars_are_double_symbol(first: char, second: char) -> bool {
         let double_symbols = [
             "==", "!=", "<=", ">=", "&&", "||", "+=", "-=", "*=", "/=", "%=", "^=", "=>", "->",
         ];

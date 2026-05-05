@@ -1,16 +1,7 @@
 use std::fmt::Display;
 
-use crate::application::plugin::{
-    common::Position,
-    lexer::token::TokenVariant,
-    parser::{
-        abstract_syntax_tree::{
-            Parsable, Positioned, TokenStream,
-            expression::{Expression, atom::ExpressionAtom},
-        },
-        error::ParsingError,
-    },
-};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::{Expression, atom::ExpressionAtom}}, domain::common::position::{Position, Positioned}};
+
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct UnaryExpression {
@@ -37,18 +28,18 @@ impl UnaryExpression {
 
 impl Parsable for UnaryExpression {
     fn is_next(ts: &TokenStream) -> bool {
-        is_token!(ts, TokenVariant::Minus) || is_token!(ts, TokenVariant::Not)
+        is_token!(ts, TokenVariant::Minus) || is_token!(ts, TokenVariant::Exclamation)
     }
 
-    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
         let pos = get_pos!(ts);
 
         let operator = match ts.next() {
             Some(t) if t.variant == TokenVariant::Minus => UnaryOperator::Negation,
-            Some(t) if t.variant == TokenVariant::Not => UnaryOperator::LogicalNot,
+            Some(t) if t.variant == TokenVariant::Exclamation => UnaryOperator::LogicalNot,
             Some(t) => {
                 return Err(ParsingError::UnexpectedToken {
-                    expected: "unary operator".to_string(),
+                    expected: "Expected unary operator".to_string(),
                     found: t.variant.clone(),
                     pos,
                 });
@@ -61,15 +52,17 @@ impl Parsable for UnaryExpression {
         };
 
         // If the next token is a left parenthesis, we need to parse the entire parenthesized expression as the operand of the unary operator
-        if is_token!(ts, TokenVariant::LeftParen) {
+        if is_token!(ts, TokenVariant::OpenParen) {
             ts.next(); // consume '('
 
-            let expr = expect_parse!(ts, Expression, "expression after '(' in unary operator");
+            let expr = Expression::parse(ts, source_code).map_err(|err| 
+                change_err_msg!(err, "Expected expression after '(' in unary operator")
+            )?;
 
             expect_token!(
                 ts,
-                TokenVariant::RightParen,
-                "')' after parenthesized expression"
+                TokenVariant::CloseParen,
+                "Expected ')' after parenthesized expression"
             );
 
             return Ok(UnaryExpression {
@@ -80,11 +73,9 @@ impl Parsable for UnaryExpression {
         }
 
         // Otherwise, we can parse the next token as an expression atom and use that as the operand of the unary operator
-        let operant = expect_parse!(
-            ts,
-            ExpressionAtom,
-            "expression atom or '(' after unary operator"
-        );
+        let operant = ExpressionAtom::parse(ts, source_code).map_err(|err| 
+            change_err_msg!(err, "Expected expression atom or after '(' in unary operator")
+        )?;
 
         Ok(UnaryExpression {
             operator,
@@ -130,50 +121,42 @@ impl UnaryExpression {
 
 #[cfg(test)]
 mod tests {
+    use crate::application::common::parser::macros::test_token_stream;
     use super::*;
 
     #[test]
     fn test_logical_not_parsing() {
-        let mut ts =
-            test_token_stream!(TokenVariant::Not, TokenVariant::Identifier("x".to_string()));
+        let (mut ts, source_code) = test_token_stream!("!x");
 
         assert!(UnaryExpression::is_next(&ts));
-        let unary_expr = UnaryExpression::parse(&mut ts).unwrap();
+        let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new_logical_not(Expression::new_atom_variable("x", 1, 0), 0, 0)
+            UnaryExpression::new_logical_not(Expression::new_atom_variable("x", 0, 1), 0, 0)
         );
     }
 
     #[test]
     fn test_negation_parsing() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Minus,
-            TokenVariant::Identifier("y".to_string())
-        );
+        let (mut ts, source_code) = test_token_stream!("-y");
 
         assert!(UnaryExpression::is_next(&ts));
-        let unary_expr = UnaryExpression::parse(&mut ts).unwrap();
+        let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new_negation(Expression::new_atom_variable("y", 1, 0), 0, 0)
+            UnaryExpression::new_negation(Expression::new_atom_variable("y", 0, 1), 0, 0)
         );
     }
 
     #[test]
     fn test_parenthesized_unary_parsing() {
-        let mut ts = test_token_stream!(
-            TokenVariant::Not,
-            TokenVariant::LeftParen,
-            TokenVariant::Identifier("z".to_string()),
-            TokenVariant::RightParen
-        );
+        let (mut ts, source_code) = test_token_stream!("!(z)");
 
         assert!(UnaryExpression::is_next(&ts));
-        let unary_expr = UnaryExpression::parse(&mut ts).unwrap();
+        let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new_logical_not(Expression::new_atom_variable("z", 2, 0), 0, 0)
+            UnaryExpression::new_logical_not(Expression::new_atom_variable("z", 0, 2), 0, 0)
         );
     }
 }

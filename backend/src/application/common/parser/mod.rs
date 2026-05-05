@@ -9,6 +9,7 @@ pub mod parsable;
 pub mod parsables {
     pub mod atoms {
         pub mod datatype;
+        pub mod value;
     }
 
     pub mod roots {
@@ -16,6 +17,9 @@ pub mod parsables {
         pub mod player_stat;
         pub mod action;
     }
+
+    pub mod statement;
+    pub mod expression;
 }
 
 pub struct GameParsingResult {

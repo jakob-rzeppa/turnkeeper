@@ -1,23 +1,8 @@
 #[cfg(test)]
-use crate::application::plugin::parser::abstract_syntax_tree::{
-    atom::datatype::Datatype,
-    expression::Expression,
-    statement::if_statement::{ElseBranch, ElseIfBranch},
-};
-use crate::application::plugin::{
-    common::Position,
-    parser::{
-        abstract_syntax_tree::{
-            Parsable, Positioned, TokenStream,
-            statement::{
-                assignment::AssignmentStatement, expression::ExpressionStatement,
-                if_statement::IfStatement, variable_declaration::VariableDeclarationStatement,
-                while_loop::WhileLoopStatement,
-            },
-        },
-        error::ParsingError,
-    },
-};
+use crate::{application::common::parser::parsables::{expression::Expression, statement::if_statement::{ElseBranch, ElseIfBranch}}, domain::game::value_objects::data::Datatype};
+use crate::{application::common::parser::{error::ParsingError, lexer::token_stream::TokenStream, macros::get_pos, parsable::Parsable, parsables::statement::{assignment::AssignmentStatement, expression::ExpressionStatement, if_statement::IfStatement, variable_declaration::VariableDeclarationStatement, while_loop::WhileLoopStatement}}, domain::common::position::{Position, Positioned}};
+
+
 
 pub mod assignment;
 pub mod expression;
@@ -42,19 +27,19 @@ impl Parsable for Statement {
             || WhileLoopStatement::is_next(ts)
     }
 
-    fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
+    fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
         if IfStatement::is_next(ts) {
-            Ok(Statement::If(IfStatement::parse(ts)?))
+            Ok(Statement::If(IfStatement::parse(ts, source_code)?))
         } else if WhileLoopStatement::is_next(ts) {
-            Ok(Statement::WhileLoop(WhileLoopStatement::parse(ts)?))
+            Ok(Statement::WhileLoop(WhileLoopStatement::parse(ts, source_code)?))
         } else if VariableDeclarationStatement::is_next(ts) {
             Ok(Statement::VariableDeclaration(
-                VariableDeclarationStatement::parse(ts)?,
+                VariableDeclarationStatement::parse(ts, source_code)?,
             ))
         } else if AssignmentStatement::is_next(ts) {
-            Ok(Statement::Assignment(AssignmentStatement::parse(ts)?))
+            Ok(Statement::Assignment(AssignmentStatement::parse(ts, source_code)?))
         } else if ExpressionStatement::is_next(ts) {
-            Ok(Statement::Expression(ExpressionStatement::parse(ts)?))
+            Ok(Statement::Expression(ExpressionStatement::parse(ts, source_code)?))
         } else {
             Err(ParsingError::SyntaxError {
                 message: "Invalid statement".to_string(),
