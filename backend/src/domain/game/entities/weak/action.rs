@@ -1,12 +1,13 @@
-use crate::{application::common::parser::parsables::statement::Statement, domain::{
+use crate::domain::{
     common::position::Position,
     game::{
+        abstract_syntax_tree::statement::Statement,
         projections::action::ActionMetadataProjection,
         value_objects::{
             execution_trigger::ExecutionTrigger, parameter::Parameter, visibility::ActionVisibility,
         },
     },
-}};
+};
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Action {

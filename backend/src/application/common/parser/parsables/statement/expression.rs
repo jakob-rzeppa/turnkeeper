@@ -1,18 +1,6 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos}, parsable::Parsable, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::abstract_syntax_tree::{statement::ExpressionStatement, expression::Expression}}};
 
 
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct ExpressionStatement {
-    expression: Expression,
-    pos: Position,
-}
-
-impl ExpressionStatement {
-    pub fn expression(&self) -> &Expression {
-        &self.expression
-    }
-}
 
 impl Parsable for ExpressionStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -32,22 +20,6 @@ impl Parsable for ExpressionStatement {
             "';' after expression statement"
         );
 
-        Ok(ExpressionStatement { expression, pos })
-    }
-}
-
-impl Positioned for ExpressionStatement {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-#[cfg(test)]
-impl ExpressionStatement {
-    pub fn new(expression: Expression, line: usize, column: usize) -> Self {
-        Self {
-            expression,
-            pos: Position::new(line, column),
-        }
+        Ok(ExpressionStatement::new(expression, pos))
     }
 }

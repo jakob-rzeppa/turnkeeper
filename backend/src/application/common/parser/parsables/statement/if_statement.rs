@@ -1,60 +1,5 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::{expression::Expression, statement::Statement}}, domain::common::position::{Position, Positioned}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::statement::Statement}, domain::{game::abstract_syntax_tree::{statement::{IfStatement, ElseBranch, ElseIfBranch}, expression::Expression}}};
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct IfStatement {
-    condition: Expression,
-    then_branch: Vec<Statement>,
-    else_if_branches: Vec<ElseIfBranch>,
-    else_branch: Option<ElseBranch>,
-    pos: Position,
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct ElseBranch {
-    then_branch: Vec<Statement>,
-    pos: Position,
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct ElseIfBranch {
-    condition: Expression,
-    then_branch: Vec<Statement>,
-    pos: Position,
-}
-
-impl IfStatement {
-    pub fn condition(&self) -> &Expression {
-        &self.condition
-    }
-
-    pub fn then_statements(&self) -> &[Statement] {
-        &self.then_branch
-    }
-
-    pub fn else_if_branches(&self) -> &[ElseIfBranch] {
-        &self.else_if_branches
-    }
-
-    pub fn else_branch(&self) -> Option<&ElseBranch> {
-        self.else_branch.as_ref()
-    }
-}
-
-impl ElseIfBranch {
-    pub fn condition(&self) -> &Expression {
-        &self.condition
-    }
-
-    pub fn then_statements(&self) -> &[Statement] {
-        &self.then_branch
-    }
-}
-
-impl ElseBranch {
-    pub fn then_statements(&self) -> &[Statement] {
-        &self.then_branch
-    }
-}
 
 impl Parsable for IfStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -121,11 +66,7 @@ impl Parsable for IfStatement {
                     "Expected '}' at the end of then branch in else if branch"
                 );
 
-                else_if_branches.push(ElseIfBranch {
-                    condition: else_if_condition,
-                    then_branch: else_if_then_branch,
-                    pos: else_pos,
-                });
+                else_if_branches.push(ElseIfBranch::new(else_if_condition, else_if_then_branch, else_pos));
             } else {
                 expect_token!(
                     ts,
@@ -144,93 +85,19 @@ impl Parsable for IfStatement {
                     "Expected '}' at the end of else branch"
                 );
 
-                else_branch = Some(ElseBranch {
-                    then_branch: else_then_branch,
-                    pos: else_pos,
-                });
+                    else_branch = Some(ElseBranch::new(else_then_branch, else_pos));
             }
         }
 
-        Ok(IfStatement {
-            condition,
-            then_branch,
-            else_if_branches,
-            else_branch,
-            pos,
-        })
-    }
-}
-
-impl Positioned for IfStatement {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-impl Positioned for ElseBranch {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-impl Positioned for ElseIfBranch {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-#[cfg(test)]
-impl IfStatement {
-    pub fn new(
-        condition: Expression,
-        then_branch: Vec<Statement>,
-        else_if_branches: Vec<ElseIfBranch>,
-        else_branch: Option<ElseBranch>,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        IfStatement {
-            condition,
-            then_branch,
-            else_if_branches,
-            else_branch,
-            pos: Position::new(line, column),
-        }
-    }
-}
-
-#[cfg(test)]
-impl ElseBranch {
-    pub fn new(then_branch: Vec<Statement>, line: usize, column: usize) -> Self {
-        ElseBranch {
-            then_branch,
-            pos: Position::new(line, column),
-        }
-    }
-}
-
-#[cfg(test)]
-impl ElseIfBranch {
-    pub fn new(
-        condition: Expression,
-        then_branch: Vec<Statement>,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        ElseIfBranch {
-            condition,
-            then_branch,
-            pos: Position::new(line, column),
-        }
+        Ok(IfStatement::new(condition, then_branch, else_if_branches, else_branch, pos))
     }
 }
 
 #[cfg(test)]
 mod tests {
 
-    use crate::application::common::parser::{macros::test_token_stream, parsables::{expression::binary::BinaryOperator, statement::assignment::AssignmentStatement}};
-
-use super::*;
+    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::{expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::{UnaryExpression, UnaryOperator}}, statement::AssignmentStatement}, value_objects::data::Value}}};
+    use super::*;
 
     #[test]
     fn test_plain_if_statement() {
@@ -241,23 +108,20 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_binary(
-                    Expression::new_atom_variable("x", 0, 3),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 3))),
                     BinaryOperator::GreaterThan,
-                    Expression::new_atom_literal_float(0.0, 0, 7),
-                    0,
-                    3
-                ),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Float(0.0), Position::new(0, 7))),
+                    Position::new(0, 3)
+                )),
                 vec![Statement::Assignment(AssignmentStatement::new(
-                    "y",
-                    Expression::new_atom_literal_float(1.0, 0, 17),
-                    0,
-                    13
+                    "y".to_string(),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Float(1.0), Position::new(0, 17))),
+                    Position::new(0, 13)
                 ))],
                 vec![],
                 None,
-                0,
-                0
+                Position::new(0, 0)
             )
         );
     }
@@ -271,12 +135,11 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_atom_literal_bool(true, 0, 3),
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 3))),
                 vec![],
                 vec![],
                 None,
-                0,
-                0
+                Position::new(0, 0)
             )
         );
     }
@@ -290,32 +153,27 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_binary(
-                    Expression::new_atom_variable("x", 0, 3),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 3))),
                     BinaryOperator::GreaterThan,
-                    Expression::new_atom_literal_float(0.0, 0, 7),
-                    0,
-                    3
-                ),
-                vec![Statement::new_assignment(
-                    "y",
-                    Expression::new_atom_literal_float(1.0, 0, 17),
-                    0,
-                    13
-                )],
+                    Expression::Atom(ExpressionAtom::Literal(Value::Float(0.0), Position::new(0, 7))),
+                    Position::new(0, 3)
+                )),
+                vec![Statement::Assignment(AssignmentStatement::new(
+                    "y".to_string(),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Float(1.0), Position::new(0, 17))),
+                    Position::new(0, 13)
+                ))],
                 vec![],
                 Some(ElseBranch::new(
-                    vec![Statement::new_assignment(
-                        "y",
-                        Expression::new_unary_negation(Expression::new_atom_literal_float(1.0, 0, 36), 0, 35),
-                        0,
-                        31
-                    )],
-                    0,
-                    24
+                    vec![Statement::Assignment(AssignmentStatement::new(
+                        "y".to_string(),
+                        Expression::Unary(UnaryExpression::new(UnaryOperator::Negation, Expression::Atom(ExpressionAtom::Literal(Value::Float(1.0), Position::new(0, 36))), Position::new(0, 35))),
+                        Position::new(0, 31)
+                    ))],
+                    Position::new(0, 24)
                 )),
-                0,
-                0
+                Position::new(0, 0)
             )
         );
     }
@@ -329,22 +187,19 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_atom_literal_bool(false, 0, 3),
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(false), Position::new(0, 3))),
                 vec![],
                 vec![ElseIfBranch::new(
-                    Expression::new_atom_literal_bool(true, 0, 21),
-                    vec![Statement::new_assignment(
-                        "x",
-                        Expression::new_atom_literal_int(42, 0, 32),
-                        0,
-                        28
-                    )],
-                    0,
-                    13
+                    Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 21))),
+                    vec![Statement::Assignment(AssignmentStatement::new(
+                        "x".to_string(),
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(42), Position::new(0, 32))),
+                        Position::new(0, 28)
+                    ))],
+                    Position::new(0, 13)
                 )],
                 None,
-                0,
-                0
+                Position::new(0, 0)
             )
         );
     }
@@ -358,26 +213,22 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_atom_literal_bool(false, 0, 3),
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(false), Position::new(0, 3))),
                 vec![],
                 vec![ElseIfBranch::new(
-                    Expression::new_atom_variable("x", 0, 21),
+                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 21))),
                     vec![],
-                    0,
-                    13
+                    Position::new(0, 13)
                 )],
                 Some(ElseBranch::new(
-                    vec![Statement::new_assignment(
-                        "y",
-                        Expression::new_unary_negation(Expression::new_atom_literal_float(1.0, 0, 39), 0, 38),
-                        0,
-                        34
-                    )],
-                    0,
-                    27
+                    vec![Statement::Assignment(AssignmentStatement::new(
+                        "y".to_string(),
+                        Expression::Unary(UnaryExpression::new(UnaryOperator::Negation, Expression::Atom(ExpressionAtom::Literal(Value::Float(1.0), Position::new(0, 39))), Position::new(0, 38))),
+                        Position::new(0, 34)
+                    ))],
+                    Position::new(0, 27)
                 )),
-                0,
-                0
+                Position::new(0, 0),
             )
         );
     }
@@ -391,24 +242,21 @@ use super::*;
         assert_eq!(
             if_stmt,
             IfStatement::new(
-                Expression::new_atom_literal_bool(false, 0, 3),
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(false), Position::new(0, 3))),
                 vec![],
                 vec![
-                    ElseIfBranch::new(Expression::new_atom_variable("x", 0, 21), vec![], 0, 13),
-                    ElseIfBranch::new(Expression::new_atom_variable("y", 0, 35), vec![], 0, 27)
+                    ElseIfBranch::new(Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 21))), vec![], Position::new(0, 13)),
+                    ElseIfBranch::new(Expression::Atom(ExpressionAtom::Variable("y".to_string(), Position::new(0, 35))), vec![], Position::new(0, 27))
                 ],
                 Some(ElseBranch::new(
-                    vec![Statement::new_assignment(
-                        "z",
-                        Expression::new_atom_literal_int(42, 0, 52),
-                        0,
-                        48
-                    )],
-                    0,
-                    41
+                    vec![Statement::Assignment(AssignmentStatement::new(
+                        "z".to_string(),
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(42), Position::new(0, 52))),
+                        Position::new(0, 48)
+                    ))],
+                    Position::new(0, 41)
                 )),
-                0,
-                0
+                Position::new(0, 0),
             )
         );
     }

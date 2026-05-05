@@ -1,15 +1,8 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::UnaryExpression}}, domain::common::position::{Position, Positioned}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::{abstract_syntax_tree::expression::{Expression, atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::UnaryExpression}, value_objects::data::Value}}};
 
 pub mod atom;
 pub mod binary;
 pub mod unary;
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum Expression {
-    Atom(ExpressionAtom),
-    Unary(UnaryExpression),
-    Binary(BinaryExpression),
-}
 
 impl Parsable for Expression {
     fn is_next(_ts: &TokenStream) -> bool {
@@ -92,56 +85,8 @@ impl Positioned for Expression {
 }
 
 #[cfg(test)]
-impl Expression {
-    pub fn new_atom_literal_int(value: i64, line: usize, first_char: usize) -> Self {
-        Expression::Atom(ExpressionAtom::new_literal_int(value, line, first_char))
-    }
-
-    pub fn new_atom_literal_float(value: f64, line: usize, first_char: usize) -> Self {
-        Expression::Atom(ExpressionAtom::new_literal_float(value, line, first_char))
-    }
-
-    pub fn new_atom_literal_string(value: String, line: usize, first_char: usize) -> Self {
-        Expression::Atom(ExpressionAtom::new_literal_string(value, line, first_char))
-    }
-
-    pub fn new_atom_literal_bool(value: bool, line: usize, first_char: usize) -> Self {
-        Expression::Atom(ExpressionAtom::new_literal_bool(value, line, first_char))
-    }
-
-    pub fn new_atom_variable(name: &str, line: usize, first_char: usize) -> Self {
-        Expression::Atom(ExpressionAtom::new_variable(name, line, first_char))
-    }
-
-    pub fn new_unary_negation(operand: Expression, line: usize, first_char: usize) -> Self {
-        Expression::Unary(UnaryExpression::new_negation(operand, line, first_char))
-    }
-
-    pub fn new_unary_logical_not(operand: Expression, line: usize, first_char: usize) -> Self {
-        Expression::Unary(UnaryExpression::new_logical_not(operand, line, first_char))
-    }
-
-    pub fn new_binary(
-        left: Expression,
-        operator: BinaryOperator,
-        right: Expression,
-        line: usize,
-        first_char: usize,
-    ) -> Self {
-        use Position;
-
-        Expression::Binary(BinaryExpression::new(
-            left,
-            operator,
-            right,
-            Position::new(line, first_char),
-        ))
-    }
-}
-
-#[cfg(test)]
 mod tests {
-    use crate::application::common::parser::macros::test_token_stream;
+    use crate::{application::common::parser::macros::test_token_stream, domain::game::abstract_syntax_tree::expression::unary::UnaryOperator};
     use super::*;
 
     // === Atom Tests ===
@@ -152,7 +97,7 @@ mod tests {
 
         assert!(Expression::is_next(&ts));
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
-        assert_eq!(parsed, Expression::new_atom_literal_int(42, 0, 0));
+        assert_eq!(parsed, Expression::Atom(ExpressionAtom::Literal(Value::Int(42), Position::new(0, 0))));
     }
 
     #[test]
@@ -161,7 +106,7 @@ mod tests {
 
         assert!(Expression::is_next(&ts));
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
-        assert_eq!(parsed, Expression::new_atom_literal_float(3.14, 0, 0));
+        assert_eq!(parsed, Expression::Atom(ExpressionAtom::Literal(Value::Float(3.14), Position::new(0, 0))));
     }
 
     #[test]
@@ -172,7 +117,7 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_atom_literal_string("hello".to_string(), 0, 0)
+            Expression::Atom(ExpressionAtom::Literal(Value::String("hello".to_string()), Position::new(0, 0)))
         );
     }
 
@@ -182,7 +127,7 @@ mod tests {
 
         assert!(Expression::is_next(&ts));
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
-        assert_eq!(parsed, Expression::new_atom_literal_bool(true, 0, 0));
+        assert_eq!(parsed, Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 0))));
     }
 
     #[test]
@@ -191,7 +136,7 @@ mod tests {
 
         assert!(Expression::is_next(&ts));
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
-        assert_eq!(parsed, Expression::new_atom_variable("x", 0, 0));
+        assert_eq!(parsed, Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 0))));
     }
 
     // === Unary Tests ===
@@ -204,7 +149,7 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_unary_negation(Expression::new_atom_literal_int(5, 0, 1), 0, 0)
+            Expression::Unary(UnaryExpression::new(UnaryOperator::Negation, Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 1))), Position::new(0, 0)))
         );
     }
 
@@ -216,7 +161,7 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_unary_logical_not(Expression::new_atom_literal_bool(true, 0, 1), 0, 0)
+            Expression::Unary(UnaryExpression::new(UnaryOperator::LogicalNot, Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 1))), Position::new(0, 0)))
         );
     }
 
@@ -230,13 +175,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(1, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 0))),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(2, 0, 4),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 4))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -248,13 +192,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(3, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 0))),
                 BinaryOperator::Multiplication,
-                Expression::new_atom_literal_int(4, 0, 4),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(4), Position::new(0, 4))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -266,13 +209,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(5, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 0))),
                 BinaryOperator::LessThanOrEqual,
-                Expression::new_atom_literal_int(10, 0, 5),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(10), Position::new(0, 5))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -284,13 +226,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_bool(true, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 0))),
                 BinaryOperator::LogicalAnd,
-                Expression::new_atom_literal_bool(false, 0, 8),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(false), Position::new(0, 8))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -304,19 +245,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(1, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 0))),
                 BinaryOperator::Addition,
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(2, 0, 4),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 4))),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(3, 0, 8),
-                    0,
-                    4
-                ),
-                0,
-                0
-            )
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 8))),
+                    Position::new(0, 4)
+                )),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -328,19 +267,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(2, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 0))),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(3, 0, 4),
-                    0,
-                    0
-                ),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 4))),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(1, 0, 8),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 8))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -352,19 +289,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(1, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 0))),
                     BinaryOperator::Subtraction,
-                    Expression::new_atom_literal_int(2, 0, 4),
-                    0,
-                    0
-                ),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 4))),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::Subtraction,
-                Expression::new_atom_literal_int(3, 0, 8),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 8))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -376,19 +311,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(2, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 0))),
                 BinaryOperator::Power,
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(3, 0, 4),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 4))),
                     BinaryOperator::Power,
-                    Expression::new_atom_literal_int(4, 0, 8),
-                    0,
-                    4
-                ),
-                0,
-                0
-            )
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(4), Position::new(0, 8))),
+                    Position::new(0, 4)
+                )),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -402,19 +335,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(1, 0, 1),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 1))),
                     BinaryOperator::Addition,
-                    Expression::new_atom_literal_int(2, 0, 5),
-                    0,
-                    1
-                ),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 5))),
+                    Position::new(0, 1)
+                )),
                 BinaryOperator::Multiplication,
-                Expression::new_atom_literal_int(3, 0, 10),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 10))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -426,13 +357,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_atom_literal_int(1, 0, 2),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 2))),
                 BinaryOperator::Addition,
-                Expression::new_atom_literal_int(2, 0, 6),
-                0,
-                2
-            )
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 6))),
+                Position::new(0, 2)
+            ))
         );
     }
 
@@ -446,31 +376,27 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(1, 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 0))),
                     BinaryOperator::Addition,
-                    Expression::new_binary(
-                        Expression::new_atom_literal_int(2, 0, 4),
+                    Expression::Binary(BinaryExpression::new(
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 4))),
                         BinaryOperator::Multiplication,
-                        Expression::new_atom_literal_int(3, 0, 8),
-                        0,
-                        4
-                    ),
-                    0,
-                    0
-                ),
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(3), Position::new(0, 8))),
+                        Position::new(0, 4)
+                    )),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::Subtraction,
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(4, 0, 12),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(4), Position::new(0, 12))),
                     BinaryOperator::Division,
-                    Expression::new_atom_literal_int(2, 0, 16),
-                    0,
-                    12
-                ),
-                0,
-                0
-            )
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 16))),
+                    Position::new(0, 12)
+                )),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -482,19 +408,17 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_variable("a", 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Variable("a".to_string(), Position::new(0, 0))),
                     BinaryOperator::LogicalAnd,
-                    Expression::new_atom_variable("b", 0, 5),
-                    0,
-                    0
-                ),
+                    Expression::Atom(ExpressionAtom::Variable("b".to_string(), Position::new(0, 5))),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::LogicalOr,
-                Expression::new_atom_variable("c", 0, 10),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Variable("c".to_string(), Position::new(0, 10))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -506,25 +430,22 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_atom_variable("x", 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 0))),
                     BinaryOperator::Addition,
-                    Expression::new_atom_literal_int(1, 0, 4),
-                    0,
-                    0
-                ),
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 4))),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::LessThan,
-                Expression::new_binary(
-                    Expression::new_atom_variable("y", 0, 8),
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Atom(ExpressionAtom::Variable("y".to_string(), Position::new(0, 8))),
                     BinaryOperator::Multiplication,
-                    Expression::new_atom_literal_int(2, 0, 12),
-                    0,
-                    8
-                ),
-                0,
-                0
-            )
+                    Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 12))),
+                    Position::new(0, 8)
+                )),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -536,13 +457,12 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_unary_negation(Expression::new_atom_variable("a", 0, 1), 0, 0),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Unary(UnaryExpression::new(UnaryOperator::Negation, Expression::Atom(ExpressionAtom::Variable("a".to_string(), Position::new(0, 1))), Position::new(0, 0))),
                 BinaryOperator::Addition,
-                Expression::new_atom_variable("b", 0, 5),
-                0,
-                0
-            )
+                Expression::Atom(ExpressionAtom::Variable("b".to_string(), Position::new(0, 5))),
+                Position::new(0, 0)
+            ))
         );
     }
 
@@ -554,31 +474,27 @@ mod tests {
         let parsed = Expression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             parsed,
-            Expression::new_binary(
-                Expression::new_binary(
-                    Expression::new_binary(
-                        Expression::new_binary(
-                            Expression::new_atom_variable("a", 0, 1),
+            Expression::Binary(BinaryExpression::new(
+                Expression::Binary(BinaryExpression::new(
+                    Expression::Binary(BinaryExpression::new(
+                        Expression::Binary(BinaryExpression::new(
+                            Expression::Atom(ExpressionAtom::Variable("a".to_string(), Position::new(0, 1))),
                             BinaryOperator::Addition,
-                            Expression::new_atom_variable("b", 0, 5),
-                            0,
-                            1
-                        ),
+                            Expression::Atom(ExpressionAtom::Variable("b".to_string(), Position::new(0, 5))),
+                            Position::new(0, 1)
+                        )),
                         BinaryOperator::Multiplication,
-                        Expression::new_atom_variable("c", 0, 10),
-                        0,
-                        0
-                    ),
+                        Expression::Atom(ExpressionAtom::Variable("c".to_string(), Position::new(0, 10))),
+                        Position::new(0, 0)
+                    )),
                     BinaryOperator::Equal,
-                    Expression::new_atom_variable("d", 0, 15),
-                    0,
-                    0
-                ),
+                    Expression::Atom(ExpressionAtom::Variable("d".to_string(), Position::new(0, 15))),
+                    Position::new(0, 0)
+                )),
                 BinaryOperator::LogicalAnd,
-                Expression::new_unary_logical_not(Expression::new_atom_variable("e", 0, 21), 0, 20),
-                0,
-                0
-            )
+                Expression::Unary(UnaryExpression::new(UnaryOperator::LogicalNot, Expression::Atom(ExpressionAtom::Variable("e".to_string(), Position::new(0, 21))), Position::new(0, 20))),
+                Position::new(0, 0)
+            ))
         );
     }
 }

@@ -1,53 +1,9 @@
-use std::fmt::Display;
 
-use crate::{application::common::parser::{lexer::token::{Token, TokenVariant}, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
+use crate::{application::common::parser::lexer::token::{Token, TokenVariant}, domain::game::abstract_syntax_tree::expression::binary::BinaryOperator};
 
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct BinaryExpression {
-    left: Box<Expression>,
-    operator: BinaryOperator,
-    right: Box<Expression>,
-    pos: Position,
-}
-
-impl BinaryExpression {
-    pub fn left(&self) -> &Expression {
-        &self.left
-    }
-
-    pub fn operator(&self) -> &BinaryOperator {
-        &self.operator
-    }
-
-    pub fn right(&self) -> &Expression {
-        &self.right
-    }
-}
-
-impl Positioned for BinaryExpression {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum BinaryOperator {
-    Addition,
-    Subtraction,
-    Multiplication,
-    Division,
-    Modulo,
-    Power,
-    LogicalAnd,
-    LogicalOr,
-    Equal,
-    NotEqual,
-    LessThan,
-    LessThanOrEqual,
-    GreaterThan,
-    GreaterThanOrEqual,
-}
+// Since BinaryExpression is not directly parsable (it requires operator precedence parsing), we don't implement Parsable for it. 
+// Instead, we'll implement the parsing logic in the Expression, where we can handle operator precedence and associativity correctly.
 
 impl BinaryOperator {
     pub fn from_token(token: &Token) -> Option<Self> {
@@ -84,45 +40,6 @@ impl BinaryOperator {
                 (90, 91)
             }
             BinaryOperator::Power => (101, 100),
-        }
-    }
-}
-
-impl Display for BinaryOperator {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let op_str = match self {
-            BinaryOperator::Addition => "+",
-            BinaryOperator::Subtraction => "-",
-            BinaryOperator::Multiplication => "*",
-            BinaryOperator::Division => "/",
-            BinaryOperator::Modulo => "%",
-            BinaryOperator::Power => "^",
-            BinaryOperator::LogicalAnd => "&&",
-            BinaryOperator::LogicalOr => "||",
-            BinaryOperator::Equal => "==",
-            BinaryOperator::NotEqual => "!=",
-            BinaryOperator::LessThan => "<",
-            BinaryOperator::LessThanOrEqual => "<=",
-            BinaryOperator::GreaterThan => ">",
-            BinaryOperator::GreaterThanOrEqual => ">=",
-        };
-        write!(f, "{}", op_str)
-    }
-}
-
-/// Since BinaryExpression is not directly parsable (it requires operator precedence parsing), we don't implement Parsable for it. Instead, we'll implement the parsing logic in the Expression, where we can handle operator precedence and associativity correctly.
-impl BinaryExpression {
-    pub fn new(
-        left: Expression,
-        operator: BinaryOperator,
-        right: Expression,
-        pos: Position,
-    ) -> Self {
-        BinaryExpression {
-            left: Box::new(left),
-            operator,
-            right: Box::new(right),
-            pos,
         }
     }
 }

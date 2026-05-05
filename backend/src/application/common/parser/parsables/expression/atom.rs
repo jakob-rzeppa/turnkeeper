@@ -1,10 +1,4 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::{Token, TokenVariant}, token_stream::TokenStream}, macros::{get_pos, is_token}, parsable::Parsable}, domain::{common::position::{self, Position, Positioned}, game::value_objects::data::Value}};
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum ExpressionAtom {
-    Literal(Value, Position),
-    Variable(String, Position),
-}
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::{Token, TokenVariant}, token_stream::TokenStream}, macros::{get_pos, is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}}};
 
 impl Parsable for ExpressionAtom {
     fn is_next(ts: &TokenStream) -> bool {
@@ -37,29 +31,6 @@ impl Positioned for ExpressionAtom {
             ExpressionAtom::Literal(_, pos) => *pos,
             ExpressionAtom::Variable(_, pos) => *pos,
         }
-    }
-}
-
-#[cfg(test)]
-impl ExpressionAtom {
-    pub fn new_literal_int(value: i64, line: usize, first_char: usize) -> Self {
-        ExpressionAtom::Literal(Value::Int(value), Position::new(line, first_char))
-    }
-
-    pub fn new_literal_float(value: f64, line: usize, first_char: usize) -> Self {
-        ExpressionAtom::Literal(Value::Float(value), Position::new(line, first_char))
-    }
-
-    pub fn new_literal_string(value: String, line: usize, first_char: usize) -> Self {
-        ExpressionAtom::Literal(Value::String(value), Position::new(line, first_char))
-    }
-
-    pub fn new_literal_bool(value: bool, line: usize, first_char: usize) -> Self {
-        ExpressionAtom::Literal(Value::Bool(value), Position::new(line, first_char))
-    }
-
-    pub fn new_variable(name: &str, line: usize, first_char: usize) -> Self {
-        ExpressionAtom::Variable(name.to_string(), Position::new(line, first_char))
     }
 }
 

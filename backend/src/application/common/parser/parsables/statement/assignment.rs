@@ -1,23 +1,5 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable, parsables::expression::Expression}, domain::common::position::{Position, Positioned}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::abstract_syntax_tree::{statement::AssignmentStatement, expression::Expression}}};
 
-
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct AssignmentStatement {
-    name: String,
-    value: Expression,
-    pos: Position,
-}
-
-impl AssignmentStatement {
-    pub fn name(&self) -> &String {
-        &self.name
-    }
-
-    pub fn value(&self) -> &Expression {
-        &self.value
-    }
-}
 
 impl Parsable for AssignmentStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -65,34 +47,13 @@ impl Parsable for AssignmentStatement {
             "';' at the end of assignment statement"
         );
 
-        Ok(AssignmentStatement {
-            name,
-            value,
-            pos,
-        })
-    }
-}
-
-impl Positioned for AssignmentStatement {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-#[cfg(test)]
-impl AssignmentStatement {
-    pub fn new(name: &str, value: Expression, line: usize, first_char: usize) -> Self {
-        Self {
-            name: name.to_string(),
-            value,
-            pos: Position::new(line, first_char),
-        }
+        Ok(AssignmentStatement::new(name, value, pos))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::application::common::parser::macros::test_token_stream;
+    use crate::{application::common::parser::macros::test_token_stream, domain::game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}};
 
 use super::*;
 
@@ -105,10 +66,9 @@ use super::*;
         assert_eq!(
             assignment,
             AssignmentStatement::new(
-                "myVariable",
-                Expression::new_atom_literal_int(42, 0, 13),
-                0,
-                0
+                "myVariable".to_string(),
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(42), Position::new(0, 13))),
+                Position::new(0, 0)
             )
         );
     }

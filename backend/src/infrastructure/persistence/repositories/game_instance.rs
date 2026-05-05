@@ -185,12 +185,12 @@ mod tests {
 
     use crate::{
         application::{
-            common::parser::parsables::{expression::Expression, statement::Statement}, game::contracts::GameRepositoryContract, game_instance::contracts::GameInstanceRepositoryContract, user::contracts::UserRepositoryContract
+            game::contracts::GameRepositoryContract, game_instance::contracts::GameInstanceRepositoryContract, user::contracts::UserRepositoryContract
         },
         domain::{
             common::{date_time::DateTime, identifier::Id, position::Position},
             game::{
-                entities::{
+                abstract_syntax_tree::{expression::{Expression, atom::ExpressionAtom}, statement::{Statement, VariableDeclarationStatement}}, entities::{
                     game::Game,
                     game_instance::GameInstance,
                     weak::{
@@ -200,13 +200,12 @@ mod tests {
                         player::Player,
                         stat::{GameStat, PlayerStat},
                     },
-                },
-                value_objects::{
+                }, value_objects::{
                     data::{Datatype, Value},
                     visibility::{
                         ActionVisibility, GameStatVisibility, PageVisibility, PlayerStatVisibility,
                     },
-                },
+                }
             },
             user::entities::User,
         },
@@ -268,13 +267,12 @@ mod tests {
             vec![],
             vec![],
             ActionVisibility::Public,
-            vec![Statement::new_variable_declaration(
-                "x",
+            vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
+                "x".to_string(),
                 Datatype::Int,
-                Expression::new_atom_literal_int(5, 0, 22),
-                0,
-                14,
-            )],
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 22))),
+                Position::new(0, 15)
+            ))],
             format!("action {} {{ let x = 5; }}", name),
             Position::new(1, 1),
         )

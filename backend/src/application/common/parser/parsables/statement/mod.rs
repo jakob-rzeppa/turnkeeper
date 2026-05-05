@@ -1,23 +1,12 @@
 #[cfg(test)]
-use crate::{application::common::parser::parsables::{expression::Expression, statement::if_statement::{ElseBranch, ElseIfBranch}}, domain::game::value_objects::data::Datatype};
-use crate::{application::common::parser::{error::ParsingError, lexer::token_stream::TokenStream, macros::get_pos, parsable::Parsable, parsables::statement::{assignment::AssignmentStatement, expression::ExpressionStatement, if_statement::IfStatement, variable_declaration::VariableDeclarationStatement, while_loop::WhileLoopStatement}}, domain::common::position::{Position, Positioned}};
-
-
+use crate::domain::game::value_objects::data::Datatype;
+use crate::{application::common::parser::{error::ParsingError, lexer::token_stream::TokenStream, macros::get_pos, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::abstract_syntax_tree::{statement::{Statement, AssignmentStatement, IfStatement, VariableDeclarationStatement, WhileLoopStatement, ExpressionStatement, ElseBranch, ElseIfBranch}, expression::Expression}}};
 
 pub mod assignment;
 pub mod expression;
 pub mod if_statement;
 pub mod variable_declaration;
 pub mod while_loop;
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub enum Statement {
-    VariableDeclaration(VariableDeclarationStatement),
-    Assignment(AssignmentStatement),
-    If(IfStatement),
-    WhileLoop(WhileLoopStatement),
-    Expression(ExpressionStatement),
-}
 
 impl Parsable for Statement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -46,74 +35,5 @@ impl Parsable for Statement {
                 pos: get_pos!(ts),
             })
         }
-    }
-}
-
-impl Positioned for Statement {
-    fn position(&self) -> Position {
-        match self {
-            Statement::VariableDeclaration(var_decl) => var_decl.position(),
-            Statement::Assignment(assign) => assign.position(),
-            Statement::If(if_stmt) => if_stmt.position(),
-            Statement::WhileLoop(while_loop) => while_loop.position(),
-            Statement::Expression(expr_stmt) => expr_stmt.position(),
-        }
-    }
-}
-
-#[cfg(test)]
-impl Statement {
-    pub fn new_variable_declaration(
-        name: &str,
-        var_type: Datatype,
-        value: Expression,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        Statement::VariableDeclaration(VariableDeclarationStatement::new(
-            name, var_type, value, line, column,
-        ))
-    }
-
-    pub fn new_assignment(
-        variable_name: &str,
-        value: Expression,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        Statement::Assignment(AssignmentStatement::new(variable_name, value, line, column))
-    }
-
-    pub fn new_if(
-        condition: Expression,
-        then_branch: Vec<Statement>,
-        else_if_branches: Vec<ElseIfBranch>,
-        else_branch: Option<ElseBranch>,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        Statement::If(IfStatement::new(
-            condition,
-            then_branch,
-            else_if_branches,
-            else_branch,
-            line,
-            column,
-        ))
-    }
-
-    pub fn new_while_loop(
-        condition: Expression,
-        body: Vec<Statement>,
-        line: usize,
-        column: usize,
-    ) -> Self {
-        Statement::WhileLoop(WhileLoopStatement::new_while_loop(
-            condition, body, line, column,
-        ))
-    }
-
-    pub fn new_expression_statement(expression: Expression, line: usize, column: usize) -> Self {
-        Statement::Expression(ExpressionStatement::new(expression, line, column))
     }
 }

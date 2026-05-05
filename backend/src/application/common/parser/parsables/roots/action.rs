@@ -5,9 +5,10 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable, parsables::statement::Statement,
+        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable,
     },
     domain::game::{
+        abstract_syntax_tree::statement::Statement,
         entities::weak::action::Action,
         value_objects::{
             data::Datatype, execution_trigger::ExecutionTrigger, parameter::Parameter,
@@ -358,7 +359,7 @@ fn extract_source_code_range(
 
 #[cfg(test)]
 mod tests {
-    use crate::application::common::parser::{macros::test_token_stream, parsables::expression::Expression};
+    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::{expression::{Expression, atom::ExpressionAtom}, statement::VariableDeclarationStatement}, value_objects::data::Value}}};
 
     use super::*;
 
@@ -373,13 +374,12 @@ mod tests {
         assert_eq!(action.visibility(), &ActionVisibility::Public);
         assert!(action.parameters().is_empty());
         assert!(action.execution_triggers().is_empty());
-        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
-            "x",
+        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
+            "x".to_string(),
             Datatype::Int,
-            Expression::new_atom_literal_int(5, 0, 39),
-            0,
-            26,
-        )]);
+            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 39))),
+            Position::new(0, 26)
+        ))]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -399,13 +399,12 @@ mod tests {
         assert_eq!(action.parameters()[1].name(), "param2");
         assert_eq!(action.parameters()[1].datatype(), &Datatype::String);
         assert!(action.execution_triggers().is_empty());
-        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
-            "x",
+        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
+            "x".to_string(),
             Datatype::Int,
-            Expression::new_atom_literal_int(5, 0, 69),
-            0,
-            56,
-        )]);
+            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 69))),
+            Position::new(0, 56)
+        ))]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -429,13 +428,12 @@ mod tests {
             action.execution_triggers()[1],
             ExecutionTrigger::BeforeAction("my_other_trigger".into())
         );
-        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
-            "x",
+        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
+            "x".to_string(),
             Datatype::Int,
-            Expression::new_atom_literal_int(5, 0, 82),
-            0,
-            69,
-        )]);
+            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 82))),
+            Position::new(0, 69)
+        ))]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -474,13 +472,12 @@ mod tests {
             action.execution_triggers()[3],
             ExecutionTrigger::AfterRoundAdvance
         );
-        assert_eq!(action.execution_block(), &vec![Statement::new_variable_declaration(
-            "x",
+        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
+            "x".to_string(),
             Datatype::Int,
-            Expression::new_atom_literal_int(5, 6, 29),
-            6,
-            16,
-        )]);
+            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(6, 29))),
+            Position::new(6, 16)
+        ))]);
         assert_eq!(action.source_code(), source_code);
     }
 

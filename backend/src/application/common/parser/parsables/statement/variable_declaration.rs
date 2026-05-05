@@ -1,28 +1,6 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::Expression}, domain::{common::position::{Position, Positioned}, game::value_objects::data::Datatype}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable}, domain::game::{abstract_syntax_tree::{expression::Expression, statement::VariableDeclarationStatement}, value_objects::data::Datatype}};
 
 
-
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
-pub struct VariableDeclarationStatement {
-    name: String,
-    var_type: Datatype,
-    value: Expression,
-    pos: Position,
-}
-
-impl VariableDeclarationStatement {
-    pub fn name(&self) -> &str {
-        &self.name
-    }
-
-    pub fn datatype(&self) -> &Datatype {
-        &self.var_type
-    }
-
-    pub fn value(&self) -> &Expression {
-        &self.value
-    }
-}
 
 impl Parsable for VariableDeclarationStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -86,42 +64,13 @@ impl Parsable for VariableDeclarationStatement {
             "Expected ';' at the end of variable declaration"
         );
 
-        Ok(VariableDeclarationStatement {
-            name,
-            var_type,
-            value,
-            pos,
-        })
-    }
-}
-
-impl Positioned for VariableDeclarationStatement {
-    fn position(&self) -> Position {
-        self.pos
-    }
-}
-
-#[cfg(test)]
-impl VariableDeclarationStatement {
-    pub fn new(
-        name: &str,
-        var_type: Datatype,
-        value: Expression,
-        line: usize,
-        first_char: usize,
-    ) -> Self {
-        VariableDeclarationStatement {
-            name: name.to_string(),
-            var_type,
-            value,
-            pos: Position::new(line, first_char),
-        }
+        Ok(VariableDeclarationStatement::new(name, var_type, value, pos))
     }
 }
 
 #[cfg(test)]
 mod tests {
-    use crate::application::common::parser::{macros::test_token_stream, parsables::expression::binary::BinaryOperator};
+    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}}, value_objects::data::Value}}};
 
 use super::*;
 
@@ -134,11 +83,10 @@ use super::*;
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                "x",
+                "x".to_string(),
                 Datatype::Int,
-                Expression::new_atom_literal_int(42, 0, 13),
-                0,
-                0
+                Expression::Atom(ExpressionAtom::Literal(Value::Int(42), Position::new(0, 13))),
+                Position::new(0, 0)
             )
         );
     }
@@ -152,11 +100,10 @@ use super::*;
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                "pi",
+                "pi".to_string(),
                 Datatype::Float,
-                Expression::new_atom_literal_float(3.14, 0, 16),
-                0,
-                0
+                Expression::Atom(ExpressionAtom::Literal(Value::Float(3.14), Position::new(0, 16))),
+                Position::new(0, 0) 
             )
         );
     }
@@ -170,11 +117,10 @@ use super::*;
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                "name",
+                "name".to_string(),
                 Datatype::String,
-                Expression::new_atom_literal_string("Hello".to_string(), 0, 19),
-                0,
-                0
+                Expression::Atom(ExpressionAtom::Literal(Value::String("Hello".to_string()), Position::new(0, 19))),
+                Position::new(0, 0)
             )
         );
     }
@@ -188,11 +134,10 @@ use super::*;
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                "flag",
+                "flag".to_string(),
                 Datatype::Bool,
-                Expression::new_atom_literal_bool(true, 0, 17),
-                0,
-                0
+                Expression::Atom(ExpressionAtom::Literal(Value::Bool(true), Position::new(0, 17))),
+                Position::new(0, 0)
             )
         );
     }
@@ -206,17 +151,17 @@ use super::*;
         assert_eq!(
             stmt,
             VariableDeclarationStatement::new(
-                "sum",
+                "sum".to_string(),
                 Datatype::Int,
-                Expression::new_binary(
-                    Expression::new_atom_literal_int(1, 0, 15),
-                    BinaryOperator::Addition,
-                    Expression::new_atom_literal_int(2, 0, 19),
-                    0,
-                    15
+                Expression::Binary(
+                    BinaryExpression::new(
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 15))),
+                        BinaryOperator::Addition,
+                        Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 19))),
+                        Position::new(0, 15)
+                    )
                 ),
-                0,
-                0
+                Position::new(0, 0)
             )
         );
     }
