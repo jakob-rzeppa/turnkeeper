@@ -65,7 +65,7 @@ impl GameParserContract for GameParser {
                 actions.push(Action::parse(&mut token_stream, source_code)?);
             } else {
                 return Err(ParsingError::UnexpectedToken {
-                    expected: "PlayerStat or GameStat".to_string(),
+                    expected: "PlayerStat, GameStat or Action".to_string(),
                     found: token_stream.peek().unwrap().variant.clone(),
                     pos: token_stream.peek().unwrap().pos,
                 });

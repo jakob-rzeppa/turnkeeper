@@ -5,7 +5,7 @@ use crate::{
             token::{Token, TokenVariant},
             token_stream::TokenStream,
         },
-        macros::{change_err_msg, expect_token, get_pos, nth_is_token},
+        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token},
         parsable::Parsable,
     },
     domain::game::{
@@ -19,7 +19,7 @@ use crate::{
 
 impl Parsable for GameStat {
     fn is_next(ts: &TokenStream) -> bool {
-        nth_is_token!(ts, 1, TokenVariant::Stat)
+        is_token!(ts, TokenVariant::Stat) || nth_is_token!(ts, 1, TokenVariant::Stat)
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {

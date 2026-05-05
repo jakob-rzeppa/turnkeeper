@@ -18,7 +18,7 @@ use crate::{
 
 impl Parsable for Action {
     fn is_next(ts: &TokenStream) -> bool {
-        nth_is_token!(ts, 1, TokenVariant::Action)
+        is_token!(ts, TokenVariant::Action) || nth_is_token!(ts, 1, TokenVariant::Action)
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
