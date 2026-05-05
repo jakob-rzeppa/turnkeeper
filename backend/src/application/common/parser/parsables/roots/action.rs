@@ -10,7 +10,7 @@ use crate::{
     domain::game::{
         entities::weak::action::Action,
         value_objects::{
-            data::VariableType, execution_trigger::ExecutionTrigger, parameter::Parameter,
+            data::Datatype, execution_trigger::ExecutionTrigger, parameter::Parameter,
             visibility::ActionVisibility,
         },
     },
@@ -211,7 +211,7 @@ impl Action {
 
             expect_token!(ts, TokenVariant::Colon, "Expected ':' after parameter name");
 
-            let param_type = VariableType::parse(ts, source_code).map_err(|err| {
+            let param_type = Datatype::parse(ts, source_code).map_err(|err| {
                 change_err_msg!(err, "Expected parameter type (int, float, string, bool)")
             })?;
 
@@ -409,9 +409,9 @@ mod tests {
         assert_eq!(action.visibility(), &ActionVisibility::Private);
         assert_eq!(action.parameters().len(), 2);
         assert_eq!(action.parameters()[0].name(), "param1");
-        assert_eq!(action.parameters()[0].datatype(), &VariableType::Int);
+        assert_eq!(action.parameters()[0].datatype(), &Datatype::Int);
         assert_eq!(action.parameters()[1].name(), "param2");
-        assert_eq!(action.parameters()[1].datatype(), &VariableType::String);
+        assert_eq!(action.parameters()[1].datatype(), &Datatype::String);
         assert!(action.execution_triggers().is_empty());
         assert_eq!(action.source_code(), source_code);
     }

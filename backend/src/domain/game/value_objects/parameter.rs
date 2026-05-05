@@ -1,15 +1,15 @@
 use serde::Serialize;
 
-use crate::domain::game::value_objects::data::VariableType;
+use crate::domain::game::value_objects::data::Datatype;
 
 #[derive(Debug, Clone, PartialEq)]
 pub struct Parameter {
     name: String,
-    datatype: VariableType,
+    datatype: Datatype,
 }
 
 impl Parameter {
-    pub fn new(name: String, datatype: VariableType) -> Self {
+    pub fn new(name: String, datatype: Datatype) -> Self {
         Self { name, datatype }
     }
 
@@ -17,7 +17,7 @@ impl Parameter {
         &self.name
     }
 
-    pub fn datatype(&self) -> &VariableType {
+    pub fn datatype(&self) -> &Datatype {
         &self.datatype
     }
 
@@ -28,7 +28,7 @@ impl Parameter {
         }
         let name = parts[0].trim().to_string();
         let datatype_str = parts[1].trim();
-        let datatype = VariableType::parse_str(datatype_str)?;
+        let datatype = Datatype::parse_str(datatype_str)?;
         Ok(Parameter { name, datatype })
     }
 }

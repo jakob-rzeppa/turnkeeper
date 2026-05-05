@@ -11,7 +11,7 @@ use crate::{
     domain::game::{
         entities::weak::stat::PlayerStat,
         value_objects::{
-            data::{VariableType, VariableValue},
+            data::{Datatype, Value},
             visibility::PlayerStatVisibility,
         },
     },
@@ -91,7 +91,7 @@ impl Parsable for PlayerStat {
         {
             ts.next(); // Consume the colon
 
-            Some(VariableType::parse(ts, source_code).map_err(|err|
+            Some(Datatype::parse(ts, source_code).map_err(|err|
                 change_err_msg!(err, "Expected type declaration (int, float, string, bool) after ':' in player stat declaration")
             )?)
         } else {
@@ -104,12 +104,12 @@ impl Parsable for PlayerStat {
             "Expected '=' after player stat name (and optional type declaration) in player stat declaration"
         );
 
-        let value: VariableValue = match ts.next() {
+        let value: Value = match ts.next() {
             Some(token) => match token.variant.clone() {
-                TokenVariant::IntLiteral(num) => VariableValue::Int(num),
-                TokenVariant::FloatLiteral(num) => VariableValue::Float(num),
-                TokenVariant::StringLiteral(s) => VariableValue::String(s),
-                TokenVariant::BoolLiteral(b) => VariableValue::Bool(b),
+                TokenVariant::IntLiteral(num) => Value::Int(num),
+                TokenVariant::FloatLiteral(num) => Value::Float(num),
+                TokenVariant::StringLiteral(s) => Value::String(s),
+                TokenVariant::BoolLiteral(b) => Value::Bool(b),
                 _ => {
                     return Err(ParsingError::UnexpectedToken {
                         expected: "Expected literal value (int, float, string, bool) after '=' in player stat declaration".to_string(),
@@ -165,7 +165,7 @@ mod tests {
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
 
         assert_eq!(pstat.name(), "gold");
-        assert_eq!(pstat.default(), &VariableValue::Int(100));
+        assert_eq!(pstat.default(), &Value::Int(100));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Public);
     }
 
@@ -176,7 +176,7 @@ mod tests {
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
 
         assert_eq!(pstat.name(), "experience");
-        assert_eq!(pstat.default(), &VariableValue::Int(0));
+        assert_eq!(pstat.default(), &Value::Int(0));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Protected);
     }
 
@@ -187,7 +187,7 @@ mod tests {
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
 
         assert_eq!(pstat.name(), "stamina");
-        assert_eq!(pstat.default(), &VariableValue::Float(50.0));
+        assert_eq!(pstat.default(), &Value::Float(50.0));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Private);
     }
 
@@ -201,7 +201,7 @@ mod tests {
         assert_eq!(pstat.name(), "secret");
         assert_eq!(
             pstat.default(),
-            &VariableValue::String("hidden_value".to_string())
+            &Value::String("hidden_value".to_string())
         );
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Hidden);
     }
@@ -213,7 +213,7 @@ mod tests {
 
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.name(), "hasSpecialAbility");
-        assert_eq!(pstat.default(), &VariableValue::Bool(false));
+        assert_eq!(pstat.default(), &Value::Bool(false));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Protected);
     }
 

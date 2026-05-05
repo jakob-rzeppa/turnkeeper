@@ -1,7 +1,7 @@
 use crate::domain::{
     common::position::Position,
     game::value_objects::{
-        data::{VariableType, VariableValue},
+        data::{Datatype, Value},
         visibility::{GameStatVisibility, PlayerStatVisibility},
     },
 };
@@ -9,9 +9,9 @@ use crate::domain::{
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct GameStatMetadataProjection {
     pub name: String,
-    pub datatype: VariableType,
+    pub datatype: Datatype,
 
-    pub default: VariableValue,
+    pub default: Value,
     pub visibility: GameStatVisibility,
 
     pub pos: Position,
@@ -20,9 +20,9 @@ pub struct GameStatMetadataProjection {
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct PlayerStatMetadataProjection {
     pub name: String,
-    pub datatype: VariableType,
+    pub datatype: Datatype,
 
-    pub default: VariableValue,
+    pub default: Value,
     pub visibility: PlayerStatVisibility,
 
     pub pos: Position,

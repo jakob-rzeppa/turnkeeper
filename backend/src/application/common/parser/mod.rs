@@ -8,7 +8,7 @@ pub mod parsable;
 
 pub mod parsables {
     pub mod atoms {
-        pub mod variable_type;
+        pub mod datatype;
     }
 
     pub mod roots {
@@ -80,7 +80,7 @@ impl GameParserContract for GameParser {
 #[cfg(test)]
 mod tests {
     use crate::domain::game::value_objects::{
-        data::{VariableType, VariableValue},
+        data::{Datatype, Value},
         parameter::Parameter,
         visibility::{ActionVisibility, GameStatVisibility, PlayerStatVisibility},
     };
@@ -103,13 +103,13 @@ public action heal(amount: float) {
         assert_eq!(result.player_stats.len(), 1);
         let health_stat = &result.player_stats[0];
         assert_eq!(health_stat.name(), "health");
-        assert_eq!(health_stat.default(), &VariableValue::Float(10.0));
+        assert_eq!(health_stat.default(), &Value::Float(10.0));
         assert_eq!(health_stat.visibility(), &PlayerStatVisibility::Protected);
 
         assert_eq!(result.game_stats.len(), 1);
         let score_stat = &result.game_stats[0];
         assert_eq!(score_stat.name(), "score");
-        assert_eq!(score_stat.default(), &VariableValue::Int(0));
+        assert_eq!(score_stat.default(), &Value::Int(0));
         assert_eq!(score_stat.visibility(), &GameStatVisibility::Public);
 
         assert_eq!(result.actions.len(), 1);
@@ -117,7 +117,7 @@ public action heal(amount: float) {
         assert_eq!(heal_action.name(), "heal");
         assert_eq!(
             heal_action.parameters(),
-            &vec![Parameter::new("amount".to_string(), VariableType::Float)]
+            &vec![Parameter::new("amount".to_string(), Datatype::Float)]
         );
         assert_eq!(heal_action.execution_triggers().len(), 0);
         assert_eq!(heal_action.visibility(), &ActionVisibility::Public);

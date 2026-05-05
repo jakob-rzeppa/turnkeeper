@@ -204,7 +204,7 @@ mod tests {
                     },
                 },
                 value_objects::{
-                    data::{VariableType, VariableValue},
+                    data::{Datatype, Value},
                     visibility::{
                         ActionVisibility, GameStatVisibility, PageVisibility, PlayerStatVisibility,
                     },
@@ -241,8 +241,8 @@ mod tests {
     fn create_game_stat() -> GameStat {
         GameStat::new(
             get_random_string(),
-            VariableType::Int,
-            VariableValue::Int(0),
+            Datatype::Int,
+            Value::Int(0),
             GameStatVisibility::Public,
             Position::new(1, 1),
         )
@@ -250,14 +250,14 @@ mod tests {
 
     fn create_player_stat(player_name_1: String, player_name_2: String) -> PlayerStat {
         let mut values = std::collections::HashMap::new();
-        values.insert(player_name_1, VariableValue::Int(0));
-        values.insert(player_name_2, VariableValue::Int(0));
+        values.insert(player_name_1, Value::Int(0));
+        values.insert(player_name_2, Value::Int(0));
 
         PlayerStat::new_raw(
             get_random_string(),
-            VariableType::Int,
+            Datatype::Int,
             values,
-            VariableValue::Int(5),
+            Value::Int(5),
             PlayerStatVisibility::Public,
             Position::new(1, 1),
         )

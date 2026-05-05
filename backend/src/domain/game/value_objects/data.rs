@@ -3,24 +3,24 @@ use std::fmt::Display;
 use serde::{Deserialize, Serialize};
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum VariableValue {
+pub enum Value {
     Int(i64),
     Float(f64),
     Bool(bool),
     String(String),
 }
 
-impl VariableValue {
-    pub fn datatype(&self) -> VariableType {
+impl Value {
+    pub fn datatype(&self) -> Datatype {
         match self {
-            VariableValue::Int(_) => VariableType::Int,
-            VariableValue::Float(_) => VariableType::Float,
-            VariableValue::Bool(_) => VariableType::Bool,
-            VariableValue::String(_) => VariableType::String,
+            Value::Int(_) => Datatype::Int,
+            Value::Float(_) => Datatype::Float,
+            Value::Bool(_) => Datatype::Bool,
+            Value::String(_) => Datatype::String,
         }
     }
 
-    pub fn is_type(&self, var_type: &VariableType) -> bool {
+    pub fn is_type(&self, var_type: &Datatype) -> bool {
         self.datatype() == *var_type
     }
 
@@ -28,42 +28,42 @@ impl VariableValue {
         if s.starts_with("int(") && s.ends_with(")") {
             let inner = &s[4..s.len() - 1];
             match inner.parse::<i64>() {
-                Ok(i) => Ok(VariableValue::Int(i)),
+                Ok(i) => Ok(Value::Int(i)),
                 Err(_) => Err(format!("Invalid integer value: {}", inner)),
             }
         } else if s.starts_with("float(") && s.ends_with(")") {
             let inner = &s[6..s.len() - 1];
             match inner.parse::<f64>() {
-                Ok(f) => Ok(VariableValue::Float(f)),
+                Ok(f) => Ok(Value::Float(f)),
                 Err(_) => Err(format!("Invalid float value: {}", inner)),
             }
         } else if s.starts_with("bool(") && s.ends_with(")") {
             let inner = &s[5..s.len() - 1];
             match inner.parse::<bool>() {
-                Ok(b) => Ok(VariableValue::Bool(b)),
+                Ok(b) => Ok(Value::Bool(b)),
                 Err(_) => Err(format!("Invalid boolean value: {}", inner)),
             }
         } else if s.starts_with("string(") && s.ends_with(")") {
             let inner = &s[7..s.len() - 1];
-            Ok(VariableValue::String(inner.to_string()))
+            Ok(Value::String(inner.to_string()))
         } else {
             Err(format!("Invalid VariableValue string: {}", s))
         }
     }
 }
 
-impl Display for VariableValue {
+impl Display for Value {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            VariableValue::Int(i) => write!(f, "int({})", i),
-            VariableValue::Float(fl) => write!(f, "float({})", fl),
-            VariableValue::Bool(b) => write!(f, "bool({})", b),
-            VariableValue::String(s) => write!(f, "string({})", s),
+            Value::Int(i) => write!(f, "int({})", i),
+            Value::Float(fl) => write!(f, "float({})", fl),
+            Value::Bool(b) => write!(f, "bool({})", b),
+            Value::String(s) => write!(f, "string({})", s),
         }
     }
 }
 
-impl Serialize for VariableValue {
+impl Serialize for Value {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -72,48 +72,48 @@ impl Serialize for VariableValue {
     }
 }
 
-impl<'de> Deserialize<'de> for VariableValue {
+impl<'de> Deserialize<'de> for Value {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        VariableValue::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
+        Value::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
     }
 }
 
 #[derive(Debug, Clone, PartialEq)]
-pub enum VariableType {
+pub enum Datatype {
     Int,
     Float,
     Bool,
     String,
 }
 
-impl VariableType {
+impl Datatype {
     pub fn parse_str(s: &str) -> Result<Self, String> {
         match s {
-            "int" => Ok(VariableType::Int),
-            "float" => Ok(VariableType::Float),
-            "bool" => Ok(VariableType::Bool),
-            "string" => Ok(VariableType::String),
+            "int" => Ok(Datatype::Int),
+            "float" => Ok(Datatype::Float),
+            "bool" => Ok(Datatype::Bool),
+            "string" => Ok(Datatype::String),
             _ => Err(format!("Invalid VariableType string: {}", s)),
         }
     }
 }
 
-impl Display for VariableType {
+impl Display for Datatype {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            VariableType::Int => write!(f, "int"),
-            VariableType::Float => write!(f, "float"),
-            VariableType::Bool => write!(f, "bool"),
-            VariableType::String => write!(f, "string"),
+            Datatype::Int => write!(f, "int"),
+            Datatype::Float => write!(f, "float"),
+            Datatype::Bool => write!(f, "bool"),
+            Datatype::String => write!(f, "string"),
         }
     }
 }
 
-impl Serialize for VariableType {
+impl Serialize for Datatype {
     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
     where
         S: serde::Serializer,
@@ -122,12 +122,12 @@ impl Serialize for VariableType {
     }
 }
 
-impl<'de> Deserialize<'de> for VariableType {
+impl<'de> Deserialize<'de> for Datatype {
     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
     where
         D: serde::Deserializer<'de>,
     {
         let s = String::deserialize(deserializer)?;
-        VariableType::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
+        Datatype::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
     }
 }

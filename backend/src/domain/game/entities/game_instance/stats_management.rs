@@ -1,13 +1,13 @@
 use crate::domain::game::{
     entities::game_instance::GameInstance, error::GameInstanceError,
-    value_objects::data::VariableValue,
+    value_objects::data::Value,
 };
 
 impl GameInstance {
     pub fn set_game_stat_value(
         &mut self,
         stat_name: &str,
-        value: VariableValue,
+        value: Value,
     ) -> Result<(), GameInstanceError> {
         if let Some(stat) = self.game_stats.iter_mut().find(|s| s.name() == stat_name) {
             stat.set_value(value);
@@ -21,7 +21,7 @@ impl GameInstance {
         &mut self,
         player_name: &str,
         stat_name: &str,
-        value: VariableValue,
+        value: Value,
     ) -> Result<(), GameInstanceError> {
         if let Some(stat) = self.player_stats.iter_mut().find(|s| s.name() == stat_name) {
             stat.set_value_for_player(player_name, value)

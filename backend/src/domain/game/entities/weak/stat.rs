@@ -6,7 +6,7 @@ use crate::domain::{
         error::GameInstanceError,
         projections::stat::{GameStatMetadataProjection, PlayerStatMetadataProjection},
         value_objects::{
-            data::{VariableType, VariableValue},
+            data::{Datatype, Value},
             visibility::{GameStatVisibility, PlayerStatVisibility},
         },
     },
@@ -15,10 +15,10 @@ use crate::domain::{
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct GameStat {
     name: String,
-    datatype: VariableType,
-    value: VariableValue,
+    datatype: Datatype,
+    value: Value,
 
-    default: VariableValue,
+    default: Value,
     visibility: GameStatVisibility,
 
     pos: Position,
@@ -30,8 +30,8 @@ impl GameStat {
     /// The `value` is initialized to the `default` value, and can be changed later using `set_value`.
     pub fn new(
         name: String,
-        datatype: VariableType,
-        default: VariableValue,
+        datatype: Datatype,
+        default: Value,
         visibility: GameStatVisibility,
         pos: Position,
     ) -> Self {
@@ -50,9 +50,9 @@ impl GameStat {
     /// This should only be used when loading a game instance from storage, where we already have the value for the stat.
     pub fn new_raw(
         name: String,
-        datatype: VariableType,
-        value: VariableValue,
-        default: VariableValue,
+        datatype: Datatype,
+        value: Value,
+        default: Value,
         visibility: GameStatVisibility,
         pos: Position,
     ) -> Self {
@@ -70,15 +70,15 @@ impl GameStat {
         &self.name
     }
 
-    pub fn datatype(&self) -> &VariableType {
+    pub fn datatype(&self) -> &Datatype {
         &self.datatype
     }
 
-    pub fn value(&self) -> &VariableValue {
+    pub fn value(&self) -> &Value {
         &self.value
     }
 
-    pub fn default(&self) -> &VariableValue {
+    pub fn default(&self) -> &Value {
         &self.default
     }
 
@@ -90,7 +90,7 @@ impl GameStat {
         &self.pos
     }
 
-    pub fn set_value(&mut self, value: VariableValue) {
+    pub fn set_value(&mut self, value: Value) {
         self.value = value;
     }
 
@@ -108,10 +108,10 @@ impl GameStat {
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct PlayerStat {
     name: String,
-    datatype: VariableType,
-    values: HashMap<String, VariableValue>, // player_name -> value
+    datatype: Datatype,
+    values: HashMap<String, Value>, // player_name -> value
 
-    default: VariableValue,
+    default: Value,
     visibility: PlayerStatVisibility,
 
     pos: Position,
@@ -125,8 +125,8 @@ impl PlayerStat {
     /// This should only be used when creating a new game instance.
     pub fn new(
         name: String,
-        datatype: VariableType,
-        default: VariableValue,
+        datatype: Datatype,
+        default: Value,
         visibility: PlayerStatVisibility,
         pos: Position,
     ) -> Self {
@@ -150,9 +150,9 @@ impl PlayerStat {
     /// This should only be used when loading a game instance from storage, where we already have the values for each player.
     pub fn new_raw(
         name: String,
-        datatype: VariableType,
-        values: HashMap<String, VariableValue>, // player_name -> value
-        default: VariableValue,
+        datatype: Datatype,
+        values: HashMap<String, Value>, // player_name -> value
+        default: Value,
         visibility: PlayerStatVisibility,
         pos: Position,
     ) -> Self {
@@ -170,15 +170,15 @@ impl PlayerStat {
         &self.name
     }
 
-    pub fn datatype(&self) -> &VariableType {
+    pub fn datatype(&self) -> &Datatype {
         &self.datatype
     }
 
-    pub fn values(&self) -> &HashMap<String, VariableValue> {
+    pub fn values(&self) -> &HashMap<String, Value> {
         &self.values
     }
 
-    pub fn default(&self) -> &VariableValue {
+    pub fn default(&self) -> &Value {
         &self.default
     }
 
@@ -190,14 +190,14 @@ impl PlayerStat {
         &self.pos
     }
 
-    pub fn get_owning_player_value(&self, player_name: &String) -> Option<&VariableValue> {
+    pub fn get_owning_player_value(&self, player_name: &String) -> Option<&Value> {
         self.values.get(player_name)
     }
 
     pub fn set_value_for_player(
         &mut self,
         player_name: &str,
-        value: VariableValue,
+        value: Value,
     ) -> Result<(), GameInstanceError> {
         if let None = self.values.get(player_name) {
             return Err(GameInstanceError::PlayerInStatNotFound {

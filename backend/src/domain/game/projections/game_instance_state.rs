@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::{common::identifier::Identifier, game::value_objects::data::VariableValue};
+use crate::domain::{common::identifier::Identifier, game::value_objects::data::Value};
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatValueProjection {
@@ -10,28 +10,28 @@ pub struct StatValueProjection {
     pub bool_value: Option<bool>,
 }
 
-impl From<VariableValue> for StatValueProjection {
-    fn from(value: VariableValue) -> Self {
+impl From<Value> for StatValueProjection {
+    fn from(value: Value) -> Self {
         match value {
-            VariableValue::Int(v) => StatValueProjection {
+            Value::Int(v) => StatValueProjection {
                 int_value: Some(v),
                 float_value: None,
                 str_value: None,
                 bool_value: None,
             },
-            VariableValue::Float(v) => StatValueProjection {
+            Value::Float(v) => StatValueProjection {
                 int_value: None,
                 float_value: Some(v),
                 str_value: None,
                 bool_value: None,
             },
-            VariableValue::String(v) => StatValueProjection {
+            Value::String(v) => StatValueProjection {
                 int_value: None,
                 float_value: None,
                 str_value: Some(v),
                 bool_value: None,
             },
-            VariableValue::Bool(v) => StatValueProjection {
+            Value::Bool(v) => StatValueProjection {
                 int_value: None,
                 float_value: None,
                 str_value: None,

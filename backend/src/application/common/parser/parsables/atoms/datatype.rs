@@ -5,10 +5,10 @@ use crate::{
         macros::is_token,
         parsable::Parsable,
     },
-    domain::game::value_objects::data::VariableType,
+    domain::game::value_objects::data::Datatype,
 };
 
-impl Parsable for VariableType {
+impl Parsable for Datatype {
     fn is_next(ts: &TokenStream) -> bool {
         is_token!(
             ts,
@@ -25,10 +25,10 @@ impl Parsable for VariableType {
         })?;
 
         match token.variant {
-            TokenVariant::IntType => Ok(VariableType::Int),
-            TokenVariant::FloatType => Ok(VariableType::Float),
-            TokenVariant::StringType => Ok(VariableType::String),
-            TokenVariant::BoolType => Ok(VariableType::Bool),
+            TokenVariant::IntType => Ok(Datatype::Int),
+            TokenVariant::FloatType => Ok(Datatype::Float),
+            TokenVariant::StringType => Ok(Datatype::String),
+            TokenVariant::BoolType => Ok(Datatype::Bool),
             _ => Err(ParsingError::UnexpectedToken {
                 expected: "Expected variable type (int, float, string, bool)".to_string(),
                 found: token.variant.clone(),
