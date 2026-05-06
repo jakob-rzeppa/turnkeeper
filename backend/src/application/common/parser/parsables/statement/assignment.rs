@@ -1,4 +1,4 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::abstract_syntax_tree::{statement::AssignmentStatement, expression::Expression}}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable}, domain::{game::abstract_syntax_tree::{statement::AssignmentStatement, expression::Expression}}};
 
 
 impl Parsable for AssignmentStatement {
@@ -53,7 +53,7 @@ impl Parsable for AssignmentStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}};
+    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}}};
 
 use super::*;
 

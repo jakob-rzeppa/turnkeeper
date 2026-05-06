@@ -1,4 +1,4 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::{abstract_syntax_tree::expression::{Expression, atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::UnaryExpression}, value_objects::data::Value}}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::{abstract_syntax_tree::expression::{Expression, atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}, unary::UnaryExpression}}}};
 
 pub mod atom;
 pub mod binary;
@@ -86,7 +86,7 @@ impl Positioned for Expression {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::game::abstract_syntax_tree::expression::unary::UnaryOperator};
+    use crate::{application::common::parser::macros::test_token_stream, domain::game::{abstract_syntax_tree::expression::unary::UnaryOperator, value_objects::data::Value}};
     use super::*;
 
     // === Atom Tests ===

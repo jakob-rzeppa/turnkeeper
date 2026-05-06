@@ -1,4 +1,4 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable, parsables::statement::Statement}, domain::{common::position::{Position, Positioned}, game::abstract_syntax_tree::{statement::WhileLoopStatement, expression::Expression}}};
+use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable, parsables::statement::Statement}, domain::{game::abstract_syntax_tree::{statement::WhileLoopStatement, expression::Expression}}};
 
 
 
@@ -29,7 +29,7 @@ impl Parsable for WhileLoopStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::game::{abstract_syntax_tree::{expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}}, statement::AssignmentStatement}, value_objects::data::Value}};
+    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::{expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}}, statement::AssignmentStatement}, value_objects::data::Value}}};
     use super::*;
 
     #[test]

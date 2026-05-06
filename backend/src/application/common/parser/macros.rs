@@ -105,6 +105,7 @@ pub(crate) use get_pos;
 ///
 /// The position (line) of the tokens will be incremented for each token, starting from 0. This is useful for testing the parser without having to go through the lexer.
 /// The first_char (column) of the tokens will be set to 0 for simplicity.
+#[cfg(test)]
 macro_rules! test_token_stream {
     ($source_code:expr) => {{
         (
@@ -117,4 +118,5 @@ macro_rules! test_token_stream {
         )
     }};
 }
+#[cfg(test)]
 pub(crate) use test_token_stream;
