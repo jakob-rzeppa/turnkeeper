@@ -9,50 +9,6 @@ use crate::{
     },
 };
 
-struct GameRow {
-    id: String,
-    name: String,
-    description: String,
-    source_code: String,
-    created_at: String,
-    updated_at: String,
-}
-
-impl From<&Game> for GameRow {
-    fn from(game: &Game) -> Self {
-        Self {
-            id: game.id().to_string(),
-            name: game.name().to_string(),
-            description: game.description().to_string(),
-            source_code: game.source_code().to_string(),
-            created_at: game.created_at().to_string(),
-            updated_at: game.updated_at().to_string(),
-        }
-    }
-}
-
-impl TryInto<Game> for GameRow {
-    type Error = DatabaseError;
-
-    fn try_into(self) -> Result<Game, Self::Error> {
-        let id = Id::parse_str(&self.id)
-            .map_err(|e| DatabaseError::Unknown(format!("Failed to parse id: {}", e)))?;
-        let created_at = crate::domain::common::date_time::DateTime::parse_str(&self.created_at)
-            .map_err(|e| DatabaseError::Unknown(format!("Failed to parse created_at: {}", e)))?;
-        let updated_at = crate::domain::common::date_time::DateTime::parse_str(&self.updated_at)
-            .map_err(|e| DatabaseError::Unknown(format!("Failed to parse updated_at: {}", e)))?;
-
-        Ok(Game::new_raw(
-            id,
-            self.name,
-            self.description,
-            self.source_code,
-            created_at,
-            updated_at,
-        ))
-    }
-}
-
 pub struct SqliteGameRepository {
     db: SqlitePool,
 }
