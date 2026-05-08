@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use tokio::{sync::Mutex, task::JoinHandle};
+use tokio::{sync::Mutex};
 
 use crate::{application::{common::channels::{mpsc::MpscChannelSender, targeted_broadcast::TargetedBroadcastReceiver}, game::error::GameApplicationError, game_instance::{contracts::GameInstanceRepositoryContract, dto::{IncomingMessageDto, OutgoingMessageDto}, session::GameSession}}, domain::common::identifier::Id};
 
@@ -22,11 +22,13 @@ impl GameSessionManager {
         tokio::spawn( async move {
             println!("[STARTUP] Starting Game Session Manager logger task...");
             loop {
-                tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
-                let sessions_guard = sessions_clone.lock().await;
-                println!("Active Game Sessions: {}", sessions_guard.len());
-                for (game_id, (_session, user_ids)) in sessions_guard.iter() {
-                    println!("-> Game ID: {}, Connected Users: {}", game_id, user_ids.len());
+                tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+                {
+                    let sessions_guard = sessions_clone.lock().await;
+                    println!("[LOGGER] Active Game Sessions: {}", sessions_guard.len());
+                    for (game_id, (_session, user_ids)) in sessions_guard.iter() {
+                        println!("[LOGGER] -> Game ID: {}, Connected Users: {}", game_id, user_ids.len());
+                    }
                 }
             }
         });
@@ -81,9 +83,12 @@ impl GameSessionManager {
 
         // If there are no more connected users, stop the session and remove it from the active sessions.
         if should_stop_session {
-            if let Some(session) = sessions_guard.remove(game_id) {
-                // Stop the session gracefully (consumes the session)
+            let session_to_stop = sessions_guard.remove(game_id);
+            drop(sessions_guard); // Drop the lock before awaiting the stop operation
+
+            if let Some(session) = session_to_stop {
                 session.0.stop().await;
+                println!("[SESSION STOPPED] Game session for game ID {} has been stopped due to no more connected users.", game_id);
             }
         }
     }

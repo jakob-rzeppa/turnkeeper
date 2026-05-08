@@ -85,7 +85,7 @@ impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug
                                     receiver: consumer_receiver,
                                 });
                             }
-                            None => panic!("TargetedBroadcastReceiverCreator was dropped, but TargetedBroadcastSender is still alive"),
+                            None => {}, // Ignore the closed creator channel
                         }
                     },
                 }
