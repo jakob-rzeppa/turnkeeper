@@ -8,4 +8,6 @@ pub enum GameApplicationError {
     GameNotFound,
     #[error("Game has active instances and cannot be modified or deleted")]
     GameHasInstances,
+    #[error("Game instance not found")]
+    GameInstanceNotFound,
 }

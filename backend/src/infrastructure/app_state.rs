@@ -13,11 +13,11 @@ use crate::{
         common::parser::GameParser, game::request_handlers::GameRequestHandler, game_instance::request_handler::GameInstanceRequestHandler, user::request_handlers::UserRequestHandler
     },
     infrastructure::{
-        auth::jwt::{JwtGenerator, JwtValidator},
+        auth::{jwt::{JwtGenerator, JwtValidator}, ws_ticket_manager::WsTicketManager},
         persistence::repositories::{
             game::SqliteGameRepository, game_instance::SqliteGameInstanceRepository,
             user::SqliteUserRepository,
-        },
+        }, websocket::game_session_manager::GameSessionManager,
     },
 };
 
@@ -27,6 +27,8 @@ pub struct AppState {
     game_request_handler: GameRequestHandler,
     game_instance_request_handler: GameInstanceRequestHandler,
     user_request_handler: UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator>,
+    ws_ticket_manager: WsTicketManager,
+    game_session_manager: GameSessionManager,
 }
 
 impl AppState {
@@ -46,7 +48,7 @@ impl AppState {
                 game_root_parser.clone(),
             ),
             game_instance_request_handler: GameInstanceRequestHandler::new(
-                sqlite_game_instance_repository,
+                sqlite_game_instance_repository.clone(),
                 sqlite_game_repository,
                 game_root_parser,
             ),
@@ -55,6 +57,8 @@ impl AppState {
                 jwt_generator,
                 jwt_validator,
             ),
+            ws_ticket_manager: WsTicketManager::new(),
+            game_session_manager: GameSessionManager::new(sqlite_game_instance_repository),
         }
     }
 
@@ -70,5 +74,13 @@ impl AppState {
         &self,
     ) -> UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator> {
         self.user_request_handler.clone()
+    }
+
+    pub fn ws_ticket_manager(&self) -> WsTicketManager {
+        self.ws_ticket_manager.clone()
+    }
+
+    pub fn game_session_manager(&self) -> GameSessionManager {
+        self.game_session_manager.clone()
     }
 }

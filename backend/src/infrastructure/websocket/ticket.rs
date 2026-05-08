@@ -22,7 +22,7 @@ pub async fn websocket_ticket(
     State(state): State<AppState>,
     Extension(user): Extension<User>,
 ) -> Result<GmWsTicketResponse, HttpError> {
-    let ticket = state.ws_session_manager.pre_connect(user).await;
+    let ticket = state.ws_ticket_manager().generate_ticket(user).await;
 
     Ok(GmWsTicketResponse { ticket })
 }

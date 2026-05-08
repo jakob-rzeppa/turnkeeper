@@ -9,6 +9,7 @@ impl From<GameApplicationError> for HttpError {
             }
             GameApplicationError::GameNotFound => HttpError::NotFound(e.to_string()),
             GameApplicationError::GameHasInstances => HttpError::Conflict(e.to_string()),
+            GameApplicationError::GameInstanceNotFound => HttpError::NotFound(e.to_string()),
         }
     }
 }

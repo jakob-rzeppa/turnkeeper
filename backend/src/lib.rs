@@ -3,7 +3,7 @@ pub mod domain;
 pub mod infrastructure;
 pub mod util;
 
-use crate::infrastructure::{app_state::AppState, http::get_routes, logger::logging_middleware};
+use crate::infrastructure::{app_state::AppState, http::get_routes, logger::logging_middleware, websocket::get_websocket_routes};
 use axum::{Router, middleware};
 use tower::ServiceBuilder;
 use tower_http::cors::{Any, CorsLayer};
@@ -17,7 +17,7 @@ pub fn build_app(state: AppState) -> Router {
 
     Router::new()
         .merge(get_routes(state.clone()))
-        //.merge(get_websocket_routes(state.clone()))
+        .merge(get_websocket_routes(state.clone()))
         .with_state(state)
         .layer(ServiceBuilder::new().layer(cors_layer))
         .layer(middleware::from_fn(logging_middleware))

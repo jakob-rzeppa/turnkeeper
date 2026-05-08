@@ -11,6 +11,11 @@ const routes = [
         name: 'game-editor',
         component: () => import('./views/GameEditorView.vue'),
     },
+    {
+        path: '/games/:gameId/instances/:gameInstanceId/session',
+        name: 'game-session',
+        component: () => import('./gameSession/GameSessionView.vue'),
+    }
 ];
 
 export const router = createRouter({

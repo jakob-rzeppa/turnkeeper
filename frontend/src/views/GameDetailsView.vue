@@ -118,6 +118,14 @@ onMounted(() => {
                             <p class="text-sm text-base-content/60">
                                 Created: {{ new Date(instance.created_at).toLocaleDateString() }}
                             </p>
+                            <RouterLink
+                                :to="{
+                                    name: 'game-session',
+                                    params: { gameId: route.params.id, gameInstanceId: instance.id },
+                                }"
+                                class="btn btn-primary"
+                                >Play</RouterLink
+                            >
                             <button
                                 class="btn btn-error w-max"
                                 @click="

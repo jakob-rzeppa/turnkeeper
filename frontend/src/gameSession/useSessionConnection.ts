@@ -1,8 +1,6 @@
 import { computed, ref } from 'vue';
 import { useGameStore, type Stat, type Player, type Tradable } from '../game/gameStore';
-import { useAuthStore } from '../auth/authStore';
-import axios from 'axios';
-import { API_BASE_URL } from './httpApi';
+import { API_BASE_URL, postWithAuth } from '../api/httpApi';
 
 type RawStat = {
     id: string;
@@ -29,63 +27,59 @@ type RawGame = {
     hidden_notes: string;
 };
 
-const websocket = ref<WebSocket | null>(null);
+const connection = ref<
+        { status: 'disconnected' } | 
+        { status: 'connecting' } | 
+        { status: 'connected', websocket: WebSocket } |
+        { status: 'error', error: string }
+    >({ status: 'disconnected' });
 
-// URL management helpers
-const saveGameIdToUrl = (gameId: string) => {
-    const url = new URL(window.location.href);
-    url.searchParams.set('gameId', gameId);
-    window.history.replaceState({}, '', url);
-};
-
-const removeGameIdFromUrl = () => {
-    const url = new URL(window.location.href);
-    url.searchParams.delete('gameId');
-    window.history.replaceState({}, '', url);
-};
-
-const getGameIdFromUrl = (): string | null => {
-    const url = new URL(window.location.href);
-    return url.searchParams.get('gameId');
-};
-
-export function useWsConnection() {
+export function useSessionConnection() {
     const gameStore = useGameStore();
-    const authStore = useAuthStore();
 
-    const connect = async (gameId: string) => {
-        if (websocket.value) {
+    const connectionStatus = computed(() => connection.value.status);
+
+    const connect = async (gameId: string, gameInstanceId: string) => {
+        if (connection.value.status === 'connected') {
             console.warn('WebSocket is already connected.');
             return;
         }
 
-        // Fetch a short-lived ticket URL from the authenticated HTTP endpoint
-        let wsTicket: string;
-        try {
-            const response = await axios.post<{ ticket: string }>(
-                `${API_BASE_URL}/game/ws/ticket`,
-                null,
-                { headers: { Authorization: `Bearer ${authStore.token}` } }
-            );
-            wsTicket = response.data.ticket;
-        } catch (err) {
-            console.error('Failed to obtain WebSocket ticket:', err);
-            removeGameIdFromUrl();
+        if (connection.value.status === 'connecting') {
+            console.warn('WebSocket is already connecting.');
             return;
         }
 
-        console.log('Connecting to WebSocket at:', wsTicket);
-        websocket.value = new WebSocket(`${API_BASE_URL}/game/ws/${gameId}?ticket=${wsTicket}`);
+        // Set status to connecting before attempting to connect
+        connection.value = { status: 'connecting' };
 
-        websocket.value.onopen = () => {
+        // Fetch a short-lived ticket URL from the authenticated HTTP endpoint
+        const response = await postWithAuth<{ ticket: string }>(
+            `/ws/ticket`,
+            null
+        );
+        
+        if (response.isErr()) {
+            console.error('Failed to obtain WebSocket ticket:', response.error);
+            return;
+        } 
+        let wsTicket = response.value.data.ticket;
+
+        console.log('Connecting to Game Session...');
+        const websocket = new WebSocket(`${API_BASE_URL}/games/${gameId}/instances/${gameInstanceId}/ws?ticket=${wsTicket}`);
+
+        websocket.onopen = () => {
             console.log('WebSocket connection established.');
-            saveGameIdToUrl(gameId);
+            connection.value = { 
+                status: 'connected', 
+                websocket
+            };
 
             // Send an initial message to trigger the server to send the current game state
             send(JSON.stringify('Connect'));
         };
 
-        websocket.value.onmessage = event => {
+        websocket.onmessage = event => {
             if (!event.data.startsWith('FullGameProjection ')) {
                 console.warn('Received unknown message type:', event.data);
                 return;
@@ -129,44 +123,44 @@ export function useWsConnection() {
             });
         };
 
-        websocket.value.onclose = () => {
-            console.log('WebSocket connection closed.');
-            websocket.value = null;
-            removeGameIdFromUrl();
+        websocket.onclose = () => {
+            console.log('Disconnected from Game');
+            connection.value = { status: 'disconnected' };
         };
 
-        websocket.value.onerror = error => {
-            console.error('WebSocket error:', error);
-            removeGameIdFromUrl();
+        websocket.onerror = _ => {
+            connection.value = { status: 'error', error: 'Connecting to Game Session failed.' };
         };
     };
 
     const send = (message: string) => {
-        if (websocket.value && websocket.value.readyState === WebSocket.OPEN) {
-            websocket.value.send(message);
+        if (connection.value.status !== 'connected') {
+            console.warn('WebSocket is not connected. Cannot send message.');
+            return;
+        }
+
+        if (connection.value.websocket && connection.value.websocket.readyState === WebSocket.OPEN) {
+            connection.value.websocket.send(message);
         } else {
             console.warn('WebSocket is not connected. Cannot send message.');
         }
     };
 
-    const isConnected = computed(() => websocket.value !== null);
-
     const disconnect = () => {
-        if (websocket.value) {
-            websocket.value.close();
-            websocket.value = null;
-            removeGameIdFromUrl();
+        if (connection.value.status !== 'connected') {
+            console.warn('WebSocket is not connected. Cannot disconnect.');
+            return;
+        }
+
+        if (connection.value.websocket) {
+            console.log('Disconnecting from Game Session...');
+            connection.value.websocket.close();
+            console.log('Game Session disconnected.');
+            connection.value = { status: 'disconnected' };
         } else {
             console.warn('WebSocket is not connected.');
         }
     };
 
-    const autoConnect = async () => {
-        const gameId = getGameIdFromUrl();
-        if (gameId) {
-            await connect(gameId);
-        }
-    };
-
-    return { connect, disconnect, isConnected, send, autoConnect, getGameIdFromUrl };
+    return { connect, disconnect, send, connectionStatus };
 }
