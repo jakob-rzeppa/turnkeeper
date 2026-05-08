@@ -1,6 +1,6 @@
 use std::{collections::HashMap, sync::Arc};
 
-use tokio::sync::Mutex;
+use tokio::{sync::Mutex, task::JoinHandle};
 
 use crate::{application::{common::channels::{mpsc::MpscChannelSender, targeted_broadcast::TargetedBroadcastReceiver}, game::error::GameApplicationError, game_instance::{contracts::GameInstanceRepositoryContract, dto::{IncomingMessageDto, OutgoingMessageDto}, session::GameSession}}, domain::common::identifier::Id};
 
@@ -13,9 +13,27 @@ pub struct GameSessionManager {
 
 impl GameSessionManager {
     pub fn new(game_instance_repo: Arc<dyn GameInstanceRepositoryContract>) -> Self {
+
+        let sessions = Arc::new(Mutex::new(HashMap::<Id, (GameSession, Vec<Id>)>::new()));
+        let sessions_clone = sessions.clone();
+
+        // This thread is responsible for logging the active game sessions and connected users every few seconds.
+        // The thread is spawned and runs indefinitly. This is save because the GameSessionManager is only created once and lives for the entire duration of the application, so we don't have to worry about the thread outliving the GameSessionManager or being spawned multiple times.
+        tokio::spawn( async move {
+            println!("[STARTUP] Starting Game Session Manager logger task...");
+            loop {
+                tokio::time::sleep(tokio::time::Duration::from_secs(10)).await;
+                let sessions_guard = sessions_clone.lock().await;
+                println!("Active Game Sessions: {}", sessions_guard.len());
+                for (game_id, (_session, user_ids)) in sessions_guard.iter() {
+                    println!("-> Game ID: {}, Connected Users: {}", game_id, user_ids.len());
+                }
+            }
+        });
+        
         Self {
             game_instance_repo,
-            sessions: Arc::new(Mutex::new(HashMap::new())),
+            sessions,
         }
     }
 
