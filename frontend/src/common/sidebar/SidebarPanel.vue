@@ -31,7 +31,7 @@ const MIN_WIDTH = 150;
 const DEFAULT_WIDTH = 240;
 
 const activeView = shallowRef<SidebarView | null>(props.views[0] ?? null);
-const isHidden = ref(false);
+const isHidden = ref(true);
 const panelWidth = ref(DEFAULT_WIDTH);
 const isResizing = ref(false);
 

@@ -1,43 +1,42 @@
-import { useSessionConnection } from './useSessionConnection';
+import { useSession } from './useSession';
 
 /**
  * Game commands matching the Rust GameCommand enum.
  */
 type GameCommand =
-    | 'NextTurn'
-    | { AddPlayer: { player_id: string } }
-    | { ChangePlayerOrder: string[] }
-    | { AttachUserToPlayer: { user_id: string; player_id: string } }
-    | { DetachUserFromPlayer: { player_id: string } }
+    | 'Connect'
+    | 'AdvanceTurn'
+    | 'AddPlayer'
+    | { ChangePlayerOrder: { names_in_order: string[] } }
+    | { AttachUserToPlayer: { player: string, user_id: string } }
+    | { DetachUserFromPlayer: { player: string } }
+    | { ExecuteAction: { action: string, params: Record<string, string> } } // Params: name -> value (int(5), float(3.14), string(hello), bool(true))
     | { Debug: string };
 
 export function useCommandEmitter() {
-    const connection = useSessionConnection();
+    const session = useSession();
 
     const emit = (command: GameCommand) => {
         const payload = JSON.stringify(command);
         console.log('Emitting command:', payload);
-        connection.send(payload);
+        session.send(payload);
     };
 
-    const nextTurn = () => emit('NextTurn');
-    const addPlayer = () => {
-        const player_id = crypto.randomUUID();
-        emit({ AddPlayer: { player_id } });
-    };
-    const changePlayerOrder = (player_ids: string[]) => emit({ ChangePlayerOrder: player_ids });
-    const attachUserToPlayer = (user_id: string, player_id: string) =>
-        emit({ AttachUserToPlayer: { user_id, player_id } });
-    const detachUserFromPlayer = (player_id: string) =>
-        emit({ DetachUserFromPlayer: { player_id } });
+    const advanceTurn = () => emit('AdvanceTurn');
+    const addPlayer = () => emit('AddPlayer');
+    const changePlayerOrder = (names_in_order: string[]) => emit({ ChangePlayerOrder: { names_in_order } });
+    const attachUserToPlayer = (player: string, user_id: string) => emit({ AttachUserToPlayer: { player, user_id } });
+    const detachUserFromPlayer = (player: string) => emit({ DetachUserFromPlayer: { player } });
+    const executeAction = (action: string, params: Record<string, string>) => emit({ ExecuteAction: { action, params } });
     const debug = (message: string) => emit({ Debug: message });
 
     return {
-        nextTurn,
+        advanceTurn,
         addPlayer,
         changePlayerOrder,
         attachUserToPlayer,
         detachUserFromPlayer,
+        executeAction,
         debug,
     };
 }

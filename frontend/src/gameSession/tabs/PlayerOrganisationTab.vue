@@ -1,21 +1,24 @@
 <script setup lang="ts">
 import { computed, ref, watch } from 'vue';
-import { useGameStore, type Player } from '../gameStore';
-import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useModalStore } from '../../common/modal/modalStore';
-import AttatchUserToPlayerModal from './AttatchUserToPlayerModal.vue';
+import AttatchUserToPlayerModal from '../modals/AttatchUserToPlayerModal.vue';
 import { useUsersStore } from '../../users/usersStore';
+import { useCommandEmitter } from '../useCommandEmitter';
+import { useSession } from '../useSession';
 
 const commandEmitter = useCommandEmitter();
-const gameStore = useGameStore();
+const session = useSession();
 const modalStore = useModalStore();
 const usersStore = useUsersStore();
-const currentPlayerIndex = computed(() => gameStore.game?.currentPlayerIndex ?? -1);
+const currentPlayerIndex = computed(() => session.gameState.value?.current_player_index ?? -1);
 
 // Local reorderable copy of players
-const localPlayers = ref<Player[]>([]);
+const localPlayers = ref<{
+    name: string;
+    user_id: string | null;
+}[]>([]);
 watch(
-    () => gameStore.game?.players,
+    () => session.gameState.value?.players,
     players => {
         localPlayers.value = players ? [...players] : [];
     },
@@ -24,9 +27,9 @@ watch(
 
 // Track whether the order has been changed locally
 const orderChanged = computed(() => {
-    const original = gameStore.game?.players ?? [];
+    const original = session.gameState.value?.players ?? [];
     if (original.length !== localPlayers.value.length) return false;
-    return original.some((p, i) => p.id !== localPlayers.value[i]?.id);
+    return original.some((p, i) => p.name !== localPlayers.value[i]?.name);
 });
 
 // Drag state
@@ -55,20 +58,20 @@ const onDragEnd = () => {
 };
 
 const updateOrder = () => {
-    const ids = localPlayers.value.map(p => p.id);
-    commandEmitter.changePlayerOrder(ids);
+    const names = localPlayers.value.map(p => p.name);
+    commandEmitter.changePlayerOrder(names);
 };
 
 const addPlayer = () => {
     commandEmitter.addPlayer();
 };
 
-const openAttachUserModal = (playerId: string) => {
-    modalStore.openModal(AttatchUserToPlayerModal, { playerId });
+const openAttachUserModal = (player: string) => {
+    modalStore.openModal(AttatchUserToPlayerModal, { player });
 };
 
-const detachUserFromPlayer = (playerId: string) => {
-    commandEmitter.detachUserFromPlayer(playerId);
+const detachUserFromPlayer = (player: string) => {
+    commandEmitter.detachUserFromPlayer(player);
 };
 </script>
 
@@ -78,7 +81,7 @@ const detachUserFromPlayer = (playerId: string) => {
         <ul v-if="localPlayers.length > 0" class="flex flex-col gap-2">
             <li
                 v-for="(player, index) in localPlayers"
-                :key="player.id"
+                :key="player.name"
                 class="relative flex items-center gap-2"
             >
                 <span class="text-sm font-bold text-base-content/40 w-6 text-center shrink-0">{{
@@ -105,25 +108,26 @@ const detachUserFromPlayer = (playerId: string) => {
 
                     <span class="text-base-content/30 text-lg leading-none">⠿</span>
 
-                    <!-- Player (User) Name -->
-                    <span class="flex-1 font-medium text-sm">{{
-                        player.userId
-                            ? (usersStore.getById(player.userId)?.value?.name ?? 'Name not found')
-                            : 'Unassigned Player'
-                    }}</span>
+                    <!-- Player Name -->
+                    <span class="flex-1 font-medium text-sm">{{player.name}}</span>
+
+                    <!-- Attached User -->
+                    <span v-if="player.user_id" class="text-xs text-base-content/60">
+                        {{ usersStore.getById(player.user_id)?.value?.name ?? 'Name not found' }}
+                    </span>
 
                     <!-- Attach/Detach User Button -->
                     <button
-                        v-if="!player.userId"
+                        v-if="!player.user_id"
                         class="btn btn-xs btn-outline"
-                        @click="openAttachUserModal(player.id)"
+                        @click="openAttachUserModal(player.name)"
                     >
                         Attach User
                     </button>
                     <button
                         v-else
                         class="btn btn-xs btn-outline text-error"
-                        @click="detachUserFromPlayer(player.id)"
+                        @click="detachUserFromPlayer(player.name)"
                     >
                         Detach User
                     </button>

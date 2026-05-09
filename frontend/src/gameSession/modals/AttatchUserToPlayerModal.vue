@@ -1,11 +1,11 @@
 <script setup lang="ts">
 import { computed, ref } from 'vue';
-import { useCommandEmitter } from '../../commands/useCommandEmitter';
 import { useUsersStore } from '../../users/usersStore';
-import { useGameStore } from '../gameStore';
+import { useCommandEmitter } from '../useCommandEmitter';
+import { useSession } from '../useSession';
 
 const props = defineProps<{
-    playerId: string;
+    player: string;
 }>();
 
 const emit = defineEmits<{
@@ -13,7 +13,7 @@ const emit = defineEmits<{
 }>();
 
 const commandEmitter = useCommandEmitter();
-const gameStore = useGameStore();
+const session = useSession();
 const usersStore = useUsersStore();
 
 const selectedUserId = ref<string | null>(null);
@@ -22,14 +22,14 @@ const availableUsers = computed(() => {
     const allUsers = usersStore.users;
     // Filter out users already attached to players
     const attachedUserIds = new Set(
-        gameStore.game?.players.filter(p => p.userId).map(p => p.userId as string) || []
+        session.gameState.value?.players.filter(p => p.user_id).map(p => p.user_id as string) || []
     );
     return allUsers.filter(u => !attachedUserIds.has(u.id));
 });
 
 const attachUserToPlayer = () => {
     if (selectedUserId.value) {
-        commandEmitter.attachUserToPlayer(selectedUserId.value, props.playerId);
+        commandEmitter.attachUserToPlayer(props.player, selectedUserId.value);
         selectedUserId.value = null;
         emit('close');
     }

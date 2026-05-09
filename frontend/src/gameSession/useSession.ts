@@ -12,7 +12,7 @@ const connection = ref<
         { status: 'error', error: string }
     >({ status: 'disconnected' });
 
-export function useSessionConnection() {
+export function useSession() {
     const connectionStatus = computed(() => connection.value.status);
     const displayTemplate = computed(() => {
         if (connection.value.status === 'connected') {
