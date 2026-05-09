@@ -28,10 +28,10 @@ impl Display for ExecutionTrigger {
 impl ExecutionTrigger {
     pub fn parse_str(s: &str) -> Result<Self, String> {
         if s.starts_with("BeforeAction(") && s.ends_with(")") {
-            let action = s[12..s.len() - 1].to_string();
+            let action = s[13..s.len() - 1].to_string();
             Ok(ExecutionTrigger::BeforeAction(action))
         } else if s.starts_with("AfterAction(") && s.ends_with(")") {
-            let action = s[11..s.len() - 1].to_string();
+            let action = s[12..s.len() - 1].to_string();
             Ok(ExecutionTrigger::AfterAction(action))
         } else if s == "BeforeTurnAdvance" {
             Ok(ExecutionTrigger::BeforeTurnAdvance)
