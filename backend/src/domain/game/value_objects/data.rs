@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
-use serde::{Deserialize, Serialize};
+use backend_derive::{deserialize_use_from_str, serialize_use_display};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum Value {
@@ -23,8 +23,25 @@ impl Value {
     pub fn is_type(&self, var_type: &Datatype) -> bool {
         self.datatype() == *var_type
     }
+}
 
-    pub fn parse_str(s: &str) -> Result<Self, String> {
+#[serialize_use_display]
+impl Display for Value {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            Value::Int(i) => write!(f, "int({})", i),
+            Value::Float(fl) => write!(f, "float({})", fl),
+            Value::Bool(b) => write!(f, "bool({})", b),
+            Value::String(s) => write!(f, "string({})", s),
+        }
+    }
+}
+
+#[deserialize_use_from_str]
+impl FromStr for Value {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("int(") && s.ends_with(")") {
             let inner = &s[4..s.len() - 1];
             match inner.parse::<i64>() {
@@ -52,36 +69,6 @@ impl Value {
     }
 }
 
-impl Display for Value {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            Value::Int(i) => write!(f, "int({})", i),
-            Value::Float(fl) => write!(f, "float({})", fl),
-            Value::Bool(b) => write!(f, "bool({})", b),
-            Value::String(s) => write!(f, "string({})", s),
-        }
-    }
-}
-
-impl Serialize for Value {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl<'de> Deserialize<'de> for Value {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        Value::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
-    }
-}
-
 #[derive(Debug, Clone, PartialEq)]
 pub enum Datatype {
     Int,
@@ -90,18 +77,7 @@ pub enum Datatype {
     String,
 }
 
-impl Datatype {
-    pub fn parse_str(s: &str) -> Result<Self, String> {
-        match s {
-            "int" => Ok(Datatype::Int),
-            "float" => Ok(Datatype::Float),
-            "bool" => Ok(Datatype::Bool),
-            "string" => Ok(Datatype::String),
-            _ => Err(format!("Invalid VariableType string: {}", s)),
-        }
-    }
-}
-
+#[serialize_use_display]
 impl Display for Datatype {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -113,21 +89,17 @@ impl Display for Datatype {
     }
 }
 
-impl Serialize for Datatype {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
+#[deserialize_use_from_str]
+impl FromStr for Datatype {
+    type Err = String;
 
-impl<'de> Deserialize<'de> for Datatype {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        Datatype::parse_str(&s).map_err(|e| serde::de::Error::custom(e))
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
+            "int" => Ok(Datatype::Int),
+            "float" => Ok(Datatype::Float),
+            "bool" => Ok(Datatype::Bool),
+            "string" => Ok(Datatype::String),
+            _ => Err(format!("Invalid VariableType string: {}", s)),
+        }
     }
 }

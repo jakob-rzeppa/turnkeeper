@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
-use serde::{Deserialize, Serialize};
+use backend_derive::{deserialize_use_from_str, serialize_use_display};
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum GameStatVisibility {
@@ -9,6 +9,7 @@ pub enum GameStatVisibility {
     Hidden, // The stat is hidden from everyone. It can be used for internal calculations and logic.
 }
 
+#[serialize_use_display]
 impl Display for GameStatVisibility {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -19,29 +20,16 @@ impl Display for GameStatVisibility {
     }
 }
 
-impl Serialize for GameStatVisibility {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
+#[deserialize_use_from_str]
+impl FromStr for GameStatVisibility {
+    type Err = String;
 
-impl<'de> Deserialize<'de> for GameStatVisibility {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.as_str() {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "public" => Ok(GameStatVisibility::Public),
             "private" => Ok(GameStatVisibility::Private),
             "hidden" => Ok(GameStatVisibility::Hidden),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid GameStatVisibility value: {}",
-                s
-            ))),
+            _ => Err(format!("Invalid GameStatVisibility value: {}", s)),
         }
     }
 }
@@ -54,6 +42,7 @@ pub enum PlayerStatVisibility {
     Hidden, // The stat is hidden from everyone. It can be used for internal calculations and logic.
 }
 
+#[serialize_use_display]
 impl Display for PlayerStatVisibility {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -65,30 +54,17 @@ impl Display for PlayerStatVisibility {
     }
 }
 
-impl Serialize for PlayerStatVisibility {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
+#[deserialize_use_from_str]
+impl FromStr for PlayerStatVisibility {
+    type Err = String;
 
-impl<'de> Deserialize<'de> for PlayerStatVisibility {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.as_str() {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "public" => Ok(PlayerStatVisibility::Public),
             "protected" => Ok(PlayerStatVisibility::Protected),
             "private" => Ok(PlayerStatVisibility::Private),
             "hidden" => Ok(PlayerStatVisibility::Hidden),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid PlayerStatVisibility value: {}",
-                s
-            ))),
+            _ => Err(format!("Invalid PlayerStatVisibility value: {}", s)),
         }
     }
 }
@@ -100,6 +76,7 @@ pub enum ActionVisibility {
     Hidden,  // The action is hidden from everyone. It can be used for internal logic.
 }
 
+#[serialize_use_display]
 impl Display for ActionVisibility {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -110,29 +87,16 @@ impl Display for ActionVisibility {
     }
 }
 
-impl Serialize for ActionVisibility {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
+#[deserialize_use_from_str]
+impl FromStr for ActionVisibility {
+    type Err = String;
 
-impl<'de> Deserialize<'de> for ActionVisibility {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.as_str() {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "public" => Ok(ActionVisibility::Public),
             "private" => Ok(ActionVisibility::Private),
             "hidden" => Ok(ActionVisibility::Hidden),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid ActionVisibility value: {}",
-                s
-            ))),
+            _ => Err(format!("Invalid ActionVisibility value: {}", s)),
         }
     }
 }
@@ -143,6 +107,7 @@ pub enum PageVisibility {
     Private, // Only the gm has the page.
 }
 
+#[serialize_use_display]
 impl Display for PageVisibility {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -152,28 +117,15 @@ impl Display for PageVisibility {
     }
 }
 
-impl Serialize for PageVisibility {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
+#[deserialize_use_from_str]
+impl FromStr for PageVisibility {
+    type Err = String;
 
-impl<'de> Deserialize<'de> for PageVisibility {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        match s.as_str() {
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
+        match s {
             "public" => Ok(PageVisibility::Public),
             "private" => Ok(PageVisibility::Private),
-            _ => Err(serde::de::Error::custom(format!(
-                "Invalid PageVisibility value: {}",
-                s
-            ))),
+            _ => Err(format!("Invalid PageVisibility value: {}", s)),
         }
     }
 }

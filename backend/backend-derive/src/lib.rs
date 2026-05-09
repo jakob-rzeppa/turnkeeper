@@ -2,7 +2,7 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
     DeriveInput, ExprMethodCall, FnArg, ImplItemFn, PatType, Token, parse_macro_input, parse_quote,
-    punctuated::Punctuated, visit_mut::VisitMut,
+    punctuated::Punctuated, visit_mut::VisitMut, ItemImpl,
 };
 
 /// Derive macro to automatically implement `axum::extract::FromRequest`
@@ -219,4 +219,116 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #method
         #debug_method
     })
+}
+
+/// Attribute macro to automatically implement `serde::Serialize` based on a `Display` implementation.
+///
+/// Place this attribute before an `impl Display` block. It will generate the corresponding
+/// `impl Serialize` that serializes using the Display implementation.
+///
+/// # Example
+///
+/// ```rust
+/// #[serialize_use_display]
+/// impl Display for ExecutionTrigger {
+///     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+///         // ... implementation
+///     }
+/// }
+/// ```
+///
+/// This will generate:
+///
+/// ```rust
+/// impl Serialize for ExecutionTrigger {
+///     fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+///     where
+///         S: serde::Serializer,
+///     {
+///         serializer.serialize_str(&self.to_string())
+///     }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn serialize_use_display(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let impl_block = parse_macro_input!(input as ItemImpl);
+    
+    let target_type = &impl_block.self_ty;
+    let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
+
+    let serialize_impl = quote! {
+        impl #impl_generics serde::Serialize for #target_type #ty_generics #where_clause {
+            fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+            where
+                S: serde::Serializer,
+            {
+                serializer.serialize_str(&self.to_string())
+            }
+        }
+    };
+
+    let expanded = quote! {
+        #impl_block
+        #serialize_impl
+    };
+
+    TokenStream::from(expanded)
+}
+
+/// Attribute macro to automatically implement `serde::Deserialize` based on a `FromStr` implementation.
+///
+/// Place this attribute before an `impl FromStr` block. It will generate the corresponding
+/// `impl Deserialize` that deserializes using the FromStr implementation.
+///
+/// # Example
+///
+/// ```rust
+/// #[deserialize_use_from_str]
+/// impl FromStr for ExecutionTrigger {
+///     type Err = String;
+///
+///     fn from_str(s: &str) -> Result<Self, Self::Err> {
+///         // ... implementation
+///     }
+/// }
+/// ```
+///
+/// This will generate:
+///
+/// ```rust
+/// impl<'de> Deserialize<'de> for ExecutionTrigger {
+///     fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+///     where
+///         D: serde::Deserializer<'de>,
+///     {
+///         let s = String::deserialize(deserializer)?;
+///         ExecutionTrigger::from_str(&s).map_err(serde::de::Error::custom)
+///     }
+/// }
+/// ```
+#[proc_macro_attribute]
+pub fn deserialize_use_from_str(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    let impl_block = parse_macro_input!(input as ItemImpl);
+    
+    let target_type = &impl_block.self_ty;
+    let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
+
+    let deserialize_impl = quote! {
+        impl #impl_generics<'de> serde::Deserialize<'de> for #target_type #ty_generics #where_clause {
+            fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+            where
+                D: serde::Deserializer<'de>,
+            {
+                let s = String::deserialize(deserializer)?;
+                std::str::FromStr::from_str(&s).map_err(serde::de::Error::custom)
+            }
+        }
+    };
+
+    let expanded = quote! {
+        #impl_block
+        #deserialize_impl
+    };
+
+    TokenStream::from(expanded)
 }

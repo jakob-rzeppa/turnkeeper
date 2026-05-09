@@ -1,6 +1,6 @@
-use std::fmt::Display;
+use std::{fmt::Display, str::FromStr};
 
-use serde::{Deserialize, Serialize};
+use backend_derive::{serialize_use_display, deserialize_use_from_str};
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExecutionTrigger {
@@ -12,6 +12,7 @@ pub enum ExecutionTrigger {
     AfterRoundAdvance,
 }
 
+#[serialize_use_display]
 impl Display for ExecutionTrigger {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
@@ -25,8 +26,11 @@ impl Display for ExecutionTrigger {
     }
 }
 
-impl ExecutionTrigger {
-    pub fn parse_str(s: &str) -> Result<Self, String> {
+#[deserialize_use_from_str]
+impl FromStr for ExecutionTrigger {
+    type Err = String;
+
+    fn from_str(s: &str) -> Result<Self, Self::Err> {
         if s.starts_with("BeforeAction(") && s.ends_with(")") {
             let action = s[13..s.len() - 1].to_string();
             Ok(ExecutionTrigger::BeforeAction(action))
@@ -44,24 +48,5 @@ impl ExecutionTrigger {
         } else {
             Err(format!("Invalid ExecutionTrigger string: {}", s))
         }
-    }
-}
-
-impl Serialize for ExecutionTrigger {
-    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
-    where
-        S: serde::Serializer,
-    {
-        serializer.serialize_str(&self.to_string())
-    }
-}
-
-impl<'de> Deserialize<'de> for ExecutionTrigger {
-    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
-    where
-        D: serde::Deserializer<'de>,
-    {
-        let s = String::deserialize(deserializer)?;
-        ExecutionTrigger::parse_str(&s).map_err(serde::de::Error::custom)
     }
 }
