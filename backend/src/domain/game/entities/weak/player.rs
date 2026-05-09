@@ -19,6 +19,10 @@ impl Player {
         Self { name, user_id }
     }
 
+    pub fn set_name(&mut self, new_name: String) {
+        self.name = new_name;
+    }
+
     pub fn name(&self) -> &str {
         &self.name
     }

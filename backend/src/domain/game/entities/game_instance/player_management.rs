@@ -19,6 +19,23 @@ impl GameInstance {
         Ok(())
     }
 
+    pub fn change_player_name(
+        &mut self,
+        player_name: String,
+        new_name: String,
+    ) -> Result<(), GameInstanceError> {
+        if self.players.iter().any(|p| p.name() == new_name) {
+            return Err(GameInstanceError::PlayerNameAlreadyExists(new_name));
+        }
+
+        if let Some(player) = self.players.iter_mut().find(|p| p.name() == &player_name) {
+            player.set_name(new_name);
+            Ok(())
+        } else {
+            Err(GameInstanceError::PlayerNotFound(player_name))
+        }
+    }
+
     /// Reorders players to match the given list of UUIDs.
     ///
     /// # Errors

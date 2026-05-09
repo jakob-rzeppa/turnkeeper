@@ -12,8 +12,8 @@ pub enum ExecutionError {
 pub enum GameInstanceError {
     #[error("Action execution error: {0}")]
     ActionExecutionError(#[from] ExecutionError),
-    #[error("Player already exists: {0}")]
-    PlayerAlreadyExists(String),
+    #[error("Player name already exists: {0}")]
+    PlayerNameAlreadyExists(String),
     #[error("Player not found: {0}")]
     PlayerNotFound(String),
 

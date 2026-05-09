@@ -7,6 +7,7 @@ type GameCommand =
     | 'Connect'
     | 'AdvanceTurn'
     | 'AddPlayer'
+    | { ChangePlayerName: { player: string, new_name: string } }
     | { ChangePlayerOrder: { names_in_order: string[] } }
     | { AttachUserToPlayer: { player: string, user_id: string } }
     | { DetachUserFromPlayer: { player: string } }
@@ -24,6 +25,7 @@ export function useCommandEmitter() {
 
     const advanceTurn = () => emit('AdvanceTurn');
     const addPlayer = () => emit('AddPlayer');
+    const changePlayerName = (player: string, new_name: string) => emit({ ChangePlayerName: { player, new_name } });
     const changePlayerOrder = (names_in_order: string[]) => emit({ ChangePlayerOrder: { names_in_order } });
     const attachUserToPlayer = (player: string, user_id: string) => emit({ AttachUserToPlayer: { player, user_id } });
     const detachUserFromPlayer = (player: string) => emit({ DetachUserFromPlayer: { player } });
@@ -33,6 +35,7 @@ export function useCommandEmitter() {
     return {
         advanceTurn,
         addPlayer,
+        changePlayerName,
         changePlayerOrder,
         attachUserToPlayer,
         detachUserFromPlayer,

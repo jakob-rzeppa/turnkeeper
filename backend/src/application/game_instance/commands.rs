@@ -15,6 +15,7 @@ pub enum GameSessionCommand {
 
     // Player
     AddPlayer,
+    ChangePlayerName { player: String, new_name: String },
     ChangePlayerOrder { names_in_order: Vec<String> },
     AttachUserToPlayer { player: String, user_id: Id },
     DetachUserFromPlayer { player: String },

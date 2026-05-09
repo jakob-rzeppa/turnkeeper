@@ -5,6 +5,7 @@ import AttatchUserToPlayerModal from '../modals/AttatchUserToPlayerModal.vue';
 import { useUsersStore } from '../../users/usersStore';
 import { useCommandEmitter } from '../useCommandEmitter';
 import { useSession } from '../useSession';
+import RenamePlayerModal from '../modals/RenamePlayerModal.vue';
 
 const commandEmitter = useCommandEmitter();
 const session = useSession();
@@ -76,7 +77,8 @@ const detachUserFromPlayer = (player: string) => {
 </script>
 
 <template>
-    <div class="w-full h-full p-4 overflow-y-scroll">
+    <div v-if="session.connectionStatus.value !== 'connected'" class="loading" />
+    <div v-else class="w-full h-full p-4 overflow-y-scroll">
         <h2 class="text-lg font-semibold mb-3">Players</h2>
         <ul v-if="localPlayers.length > 0" class="flex flex-col gap-2">
             <li
@@ -109,7 +111,20 @@ const detachUserFromPlayer = (player: string) => {
                     <span class="text-base-content/30 text-lg leading-none">⠿</span>
 
                     <!-- Player Name -->
-                    <span class="flex-1 font-medium text-sm">{{player.name}}</span>
+                    <span class="flex-1 flex gap-2">
+                        <span class="font-medium text-sm">{{player.name}}</span>
+
+                        <!-- Rename Player Button -->
+                        <button
+                            class="btn btn-xs btn-ghost"
+                            @click="modalStore.openModal(RenamePlayerModal, { player: player.name })"
+                            title="Rename player"
+                        >
+                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+                    </span>
 
                     <!-- Attached User -->
                     <span v-if="player.user_id" class="text-xs text-base-content/60">

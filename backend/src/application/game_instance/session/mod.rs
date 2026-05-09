@@ -101,6 +101,32 @@ impl GameSession {
                                             .await;
                                     }
                                 }
+                                GameSessionCommand::ChangePlayerName { player, new_name } => {
+                                    if &sending_user_id != game_instance.gm_user_id() {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(
+                                                    "Only the GM can change player names".to_string(),
+                                                ),
+                                            )
+                                            .await;
+                                        continue;
+                                    }
+
+                                    let res = game_instance.change_player_name(player, new_name);
+                                    if let Err(e) = res {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(format!(
+                                                    "Changing player name failed: {}",
+                                                    e
+                                                )),
+                                            )
+                                            .await;
+                                    }
+                                }
                                 GameSessionCommand::ChangePlayerOrder { names_in_order } => {
                                     if &sending_user_id != game_instance.gm_user_id() {
                                         _ = outgoing_sender
