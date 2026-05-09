@@ -223,14 +223,14 @@ impl GameSession {
                         _ = outgoing_sender.send_to(
                             game_instance.gm_user_id().clone(),
                             OutgoingMessageDto::State(game_instance.get_state(game_instance.gm_user_id())),
-                        ); // Ignore errors since the gm might not be attached to a player and thus not receive state updates
+                        ).await; // Ignore errors since the gm might not be attached to a player and thus not receive state updates
 
                         // Send the updated state to all attached players
                         for user_id in game_instance.get_attatched_user_ids() {
                             _ = outgoing_sender.send_to(
                                 user_id,
                                 OutgoingMessageDto::State(game_instance.get_state(&user_id)),
-                            ); // Ignore errors since some users might not be attached to a player and thus not receive state updates
+                            ).await; // Ignore errors since some users might not be attached to a player and thus not receive state updates
                         }
                     },
                     _ = &mut shutdown_receiver => {

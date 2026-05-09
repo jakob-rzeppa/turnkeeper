@@ -39,7 +39,7 @@ pub async fn game_session_websocket_handler(
 
     Ok(ws.on_upgrade(async move |mut socket| {
         // Make sure to DISCONNECT from the session when the WebSocket connection is closed to ensure that we don't leave any sessions running indefinitely after all users have disconnected.
-        let (command_sender, mut game_state_receiver) = state
+        let (command_sender, mut outgoing_receiver) = state
             .game_session_manager()
             .connect_to_session(&id, user.id())
             .await
@@ -48,11 +48,11 @@ pub async fn game_session_websocket_handler(
         // We should only break, never return from this loop, to ensure that we always disconnect from the session in the finally block below.
         loop {
             tokio::select! {
-                game_state_recv = game_state_receiver.recv() => {
+                game_state_recv = outgoing_receiver.recv() => {
                     if let Some(game_state) = game_state_recv {
                         let msg = game_state.to_string();
                         if let Err(e) = socket.send(Message::Text(msg.into())).await {
-                            println!("Failed to send game state update: {}", e);
+                            println!("Failed to send to client: {}", e);
                             break;
                         }
                     } else {
@@ -72,7 +72,10 @@ pub async fn game_session_websocket_handler(
                                 }
                             } else {
                                 println!("Received unknown command: {}", msg);
-                                break;
+                                if let Err(e) = socket.send(Message::Text(format!("Error: Unknown command: {}", msg).into())).await {
+                                    println!("Failed to send to client: {}", e);
+                                    break;
+                                }
                             }
                         }
                         _ => break,

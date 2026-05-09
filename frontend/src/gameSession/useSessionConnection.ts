@@ -1,6 +1,7 @@
 import { computed, ref } from 'vue';
 import { API_BASE_URL, postWithAuth } from '../api/httpApi';
 import { isDisplayTemplate } from './types/displayTemplate.guard';
+import { isGameState } from './types/state.guard';
 
 const connection = ref<
         { status: 'disconnected' } | 
@@ -60,6 +61,14 @@ export function useSessionConnection() {
                     // TODO Handle the display template
                 } else {
                     console.warn('Received invalid DisplayTemplate message:', message);
+                }
+            } else if (event.data.startsWith('State ')) {
+                const message = JSON.parse(event.data.slice(6));
+                if (isGameState(message)) {
+                    console.log('Received GameState:', message);
+                    // TODO Handle the game state
+                } else {
+                    console.warn('Received invalid GameState message:', message);
                 }
             } else {
                 console.log('Received unrecognized message:', event.data);

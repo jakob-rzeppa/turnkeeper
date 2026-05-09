@@ -1,4 +1,3 @@
-
 /** @see {isDisplayTemplate} ts-auto-guard:type-guard */
 export interface DisplayTemplate {
     stats: GameStat[];
