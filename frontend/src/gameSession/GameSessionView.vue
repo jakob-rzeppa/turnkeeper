@@ -24,12 +24,6 @@ onMounted(() => {
 onUnmounted(() => {
     disconnectFromSession();
 });
-
-const sendMsg = () => {
-    if (sessionConnection.connectionStatus.value === 'connected') {
-        sessionConnection.send(JSON.stringify('AdvanceTurn'));
-    }
-}
 </script>
 
 <template>
@@ -53,7 +47,14 @@ const sendMsg = () => {
         </div>
         <div v-else-if="sessionConnection.connectionStatus.value === 'connected'" class="alert alert-success shadow-lg">
             <span>Connected to Game Session!</span>
-            <button class="btn btn-sm btn-primary" @click="sendMsg">Send Test Message</button>
+            <div v-if="sessionConnection.displayTemplate">
+                <h2 class="mt-4">Display Template:</h2>
+                <pre>{{ sessionConnection.displayTemplate }}</pre>
+            </div>
+            <div v-if="sessionConnection.gameState">
+                <h2 class="mt-4">Game State:</h2>
+                <pre>{{ sessionConnection.gameState }}</pre>
+            </div>
             <button class="btn btn-sm btn-error" @click="disconnectFromSession">Disconnect</button>
         </div>
     </div>

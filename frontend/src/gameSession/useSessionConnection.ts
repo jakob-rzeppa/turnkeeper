@@ -2,16 +2,30 @@ import { computed, ref } from 'vue';
 import { API_BASE_URL, postWithAuth } from '../api/httpApi';
 import { isDisplayTemplate } from './types/displayTemplate.guard';
 import { isGameState } from './types/state.guard';
+import type { DisplayTemplate } from './types/displayTemplate';
+import type { GameState } from './types/state';
 
 const connection = ref<
         { status: 'disconnected' } | 
         { status: 'connecting' } | 
-        { status: 'connected', websocket: WebSocket } |
+        { status: 'connected', websocket: WebSocket, displayTemplate: DisplayTemplate | null, state: GameState | null } |
         { status: 'error', error: string }
     >({ status: 'disconnected' });
 
 export function useSessionConnection() {
     const connectionStatus = computed(() => connection.value.status);
+    const displayTemplate = computed(() => {
+        if (connection.value.status === 'connected') {
+            return connection.value.displayTemplate;
+        }
+        return null;
+    });
+    const gameState = computed(() => {
+        if (connection.value.status === 'connected') {
+            return connection.value.state;
+        }
+        return null;
+    });
 
     const connect = async (gameId: string, gameInstanceId: string) => {
         if (connection.value.status === 'connected') {
@@ -46,7 +60,9 @@ export function useSessionConnection() {
             console.log('WebSocket connection established.');
             connection.value = { 
                 status: 'connected', 
-                websocket
+                websocket,
+                displayTemplate: null,
+                state: null
             };
 
             // Send an initial message to trigger the server to send the current game state
@@ -54,11 +70,16 @@ export function useSessionConnection() {
         };
 
         websocket.onmessage = event => {
+            if (connection.value.status !== 'connected') {
+                console.warn('Received message while WebSocket is not connected. This should not happen. Ignoring message.');
+                return;
+            }
+
             if (event.data.startsWith('DisplayTemplate ')) {
                 const message = JSON.parse(event.data.slice(16));
                 if (isDisplayTemplate(message)) {
                     console.log('Received DisplayTemplate:', message);
-                    // TODO Handle the display template
+                    connection.value.displayTemplate = message;
                 } else {
                     console.warn('Received invalid DisplayTemplate message:', message);
                 }
@@ -66,7 +87,7 @@ export function useSessionConnection() {
                 const message = JSON.parse(event.data.slice(6));
                 if (isGameState(message)) {
                     console.log('Received GameState:', message);
-                    // TODO Handle the game state
+                    connection.value.state = message;
                 } else {
                     console.warn('Received invalid GameState message:', message);
                 }
@@ -114,5 +135,5 @@ export function useSessionConnection() {
         }
     };
 
-    return { connect, disconnect, send, connectionStatus };
+    return { connect, disconnect, send, connectionStatus, displayTemplate, gameState };
 }
