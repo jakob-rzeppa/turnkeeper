@@ -1,31 +1,6 @@
 import { computed, ref } from 'vue';
-import { useGameStore, type Stat, type Player, type Tradable } from '../game/gameStore';
 import { API_BASE_URL, postWithAuth } from '../api/httpApi';
-
-type RawStat = {
-    id: string;
-    key: string;
-    value_type: Stat['valueType'];
-    string_value: string | null;
-    number_value: number | null;
-    boolean_value: boolean | null;
-};
-type RawTradable = {
-    id: string;
-    name: string;
-    value: number;
-};
-type RawPlayer = { id: string; user_id: string | null; stats: RawStat[]; tradables: RawTradable[] };
-type RawGame = {
-    id: string;
-    name: string;
-    gm_user_id: string;
-    players: RawPlayer[];
-    round_number: number;
-    current_player_index: number;
-    notes: string;
-    hidden_notes: string;
-};
+import { isDisplayTemplate } from './types/displayTemplate.guard';
 
 const connection = ref<
         { status: 'disconnected' } | 
@@ -35,8 +10,6 @@ const connection = ref<
     >({ status: 'disconnected' });
 
 export function useSessionConnection() {
-    const gameStore = useGameStore();
-
     const connectionStatus = computed(() => connection.value.status);
 
     const connect = async (gameId: string, gameInstanceId: string) => {
@@ -80,47 +53,17 @@ export function useSessionConnection() {
         };
 
         websocket.onmessage = event => {
-            if (!event.data.startsWith('FullGameProjection ')) {
-                console.warn('Received unknown message type:', event.data);
-                return;
+            if (event.data.startsWith('DisplayTemplate ')) {
+                const message = JSON.parse(event.data.slice(16));
+                if (isDisplayTemplate(message)) {
+                    console.log('Received DisplayTemplate:', message);
+                    // TODO Handle the display template
+                } else {
+                    console.warn('Received invalid DisplayTemplate message:', message);
+                }
+            } else {
+                console.log('Received unrecognized message:', event.data);
             }
-
-            console.log('Received message:', event.data);
-
-            const message = JSON.parse(event.data.slice(19)) as RawGame;
-
-            gameStore.setGame({
-                id: message.id,
-                name: message.name,
-                gm_user_id: message.gm_user_id,
-                players: message.players.map(
-                    (p: RawPlayer): Player => ({
-                        id: p.id,
-                        userId: p.user_id,
-                        stats: p.stats.map(
-                            (s: RawStat): Stat => ({
-                                id: s.id,
-                                key: s.key,
-                                valueType: s.value_type,
-                                stringValue: s.string_value,
-                                numberValue: s.number_value,
-                                booleanValue: s.boolean_value,
-                            })
-                        ),
-                        tradables: p.tradables.map(
-                            (t: RawTradable): Tradable => ({
-                                id: t.id,
-                                name: t.name,
-                                value: t.value,
-                            })
-                        ),
-                    })
-                ),
-                roundNumber: message.round_number,
-                currentPlayerIndex: message.current_player_index,
-                notes: message.notes,
-                hiddenNotes: message.hidden_notes,
-            });
         };
 
         websocket.onclose = () => {

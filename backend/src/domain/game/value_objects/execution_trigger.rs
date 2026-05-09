@@ -1,6 +1,8 @@
 use std::fmt::Display;
 
-#[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
+use serde::{Deserialize, Serialize};
+
+#[derive(Debug, Clone, PartialEq)]
 pub enum ExecutionTrigger {
     BeforeAction(String),
     AfterAction(String),
@@ -42,5 +44,24 @@ impl ExecutionTrigger {
         } else {
             Err(format!("Invalid ExecutionTrigger string: {}", s))
         }
+    }
+}
+
+impl Serialize for ExecutionTrigger {
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: serde::Serializer,
+    {
+        serializer.serialize_str(&self.to_string())
+    }
+}
+
+impl<'de> Deserialize<'de> for ExecutionTrigger {
+    fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
+    where
+        D: serde::Deserializer<'de>,
+    {
+        let s = String::deserialize(deserializer)?;
+        ExecutionTrigger::parse_str(&s).map_err(serde::de::Error::custom)
     }
 }

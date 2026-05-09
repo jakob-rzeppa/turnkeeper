@@ -10,7 +10,8 @@
         "lint": "eslint .",
         "format": "prettier --write .",
         "format:check": "prettier --check .",
-        "test": "vitest"
+        "test": "vitest",
+        "ts-auto-guard": "ts-auto-guard src/**/*.ts"
     },
     "dependencies": {
         "@tailwindcss/vite": "^4.1.18",
@@ -37,6 +38,7 @@
         "globals": "^17.0.0",
         "jiti": "^2.6.1",
         "prettier": "^3.7.4",
+        "ts-auto-guard": "^5.1.3",
         "typescript": "~5.9.3",
         "typescript-eslint": "^8.52.0",
         "vite": "^7.2.4",
