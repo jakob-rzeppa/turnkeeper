@@ -3,12 +3,10 @@ use crate::domain::{
     game::{
         entities::game_instance::GameInstance,
         projections::{
-            game_display_template::GameDisplayTemplateProjection,
-            game_instance_metadata::GameInstanceMetadataProjection,
-            game_instance_state::{
+            action::ActionMetadataProjection, game_display_template::GameDisplayTemplateProjection, game_instance_metadata::GameInstanceMetadataProjection, game_instance_state::{
                 GameInstanceStateProjection, GameStatStateProjection, PlayerProjection,
                 PlayerStatStateProjection,
-            },
+            }, stat::{GameStatMetadataProjection, PlayerStatMetadataProjection}
         },
     },
 };
@@ -17,7 +15,31 @@ impl GameInstance {
     /// Returns a template for the game, like the available actions, pages etc.
     /// This can be sent to the frontend for rendering the game's pages.
     pub fn get_display_template(&self, _user_id: Id) -> GameDisplayTemplateProjection {
-        GameDisplayTemplateProjection {}
+        // For now, we return everything to everyone, but in the future we will need to filter out some data based on the user's permissions and the visibility of the stats.
+        GameDisplayTemplateProjection {
+            stats: self.game_stats.iter().map(|s| GameStatMetadataProjection {
+                name: s.name().to_string(),
+                default: s.default().clone(),
+                datatype: s.datatype().clone(),
+                visibility: s.visibility().clone(),
+                pos: s.pos().clone(),
+            }).collect(),
+            player_stats: self.player_stats.iter().map(|s| PlayerStatMetadataProjection {
+                name: s.name().to_string(),
+                default: s.default().clone(),
+                datatype: s.datatype().clone(),
+                visibility: s.visibility().clone(),
+                pos: s.pos().clone(),
+            }).collect(),
+            actions: self.actions.iter().map(|a| ActionMetadataProjection {
+                name: a.name().to_string(),
+                parameters: a.parameters().clone(),
+                execution_triggers: a.execution_triggers().clone(),
+                visibility: a.visibility().clone(),
+                source_code: a.source_code().to_string(),
+                pos: a.pos().clone(),
+            }).collect(),
+        }
     }
 
     /// Returns the current state of the game instance for the specified user, including any relevant data.
