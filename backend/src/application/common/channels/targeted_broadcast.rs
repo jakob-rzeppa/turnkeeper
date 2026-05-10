@@ -1,13 +1,11 @@
-use std::{fmt::Debug, hash::Hash, marker::PhantomData};
+use std::{ fmt::Debug, hash::Hash, marker::PhantomData };
 
-use tokio::sync::{mpsc, oneshot};
+use tokio::sync::{ mpsc, oneshot };
 
 #[derive(Debug, thiserror::Error)]
 pub enum TargetedBroadcastError {
-    #[error("Failed to send game state: {0}")]
-    SendError(String),
-    #[error("Failed to create receiver: {0}")]
-    CreateReceiverError(String),
+    #[error("Failed to send game state: {0}")] SendError(String),
+    #[error("Failed to create receiver: {0}")] CreateReceiverError(String),
 }
 
 /// A channel for sending messages from one producer (e.g. the game session) to a specific user connection.
@@ -18,13 +16,11 @@ pub struct TargetedBroadcast<K, T> {
     message_type: PhantomData<T>,
 }
 
-impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug + Send + 'static>
-    TargetedBroadcast<K, T>
-{
-    pub fn new() -> (
-        TargetedBroadcastSender<K, T>,
-        TargetedBroadcastReceiverCreator<K, T>,
-    ) {
+impl<
+    K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static,
+    T: Clone + Debug + Send + 'static
+> TargetedBroadcast<K, T> {
+    pub fn new() -> (TargetedBroadcastSender<K, T>, TargetedBroadcastReceiverCreator<K, T>) {
         // The producer side of the channel, which gets the messages to be send
         let (producer_sender, mut producer_receiver) = mpsc::unbounded_channel();
         let sender: TargetedBroadcastSender<K, T> = TargetedBroadcastSender {
@@ -32,12 +28,15 @@ impl<K: Clone + Debug + Send + PartialEq + Eq + Hash + 'static, T: Clone + Debug
         };
 
         // The consumer side of the channel, which allows creating a receiver for a specific user ID
-        let (creator_sender, mut creator_receiver) =
-            mpsc::unbounded_channel::<(K, oneshot::Sender<TargetedBroadcastReceiver<K, T>>)>();
-        let receiver_creator: TargetedBroadcastReceiverCreator<K, T> =
-            TargetedBroadcastReceiverCreator {
-                creator: creator_sender,
-            };
+        let (creator_sender, mut creator_receiver) = mpsc::unbounded_channel::<
+            (K, oneshot::Sender<TargetedBroadcastReceiver<K, T>>)
+        >();
+        let receiver_creator: TargetedBroadcastReceiverCreator<
+            K,
+            T
+        > = TargetedBroadcastReceiverCreator {
+            creator: creator_sender,
+        };
 
         // Spawn a task to route messages from the producer to the correct consumer based on user ID
         tokio::spawn(async move {
@@ -125,16 +124,16 @@ pub struct TargetedBroadcastReceiverCreator<K, T> {
 impl<K, T> TargetedBroadcastReceiverCreator<K, T> {
     pub async fn create_receiver(
         &self,
-        user_id: K,
+        user_id: K
     ) -> Result<TargetedBroadcastReceiver<K, T>, TargetedBroadcastError> {
         let (response_sender, response_receiver) = oneshot::channel();
         self.creator
             .send((user_id, response_sender))
             .map_err(|e| TargetedBroadcastError::CreateReceiverError(e.to_string()))?;
 
-        response_receiver
-            .await
-            .map_err(|e| TargetedBroadcastError::CreateReceiverError(e.to_string()))
+        response_receiver.await.map_err(|e|
+            TargetedBroadcastError::CreateReceiverError(e.to_string())
+        )
     }
 }
 
@@ -162,34 +161,19 @@ mod tests {
         let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
 
         // Create receivers for two users
-        let mut receiver1 = receiver_creator
-            .create_receiver("user1".to_string())
-            .await
-            .unwrap();
-        let mut receiver2 = receiver_creator
-            .create_receiver("user2".to_string())
-            .await
-            .unwrap();
+        let mut receiver1 = receiver_creator.create_receiver("user1".to_string()).await.unwrap();
+        let mut receiver2 = receiver_creator.create_receiver("user2".to_string()).await.unwrap();
 
         // Send a message to user1
-        sender
-            .send_to("user1".to_string(), "Hello User 1".to_string())
-            .await
-            .unwrap();
+        sender.send_to("user1".to_string(), "Hello User 1".to_string()).await.unwrap();
         assert_eq!(receiver1.recv().await.unwrap(), "Hello User 1");
 
         // Send a message to user2
-        sender
-            .send_to("user2".to_string(), "Hello User 2".to_string())
-            .await
-            .unwrap();
+        sender.send_to("user2".to_string(), "Hello User 2".to_string()).await.unwrap();
         assert_eq!(receiver2.recv().await.unwrap(), "Hello User 2");
 
         // Broadcast a message to all users
-        sender
-            .broadcast("Hello Everyone".to_string())
-            .await
-            .unwrap();
+        sender.broadcast("Hello Everyone".to_string()).await.unwrap();
         assert_eq!(receiver1.recv().await.unwrap(), "Hello Everyone");
         assert_eq!(receiver2.recv().await.unwrap(), "Hello Everyone");
 
@@ -209,16 +193,10 @@ mod tests {
         let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
 
         // Create a receiver for user1
-        let mut receiver1 = receiver_creator
-            .create_receiver("user1".to_string())
-            .await
-            .unwrap();
+        let mut receiver1 = receiver_creator.create_receiver("user1".to_string()).await.unwrap();
 
         // Send a message to a non-existent user (user2)
-        sender
-            .send_to("user2".to_string(), "Hello User 2".to_string())
-            .await
-            .unwrap();
+        sender.send_to("user2".to_string(), "Hello User 2".to_string()).await.unwrap();
 
         // The message should not be received by user1
 
@@ -233,20 +211,11 @@ mod tests {
         let (sender, receiver_creator) = TargetedBroadcast::<String, String>::new();
 
         // Create two receivers with the same user ID
-        let mut receiver1 = receiver_creator
-            .create_receiver("user1".to_string())
-            .await
-            .unwrap();
-        let mut receiver2 = receiver_creator
-            .create_receiver("user1".to_string())
-            .await
-            .unwrap();
+        let mut receiver1 = receiver_creator.create_receiver("user1".to_string()).await.unwrap();
+        let mut receiver2 = receiver_creator.create_receiver("user1".to_string()).await.unwrap();
 
         // Send a message to user1
-        sender
-            .send_to("user1".to_string(), "Hello User 1".to_string())
-            .await
-            .unwrap();
+        sender.send_to("user1".to_string(), "Hello User 1".to_string()).await.unwrap();
 
         // Both receivers should receive the message, but since they have the same user ID, only one will actually get it due to how the routing works (the second receiver will overwrite the first in the consumer_senders map)
         assert_eq!(receiver1.recv().await.unwrap(), "Hello User 1");

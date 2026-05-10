@@ -18,9 +18,11 @@ const isEditing = ref(false);
 const editValue = ref<string>('');
 
 const statTypeKey = computed(() => {
-    const statValue = props.player 
-        ? session.gameState.value?.player_stats.find(p => p.name === props.statName)?.values.find(v => v[0] === props.player)?.[1] ?? null
-        : session.gameState.value?.game_stats.find(s => s.name === props.statName)?.value ?? null;
+    const statValue = props.player
+        ? (session.gameState.value?.player_stats
+              .find(p => p.name === props.statName)
+              ?.values.find(v => v[0] === props.player)?.[1] ?? null)
+        : (session.gameState.value?.game_stats.find(s => s.name === props.statName)?.value ?? null);
 
     if (statValue?.int_value !== null) return 'int';
     if (statValue?.float_value !== null) return 'float';
@@ -39,9 +41,11 @@ const dataTypeLabel = computed(() => {
 });
 
 const value = computed(() => {
-    const statValue = props.player 
-        ? session.gameState.value?.player_stats.find(p => p.name === props.statName)?.values.find(v => v[0] === props.player)?.[1] ?? null
-        : session.gameState.value?.game_stats.find(s => s.name === props.statName)?.value ?? null;
+    const statValue = props.player
+        ? (session.gameState.value?.player_stats
+              .find(p => p.name === props.statName)
+              ?.values.find(v => v[0] === props.player)?.[1] ?? null)
+        : (session.gameState.value?.game_stats.find(s => s.name === props.statName)?.value ?? null);
 
     if (!statValue) return 'N/A';
 
@@ -50,11 +54,13 @@ const value = computed(() => {
     if (statValue?.str_value !== null) return statValue.str_value;
     if (statValue?.bool_value !== null) return statValue.bool_value;
     return 'N/A';
-})
+});
 const defaultValue = computed(() => {
-    const defaultStatValue = props.player 
-        ? session.gameState.value?.player_stats.find(p => p.name === props.statName)?.default ?? null
-        : session.gameState.value?.game_stats.find(s => s.name === props.statName)?.default ?? null;
+    const defaultStatValue = props.player
+        ? (session.gameState.value?.player_stats.find(p => p.name === props.statName)?.default ??
+          null)
+        : (session.gameState.value?.game_stats.find(s => s.name === props.statName)?.default ??
+          null);
 
     if (!defaultStatValue) return 'N/A';
 
@@ -86,7 +92,7 @@ const updateValue = () => {
         } else {
             commandEmitter.changeGameStat(props.statName, newVal.value);
         }
-        
+
         isEditing.value = false;
     }
 };
@@ -94,17 +100,16 @@ const updateValue = () => {
 const cancelEditing = () => {
     isEditing.value = false;
 };
-
 </script>
 
 <template>
     <div class="flex items-center gap-3 px-3 py-2 bg-base-200 rounded text-sm border">
         <!-- Name -->
         <span class="font-semibold min-w-max">{{ props.statName }}</span>
-        
+
         <!-- Datatype Badge -->
         <span class="badge badge-sm badge-neutral">{{ dataTypeLabel }}</span>
-        
+
         <!-- Value or Input -->
         <div v-if="!isEditing" class="font-semibold">
             {{ value }}
@@ -124,31 +129,36 @@ const cancelEditing = () => {
                 type="checkbox"
                 :checked="editValue === 'true'"
                 class="checkbox checkbox-md"
-                @change="event => editValue = (event.target as HTMLInputElement).checked ? 'true' : 'false'"
+                @change="
+                    event =>
+                        (editValue = (event.target as HTMLInputElement).checked ? 'true' : 'false')
+                "
                 @keydown.enter="updateValue"
                 @keydown.escape="cancelEditing"
                 autofocus
             />
-            <button
-                class="btn btn-xs btn-success"
-                title="Save"
-                @click="updateValue"
-            >
+            <button class="btn btn-xs btn-success" title="Save" @click="updateValue">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7" />
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M5 13l4 4L19 7"
+                    />
                 </svg>
             </button>
-            <button
-                class="btn btn-xs btn-error"
-                title="Cancel"
-                @click="cancelEditing"
-            >
+            <button class="btn btn-xs btn-error" title="Cancel" @click="cancelEditing">
                 <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                    <path
+                        stroke-linecap="round"
+                        stroke-linejoin="round"
+                        stroke-width="2"
+                        d="M6 18L18 6M6 6l12 12"
+                    />
                 </svg>
             </button>
         </div>
-        
+
         <!-- Edit Button -->
         <button
             v-if="!isEditing && props.editable"
@@ -157,10 +167,15 @@ const cancelEditing = () => {
             @click="startEditing"
         >
             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                <path
+                    stroke-linecap="round"
+                    stroke-linejoin="round"
+                    stroke-width="2"
+                    d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"
+                />
             </svg>
         </button>
-        
+
         <!-- Default Value (only for game stats) -->
         <div v-if="!props.player" class="ml-auto text-gray-600">
             <span>default:</span>

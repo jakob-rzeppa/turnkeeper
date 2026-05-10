@@ -1,7 +1,7 @@
 use crate::domain::{
     common::identifier::Id,
     game::{
-        entities::{game_instance::GameInstance, weak::player::{self, Player}},
+        entities::{ game_instance::GameInstance, weak::player::Player },
         error::GameInstanceError,
     },
 };
@@ -28,7 +28,7 @@ impl GameInstance {
     pub fn change_player_name(
         &mut self,
         player_name: String,
-        new_name: String,
+        new_name: String
     ) -> Result<(), GameInstanceError> {
         if self.players.iter().any(|p| p.name() == new_name) {
             return Err(GameInstanceError::PlayerNameAlreadyExists(new_name));
@@ -51,7 +51,7 @@ impl GameInstance {
     /// unknown player IDs.
     pub fn change_player_order(
         &mut self,
-        names_in_order: Vec<String>,
+        names_in_order: Vec<String>
     ) -> Result<(), GameInstanceError> {
         if names_in_order.len() != self.players.len() {
             return Err(GameInstanceError::InvalidPlayerOrder(names_in_order));
@@ -87,7 +87,7 @@ impl GameInstance {
     pub fn attach_user_to_player(
         &mut self,
         user_id: Id,
-        player_name: String,
+        player_name: String
     ) -> Result<(), GameInstanceError> {
         if self.players.iter().any(|p| p.user_id() == Some(&user_id)) {
             return Err(GameInstanceError::UserAlreadyAttachedToAnotherPlayer);
@@ -104,7 +104,7 @@ impl GameInstance {
     /// Detaches any user from the specified player.
     pub fn detach_user_from_player(
         &mut self,
-        player_name: String,
+        player_name: String
     ) -> Result<(), GameInstanceError> {
         if let Some(player) = self.players.iter_mut().find(|p| p.name() == &player_name) {
             player.detach_user();
@@ -115,7 +115,10 @@ impl GameInstance {
     }
 
     pub fn get_player_names(&self) -> Vec<String> {
-        self.players.iter().map(|p| p.name().to_string()).collect()
+        self.players
+            .iter()
+            .map(|p| p.name().to_string())
+            .collect()
     }
 
     pub fn get_attached_user_ids(&self) -> Vec<Id> {
@@ -140,7 +143,7 @@ mod tests {
             Vec::new(),
             Vec::new(),
             Vec::new(),
-            Game::new("Test Game".to_string(), "Test Game".to_string()),
+            Game::new("Test Game".to_string(), "Test Game".to_string())
         )
     }
 
@@ -172,12 +175,9 @@ mod tests {
             let player_name_2 = game.players[1].name().to_string();
             let player_name_3 = game.players[2].name().to_string();
 
-            game.change_player_order(vec![
-                player_name_3.clone(),
-                player_name_1.clone(),
-                player_name_2.clone(),
-            ])
-            .unwrap();
+            game.change_player_order(
+                vec![player_name_3.clone(), player_name_1.clone(), player_name_2.clone()]
+            ).unwrap();
 
             assert_eq!(game.players[0].name(), &player_name_3);
             assert_eq!(game.players[1].name(), &player_name_1);
@@ -239,14 +239,12 @@ mod tests {
         assert_eq!(user_ids.len(), 0);
 
         game.get_player_names();
-        game.attach_user_to_player(Id::new(), game.players[0].name().to_string())
-            .unwrap();
+        game.attach_user_to_player(Id::new(), game.players[0].name().to_string()).unwrap();
 
         let user_ids = game.get_attached_user_ids();
         assert_eq!(user_ids.len(), 1);
 
-        game.attach_user_to_player(Id::new(), game.players[1].name().to_string())
-            .unwrap();
+        game.attach_user_to_player(Id::new(), game.players[1].name().to_string()).unwrap();
 
         let user_ids = game.get_attached_user_ids();
         assert_eq!(user_ids.len(), 2);

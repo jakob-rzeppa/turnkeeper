@@ -1,7 +1,9 @@
 use crate::domain::{
     common::position::Position,
     game::value_objects::{
-        execution_trigger::ExecutionTrigger, parameter::Parameter, visibility::ActionVisibility,
+        execution_trigger::ExecutionTrigger,
+        parameter::Parameter,
+        visibility::ActionVisibility,
     },
 };
 

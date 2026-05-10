@@ -1,9 +1,9 @@
-use crate::application::user::requests::{UserLoginRequest, UserRegisterRequest};
+use crate::application::user::requests::{ UserLoginRequest, UserRegisterRequest };
 use crate::infrastructure::app_state::AppState;
 use crate::infrastructure::error::HttpError;
 use axum::extract::State;
-use backend_derive::{JsonRequest, JsonResponse};
-use serde::{Deserialize, Serialize};
+use backend_derive::{ JsonRequest, JsonResponse };
+use serde::{ Deserialize, Serialize };
 
 #[derive(Deserialize, JsonRequest, Debug)]
 pub struct LoginHttpRequest {
@@ -21,7 +21,7 @@ pub struct LoginHttpResponse {
 /// authenticates a user via username and password and returns a JSON WEB TOKEN
 pub async fn login(
     State(state): State<AppState>,
-    payload: LoginHttpRequest,
+    payload: LoginHttpRequest
 ) -> Result<LoginHttpResponse, HttpError> {
     let request_dto = UserLoginRequest {
         name: payload.name,
@@ -50,7 +50,7 @@ pub struct RegisterHttpResponse {
 /// registers a new user via username and password
 pub async fn register(
     State(state): State<AppState>,
-    payload: RegisterHttpRequest,
+    payload: RegisterHttpRequest
 ) -> Result<RegisterHttpResponse, HttpError> {
     let request_dto = UserRegisterRequest {
         name: payload.name,

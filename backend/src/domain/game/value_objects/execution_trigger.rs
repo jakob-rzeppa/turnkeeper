@@ -1,6 +1,6 @@
-use std::{fmt::Display, str::FromStr};
+use std::{ fmt::Display, str::FromStr };
 
-use backend_derive::{serialize_use_display, deserialize_use_from_str};
+use backend_derive::{ serialize_use_display, deserialize_use_from_str };
 
 #[derive(Debug, Clone, PartialEq)]
 pub enum ExecutionTrigger {

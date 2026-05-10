@@ -1,4 +1,4 @@
-use crate::domain::{common::position::Position, game::value_objects::visibility::PageVisibility};
+use crate::domain::{ common::position::Position, game::value_objects::visibility::PageVisibility };
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct PageMetadataProjection {

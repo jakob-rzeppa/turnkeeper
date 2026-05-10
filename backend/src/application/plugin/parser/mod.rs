@@ -1,9 +1,6 @@
 use crate::application::plugin::{
     lexer::tokenize,
-    parser::{
-        abstract_syntax_tree::{Parsable, TokenStream, root::Root},
-        error::ParsingError,
-    },
+    parser::{ abstract_syntax_tree::{ Parsable, TokenStream, root::Root }, error::ParsingError },
 };
 
 pub mod abstract_syntax_tree;

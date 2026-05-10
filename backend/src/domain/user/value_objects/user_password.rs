@@ -1,4 +1,4 @@
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 
 /// # Invalid States
 ///
@@ -11,7 +11,9 @@ pub struct UserPassword {
 impl UserPassword {
     pub fn try_new(value: String) -> Result<Self, UserError> {
         if value.len() < 4 {
-            return Err(UserError::new(UserErrorKind::PasswordTooShort { required: 4, actual: value.len() }));
+            return Err(
+                UserError::new(UserErrorKind::PasswordTooShort { required: 4, actual: value.len() })
+            );
         }
 
         Ok(Self { value })

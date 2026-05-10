@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use crate::application::user::contracts::{
-    JwtGeneratorContract, JwtValidatorContract, UserRepositoryContract,
+    JwtGeneratorContract,
+    JwtValidatorContract,
+    UserRepositoryContract,
 };
 
 pub mod authenticate;
@@ -12,7 +14,7 @@ pub mod user_list;
 pub struct UserRequestHandler<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
+    JwtValidator: JwtValidatorContract
 > {
     user_repository: Arc<UserRepository>,
     jwt_generator: Arc<JwtGenerator>,
@@ -22,13 +24,12 @@ pub struct UserRequestHandler<
 impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
-> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
-{
+    JwtValidator: JwtValidatorContract
+> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator> {
     pub fn new(
         user_repository: Arc<UserRepository>,
         jwt_generator: Arc<JwtGenerator>,
-        jwt_validator: Arc<JwtValidator>,
+        jwt_validator: Arc<JwtValidator>
     ) -> Self {
         Self {
             user_repository,
@@ -41,9 +42,8 @@ impl<
 impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
-> Clone for UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
-{
+    JwtValidator: JwtValidatorContract
+> Clone for UserRequestHandler<UserRepository, JwtGenerator, JwtValidator> {
     fn clone(&self) -> Self {
         Self {
             user_repository: self.user_repository.clone(),

@@ -2,14 +2,15 @@ use backend_derive::execute_debug;
 
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{
-        Positioned, atom::datatype::Datatype,
+        Positioned,
+        atom::datatype::Datatype,
         statement::variable_declaration::VariableDeclarationStatement,
     },
     runtime::{
         RuntimeEnvironment,
         error::RuntimeError,
         execute::Executable,
-        memory::{identifier::Identifier, values::VariableValue},
+        memory::{ identifier::Identifier, values::VariableValue },
     },
 };
 
@@ -23,18 +24,19 @@ impl Executable<()> for VariableDeclarationStatement {
 
         // Type checking
         match (&var_type, &value) {
-            (Datatype::Integer, VariableValue::Int(_))
+            | (Datatype::Integer, VariableValue::Int(_))
             | (Datatype::Float, VariableValue::Float(_))
             | (Datatype::String, VariableValue::String(_))
-            | (Datatype::Boolean, VariableValue::Bool(_)) => env
-                .memory_manager
-                .declare_variable(identifier, value)
-                .map_err(|err| RuntimeError::from_memory_error(err, expression.position())),
-            _ => Err(RuntimeError::TypeMismatch {
-                expected: format!("type {} for variable '{}'", var_type, identifier),
-                found: value,
-                pos: expression.position(),
-            }),
+            | (Datatype::Boolean, VariableValue::Bool(_)) =>
+                env.memory_manager
+                    .declare_variable(identifier, value)
+                    .map_err(|err| RuntimeError::from_memory_error(err, expression.position())),
+            _ =>
+                Err(RuntimeError::TypeMismatch {
+                    expected: format!("type {} for variable '{}'", var_type, identifier),
+                    found: value,
+                    pos: expression.position(),
+                }),
         }
     }
 }
@@ -53,13 +55,12 @@ mod tests {
             Datatype::Integer,
             Expression::new_atom_literal_int(42, 0, 0),
             0,
-            0,
+            0
         );
 
         let result = var_decl.execute(&mut env).await;
         assert!(result.is_ok());
-        let stored_value = env
-            .memory_manager
+        let stored_value = env.memory_manager
             .get_variable(&Identifier::new("x".to_string()))
             .unwrap();
         assert_eq!(stored_value, &VariableValue::Int(42));
@@ -73,7 +74,7 @@ mod tests {
             Datatype::Integer,
             Expression::new_atom_literal_string("not an integer".to_string(), 5, 0),
             0,
-            0,
+            0
         );
 
         let result = var_decl.execute(&mut env).await;
@@ -93,20 +94,18 @@ mod tests {
             Datatype::Integer,
             Expression::new_atom_literal_int(100, 0, 0),
             0,
-            0,
+            0
         );
 
         let result = var_decl.execute(&mut env).await;
         assert!(result.is_ok());
-        let stored_value = env
-            .memory_manager
+        let stored_value = env.memory_manager
             .get_variable(&Identifier::new("x".to_string()))
             .unwrap();
         assert_eq!(stored_value, &VariableValue::Int(100)); // The inner scope should shadow the outer variable
 
         env.memory_manager.pop_scope(); // Exit the inner scope
-        let stored_value = env
-            .memory_manager
+        let stored_value = env.memory_manager
             .get_variable(&Identifier::new("x".to_string()))
             .unwrap();
         assert_eq!(stored_value, &VariableValue::Int(42)); // The outer variable should still be accessible after popping the inner scope
@@ -124,16 +123,13 @@ mod tests {
             Datatype::Integer,
             Expression::new_atom_literal_int(100, 0, 0),
             0,
-            0,
+            0
         );
 
         let result = var_decl.execute(&mut env).await;
         assert!(result.is_err());
 
-        let old_value = env
-            .memory_manager
-            .get_variable(&Identifier::new("x".to_string()))
-            .unwrap();
+        let old_value = env.memory_manager.get_variable(&Identifier::new("x".to_string())).unwrap();
         assert_eq!(old_value, &VariableValue::Int(42)); // The original variable should still be unchanged after the failed declaration attempt
     }
 }

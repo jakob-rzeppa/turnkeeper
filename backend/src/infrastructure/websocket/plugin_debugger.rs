@@ -1,12 +1,9 @@
-use axum::{
-    extract::{Query, State, WebSocketUpgrade, ws::Message},
-    response::Response,
-};
+use axum::{ extract::{ Query, State, WebSocketUpgrade, ws::Message }, response::Response };
 use serde::Deserialize;
 
 use crate::{
     AppState,
-    application::plugin::debugger::{IncomingDebuggerMessage, PluginDebugger},
+    application::plugin::debugger::{ IncomingDebuggerMessage, PluginDebugger },
     infrastructure::error::HttpError,
 };
 
@@ -22,25 +19,24 @@ pub struct UserWsQueryParams {
 pub async fn plugin_debugger_websocket_handler(
     State(state): State<AppState>,
     Query(params): Query<UserWsQueryParams>,
-    ws: WebSocketUpgrade,
+    ws: WebSocketUpgrade
 ) -> Result<Response, HttpError> {
-    let ticket = params
-        .ticket
-        .ok_or_else(|| HttpError::BadRequest("Missing ticket query parameter".to_string()))?;
+    let ticket = params.ticket.ok_or_else(||
+        HttpError::BadRequest("Missing ticket query parameter".to_string())
+    )?;
 
     // Validate the ticket and retrieve the associated user ID.
-    let _user = state
-        .ws_session_manager
-        .connect(&ticket)
-        .await
+    let _user = state.ws_session_manager
+        .connect(&ticket).await
         .ok_or_else(|| HttpError::BadRequest("Invalid ticket".to_string()))?;
 
-    Ok(ws.on_upgrade(async move |mut socket| {
-        let debugger = PluginDebugger::new();
+    Ok(
+        ws.on_upgrade(async move |mut socket| {
+            let debugger = PluginDebugger::new();
 
-        let (incoming_sender, mut outgoing_receiver) = debugger.debug().await;
+            let (incoming_sender, mut outgoing_receiver) = debugger.debug().await;
 
-        tokio::select! {
+            tokio::select! {
             msg = socket.recv() => {
                 if let Some(Ok(Message::Text(text))) = msg {
                     let debugger_message = match serde_json::from_str::<IncomingDebuggerMessage>(&text) {
@@ -63,5 +59,6 @@ pub async fn plugin_debugger_websocket_handler(
                 }
             }
         }
-    }))
+        })
+    )
 }

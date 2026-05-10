@@ -1,6 +1,6 @@
 use crate::{
     domain::{
-        common::{date_time::DateTime, identifier::Id},
+        common::{ date_time::DateTime, identifier::Id },
         game::entities::{
             game::Game,
             weak::{
@@ -8,7 +8,7 @@ use crate::{
                 log::Log,
                 page::Page,
                 player::Player,
-                stat::{GameStat, PlayerStat},
+                stat::{ GameStat, PlayerStat },
             },
         },
     },
@@ -50,7 +50,7 @@ impl GameInstance {
         player_stats: Vec<PlayerStat>,
         actions: Vec<Action>,
         pages: Vec<Page>,
-        source_game: Game,
+        source_game: Game
     ) -> Self {
         Self {
             id: Id::new(),
@@ -84,7 +84,7 @@ impl GameInstance {
         source_game: Game,
         gm_user_id: Id,
         created_at: DateTime,
-        last_played_at: DateTime,
+        last_played_at: DateTime
     ) -> Self {
         Self {
             id,
@@ -163,19 +163,19 @@ impl GameInstance {
 
 impl PartialEq for GameInstance {
     fn eq(&self, other: &Self) -> bool {
-        self.id == other.id
-            && self.name == other.name
-            && self.current_player_index == other.current_player_index
-            && self.round == other.round
-            && equals_unordered(&self.game_stats, &other.game_stats)
-            && equals_unordered(&self.player_stats, &other.player_stats)
-            && equals_unordered(&self.actions, &other.actions)
-            && equals_unordered(&self.pages, &other.pages)
-            && equals_unordered(&self.players, &other.players)
-            && self.log == other.log
-            && self.source_game == other.source_game
-            && self.gm_user_id == other.gm_user_id
-            && self.created_at == other.created_at
-            && self.last_played_at == other.last_played_at
+        self.id == other.id &&
+            self.name == other.name &&
+            self.current_player_index == other.current_player_index &&
+            self.round == other.round &&
+            equals_unordered(&self.game_stats, &other.game_stats) &&
+            equals_unordered(&self.player_stats, &other.player_stats) &&
+            equals_unordered(&self.actions, &other.actions) &&
+            equals_unordered(&self.pages, &other.pages) &&
+            equals_unordered(&self.players, &other.players) &&
+            self.log == other.log &&
+            self.source_game == other.source_game &&
+            self.gm_user_id == other.gm_user_id &&
+            self.created_at == other.created_at &&
+            self.last_played_at == other.last_played_at
     }
 }

@@ -5,13 +5,19 @@ use tokio::task::JoinHandle;
 use crate::{
     application::{
         common::channels::{
-            mpsc::{MpscChannel, MpscChannelSender},
-            targeted_broadcast::{TargetedBroadcast, TargetedBroadcastReceiver, TargetedBroadcastReceiverCreator},
-        }, game::error::GameApplicationError, game_instance::{
+            mpsc::{ MpscChannel, MpscChannelSender },
+            targeted_broadcast::{
+                TargetedBroadcast,
+                TargetedBroadcastReceiver,
+                TargetedBroadcastReceiverCreator,
+            },
+        },
+        game::error::GameApplicationError,
+        game_instance::{
             commands::GameSessionCommand,
             contracts::GameInstanceRepositoryContract,
-            dto::{IncomingMessageDto, OutgoingMessageDto}
-        }
+            dto::{ IncomingMessageDto, OutgoingMessageDto },
+        },
     },
     domain::common::identifier::Id,
 };
@@ -32,7 +38,7 @@ pub struct GameSession {
 impl GameSession {
     pub async fn spawn(
         game_id: Id,
-        game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
+        game_instance_repository: Arc<dyn GameInstanceRepositoryContract>
     ) -> Result<Self, GameApplicationError> {
         let (incoming_sender, mut incoming_receiver) = MpscChannel::new();
         let (outgoing_sender, outgoing_sender_creator) = TargetedBroadcast::new();
@@ -40,8 +46,12 @@ impl GameSession {
 
         let mut game_instance = match game_instance_repository.get_by_id(game_id).await {
             Ok(Some(instance)) => instance,
-            Ok(None) => return Err(GameApplicationError::GameInstanceNotFound),
-            Err(e) => return Err(GameApplicationError::DatabaseError(e)),
+            Ok(None) => {
+                return Err(GameApplicationError::GameInstanceNotFound);
+            }
+            Err(e) => {
+                return Err(GameApplicationError::DatabaseError(e));
+            }
         };
 
         // Spawn a task to continuously process incoming commands
@@ -322,19 +332,25 @@ impl GameSession {
         Ok(Self {
             task_handle: Some(task_handle),
             shutdown_sender: Some(shutdown_sender),
-            command_sender:incoming_sender,
+            command_sender: incoming_sender,
             update_receiver_creator: outgoing_sender_creator,
         })
     }
 
-    pub async fn get_channels(&self, user_id: &Id) -> (
+    pub async fn get_channels(
+        &self,
+        user_id: &Id
+    ) -> (
         MpscChannelSender<IncomingMessageDto>,
         TargetedBroadcastReceiver<Id, OutgoingMessageDto>,
     ) {
         (
-            self.command_sender.clone(), 
-            self.update_receiver_creator.create_receiver(user_id.clone()).await
-                .expect("Failed to create update receiver for game session, which should never happen since the creator should always be able to create new receivers.")
+            self.command_sender.clone(),
+            self.update_receiver_creator
+                .create_receiver(user_id.clone()).await
+                .expect(
+                    "Failed to create update receiver for game session, which should never happen since the creator should always be able to create new receivers."
+                ),
         )
     }
 
@@ -344,23 +360,27 @@ impl GameSession {
     pub async fn stop(mut self) {
         // Ignore error since it just means the session task has already been shut down
         if let Some(shutdown_sender) = self.shutdown_sender.take() {
-                let _ = shutdown_sender.send(());
+            let _ = shutdown_sender.send(());
         } else {
-            unreachable!("Shutdown sender should always be present when stopping the session, since it is only consumed when the session is stopped gracefully, which can only happen once.");
+            unreachable!(
+                "Shutdown sender should always be present when stopping the session, since it is only consumed when the session is stopped gracefully, which can only happen once."
+            );
         }
 
         // Wait for the session task to finish, but ignore any errors since we're shutting down anyway
         if let Some(task_handle) = self.task_handle.take() {
-            let _ = task_handle.await; 
+            let _ = task_handle.await;
         } else {
-            unreachable!("Task handle should always be present when stopping the session, since it is only consumed when the session is stopped gracefully, which can only happen once.");
+            unreachable!(
+                "Task handle should always be present when stopping the session, since it is only consumed when the session is stopped gracefully, which can only happen once."
+            );
         }
     }
 }
 
 /// Ensure that the session task is aborted when the GameSession is dropped.
-/// 
-/// Forcefully aborting the task is necessary to ensure that we don't leave any background tasks running after the session is dropped, 
+///
+/// Forcefully aborting the task is necessary to ensure that we don't leave any background tasks running after the session is dropped,
 /// which could lead to resource leaks or unintended side effects.
 impl Drop for GameSession {
     fn drop(&mut self) {

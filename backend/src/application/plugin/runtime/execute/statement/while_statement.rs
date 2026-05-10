@@ -1,9 +1,12 @@
 use backend_derive::execute_debug;
 
 use crate::application::plugin::{
-    parser::abstract_syntax_tree::{Positioned, statement::while_loop::WhileLoopStatement},
+    parser::abstract_syntax_tree::{ Positioned, statement::while_loop::WhileLoopStatement },
     runtime::{
-        RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
+        RuntimeEnvironment,
+        error::RuntimeError,
+        execute::Executable,
+        memory::values::VariableValue,
     },
 };
 
@@ -29,7 +32,9 @@ impl Executable<()> for WhileLoopStatement {
                     }
                     env.memory_manager.pop_scope();
                 }
-                VariableValue::Bool(false) => break,
+                VariableValue::Bool(false) => {
+                    break;
+                }
                 _ => {
                     return Err(RuntimeError::TypeMismatch {
                         expected: "boolean value as while condition".to_string(),

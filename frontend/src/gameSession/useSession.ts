@@ -6,11 +6,16 @@ import type { DisplayTemplate } from './types/displayTemplate';
 import type { GameState } from './types/state';
 
 const connection = ref<
-        { status: 'disconnected' } | 
-        { status: 'connecting' } | 
-        { status: 'connected', websocket: WebSocket, displayTemplate: DisplayTemplate | null, state: GameState | null } |
-        { status: 'error', error: string }
-    >({ status: 'disconnected' });
+    | { status: 'disconnected' }
+    | { status: 'connecting' }
+    | {
+          status: 'connected';
+          websocket: WebSocket;
+          displayTemplate: DisplayTemplate | null;
+          state: GameState | null;
+      }
+    | { status: 'error'; error: string }
+>({ status: 'disconnected' });
 
 export function useSession() {
     const connectionStatus = computed(() => connection.value.status);
@@ -42,27 +47,26 @@ export function useSession() {
         connection.value = { status: 'connecting' };
 
         // Fetch a short-lived ticket URL from the authenticated HTTP endpoint
-        const response = await postWithAuth<{ ticket: string }>(
-            `/ws/ticket`,
-            null
-        );
-        
+        const response = await postWithAuth<{ ticket: string }>(`/ws/ticket`, null);
+
         if (response.isErr()) {
             console.error('Failed to obtain WebSocket ticket:', response.error);
             return;
-        } 
+        }
         let wsTicket = response.value.data.ticket;
 
         console.log('Connecting to Game Session...');
-        const websocket = new WebSocket(`${API_BASE_URL}/games/${gameId}/instances/${gameInstanceId}/ws?ticket=${wsTicket}`);
+        const websocket = new WebSocket(
+            `${API_BASE_URL}/games/${gameId}/instances/${gameInstanceId}/ws?ticket=${wsTicket}`
+        );
 
         websocket.onopen = () => {
             console.log('WebSocket connection established.');
-            connection.value = { 
-                status: 'connected', 
+            connection.value = {
+                status: 'connected',
                 websocket,
                 displayTemplate: null,
-                state: null
+                state: null,
             };
 
             // Send an initial message to trigger the server to send the current game state
@@ -71,7 +75,9 @@ export function useSession() {
 
         websocket.onmessage = event => {
             if (connection.value.status !== 'connected') {
-                console.warn('Received message while WebSocket is not connected. This should not happen. Ignoring message.');
+                console.warn(
+                    'Received message while WebSocket is not connected. This should not happen. Ignoring message.'
+                );
                 return;
             }
 
@@ -112,7 +118,10 @@ export function useSession() {
             return;
         }
 
-        if (connection.value.websocket && connection.value.websocket.readyState === WebSocket.OPEN) {
+        if (
+            connection.value.websocket &&
+            connection.value.websocket.readyState === WebSocket.OPEN
+        ) {
             connection.value.websocket.send(message);
         } else {
             console.warn('WebSocket is not connected. Cannot send message.');

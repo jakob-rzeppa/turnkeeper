@@ -1,6 +1,6 @@
 use crate::application::common::parser::{
     error::ParsingError,
-    lexer::{scanner::scan_source_code, token::Token},
+    lexer::{ scanner::scan_source_code, token::Token },
 };
 
 mod lexeme;

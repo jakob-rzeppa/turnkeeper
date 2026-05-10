@@ -1,4 +1,7 @@
-use crate::domain::game::projections::{action::ActionMetadataProjection, stat::{GameStatMetadataProjection, PlayerStatMetadataProjection}};
+use crate::domain::game::projections::{
+    action::ActionMetadataProjection,
+    stat::{ GameStatMetadataProjection, PlayerStatMetadataProjection },
+};
 
 #[derive(Debug, Clone, serde::Serialize)]
 pub struct GameDisplayTemplateProjection {

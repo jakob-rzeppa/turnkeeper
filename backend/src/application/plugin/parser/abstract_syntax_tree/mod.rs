@@ -1,5 +1,7 @@
 use crate::application::plugin::{
-    common::Position, lexer::token::Token, parser::error::ParsingError,
+    common::Position,
+    lexer::token::Token,
+    parser::error::ParsingError,
 };
 
 #[macro_use]

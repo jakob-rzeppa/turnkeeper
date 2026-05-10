@@ -3,7 +3,9 @@
 //! Handles user authentication via username and password.
 
 use crate::application::user::contracts::{
-    JwtGeneratorContract, JwtValidatorContract, UserRepositoryContract,
+    JwtGeneratorContract,
+    JwtValidatorContract,
+    UserRepositoryContract,
 };
 use crate::application::user::request_handlers::UserRequestHandler;
 use crate::application::user::requests::UserLoginRequest;
@@ -14,9 +16,8 @@ use crate::domain::user::error::UserError;
 impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
-> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
-{
+    JwtValidator: JwtValidatorContract
+> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator> {
     pub async fn login(&self, request: UserLoginRequest) -> Result<UserTokenResponse, UserError> {
         let user: User = self.user_repository.get_by_name(&request.name).await?;
 
@@ -31,9 +32,11 @@ impl<
 mod tests {
     use crate::{
         application::user::contracts::{
-            MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
+            MockJwtGeneratorContract,
+            MockJwtValidatorContract,
+            MockUserRepositoryContract,
         },
-        domain::{common::identifier::Id, user::error::UserErrorKind},
+        domain::{ common::identifier::Id, user::error::UserErrorKind },
     };
 
     use super::*;
@@ -54,10 +57,13 @@ mod tests {
 
         let user_id = Id::new();
         let user = User::try_new(user_id.clone(), name.clone(), password.clone()).unwrap();
-        user_repo.expect_get_by_name().times(1).returning(move |_| {
-            let user = user.clone();
-            Box::pin(async move { Ok(user) })
-        });
+        user_repo
+            .expect_get_by_name()
+            .times(1)
+            .returning(move |_| {
+                let user = user.clone();
+                Box::pin(async move { Ok(user) })
+            });
 
         jwt_generator
             .expect_generate_token()
@@ -67,7 +73,7 @@ mod tests {
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.login(request).await;
 
@@ -90,19 +96,25 @@ mod tests {
         };
 
         let user_id = Id::new();
-        let user =
-            User::try_new(user_id.clone(), name.clone(), "real-password".to_string()).unwrap();
-        user_repo.expect_get_by_name().times(1).returning(move |_| {
-            let user = user.clone();
-            Box::pin(async move { Ok(user) })
-        });
+        let user = User::try_new(
+            user_id.clone(),
+            name.clone(),
+            "real-password".to_string()
+        ).unwrap();
+        user_repo
+            .expect_get_by_name()
+            .times(1)
+            .returning(move |_| {
+                let user = user.clone();
+                Box::pin(async move { Ok(user) })
+            });
 
         jwt_generator.expect_generate_token().never();
 
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.login(request).await;
 

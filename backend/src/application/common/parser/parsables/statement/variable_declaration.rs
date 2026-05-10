@@ -1,6 +1,15 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable}, domain::game::{abstract_syntax_tree::{expression::Expression, statement::VariableDeclarationStatement}, value_objects::data::Datatype}};
-
-
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ token::TokenVariant, token_stream::TokenStream },
+        macros::{ change_err_msg, expect_token, get_pos, is_token },
+        parsable::Parsable,
+    },
+    domain::game::{
+        abstract_syntax_tree::{ expression::Expression, statement::VariableDeclarationStatement },
+        value_objects::data::Datatype,
+    },
+};
 
 impl Parsable for VariableDeclarationStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -38,14 +47,13 @@ impl Parsable for VariableDeclarationStatement {
             }
         };
 
-        expect_token!(
-            ts,
-            TokenVariant::Colon,
-            "':' after identifier in variable declaration"
-        );
+        expect_token!(ts, TokenVariant::Colon, "':' after identifier in variable declaration");
 
-        let var_type = Datatype::parse(ts, source_code).map_err(|err| 
-            change_err_msg!(err, "Expected variable type (int, float, string, bool) in variable declaration")
+        let var_type = Datatype::parse(ts, source_code).map_err(|err|
+            change_err_msg!(
+                err,
+                "Expected variable type (int, float, string, bool) in variable declaration"
+            )
         )?;
 
         expect_token!(
@@ -54,7 +62,7 @@ impl Parsable for VariableDeclarationStatement {
             "Expected '=' after datatype in variable declaration"
         );
 
-        let value = Expression::parse(ts, source_code).map_err(|err| 
+        let value = Expression::parse(ts, source_code).map_err(|err|
             change_err_msg!(err, "Expected expression after '=' in variable declaration")
         )?;
 
@@ -70,9 +78,21 @@ impl Parsable for VariableDeclarationStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}}, value_objects::data::Value}}};
+    use crate::{
+        application::common::parser::macros::test_token_stream,
+        domain::{
+            common::position::Position,
+            game::{
+                abstract_syntax_tree::expression::{
+                    atom::ExpressionAtom,
+                    binary::{ BinaryExpression, BinaryOperator },
+                },
+                value_objects::data::Value,
+            },
+        },
+    };
 
-use super::*;
+    use super::*;
 
     #[test]
     fn test_variable_declaration_int_parsing() {
@@ -103,7 +123,7 @@ use super::*;
                 "pi".to_string(),
                 Datatype::Float,
                 Expression::Atom(ExpressionAtom::Literal(Value::Float(3.14), Position::new(0, 16))),
-                Position::new(0, 0) 
+                Position::new(0, 0)
             )
         );
     }
@@ -119,7 +139,12 @@ use super::*;
             VariableDeclarationStatement::new(
                 "name".to_string(),
                 Datatype::String,
-                Expression::Atom(ExpressionAtom::Literal(Value::String("Hello".to_string()), Position::new(0, 19))),
+                Expression::Atom(
+                    ExpressionAtom::Literal(
+                        Value::String("Hello".to_string()),
+                        Position::new(0, 19)
+                    )
+                ),
                 Position::new(0, 0)
             )
         );
@@ -155,9 +180,13 @@ use super::*;
                 Datatype::Int,
                 Expression::Binary(
                     BinaryExpression::new(
-                        Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 15))),
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(1), Position::new(0, 15))
+                        ),
                         BinaryOperator::Addition,
-                        Expression::Atom(ExpressionAtom::Literal(Value::Int(2), Position::new(0, 19))),
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(2), Position::new(0, 19))
+                        ),
                         Position::new(0, 15)
                     )
                 ),

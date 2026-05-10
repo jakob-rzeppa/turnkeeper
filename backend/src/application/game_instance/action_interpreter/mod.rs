@@ -1,6 +1,6 @@
 use crate::{
     application::game_instance::action_interpreter::error::ActionInterpreterError,
-    domain::game::entities::{game_instance::GameInstance, weak::action::Action},
+    domain::game::entities::{ game_instance::GameInstance, weak::action::Action },
 };
 
 pub mod error;
@@ -12,7 +12,7 @@ pub struct ActionExecutor {
 impl ActionExecutor {
     pub fn new(
         game_instance: GameInstance,
-        action_name: &str,
+        action_name: &str
     ) -> Result<Self, ActionInterpreterError> {
         let action = game_instance
             .actions()

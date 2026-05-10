@@ -11,15 +11,17 @@ const props = defineProps<{
 const session = useSession();
 const commandEmitter = useCommandEmitter();
 
-const action = computed(() => session.displayTemplate.value?.actions.find(a => a.name === props.actionName) ?? null);
+const action = computed(
+    () => session.displayTemplate.value?.actions.find(a => a.name === props.actionName) ?? null
+);
 
-const params = ref<Record<string, ["int" | "float" | "bool" | "string", string]>>({}); // name -> [datatype, value] (e. g. [int, int(2)])
+const params = ref<Record<string, ['int' | 'float' | 'bool' | 'string', string]>>({}); // name -> [datatype, value] (e. g. [int, int(2)])
 
 watch(
     () => action.value,
     newAction => {
         if (newAction) {
-            const initialParams: Record<string, ["int" | "float" | "bool" | "string", string]> = {};
+            const initialParams: Record<string, ['int' | 'float' | 'bool' | 'string', string]> = {};
             newAction.parameters.forEach(p => {
                 const pSplit = p.split(':');
                 if (pSplit.length !== 2) {
@@ -37,14 +39,17 @@ watch(
                 }
 
                 if (!type || !['int', 'float', 'string', 'bool'].includes(type)) {
-                    console.warn(`Unsupported parameter type for action ${newAction.name}: ${type}`);
+                    console.warn(
+                        `Unsupported parameter type for action ${newAction.name}: ${type}`
+                    );
                     params.value = {};
                     return;
                 }
 
-                const initialValue = type === 'int' || type === 'float' ? '0' : type === 'bool' ? 'false' : '';
+                const initialValue =
+                    type === 'int' || type === 'float' ? '0' : type === 'bool' ? 'false' : '';
 
-                initialParams[name] = [type as "int" | "float" | "bool" | "string", initialValue];
+                initialParams[name] = [type as 'int' | 'float' | 'bool' | 'string', initialValue];
             });
             params.value = initialParams;
         } else {
@@ -76,29 +81,31 @@ const executeAction = () => {
         <span class="text-xl font-semibold min-w-max">{{ action.name }}</span>
         <div v-for="([type, value], name) in params" :key="name" class="flex items-center gap-2">
             <span v-if="type === 'bool'" class="label">{{ name }}</span>
-            <input 
+            <input
                 v-if="type === 'bool'"
                 type="checkbox"
                 class="toggle toggle-primary"
                 :checked="value === 'true'"
-                @change="(e) => params[name]![1] = (e.target as HTMLInputElement).checked ? 'true' : 'false'"
+                @change="
+                    e =>
+                        (params[name]![1] = (e.target as HTMLInputElement).checked
+                            ? 'true'
+                            : 'false')
+                "
             />
             <label v-else :for="name" class="input input-bordered input-sm flex-1">
                 <span class="label">
                     {{ name }}
                     <span class="badge badge-sm badge-secondary">{{ type }}</span>
                 </span>
-                <input 
-                    v-model="params[name]![1]" 
+                <input
+                    v-model="params[name]![1]"
                     :id="name"
                     :type="type === 'int' || type === 'float' ? 'number' : 'text'"
                 />
             </label>
         </div>
-        <button 
-            class="btn btn-primary btn-sm ml-auto"
-            @click="executeAction"
-        >
+        <button class="btn btn-primary btn-sm ml-auto" @click="executeAction">
             <span>▶</span>
             Execute
         </button>

@@ -1,8 +1,9 @@
 use crate::{
     application::game_instance::{
-        error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
+        error::GameInstanceApplicationError,
+        request_handler::GameInstanceRequestHandler,
     },
-    domain::{common::identifier::Id, game::entities::game_instance::GameInstance},
+    domain::{ common::identifier::Id, game::entities::game_instance::GameInstance },
 };
 
 pub struct GameInstanceCreateRequest {
@@ -14,12 +15,10 @@ pub struct GameInstanceCreateRequest {
 impl GameInstanceRequestHandler {
     pub async fn create(
         &self,
-        request: GameInstanceCreateRequest,
+        request: GameInstanceCreateRequest
     ) -> Result<Id, GameInstanceApplicationError> {
-        let game = self
-            .game_repository
-            .get_by_id(&request.game_id)
-            .await?
+        let game = self.game_repository
+            .get_by_id(&request.game_id).await?
             .ok_or_else(|| GameInstanceApplicationError::GameNotFound(request.game_id.clone()))?;
 
         let game_parsing_result = self.game_root_parser.parse_game(game.source_code())?;
@@ -31,7 +30,7 @@ impl GameInstanceRequestHandler {
             game_parsing_result.player_stats,
             game_parsing_result.actions,
             game_parsing_result.pages,
-            game,
+            game
         );
 
         self.game_instance_repository.save(&game_instance).await?;
@@ -45,7 +44,7 @@ mod tests {
     use std::sync::Arc;
 
     use super::*;
-    use crate::application::common::parser::{GameParsingResult, MockGameParserContract};
+    use crate::application::common::parser::{ GameParsingResult, MockGameParserContract };
     use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
 
@@ -71,7 +70,7 @@ mod tests {
             .returning(move |_| {
                 let game = crate::domain::game::entities::game::Game::new(
                     "Test Game".to_string(),
-                    "Test Description".to_string(),
+                    "Test Description".to_string()
                 );
                 Ok(Some(game))
             });
@@ -98,7 +97,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.create(request).await;
 
@@ -133,7 +132,7 @@ mod tests {
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.create(request).await;
 

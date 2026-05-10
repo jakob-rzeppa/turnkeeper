@@ -45,11 +45,10 @@ pub fn convert_serde_valid_error(error: &str) -> Result<String, String> {
                 }
             }
             Ok(parts.join(" / "))
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }
-
 
 #[cfg(test)]
 mod tests {
@@ -82,25 +81,31 @@ mod tests {
     fn test_single_field_multiple_errors() {
         let test_login_request = TestLoginRequest {
             name: "name".to_string(),
-            password: "".to_string()
+            password: "".to_string(),
         };
 
         let err = test_login_request.validate().unwrap_err();
 
         let result = convert_serde_valid_error(&err.to_string()).unwrap();
-        assert_eq!(result, "password: The length of the value must be `>= 1`. The length of the value must be `>= 5`.");
+        assert_eq!(
+            result,
+            "password: The length of the value must be `>= 1`. The length of the value must be `>= 5`."
+        );
     }
 
     #[test]
     fn test_multiple_fields() {
         let test_login_request = TestLoginRequest {
             name: "".to_string(),
-            password: "pass".to_string()
+            password: "pass".to_string(),
         };
 
         let err = test_login_request.validate().unwrap_err();
 
         let result = convert_serde_valid_error(&err.to_string()).unwrap();
-        assert_eq!(result, "name: The length of the value must be `>= 1`. / password: The length of the value must be `>= 5`.");
+        assert_eq!(
+            result,
+            "name: The length of the value must be `>= 1`. / password: The length of the value must be `>= 5`."
+        );
     }
 }

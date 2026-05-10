@@ -1,4 +1,4 @@
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 
 /// # Invalid States
 ///

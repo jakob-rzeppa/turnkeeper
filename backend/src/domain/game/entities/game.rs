@@ -1,6 +1,6 @@
 use crate::domain::{
-    common::{date_time::DateTime, identifier::Id},
-    game::projections::{game::GameProjection, game_metadata::GameMetadataProjection},
+    common::{ date_time::DateTime, identifier::Id },
+    game::projections::{ game::GameProjection, game_metadata::GameMetadataProjection },
 };
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -34,7 +34,7 @@ impl Game {
         description: String,
         source_code: String,
         created_at: DateTime,
-        updated_at: DateTime,
+        updated_at: DateTime
     ) -> Self {
         Self {
             id,

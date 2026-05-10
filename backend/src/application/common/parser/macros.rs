@@ -107,7 +107,8 @@ pub(crate) use get_pos;
 /// The first_char (column) of the tokens will be set to 0 for simplicity.
 #[cfg(test)]
 macro_rules! test_token_stream {
-    ($source_code:expr) => {{
+    ($source_code:expr) => {
+        {
         (
             crate::application::common::parser::lexer::token_stream::TokenStream::new(
                 crate::application::common::parser::lexer::Lexer::new()
@@ -116,7 +117,8 @@ macro_rules! test_token_stream {
             ),
             $source_code.to_string(),
         )
-    }};
+        }
+    };
 }
 #[cfg(test)]
 pub(crate) use test_token_stream;

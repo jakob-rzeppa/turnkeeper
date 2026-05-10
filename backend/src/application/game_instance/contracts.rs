@@ -18,16 +18,12 @@ pub trait GameInstanceRepositoryContract: Send + Sync + 'static {
 
     async fn list_by_game_id(
         &self,
-        game_id: Id,
+        game_id: Id
     ) -> Result<Vec<GameInstanceMetadataProjection>, DatabaseError>;
 
     async fn game_has_instances(&self, game_id: Id) -> Result<bool, DatabaseError>;
 
     async fn save(&self, game_instance: &GameInstance) -> Result<(), DatabaseError>;
 
-    async fn delete(
-        &self,
-        game_id: Id,
-        instance_id: Id,
-    ) -> Result<(), DatabaseError>;
+    async fn delete(&self, game_id: Id, instance_id: Id) -> Result<(), DatabaseError>;
 }

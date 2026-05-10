@@ -1,6 +1,7 @@
 use crate::{
     application::game_instance::{
-        error::GameInstanceApplicationError, request_handler::GameInstanceRequestHandler,
+        error::GameInstanceApplicationError,
+        request_handler::GameInstanceRequestHandler,
     },
     domain::{
         common::identifier::Id,
@@ -19,13 +20,10 @@ pub struct GameInstanceListByGameResponse {
 impl GameInstanceRequestHandler {
     pub async fn list_all_games(
         &self,
-        request: GameInstanceListByGameRequest,
+        request: GameInstanceListByGameRequest
     ) -> Result<GameInstanceListByGameResponse, GameInstanceApplicationError> {
         Ok(GameInstanceListByGameResponse {
-            games_metadata: self
-                .game_instance_repository
-                .list_by_game_id(request.game_id)
-                .await?,
+            games_metadata: self.game_instance_repository.list_by_game_id(request.game_id).await?,
         })
     }
 }
@@ -36,7 +34,7 @@ mod tests {
 
     use super::*;
     use crate::application::common::parser::MockGameParserContract;
-use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
 
@@ -67,7 +65,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
                 gm_user_id: Id::new(),
                 created_at: DateTime::now(),
                 last_played_at: DateTime::now(),
-            },
+            }
         ];
 
         let instances_clone = instances_metadata.clone();
@@ -82,7 +80,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),
@@ -111,7 +109,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameInstanceRequestHandler::new(
             Arc::new(game_instance_repository),
             Arc::new(game_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let request = GameInstanceListByGameRequest {
             game_id: game_id.clone(),

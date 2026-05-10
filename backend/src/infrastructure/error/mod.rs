@@ -5,7 +5,7 @@ mod from_uuid_parse;
 
 use axum::Json;
 use axum::http::StatusCode;
-use axum::response::{IntoResponse, Response};
+use axum::response::{ IntoResponse, Response };
 use serde_json::json;
 
 /// HTTP error types that can be returned from API endpoints.

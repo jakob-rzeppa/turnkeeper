@@ -4,7 +4,9 @@ use crate::domain::{
         abstract_syntax_tree::statement::Statement,
         projections::action::ActionMetadataProjection,
         value_objects::{
-            execution_trigger::ExecutionTrigger, parameter::Parameter, visibility::ActionVisibility,
+            execution_trigger::ExecutionTrigger,
+            parameter::Parameter,
+            visibility::ActionVisibility,
         },
     },
 };
@@ -33,7 +35,7 @@ impl Action {
         visibility: ActionVisibility,
         execution_block: Vec<Statement>,
         source_code: String,
-        pos: Position,
+        pos: Position
     ) -> Self {
         if !parameters.is_empty() && !execution_triggers.is_empty() {
             panic!("An action cannot have both parameters and execution triggers");

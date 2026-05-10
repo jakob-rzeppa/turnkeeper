@@ -1,7 +1,7 @@
 use crate::application::plugin::{
     parser::abstract_syntax_tree::root::Root,
     runtime::{
-        debug::{DebugEnvironment, state::DebugState},
+        debug::{ DebugEnvironment, state::DebugState },
         error::RuntimeError,
         execute::Executable,
         memory::MemoryManager,
@@ -35,7 +35,7 @@ impl RuntimeEnvironment {
     pub async fn run_debug_mode(
         &mut self,
         ast: &Root,
-        debug_env: &mut DebugEnvironment,
+        debug_env: &mut DebugEnvironment
     ) -> Result<(), RuntimeError> {
         for statement in ast.statements() {
             statement.execute_debug(self, debug_env).await?;
@@ -58,7 +58,8 @@ mod tests {
 
     #[tokio::test]
     async fn test_runtime() {
-        let code = r#"
+        let code =
+            r#"
             let x: int = 42;
             x = x + 1;
             print(x);

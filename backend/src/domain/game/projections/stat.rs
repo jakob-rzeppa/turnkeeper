@@ -1,8 +1,8 @@
 use crate::domain::{
     common::position::Position,
     game::value_objects::{
-        data::{Datatype, Value},
-        visibility::{GameStatVisibility, PlayerStatVisibility},
+        data::{ Datatype, Value },
+        visibility::{ GameStatVisibility, PlayerStatVisibility },
     },
 };
 

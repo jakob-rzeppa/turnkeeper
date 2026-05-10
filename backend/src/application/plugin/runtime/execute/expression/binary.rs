@@ -3,10 +3,13 @@ use backend_derive::execute_debug;
 use crate::application::plugin::{
     parser::abstract_syntax_tree::{
         Positioned,
-        expression::binary::{BinaryExpression, BinaryOperator},
+        expression::binary::{ BinaryExpression, BinaryOperator },
     },
     runtime::{
-        RuntimeEnvironment, error::RuntimeError, execute::Executable, memory::values::VariableValue,
+        RuntimeEnvironment,
+        error::RuntimeError,
+        execute::Executable,
+        memory::values::VariableValue,
     },
 };
 
@@ -24,11 +27,8 @@ impl Executable<VariableValue> for BinaryExpression {
             (VariableValue::Float(left), BinaryOperator::Addition, VariableValue::Float(right)) => {
                 Ok(VariableValue::Float(left + right))
             }
-            (
-                VariableValue::String(left),
-                BinaryOperator::Addition,
-                VariableValue::String(right),
-            ) => Ok(VariableValue::String(left + &right)),
+            (VariableValue::String(left), BinaryOperator::Addition, VariableValue::String(right)) =>
+                Ok(VariableValue::String(left + &right)),
 
             // Subtraction
             (VariableValue::Int(left), BinaryOperator::Subtraction, VariableValue::Int(right)) => {
@@ -41,11 +41,8 @@ impl Executable<VariableValue> for BinaryExpression {
             ) => Ok(VariableValue::Float(left - right)),
 
             // Multiplication
-            (
-                VariableValue::Int(left),
-                BinaryOperator::Multiplication,
-                VariableValue::Int(right),
-            ) => Ok(VariableValue::Int(left * right)),
+            (VariableValue::Int(left), BinaryOperator::Multiplication, VariableValue::Int(right)) =>
+                Ok(VariableValue::Int(left * right)),
             (
                 VariableValue::Float(left),
                 BinaryOperator::Multiplication,
@@ -122,11 +119,8 @@ impl Executable<VariableValue> for BinaryExpression {
             (VariableValue::Float(left), BinaryOperator::NotEqual, VariableValue::Float(right)) => {
                 Ok(VariableValue::Bool(left != right))
             }
-            (
-                VariableValue::String(left),
-                BinaryOperator::NotEqual,
-                VariableValue::String(right),
-            ) => Ok(VariableValue::Bool(left != right)),
+            (VariableValue::String(left), BinaryOperator::NotEqual, VariableValue::String(right)) =>
+                Ok(VariableValue::Bool(left != right)),
             (VariableValue::Bool(left), BinaryOperator::NotEqual, VariableValue::Bool(right)) => {
                 Ok(VariableValue::Bool(left != right))
             }
@@ -164,12 +158,13 @@ impl Executable<VariableValue> for BinaryExpression {
                 BinaryOperator::GreaterThanOrEqual,
                 VariableValue::Float(right),
             ) => Ok(VariableValue::Bool(left >= right)),
-            _ => Err(RuntimeError::UndefinedBinaryOperation {
-                left: left_value,
-                operator: format!("{}", self.operator()),
-                right: right_value,
-                pos: self.position(),
-            }),
+            _ =>
+                Err(RuntimeError::UndefinedBinaryOperation {
+                    left: left_value,
+                    operator: format!("{}", self.operator()),
+                    right: right_value,
+                    pos: self.position(),
+                }),
         }
     }
 }

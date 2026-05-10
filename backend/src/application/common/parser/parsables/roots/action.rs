@@ -1,17 +1,17 @@
 use crate::{
     application::common::parser::{
         error::ParsingError,
-        lexer::{
-            token::{Token, TokenVariant},
-            token_stream::TokenStream,
-        },
-        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable,
+        lexer::{ token::{ Token, TokenVariant }, token_stream::TokenStream },
+        macros::{ change_err_msg, expect_token, get_pos, is_token, nth_is_token },
+        parsable::Parsable,
     },
     domain::game::{
         abstract_syntax_tree::statement::Statement,
         entities::weak::action::Action,
         value_objects::{
-            data::Datatype, execution_trigger::ExecutionTrigger, parameter::Parameter,
+            data::Datatype,
+            execution_trigger::ExecutionTrigger,
+            parameter::Parameter,
             visibility::ActionVisibility,
         },
     },
@@ -26,22 +26,10 @@ impl Parsable for Action {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
-            Some(Token {
-                variant: TokenVariant::Hidden,
-                ..
-            }) => ActionVisibility::Hidden,
-            Some(Token {
-                variant: TokenVariant::Private,
-                ..
-            }) => ActionVisibility::Private,
-            Some(Token {
-                variant: TokenVariant::Public,
-                ..
-            }) => ActionVisibility::Public,
-            Some(Token {
-                variant: TokenVariant::Protected,
-                ..
-            }) => {
+            Some(Token { variant: TokenVariant::Hidden, .. }) => ActionVisibility::Hidden,
+            Some(Token { variant: TokenVariant::Private, .. }) => ActionVisibility::Private,
+            Some(Token { variant: TokenVariant::Public, .. }) => ActionVisibility::Public,
+            Some(Token { variant: TokenVariant::Protected, .. }) => {
                 return Err(ParsingError::SyntaxError {
                     message: "Protected visibility is not supported for actions".to_string(),
                     pos,
@@ -49,16 +37,14 @@ impl Parsable for Action {
             }
             Some(token) => {
                 return Err(ParsingError::UnexpectedToken {
-                    expected: "Expected visibility modifier (hidden, private, public, protected)"
-                        .to_string(),
+                    expected: "Expected visibility modifier (hidden, private, public, protected)".to_string(),
                     found: token.variant.clone(),
                     pos: token.pos,
                 });
             }
             None => {
                 return Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected visibility modifier (hidden, private, public, protected)"
-                        .to_string(),
+                    expected: "Expected visibility modifier (hidden, private, public, protected)".to_string(),
                 });
             }
         };
@@ -66,10 +52,7 @@ impl Parsable for Action {
         expect_token!(ts, TokenVariant::Action, "Expected 'action' keyword");
 
         let name = match ts.next() {
-            Some(Token {
-                variant: TokenVariant::Identifier(name),
-                ..
-            }) => name.clone(),
+            Some(Token { variant: TokenVariant::Identifier(name), .. }) => name.clone(),
             Some(token) => {
                 return Err(ParsingError::UnexpectedToken {
                     expected: "Expected action name (identifier)".to_string(),
@@ -90,32 +73,27 @@ impl Parsable for Action {
         // 3. Action with execution trigger: `public action my_action after other_action { ... }` (can be chained with `|`)
         let mut parameters = Vec::new();
         let mut execution_triggers = Vec::new();
-        if let Some(Token {
-            variant: TokenVariant::OpenParen,
-            ..
-        }) = ts.peek()
-        {
+        if let Some(Token { variant: TokenVariant::OpenParen, .. }) = ts.peek() {
             parameters = Self::parse_parameters(ts, source_code)?;
-        } else if matches!(
-            ts.peek(),
-            Some(Token {
-                variant: TokenVariant::After,
-                ..
-            }) | Some(Token {
-                variant: TokenVariant::Before,
-                ..
-            })
-        ) {
+        } else if
+            matches!(
+                ts.peek(),
+                Some(Token {
+                    variant: TokenVariant::After,
+                    ..
+                }) |
+                    Some(Token {
+                        variant: TokenVariant::Before,
+                        ..
+                    })
+            )
+        {
             execution_triggers = Self::parse_execution_triggers(ts, source_code)?;
         }
 
         // The body of the action is skipped over and the source_code for the action stored in the Action struct. This is because the body of the action will be parsed separately when the action is executed.
 
-        expect_token!(
-            ts,
-            TokenVariant::OpenBrace,
-            "Expected '{' to start action body"
-        );
+        expect_token!(ts, TokenVariant::OpenBrace, "Expected '{' to start action body");
 
         let mut statements = Vec::new();
         while Statement::is_next(ts) {
@@ -132,18 +110,19 @@ impl Parsable for Action {
         // Extract the source code for the action body from the original source code using the positions of the opening and closing braces
         let start_pos = pos;
         let end_pos = closing_brace.pos;
-        let action_source_code =
-            extract_source_code_range(source_code, start_pos, end_pos)?;
+        let action_source_code = extract_source_code_range(source_code, start_pos, end_pos)?;
 
-        Ok(Action::new(
-            name,
-            parameters,
-            execution_triggers,
-            visibility,
-            statements,
-            action_source_code,
-            pos,
-        ))
+        Ok(
+            Action::new(
+                name,
+                parameters,
+                execution_triggers,
+                visibility,
+                statements,
+                action_source_code,
+                pos
+            )
+        )
     }
 }
 
@@ -151,21 +130,16 @@ impl Action {
     /// Parse the parameter list of an action and return a vector of (param_name, param_type)
     fn parse_parameters(
         ts: &mut TokenStream,
-        source_code: &str,
+        source_code: &str
     ) -> Result<Vec<Parameter>, ParsingError> {
-        expect_token!(
-            ts,
-            TokenVariant::OpenParen,
-            "Expected '(' to start parameter list"
-        );
+        expect_token!(ts, TokenVariant::OpenParen, "Expected '(' to start parameter list");
 
         let mut parameters = Vec::new();
 
         loop {
             if ts.peek().is_none() {
                 return Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected parameter name (identifier) or ')' to close parameter list"
-                        .to_string(),
+                    expected: "Expected parameter name (identifier) or ')' to close parameter list".to_string(),
                 });
             }
 
@@ -174,14 +148,13 @@ impl Action {
                 break;
             }
 
-            let param_name = if let Token {
-                variant: TokenVariant::Identifier(param_name),
-                ..
-            } = expect_token!(
-                ts,
-                TokenVariant::Identifier(_),
-                "Expected parameter name (identifier)"
-            ) {
+            let param_name = if
+                let Token { variant: TokenVariant::Identifier(param_name), .. } = expect_token!(
+                    ts,
+                    TokenVariant::Identifier(_),
+                    "Expected parameter name (identifier)"
+                )
+            {
                 param_name.clone()
             } else {
                 unreachable!(
@@ -213,16 +186,14 @@ impl Action {
             match ts.peek() {
                 Some(token) => {
                     return Err(ParsingError::UnexpectedToken {
-                        expected: "Expected ',' between parameters or ')' to close parameter list"
-                            .to_string(),
+                        expected: "Expected ',' between parameters or ')' to close parameter list".to_string(),
                         found: token.variant.clone(),
                         pos: token.pos,
                     });
                 }
                 None => {
                     return Err(ParsingError::UnexpectedEOF {
-                        expected: "Expected ',' between parameters or ')' to close parameter list"
-                            .to_string(),
+                        expected: "Expected ',' between parameters or ')' to close parameter list".to_string(),
                     });
                 }
             }
@@ -234,7 +205,7 @@ impl Action {
     /// Parse the execution trigger list of an action and return a vector of action names that trigger this action
     fn parse_execution_triggers(
         ts: &mut TokenStream,
-        _source_code: &str,
+        _source_code: &str
     ) -> Result<Vec<ExecutionTrigger>, ParsingError> {
         let mut triggers = Vec::new();
 
@@ -245,47 +216,45 @@ impl Action {
                 "Expected 'after' or 'before' to start execution trigger"
             );
 
-            let trigger = match expect_token!(
-                ts,
-                TokenVariant::Identifier(_)
-                    | TokenVariant::TurnAdvance
-                    | TokenVariant::RoundAdvance,
-                "Expected action name (identifier) or turn/round advance after 'after' or 'before'"
-            ) {
-                Token {
-                    variant: TokenVariant::Identifier(action_name),
-                    ..
-                } => match trigger_type_token.variant {
-                    TokenVariant::After => ExecutionTrigger::AfterAction(action_name.clone()),
-                    TokenVariant::Before => ExecutionTrigger::BeforeAction(action_name.clone()),
-                    _ => unreachable!(
-                        "Expected 'after' or 'before' token after checking with expect_token! macro"
-                    ),
-                },
-                Token {
-                    variant: TokenVariant::TurnAdvance,
-                    ..
-                } => match trigger_type_token.variant {
-                    TokenVariant::After => ExecutionTrigger::AfterTurnAdvance,
-                    TokenVariant::Before => ExecutionTrigger::BeforeTurnAdvance,
-                    _ => unreachable!(
-                        "Expected 'after' or 'before' token after checking with expect_token! macro"
-                    ),
-                },
-                Token {
-                    variant: TokenVariant::RoundAdvance,
-                    ..
-                } => match trigger_type_token.variant {
-                    TokenVariant::After => ExecutionTrigger::AfterRoundAdvance,
-                    TokenVariant::Before => ExecutionTrigger::BeforeRoundAdvance,
-                    _ => unreachable!(
-                        "Expected 'after' or 'before' token after checking with expect_token! macro"
-                    ),
-                },
+            let trigger = match
+                expect_token!(
+                    ts,
+                    TokenVariant::Identifier(_) |
+                        TokenVariant::TurnAdvance |
+                        TokenVariant::RoundAdvance,
+                    "Expected action name (identifier) or turn/round advance after 'after' or 'before'"
+                )
+            {
+                Token { variant: TokenVariant::Identifier(action_name), .. } =>
+                    match trigger_type_token.variant {
+                        TokenVariant::After => ExecutionTrigger::AfterAction(action_name.clone()),
+                        TokenVariant::Before => ExecutionTrigger::BeforeAction(action_name.clone()),
+                        _ =>
+                            unreachable!(
+                                "Expected 'after' or 'before' token after checking with expect_token! macro"
+                            ),
+                    }
+                Token { variant: TokenVariant::TurnAdvance, .. } =>
+                    match trigger_type_token.variant {
+                        TokenVariant::After => ExecutionTrigger::AfterTurnAdvance,
+                        TokenVariant::Before => ExecutionTrigger::BeforeTurnAdvance,
+                        _ =>
+                            unreachable!(
+                                "Expected 'after' or 'before' token after checking with expect_token! macro"
+                            ),
+                    }
+                Token { variant: TokenVariant::RoundAdvance, .. } =>
+                    match trigger_type_token.variant {
+                        TokenVariant::After => ExecutionTrigger::AfterRoundAdvance,
+                        TokenVariant::Before => ExecutionTrigger::BeforeRoundAdvance,
+                        _ =>
+                            unreachable!(
+                                "Expected 'after' or 'before' token after checking with expect_token! macro"
+                            ),
+                    }
                 Token { variant, pos } => {
                     return Err(ParsingError::UnexpectedToken {
-                        expected: "Expected action name (identifier) or turn/round advance after 'after' or 'before'"
-                            .to_string(),
+                        expected: "Expected action name (identifier) or turn/round advance after 'after' or 'before'".to_string(),
                         found: variant.clone(),
                         pos: pos.clone(),
                     });
@@ -312,7 +281,7 @@ impl Action {
 fn extract_source_code_range(
     source_code: &str,
     start_pos: crate::domain::common::position::Position,
-    end_pos: crate::domain::common::position::Position,
+    end_pos: crate::domain::common::position::Position
 ) -> Result<String, ParsingError> {
     let lines: Vec<&str> = source_code.lines().collect();
 
@@ -342,7 +311,7 @@ fn extract_source_code_range(
         }
 
         // Add all lines between start and end
-        for i in (start_pos.line() + 1)..end_pos.line() {
+        for i in start_pos.line() + 1..end_pos.line() {
             result.push_str(lines[i]);
             result.push('\n');
         }
@@ -359,14 +328,27 @@ fn extract_source_code_range(
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::{expression::{Expression, atom::ExpressionAtom}, statement::VariableDeclarationStatement}, value_objects::data::Value}}};
+    use crate::{
+        application::common::parser::macros::test_token_stream,
+        domain::{
+            common::position::Position,
+            game::{
+                abstract_syntax_tree::{
+                    expression::{ Expression, atom::ExpressionAtom },
+                    statement::VariableDeclarationStatement,
+                },
+                value_objects::data::Value,
+            },
+        },
+    };
 
     use super::*;
 
     #[test]
     fn test_simple_action() {
-        let (mut ts, source_code) =
-            test_token_stream!("public action my_action { let x: int = 5; }");
+        let (mut ts, source_code) = test_token_stream!(
+            "public action my_action { let x: int = 5; }"
+        );
 
         let action = Action::parse(&mut ts, &source_code).unwrap();
 
@@ -374,12 +356,21 @@ mod tests {
         assert_eq!(action.visibility(), &ActionVisibility::Public);
         assert!(action.parameters().is_empty());
         assert!(action.execution_triggers().is_empty());
-        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
-            "x".to_string(),
-            Datatype::Int,
-            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 39))),
-            Position::new(0, 26)
-        ))]);
+        assert_eq!(
+            action.execution_block(),
+            &vec![
+                Statement::VariableDeclaration(
+                    VariableDeclarationStatement::new(
+                        "x".to_string(),
+                        Datatype::Int,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(5), Position::new(0, 39))
+                        ),
+                        Position::new(0, 26)
+                    )
+                )
+            ]
+        );
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -399,12 +390,21 @@ mod tests {
         assert_eq!(action.parameters()[1].name(), "param2");
         assert_eq!(action.parameters()[1].datatype(), &Datatype::String);
         assert!(action.execution_triggers().is_empty());
-        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
-            "x".to_string(),
-            Datatype::Int,
-            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 69))),
-            Position::new(0, 56)
-        ))]);
+        assert_eq!(
+            action.execution_block(),
+            &vec![
+                Statement::VariableDeclaration(
+                    VariableDeclarationStatement::new(
+                        "x".to_string(),
+                        Datatype::Int,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(5), Position::new(0, 69))
+                        ),
+                        Position::new(0, 56)
+                    )
+                )
+            ]
+        );
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -428,12 +428,21 @@ mod tests {
             action.execution_triggers()[1],
             ExecutionTrigger::BeforeAction("my_other_trigger".into())
         );
-        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
-            "x".to_string(),
-            Datatype::Int,
-            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(0, 82))),
-            Position::new(0, 69)
-        ))]);
+        assert_eq!(
+            action.execution_block(),
+            &vec![
+                Statement::VariableDeclaration(
+                    VariableDeclarationStatement::new(
+                        "x".to_string(),
+                        Datatype::Int,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(5), Position::new(0, 82))
+                        ),
+                        Position::new(0, 69)
+                    )
+                )
+            ]
+        );
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -456,28 +465,25 @@ mod tests {
         assert_eq!(action.visibility(), &ActionVisibility::Public);
         assert!(action.parameters().is_empty());
         assert_eq!(action.execution_triggers().len(), 4);
+        assert_eq!(action.execution_triggers()[0], ExecutionTrigger::BeforeTurnAdvance);
+        assert_eq!(action.execution_triggers()[1], ExecutionTrigger::AfterTurnAdvance);
+        assert_eq!(action.execution_triggers()[2], ExecutionTrigger::BeforeRoundAdvance);
+        assert_eq!(action.execution_triggers()[3], ExecutionTrigger::AfterRoundAdvance);
         assert_eq!(
-            action.execution_triggers()[0],
-            ExecutionTrigger::BeforeTurnAdvance
+            action.execution_block(),
+            &vec![
+                Statement::VariableDeclaration(
+                    VariableDeclarationStatement::new(
+                        "x".to_string(),
+                        Datatype::Int,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(5), Position::new(6, 29))
+                        ),
+                        Position::new(6, 16)
+                    )
+                )
+            ]
         );
-        assert_eq!(
-            action.execution_triggers()[1],
-            ExecutionTrigger::AfterTurnAdvance
-        );
-        assert_eq!(
-            action.execution_triggers()[2],
-            ExecutionTrigger::BeforeRoundAdvance
-        );
-        assert_eq!(
-            action.execution_triggers()[3],
-            ExecutionTrigger::AfterRoundAdvance
-        );
-        assert_eq!(action.execution_block(), &vec![Statement::VariableDeclaration(VariableDeclarationStatement::new(
-            "x".to_string(),
-            Datatype::Int,
-            Expression::Atom(ExpressionAtom::Literal(Value::Int(5), Position::new(6, 29))),
-            Position::new(6, 16)
-        ))]);
         assert_eq!(action.source_code(), source_code);
     }
 
@@ -489,8 +495,9 @@ mod tests {
 
     #[test]
     fn test_action_with_unclosed_body_fails() {
-        let (mut ts, source_code) =
-            test_token_stream!("public action my_action { let x: int = 5; ");
+        let (mut ts, source_code) = test_token_stream!(
+            "public action my_action { let x: int = 5; "
+        );
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
@@ -504,22 +511,25 @@ mod tests {
 
     #[test]
     fn test_action_with_invalid_trigger_fails() {
-        let (mut ts, source_code) =
-            test_token_stream!("public action my_action after 123 { let x: int = 5; }");
+        let (mut ts, source_code) = test_token_stream!(
+            "public action my_action after 123 { let x: int = 5; }"
+        );
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
     #[test]
     fn test_action_with_invalid_param_fails() {
-        let (mut ts, source_code) =
-            test_token_stream!("public action my_action(param1: invalid_type) { let x: int = 5; }");
+        let (mut ts, source_code) = test_token_stream!(
+            "public action my_action(param1: invalid_type) { let x: int = 5; }"
+        );
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 
     #[test]
     fn test_action_with_protected_visibility_fails() {
-        let (mut ts, source_code) =
-            test_token_stream!("protected action my_action { let x: int = 5; }");
+        let (mut ts, source_code) = test_token_stream!(
+            "protected action my_action { let x: int = 5; }"
+        );
         assert!(Action::parse(&mut ts, &source_code).is_err());
     }
 

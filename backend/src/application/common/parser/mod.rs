@@ -1,5 +1,11 @@
-
-use crate::{application::common::parser::{error::ParsingError, lexer::{Lexer, token_stream::TokenStream}, parsable::Parsable}, domain::game::entities::weak::{action::Action, page::Page, stat::{GameStat, PlayerStat}}};
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ Lexer, token_stream::TokenStream },
+        parsable::Parsable,
+    },
+    domain::game::entities::weak::{ action::Action, page::Page, stat::{ GameStat, PlayerStat } },
+};
 
 pub mod error;
 pub mod lexer;
@@ -84,9 +90,9 @@ impl GameParserContract for GameParser {
 #[cfg(test)]
 mod tests {
     use crate::domain::game::value_objects::{
-        data::{Datatype, Value},
+        data::{ Datatype, Value },
         parameter::Parameter,
-        visibility::{ActionVisibility, GameStatVisibility, PlayerStatVisibility},
+        visibility::{ ActionVisibility, GameStatVisibility, PlayerStatVisibility },
     };
 
     use super::*;
@@ -95,7 +101,8 @@ mod tests {
     fn test_parse_game() {
         let parser = GameParser::new();
 
-        let source_code = r#"protected pstat health: float = 10.0;
+        let source_code =
+            r#"protected pstat health: float = 10.0;
 public stat score = 0;
 
 public action heal(amount: float) {
@@ -129,8 +136,7 @@ public action heal(amount: float) {
             heal_action.source_code(),
             r#"public action heal(amount: float) {
     health = health + amount;
-}"#
-            .to_string()
+}"#.to_string()
         );
     }
 }

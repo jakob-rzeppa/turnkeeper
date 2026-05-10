@@ -3,7 +3,9 @@
 //! Creates a new user and returns a JWT token.
 
 use crate::application::user::contracts::{
-    JwtGeneratorContract, JwtValidatorContract, UserRepositoryContract,
+    JwtGeneratorContract,
+    JwtValidatorContract,
+    UserRepositoryContract,
 };
 use crate::application::user::request_handlers::UserRequestHandler;
 use crate::application::user::requests::UserRegisterRequest;
@@ -15,9 +17,8 @@ use crate::domain::user::error::UserError;
 impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
-> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
-{
+    JwtValidator: JwtValidatorContract
+> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator> {
     /// Registers a new user and returns a JWT token.
     ///
     /// # Errors
@@ -26,7 +27,7 @@ impl<
     /// - [`UserErrorKind::UserAlreadyExists`] — duplicate username
     pub async fn register(
         &self,
-        request: UserRegisterRequest,
+        request: UserRegisterRequest
     ) -> Result<UserTokenResponse, UserError> {
         let user = User::try_new(Id::new(), request.name, request.password)?;
 
@@ -43,7 +44,9 @@ mod tests {
 
     use super::*;
     use crate::application::user::contracts::{
-        MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
+        MockJwtGeneratorContract,
+        MockJwtValidatorContract,
+        MockUserRepositoryContract,
     };
 
     #[tokio::test]
@@ -75,7 +78,7 @@ mod tests {
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.register(request).await;
 

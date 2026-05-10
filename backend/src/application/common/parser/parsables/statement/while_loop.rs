@@ -1,6 +1,15 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{expect_token, get_pos, is_token}, parsable::Parsable, parsables::statement::Statement}, domain::{game::abstract_syntax_tree::{statement::WhileLoopStatement, expression::Expression}}};
-
-
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ token::TokenVariant, token_stream::TokenStream },
+        macros::{ expect_token, get_pos, is_token },
+        parsable::Parsable,
+        parsables::statement::Statement,
+    },
+    domain::{
+        game::abstract_syntax_tree::{ statement::WhileLoopStatement, expression::Expression },
+    },
+};
 
 impl Parsable for WhileLoopStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -29,7 +38,22 @@ impl Parsable for WhileLoopStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::{expression::{atom::ExpressionAtom, binary::{BinaryExpression, BinaryOperator}}, statement::AssignmentStatement}, value_objects::data::Value}}};
+    use crate::{
+        application::common::parser::macros::test_token_stream,
+        domain::{
+            common::position::Position,
+            game::{
+                abstract_syntax_tree::{
+                    expression::{
+                        atom::ExpressionAtom,
+                        binary::{ BinaryExpression, BinaryOperator },
+                    },
+                    statement::AssignmentStatement,
+                },
+                value_objects::data::Value,
+            },
+        },
+    };
     use super::*;
 
     #[test]
@@ -41,17 +65,29 @@ mod tests {
         assert_eq!(
             while_loop,
             WhileLoopStatement::new(
-                Expression::Binary(BinaryExpression::new(
-                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 6))),
-                    BinaryOperator::LessThan,
-                    Expression::Atom(ExpressionAtom::Literal(Value::Int(10), Position::new(0, 10))),
-                    Position::new(0, 6)
-                )),
-                vec![Statement::Assignment(AssignmentStatement::new(
-                    "x".to_string(),
-                    Expression::Atom(ExpressionAtom::Literal(Value::Int(1), Position::new(0, 19))),
-                    Position::new(0, 15)
-                ))],
+                Expression::Binary(
+                    BinaryExpression::new(
+                        Expression::Atom(
+                            ExpressionAtom::Variable("x".to_string(), Position::new(0, 6))
+                        ),
+                        BinaryOperator::LessThan,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(10), Position::new(0, 10))
+                        ),
+                        Position::new(0, 6)
+                    )
+                ),
+                vec![
+                    Statement::Assignment(
+                        AssignmentStatement::new(
+                            "x".to_string(),
+                            Expression::Atom(
+                                ExpressionAtom::Literal(Value::Int(1), Position::new(0, 19))
+                            ),
+                            Position::new(0, 15)
+                        )
+                    )
+                ],
                 Position::new(0, 0)
             )
         );
@@ -66,12 +102,18 @@ mod tests {
         assert_eq!(
             while_loop,
             WhileLoopStatement::new(
-                Expression::Binary(BinaryExpression::new(
-                    Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 6))),
-                    BinaryOperator::GreaterThan,
-                    Expression::Atom(ExpressionAtom::Literal(Value::Int(0), Position::new(0, 10))),
-                    Position::new(0, 6)
-                )),
+                Expression::Binary(
+                    BinaryExpression::new(
+                        Expression::Atom(
+                            ExpressionAtom::Variable("x".to_string(), Position::new(0, 6))
+                        ),
+                        BinaryOperator::GreaterThan,
+                        Expression::Atom(
+                            ExpressionAtom::Literal(Value::Int(0), Position::new(0, 10))
+                        ),
+                        Position::new(0, 6)
+                    )
+                ),
                 vec![],
                 Position::new(0, 0)
             )

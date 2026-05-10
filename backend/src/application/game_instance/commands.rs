@@ -1,8 +1,8 @@
 use std::collections::HashMap;
 
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
-use crate::domain::{common::identifier::Id, game::value_objects::data::Value};
+use crate::domain::{ common::identifier::Id, game::value_objects::data::Value };
 
 /// A command that mutates the game aggregate's state.
 ///
@@ -17,17 +17,37 @@ pub enum GameSessionCommand {
 
     // Player
     AddPlayer,
-    ChangePlayerName { player: String, new_name: String },
-    ChangePlayerOrder { names_in_order: Vec<String> },
-    AttachUserToPlayer { player: String, user_id: Id },
-    DetachUserFromPlayer { player: String },
+    ChangePlayerName {
+        player: String,
+        new_name: String,
+    },
+    ChangePlayerOrder {
+        names_in_order: Vec<String>,
+    },
+    AttachUserToPlayer {
+        player: String,
+        user_id: Id,
+    },
+    DetachUserFromPlayer {
+        player: String,
+    },
 
     // Stats
-    ChangeGameStat { stat: String, new_value: Value },
-    ChangePlayerStat { player: String, stat: String, new_value: Value },
+    ChangeGameStat {
+        stat: String,
+        new_value: Value,
+    },
+    ChangePlayerStat {
+        player: String,
+        stat: String,
+        new_value: Value,
+    },
 
     // Actions
-    ExecuteAction { action: String, params: HashMap<String, Value> }, // params: name -> value
+    ExecuteAction {
+        action: String,
+        params: HashMap<String, Value>,
+    }, // params: name -> value
 
     // Debug
     Debug(String),

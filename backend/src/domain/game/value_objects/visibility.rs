@@ -1,10 +1,10 @@
-use std::{fmt::Display, str::FromStr};
+use std::{ fmt::Display, str::FromStr };
 
-use backend_derive::{deserialize_use_from_str, serialize_use_display};
+use backend_derive::{ deserialize_use_from_str, serialize_use_display };
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum GameStatVisibility {
-    Public,  // Everyone can see this stat.
+    Public, // Everyone can see this stat.
     Private, // Only the gm can see this stat.
     Hidden, // The stat is hidden from everyone. It can be used for internal calculations and logic.
 }
@@ -36,9 +36,9 @@ impl FromStr for GameStatVisibility {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PlayerStatVisibility {
-    Public,    // Everyone can see this stat.
+    Public, // Everyone can see this stat.
     Protected, // Only the player themselves and gm can see this stat.
-    Private,   // Only the gm can see this stat.
+    Private, // Only the gm can see this stat.
     Hidden, // The stat is hidden from everyone. It can be used for internal calculations and logic.
 }
 
@@ -71,9 +71,9 @@ impl FromStr for PlayerStatVisibility {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum ActionVisibility {
-    Public,  // Everyone can see and execute this action.
+    Public, // Everyone can see and execute this action.
     Private, // Only the gm can see and execute this action.
-    Hidden,  // The action is hidden from everyone. It can be used for internal logic.
+    Hidden, // The action is hidden from everyone. It can be used for internal logic.
 }
 
 #[serialize_use_display]
@@ -103,7 +103,7 @@ impl FromStr for ActionVisibility {
 
 #[derive(Clone, Debug, PartialEq)]
 pub enum PageVisibility {
-    Public,  // Everyone has the page.
+    Public, // Everyone has the page.
     Private, // Only the gm has the page.
 }
 

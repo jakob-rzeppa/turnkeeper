@@ -1,8 +1,8 @@
-use axum::{Extension, extract::State};
+use axum::{ Extension, extract::State };
 use backend_derive::JsonResponse;
 use serde::Serialize;
 
-use crate::{AppState, domain::user::entities::User, infrastructure::error::HttpError};
+use crate::{ AppState, domain::user::entities::User, infrastructure::error::HttpError };
 
 #[derive(Serialize, JsonResponse, Debug)]
 pub struct GmWsTicketResponse {
@@ -20,7 +20,7 @@ pub struct GmWsTicketResponse {
 /// By getting the user here first, we make sure the user is who they say they are before they can even establish a WebSocket connection, which allows us to savely allow connections and then check for the users permissions via the user_id etc. in the game session without having to worry about unauthenticated connections at all in the game session logic.
 pub async fn websocket_ticket(
     State(state): State<AppState>,
-    Extension(user): Extension<User>,
+    Extension(user): Extension<User>
 ) -> Result<GmWsTicketResponse, HttpError> {
     let ticket = state.ws_ticket_manager().generate_ticket(user).await;
 

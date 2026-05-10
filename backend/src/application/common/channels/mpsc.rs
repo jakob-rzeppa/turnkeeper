@@ -4,8 +4,7 @@ use tokio::sync::mpsc;
 
 #[derive(Debug, thiserror::Error)]
 pub enum MpscChannelError {
-    #[error("Attempted to send message to closed channel: {0}")]
-    SendToClosedChannel(String),
+    #[error("Attempted to send message to closed channel: {0}")] SendToClosedChannel(String),
 }
 
 /// A channel for sending game commands from WebSocket handlers to the game session.
@@ -17,10 +16,7 @@ impl<T> MpscChannel<T> {
     /// Creates a new MPSC channel and returns the sender and receiver.
     pub fn new() -> (MpscChannelSender<T>, MpscChannelReceiver<T>) {
         let (sender, receiver) = mpsc::unbounded_channel();
-        (
-            MpscChannelSender { sender },
-            MpscChannelReceiver { receiver },
-        )
+        (MpscChannelSender { sender }, MpscChannelReceiver { receiver })
     }
 }
 
@@ -31,9 +27,7 @@ pub struct MpscChannelSender<T> {
 impl<T> MpscChannelSender<T> {
     /// Sends a message through the channel. Returns an error if the channel is closed.
     pub fn send(&self, message: T) -> Result<(), MpscChannelError> {
-        self.sender
-            .send(message)
-            .map_err(|e| MpscChannelError::SendToClosedChannel(e.to_string()))
+        self.sender.send(message).map_err(|e| MpscChannelError::SendToClosedChannel(e.to_string()))
     }
 }
 

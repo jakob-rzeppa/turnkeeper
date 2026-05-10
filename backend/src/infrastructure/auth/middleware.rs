@@ -1,8 +1,8 @@
 use crate::application::user::requests::UserAuthenticateRequest;
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 use crate::infrastructure::app_state::AppState;
 use crate::infrastructure::error::HttpError;
-use axum::extract::{Request, State};
+use axum::extract::{ Request, State };
 use axum::middleware::Next;
 use axum::response::Response;
 
@@ -11,7 +11,7 @@ use axum::response::Response;
 pub async fn auth_middleware(
     State(state): State<AppState>,
     mut req: Request,
-    next: Next,
+    next: Next
 ) -> Result<Response, HttpError> {
     // Extract the Authorization header
     let auth_header = req
@@ -22,12 +22,9 @@ pub async fn auth_middleware(
 
     if let Some(auth_header) = auth_header {
         if let Some(token) = auth_header.strip_prefix("Bearer ") {
-            let user = state
-                .user_request_handler()
-                .authenticate(UserAuthenticateRequest {
-                    token: token.to_string(),
-                })
-                .await?;
+            let user = state.user_request_handler().authenticate(UserAuthenticateRequest {
+                token: token.to_string(),
+            }).await?;
 
             // Insert the authenticated user into request extensions
             req.extensions_mut().insert(user);

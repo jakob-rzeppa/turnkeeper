@@ -1,13 +1,13 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 use tokio::sync::oneshot;
 
 use crate::application::{
-    common::channels::mpsc::{MpscChannel, MpscChannelReceiver, MpscChannelSender},
+    common::channels::mpsc::{ MpscChannel, MpscChannelReceiver, MpscChannelSender },
     plugin::{
         parser::parse_source_code,
         runtime::{
             RuntimeEnvironment,
-            debug::{DebugEnvironment, commands::DebugCommand, state::DebugState},
+            debug::{ DebugEnvironment, commands::DebugCommand, state::DebugState },
         },
     },
 };
@@ -39,7 +39,7 @@ impl PluginDebugger {
     }
 
     pub async fn debug(
-        &self,
+        &self
     ) -> (
         MpscChannelSender<IncomingDebuggerMessage>,
         MpscChannelReceiver<OutgoingDebuggerMessage>,
@@ -55,9 +55,9 @@ impl PluginDebugger {
                     (code, breakpoints)
                 }
                 _ => {
-                    let _ = outgoing_sender.send(OutgoingDebuggerMessage::Error(
-                        "Expected Initialize message".to_string(),
-                    ));
+                    let _ = outgoing_sender.send(
+                        OutgoingDebuggerMessage::Error("Expected Initialize message".to_string())
+                    );
                     return;
                 }
             };
@@ -67,9 +67,9 @@ impl PluginDebugger {
             let ast = match parse_source_code(&code) {
                 Ok(ast) => ast,
                 Err(err) => {
-                    let _ = outgoing_sender.send(OutgoingDebuggerMessage::Error(format!(
-                        "Failed to parse code: {err}",
-                    )));
+                    let _ = outgoing_sender.send(
+                        OutgoingDebuggerMessage::Error(format!("Failed to parse code: {err}"))
+                    );
                     return;
                 }
             };
@@ -90,9 +90,11 @@ impl PluginDebugger {
                     Err(err) => {
                         let _ = outgoing_sender_clone
                             .clone()
-                            .send(OutgoingDebuggerMessage::Error(format!(
-                                "Debug session failed: {err}",
-                            )));
+                            .send(
+                                OutgoingDebuggerMessage::Error(
+                                    format!("Debug session failed: {err}")
+                                )
+                            );
                     }
                 }
             });
@@ -151,17 +153,17 @@ impl PluginDebugger {
 #[cfg(test)]
 mod tests {
     use crate::application::plugin::runtime::memory::{
-        identifier::Identifier, values::VariableValue,
+        identifier::Identifier,
+        values::VariableValue,
     };
 
     use super::*;
-    use tokio::time::{Duration, timeout};
+    use tokio::time::{ Duration, timeout };
 
     async fn recv_message(
-        receiver: &mut MpscChannelReceiver<OutgoingDebuggerMessage>,
+        receiver: &mut MpscChannelReceiver<OutgoingDebuggerMessage>
     ) -> OutgoingDebuggerMessage {
-        timeout(Duration::from_secs(2), receiver.recv())
-            .await
+        timeout(Duration::from_secs(2), receiver.recv()).await
             .expect("Timed out waiting for debugger output")
             .expect("Debugger channel closed unexpectedly")
     }
@@ -211,9 +213,7 @@ mod tests {
             _ => panic!("Expected BreakpointHit message from debugger"),
         }
 
-        incoming_sender
-            .send(IncomingDebuggerMessage::Continue)
-            .unwrap();
+        incoming_sender.send(IncomingDebuggerMessage::Continue).unwrap();
 
         match recv_message(&mut outgoing_receiver).await {
             OutgoingDebuggerMessage::Finished => {}
@@ -229,9 +229,7 @@ mod tests {
         let debugger = PluginDebugger::new();
         let (incoming_sender, mut outgoing_receiver) = debugger.debug().await;
 
-        incoming_sender
-            .send(IncomingDebuggerMessage::Continue)
-            .unwrap();
+        incoming_sender.send(IncomingDebuggerMessage::Continue).unwrap();
 
         match recv_message(&mut outgoing_receiver).await {
             OutgoingDebuggerMessage::Error(message) => {

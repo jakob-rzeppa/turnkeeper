@@ -25,7 +25,7 @@ const disconnectFromSession = () => {
 
 onMounted(() => {
     connectToSession();
-})
+});
 
 onUnmounted(() => {
     disconnectFromSession();
@@ -36,12 +36,20 @@ onUnmounted(() => {
     <div>
         <div class="flex w-screen h-screen">
             <SidebarPanel
-                :views="[{ icon: ConnectionSidebarIcon, name: 'Connection', component: ConnectionSidebar }]"
+                :views="[
+                    {
+                        icon: ConnectionSidebarIcon,
+                        name: 'Connection',
+                        component: ConnectionSidebar,
+                    },
+                ]"
             />
-            <TabsPanel :views="[
-                { name: 'Overview', component: OverviewTab },
-                { name: 'Player Organisation', component: PlayerOrganisationTab }
-            ]" />
+            <TabsPanel
+                :views="[
+                    { name: 'Overview', component: OverviewTab },
+                    { name: 'Player Organisation', component: PlayerOrganisationTab },
+                ]"
+            />
             <SidebarPanel class="ml-auto" :views="[]" side="right" />
         </div>
     </div>

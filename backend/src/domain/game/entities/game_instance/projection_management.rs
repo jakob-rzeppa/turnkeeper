@@ -3,10 +3,16 @@ use crate::domain::{
     game::{
         entities::game_instance::GameInstance,
         projections::{
-            action::ActionMetadataProjection, game_display_template::GameDisplayTemplateProjection, game_instance_metadata::GameInstanceMetadataProjection, game_instance_state::{
-                GameInstanceStateProjection, GameStatStateProjection, PlayerProjection,
+            action::ActionMetadataProjection,
+            game_display_template::GameDisplayTemplateProjection,
+            game_instance_metadata::GameInstanceMetadataProjection,
+            game_instance_state::{
+                GameInstanceStateProjection,
+                GameStatStateProjection,
+                PlayerProjection,
                 PlayerStatStateProjection,
-            }, stat::{GameStatMetadataProjection, PlayerStatMetadataProjection}
+            },
+            stat::{ GameStatMetadataProjection, PlayerStatMetadataProjection },
         },
     },
 };
@@ -17,28 +23,37 @@ impl GameInstance {
     pub fn get_display_template(&self, _user_id: Id) -> GameDisplayTemplateProjection {
         // For now, we return everything to everyone, but in the future we will need to filter out some data based on the user's permissions and the visibility of the stats.
         GameDisplayTemplateProjection {
-            stats: self.game_stats.iter().map(|s| GameStatMetadataProjection {
-                name: s.name().to_string(),
-                default: s.default().clone(),
-                datatype: s.datatype().clone(),
-                visibility: s.visibility().clone(),
-                pos: s.pos().clone(),
-            }).collect(),
-            player_stats: self.player_stats.iter().map(|s| PlayerStatMetadataProjection {
-                name: s.name().to_string(),
-                default: s.default().clone(),
-                datatype: s.datatype().clone(),
-                visibility: s.visibility().clone(),
-                pos: s.pos().clone(),
-            }).collect(),
-            actions: self.actions.iter().map(|a| ActionMetadataProjection {
-                name: a.name().to_string(),
-                parameters: a.parameters().clone(),
-                execution_triggers: a.execution_triggers().clone(),
-                visibility: a.visibility().clone(),
-                source_code: a.source_code().to_string(),
-                pos: a.pos().clone(),
-            }).collect(),
+            stats: self.game_stats
+                .iter()
+                .map(|s| GameStatMetadataProjection {
+                    name: s.name().to_string(),
+                    default: s.default().clone(),
+                    datatype: s.datatype().clone(),
+                    visibility: s.visibility().clone(),
+                    pos: s.pos().clone(),
+                })
+                .collect(),
+            player_stats: self.player_stats
+                .iter()
+                .map(|s| PlayerStatMetadataProjection {
+                    name: s.name().to_string(),
+                    default: s.default().clone(),
+                    datatype: s.datatype().clone(),
+                    visibility: s.visibility().clone(),
+                    pos: s.pos().clone(),
+                })
+                .collect(),
+            actions: self.actions
+                .iter()
+                .map(|a| ActionMetadataProjection {
+                    name: a.name().to_string(),
+                    parameters: a.parameters().clone(),
+                    execution_triggers: a.execution_triggers().clone(),
+                    visibility: a.visibility().clone(),
+                    source_code: a.source_code().to_string(),
+                    pos: a.pos().clone(),
+                })
+                .collect(),
         }
     }
 
@@ -50,8 +65,7 @@ impl GameInstance {
         GameInstanceStateProjection {
             round: self.round,
             current_player_index: self.current_player_index,
-            game_stats: self
-                .game_stats
+            game_stats: self.game_stats
                 .iter()
                 .map(|s| GameStatStateProjection {
                     name: s.name().into(),
@@ -60,8 +74,7 @@ impl GameInstance {
                     visibility: s.visibility().to_string(),
                 })
                 .collect(),
-            player_stats: self
-                .player_stats
+            player_stats: self.player_stats
                 .iter()
                 .map(|s| PlayerStatStateProjection {
                     name: s.name().into(),
@@ -74,8 +87,7 @@ impl GameInstance {
                     visibility: s.visibility().to_string(),
                 })
                 .collect(),
-            players: self
-                .players
+            players: self.players
                 .iter()
                 .map(|p| PlayerProjection {
                     name: p.name().to_string(),

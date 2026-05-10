@@ -1,5 +1,14 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token}, parsable::Parsable}, domain::{game::abstract_syntax_tree::{statement::AssignmentStatement, expression::Expression}}};
-
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ token::TokenVariant, token_stream::TokenStream },
+        macros::{ change_err_msg, expect_token, get_pos, is_token, nth_is_token },
+        parsable::Parsable,
+    },
+    domain::{
+        game::abstract_syntax_tree::{ statement::AssignmentStatement, expression::Expression },
+    },
+};
 
 impl Parsable for AssignmentStatement {
     fn is_next(ts: &TokenStream) -> bool {
@@ -31,21 +40,13 @@ impl Parsable for AssignmentStatement {
             }
         };
 
-        expect_token!(
-            ts,
-            TokenVariant::Equal,
-            "'=' after identifier in assignment statement"
-        );
+        expect_token!(ts, TokenVariant::Equal, "'=' after identifier in assignment statement");
 
-        let value = Expression::parse(ts, source_code).map_err(|err| 
+        let value = Expression::parse(ts, source_code).map_err(|err|
             change_err_msg!(err, "Expected expression after '=' in assignment statement")
         )?;
 
-        expect_token!(
-            ts,
-            TokenVariant::Semicolon,
-            "';' at the end of assignment statement"
-        );
+        expect_token!(ts, TokenVariant::Semicolon, "';' at the end of assignment statement");
 
         Ok(AssignmentStatement::new(name, value, pos))
     }
@@ -53,9 +54,18 @@ impl Parsable for AssignmentStatement {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::{common::position::Position, game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}}};
+    use crate::{
+        application::common::parser::macros::test_token_stream,
+        domain::{
+            common::position::Position,
+            game::{
+                abstract_syntax_tree::expression::atom::ExpressionAtom,
+                value_objects::data::Value,
+            },
+        },
+    };
 
-use super::*;
+    use super::*;
 
     #[test]
     fn test_assignment_statement_parsing() {

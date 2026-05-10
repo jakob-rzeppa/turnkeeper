@@ -1,6 +1,6 @@
 use crate::application::plugin::lexer::{
-    scanner::{Lexeme, LexemeType},
-    token::{Token, TokenVariant},
+    scanner::{ Lexeme, LexemeType },
+    token::{ Token, TokenVariant },
 };
 
 fn evaluate_text_lexeme(text: String) -> TokenVariant {
@@ -123,15 +123,9 @@ mod tests {
 
     #[test]
     fn test_evaluate_lexemes_single() {
-        let lexemes = vec![Lexeme::new(
-            LexemeType::Text("let".to_string()),
-            Position::new(1, 1),
-        )];
+        let lexemes = vec![Lexeme::new(LexemeType::Text("let".to_string()), Position::new(1, 1))];
         let tokens = evaluate_lexemes(lexemes);
-        assert_eq!(
-            tokens,
-            vec![Token::new(TokenVariant::Let, Position::new(1, 1))]
-        );
+        assert_eq!(tokens, vec![Token::new(TokenVariant::Let, Position::new(1, 1))]);
     }
 
     #[test]
@@ -140,19 +134,16 @@ mod tests {
             Lexeme::new(LexemeType::Text("let".to_string()), Position::new(1, 1)),
             Lexeme::new(LexemeType::Text("x".to_string()), Position::new(1, 5)),
             Lexeme::new(LexemeType::Symbol("=".to_string()), Position::new(1, 7)),
-            Lexeme::new(LexemeType::Number("42".to_string()), Position::new(1, 9)),
+            Lexeme::new(LexemeType::Number("42".to_string()), Position::new(1, 9))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
                 Token::new(TokenVariant::Let, Position::new(1, 1)),
-                Token::new(
-                    TokenVariant::Identifier("x".to_string()),
-                    Position::new(1, 5)
-                ),
+                Token::new(TokenVariant::Identifier("x".to_string()), Position::new(1, 5)),
                 Token::new(TokenVariant::Assign, Position::new(1, 7)),
-                Token::new(TokenVariant::IntLiteral(42), Position::new(1, 9)),
+                Token::new(TokenVariant::IntLiteral(42), Position::new(1, 9))
             ]
         );
     }
@@ -162,18 +153,15 @@ mod tests {
         let lexemes = vec![
             Lexeme::new(LexemeType::Text("x".to_string()), Position::new(1, 1)),
             Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(1, 3)),
-            Lexeme::new(LexemeType::Number("5".to_string()), Position::new(1, 5)),
+            Lexeme::new(LexemeType::Number("5".to_string()), Position::new(1, 5))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
-                Token::new(
-                    TokenVariant::Identifier("x".to_string()),
-                    Position::new(1, 1)
-                ),
+                Token::new(TokenVariant::Identifier("x".to_string()), Position::new(1, 1)),
                 Token::new(TokenVariant::Plus, Position::new(1, 3)),
-                Token::new(TokenVariant::IntLiteral(5), Position::new(1, 5)),
+                Token::new(TokenVariant::IntLiteral(5), Position::new(1, 5))
             ]
         );
     }
@@ -183,18 +171,15 @@ mod tests {
         let lexemes = vec![
             Lexeme::new(LexemeType::Text("int".to_string()), Position::new(1, 1)),
             Lexeme::new(LexemeType::Quote("hello".to_string()), Position::new(1, 5)),
-            Lexeme::new(LexemeType::Text("true".to_string()), Position::new(1, 13)),
+            Lexeme::new(LexemeType::Text("true".to_string()), Position::new(1, 13))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
                 Token::new(TokenVariant::IntType, Position::new(1, 1)),
-                Token::new(
-                    TokenVariant::StringLiteral("hello".to_string()),
-                    Position::new(1, 5)
-                ),
-                Token::new(TokenVariant::BoolLiteral(true), Position::new(1, 13)),
+                Token::new(TokenVariant::StringLiteral("hello".to_string()), Position::new(1, 5)),
+                Token::new(TokenVariant::BoolLiteral(true), Position::new(1, 13))
             ]
         );
     }
@@ -209,38 +194,23 @@ mod tests {
             Lexeme::new(LexemeType::Symbol(":".to_string()), Position::new(1, 8)),
             Lexeme::new(LexemeType::Text("int".to_string()), Position::new(1, 9)),
             Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(1, 12)),
-            Lexeme::new(
-                LexemeType::DoubleSymbol("->".to_string()),
-                Position::new(1, 14),
-            ),
+            Lexeme::new(LexemeType::DoubleSymbol("->".to_string()), Position::new(1, 14)),
             Lexeme::new(LexemeType::Text("int".to_string()), Position::new(1, 16)),
             Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(1, 19)),
             Lexeme::new(LexemeType::Text("return".to_string()), Position::new(1, 21)),
             Lexeme::new(LexemeType::Text("a".to_string()), Position::new(1, 27)),
-            Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(1, 28)),
+            Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(1, 28))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(tokens.len(), 13);
         assert_eq!(tokens[0], Token::new(TokenVariant::Fn, Position::new(1, 1)));
         assert_eq!(
             tokens[1],
-            Token::new(
-                TokenVariant::Identifier("add".to_string()),
-                Position::new(1, 3)
-            )
+            Token::new(TokenVariant::Identifier("add".to_string()), Position::new(1, 3))
         );
-        assert_eq!(
-            tokens[9],
-            Token::new(TokenVariant::LeftBrace, Position::new(1, 19))
-        );
-        assert_eq!(
-            tokens[10],
-            Token::new(TokenVariant::Return, Position::new(1, 21))
-        );
-        assert_eq!(
-            tokens[12],
-            Token::new(TokenVariant::RightBrace, Position::new(1, 28))
-        );
+        assert_eq!(tokens[9], Token::new(TokenVariant::LeftBrace, Position::new(1, 19)));
+        assert_eq!(tokens[10], Token::new(TokenVariant::Return, Position::new(1, 21)));
+        assert_eq!(tokens[12], Token::new(TokenVariant::RightBrace, Position::new(1, 28)));
     }
 
     #[test]
@@ -248,29 +218,23 @@ mod tests {
         let lexemes = vec![
             Lexeme::new(LexemeType::Text("if".to_string()), Position::new(1, 1)),
             Lexeme::new(LexemeType::Text("x".to_string()), Position::new(1, 3)),
-            Lexeme::new(
-                LexemeType::DoubleSymbol(">=".to_string()),
-                Position::new(1, 5),
-            ),
+            Lexeme::new(LexemeType::DoubleSymbol(">=".to_string()), Position::new(1, 5)),
             Lexeme::new(LexemeType::Number("10".to_string()), Position::new(1, 7)),
             Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(1, 9)),
             Lexeme::new(LexemeType::Text("break".to_string()), Position::new(1, 10)),
-            Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(1, 11)),
+            Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(1, 11))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
             tokens,
             vec![
                 Token::new(TokenVariant::If, Position::new(1, 1)),
-                Token::new(
-                    TokenVariant::Identifier("x".to_string()),
-                    Position::new(1, 3)
-                ),
+                Token::new(TokenVariant::Identifier("x".to_string()), Position::new(1, 3)),
                 Token::new(TokenVariant::GreaterEqual, Position::new(1, 5)),
                 Token::new(TokenVariant::IntLiteral(10), Position::new(1, 7)),
                 Token::new(TokenVariant::LeftBrace, Position::new(1, 9)),
                 Token::new(TokenVariant::Break, Position::new(1, 10)),
-                Token::new(TokenVariant::RightBrace, Position::new(1, 11)),
+                Token::new(TokenVariant::RightBrace, Position::new(1, 11))
             ]
         );
     }
@@ -282,7 +246,7 @@ mod tests {
             Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(1, 2)),
             Lexeme::new(LexemeType::Number("3".to_string()), Position::new(1, 3)),
             Lexeme::new(LexemeType::Symbol("*".to_string()), Position::new(1, 4)),
-            Lexeme::new(LexemeType::Number("2".to_string()), Position::new(1, 5)),
+            Lexeme::new(LexemeType::Number("2".to_string()), Position::new(1, 5))
         ];
         let tokens = evaluate_lexemes(lexemes);
         assert_eq!(
@@ -292,7 +256,7 @@ mod tests {
                 Token::new(TokenVariant::Plus, Position::new(1, 2)),
                 Token::new(TokenVariant::IntLiteral(3), Position::new(1, 3)),
                 Token::new(TokenVariant::Star, Position::new(1, 4)),
-                Token::new(TokenVariant::IntLiteral(2), Position::new(1, 5)),
+                Token::new(TokenVariant::IntLiteral(2), Position::new(1, 5))
             ]
         );
     }

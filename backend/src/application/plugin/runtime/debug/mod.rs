@@ -1,8 +1,8 @@
 use tokio::sync::oneshot;
 
 use crate::application::{
-    common::channels::mpsc::{MpscChannel, MpscChannelReceiver, MpscChannelSender},
-    plugin::runtime::debug::{commands::DebugCommand, state::DebugState},
+    common::channels::mpsc::{ MpscChannel, MpscChannelReceiver, MpscChannelSender },
+    plugin::runtime::debug::{ commands::DebugCommand, state::DebugState },
 };
 
 pub mod commands;
@@ -21,11 +21,8 @@ pub struct DebugEnvironment {
 
 impl DebugEnvironment {
     pub fn new(
-        breakpoints: Vec<usize>,
-    ) -> (
-        Self,
-        MpscChannelReceiver<(DebugState, oneshot::Sender<DebugCommand>)>,
-    ) {
+        breakpoints: Vec<usize>
+    ) -> (Self, MpscChannelReceiver<(DebugState, oneshot::Sender<DebugCommand>)>) {
         let (breakpoint_channel_sender, breakpoint_channel_receiver) = MpscChannel::new();
 
         (
@@ -61,10 +58,7 @@ impl DebugEnvironment {
         if self.is_halted {
             let (command_sender, command_receiver) = oneshot::channel::<DebugCommand>();
 
-            match self
-                .breakpoint_channel_sender
-                .send((debug_state, command_sender))
-            {
+            match self.breakpoint_channel_sender.send((debug_state, command_sender)) {
                 Ok(()) => {}
                 Err(_) => {
                     eprintln!("User disconnected while debug execution was still running.");
@@ -130,8 +124,7 @@ mod tests {
         });
 
         let (state, command_sender) = breakpoint_rx
-            .recv()
-            .await
+            .recv().await
             .expect("Expected breakpoint message for line 10");
         assert_eq!(state.variables.len(), 0);
         command_sender.send(DebugCommand::Continue).unwrap();
@@ -158,14 +151,12 @@ mod tests {
         });
 
         let (_, first_command_sender) = breakpoint_rx
-            .recv()
-            .await
+            .recv().await
             .expect("Expected first breakpoint message");
         first_command_sender.send(DebugCommand::StepInto).unwrap();
 
         let (_, second_command_sender) = breakpoint_rx
-            .recv()
-            .await
+            .recv().await
             .expect("Expected second breakpoint message after step into");
         second_command_sender.send(DebugCommand::Continue).unwrap();
 
@@ -195,14 +186,12 @@ mod tests {
         });
 
         let (_, first_command_sender) = breakpoint_rx
-            .recv()
-            .await
+            .recv().await
             .expect("Expected first breakpoint message");
         first_command_sender.send(DebugCommand::StepOver).unwrap();
 
         let (_, second_command_sender) = breakpoint_rx
-            .recv()
-            .await
+            .recv().await
             .expect("Expected second breakpoint message after finishing step over");
         second_command_sender.send(DebugCommand::Continue).unwrap();
 

@@ -4,7 +4,7 @@
 
 use std::cmp::PartialEq;
 use std::error::Error;
-use std::fmt::{Display, Formatter};
+use std::fmt::{ Display, Formatter };
 
 /// Domain error for user-related operations.
 ///
@@ -73,7 +73,8 @@ impl UserErrorKind {
     pub fn message(&self) -> String {
         match self {
             UserErrorKind::EmptyName => "Empty name".to_string(),
-            UserErrorKind::PasswordTooShort { required, actual } => format!("Password too short: {required} > {actual}"),
+            UserErrorKind::PasswordTooShort { required, actual } =>
+                format!("Password too short: {required} > {actual}"),
             UserErrorKind::InvalidUser => "Invalid user".to_string(),
             UserErrorKind::InvalidCredentials => "Invalid credentials".to_string(),
             UserErrorKind::UserNotFound => "User not found".to_string(),

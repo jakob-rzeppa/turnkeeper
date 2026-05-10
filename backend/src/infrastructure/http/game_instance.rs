@@ -1,14 +1,11 @@
-use axum::{
-    Extension,
-    extract::{Path, State},
-    http::StatusCode,
-};
-use backend_derive::{JsonRequest, JsonResponse};
-use serde::{Deserialize, Serialize};
+use axum::{ Extension, extract::{ Path, State }, http::StatusCode };
+use backend_derive::{ JsonRequest, JsonResponse };
+use serde::{ Deserialize, Serialize };
 
 use crate::{
     application::game_instance::request_handler::{
-        create::GameInstanceCreateRequest, delete::GameInstanceDeleteRequest,
+        create::GameInstanceCreateRequest,
+        delete::GameInstanceDeleteRequest,
         list_by_game::GameInstanceListByGameRequest,
     },
     domain::{
@@ -16,7 +13,7 @@ use crate::{
         game::projections::game_instance_metadata::GameInstanceMetadataProjection,
         user::entities::User,
     },
-    infrastructure::{app_state::AppState, error::HttpError},
+    infrastructure::{ app_state::AppState, error::HttpError },
 };
 
 #[derive(Serialize, JsonResponse, Debug)]
@@ -29,16 +26,13 @@ pub struct GameInstancesGetByGameIdResponse {
 /// Returns the metadata for all game instances of a game
 pub async fn game_instances_get_metadata_by_game_id(
     State(state): State<AppState>,
-    Path(game_id): Path<String>,
+    Path(game_id): Path<String>
 ) -> Result<GameInstancesGetByGameIdResponse, HttpError> {
     let request = GameInstanceListByGameRequest {
         game_id: game_id.into(),
     };
 
-    let response = state
-        .game_instance_request_handler()
-        .list_all_games(request)
-        .await?;
+    let response = state.game_instance_request_handler().list_all_games(request).await?;
 
     Ok(GameInstancesGetByGameIdResponse {
         game_instances: response.games_metadata,
@@ -60,7 +54,7 @@ pub async fn game_instances_post(
     State(state): State<AppState>,
     Extension(user): Extension<User>,
     Path(game_id): Path<String>,
-    request: GameInstanceCreateHttpRequest,
+    request: GameInstanceCreateHttpRequest
 ) -> Result<GameInstanceCreateHttpResponse, HttpError> {
     let request = GameInstanceCreateRequest {
         name: request.name,
@@ -68,10 +62,7 @@ pub async fn game_instances_post(
         game_id: game_id.into(),
     };
 
-    let id = state
-        .game_instance_request_handler()
-        .create(request)
-        .await?;
+    let id = state.game_instance_request_handler().create(request).await?;
 
     Ok(GameInstanceCreateHttpResponse { id })
 }
@@ -79,18 +70,15 @@ pub async fn game_instances_post(
 /// DELETE /games/{game_id}/instances/{instance_id}
 pub async fn game_instances_delete(
     State(state): State<AppState>,
-    Path((game_id, instance_id)): Path<(String, String)>,
+    Path((game_id, instance_id)): Path<(String, String)>
 ) -> Result<StatusCode, HttpError> {
     let game_id = Id::parse_str(&game_id)?;
     let instance_id = Id::parse_str(&instance_id)?;
 
-    state
-        .game_instance_request_handler()
-        .delete(GameInstanceDeleteRequest {
-            game_id,
-            instance_id,
-        })
-        .await?;
+    state.game_instance_request_handler().delete(GameInstanceDeleteRequest {
+        game_id,
+        instance_id,
+    }).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

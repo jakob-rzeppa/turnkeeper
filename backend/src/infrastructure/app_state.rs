@@ -6,18 +6,23 @@
 
 use std::sync::Arc;
 
-use sqlx::{Pool, Sqlite};
+use sqlx::{ Pool, Sqlite };
 
 use crate::{
     application::{
-        common::parser::GameParser, game::request_handlers::GameRequestHandler, game_instance::request_handler::GameInstanceRequestHandler, user::request_handlers::UserRequestHandler
+        common::parser::GameParser,
+        game::request_handlers::GameRequestHandler,
+        game_instance::request_handler::GameInstanceRequestHandler,
+        user::request_handlers::UserRequestHandler,
     },
     infrastructure::{
-        auth::{jwt::{JwtGenerator, JwtValidator}, ws_ticket_manager::WsTicketManager},
+        auth::{ jwt::{ JwtGenerator, JwtValidator }, ws_ticket_manager::WsTicketManager },
         persistence::repositories::{
-            game::SqliteGameRepository, game_instance::SqliteGameInstanceRepository,
+            game::SqliteGameRepository,
+            game_instance::SqliteGameInstanceRepository,
             user::SqliteUserRepository,
-        }, websocket::game_session_manager::GameSessionManager,
+        },
+        websocket::game_session_manager::GameSessionManager,
     },
 };
 
@@ -34,8 +39,9 @@ pub struct AppState {
 impl AppState {
     pub fn new(db_pool: Pool<Sqlite>) -> Self {
         let sqlite_game_repository = Arc::new(SqliteGameRepository::new(db_pool.clone()));
-        let sqlite_game_instance_repository =
-            Arc::new(SqliteGameInstanceRepository::new(db_pool.clone()));
+        let sqlite_game_instance_repository = Arc::new(
+            SqliteGameInstanceRepository::new(db_pool.clone())
+        );
         let sqlite_user_repository = Arc::new(SqliteUserRepository::new(db_pool.clone()));
         let jwt_generator = Arc::new(JwtGenerator::new());
         let jwt_validator = Arc::new(JwtValidator::new());
@@ -45,17 +51,17 @@ impl AppState {
             game_request_handler: GameRequestHandler::new(
                 sqlite_game_repository.clone(),
                 sqlite_game_instance_repository.clone(),
-                game_root_parser.clone(),
+                game_root_parser.clone()
             ),
             game_instance_request_handler: GameInstanceRequestHandler::new(
                 sqlite_game_instance_repository.clone(),
                 sqlite_game_repository,
-                game_root_parser,
+                game_root_parser
             ),
             user_request_handler: UserRequestHandler::new(
                 sqlite_user_repository.clone(),
                 jwt_generator,
-                jwt_validator,
+                jwt_validator
             ),
             ws_ticket_manager: WsTicketManager::new(),
             game_session_manager: GameSessionManager::new(sqlite_game_instance_repository),
@@ -71,7 +77,7 @@ impl AppState {
     }
 
     pub fn user_request_handler(
-        &self,
+        &self
     ) -> UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator> {
         self.user_request_handler.clone()
     }

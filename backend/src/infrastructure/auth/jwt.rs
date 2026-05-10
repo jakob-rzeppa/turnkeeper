@@ -1,10 +1,10 @@
-use crate::application::user::contracts::{JwtGeneratorContract, JwtValidatorContract};
+use crate::application::user::contracts::{ JwtGeneratorContract, JwtValidatorContract };
 use crate::domain::common::identifier::Id;
-use crate::domain::user::error::{UserError, UserErrorKind};
-use jsonwebtoken::{Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode};
-use serde::{Deserialize, Serialize};
+use crate::domain::user::error::{ UserError, UserErrorKind };
+use jsonwebtoken::{ Algorithm, DecodingKey, EncodingKey, Header, Validation, decode, encode };
+use serde::{ Deserialize, Serialize };
 use std::sync::LazyLock;
-use std::time::{SystemTime, UNIX_EPOCH};
+use std::time::{ SystemTime, UNIX_EPOCH };
 
 const USER_JWT_SECRET: LazyLock<String> = LazyLock::new(|| {
     if cfg!(test) {
@@ -22,11 +22,9 @@ struct UserClaims {
 
 impl From<Id> for UserClaims {
     fn from(id: Id) -> Self {
-        let exp = SystemTime::now()
-            .duration_since(UNIX_EPOCH)
-            .expect("Time went backwards")
-            .as_secs()
-            + 3600 * 5; // 5 hour expiration
+        let exp =
+            SystemTime::now().duration_since(UNIX_EPOCH).expect("Time went backwards").as_secs() +
+            3600 * 5; // 5 hour expiration
 
         UserClaims {
             user_id: id.to_string(),
@@ -63,8 +61,11 @@ impl JwtGeneratorContract for JwtGenerator {
 
         let claims = UserClaims::from(user_id.clone());
 
-        Ok(encode(&header, &claims, &encoding_key)
-            .map_err(|e| UserError::with_source(UserErrorKind::JwtGenerationError, Box::new(e)))?)
+        Ok(
+            encode(&header, &claims, &encoding_key).map_err(|e|
+                UserError::with_source(UserErrorKind::JwtGenerationError, Box::new(e))
+            )?
+        )
     }
 }
 
@@ -102,8 +103,11 @@ impl JwtValidatorContract for JwtValidator {
             .map(|data| data.claims)
             .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?;
 
-        Ok(Id::parse_str(&claims.user_id)
-            .map_err(|_| UserError::new(UserErrorKind::InvalidCredentials))?)
+        Ok(
+            Id::parse_str(&claims.user_id).map_err(|_|
+                UserError::new(UserErrorKind::InvalidCredentials)
+            )?
+        )
     }
 }
 

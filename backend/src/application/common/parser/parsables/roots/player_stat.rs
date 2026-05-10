@@ -1,19 +1,13 @@
 use crate::{
     application::common::parser::{
         error::ParsingError,
-        lexer::{
-            token::{Token, TokenVariant},
-            token_stream::TokenStream,
-        },
-        macros::{change_err_msg, expect_token, get_pos, is_token, nth_is_token},
+        lexer::{ token::{ Token, TokenVariant }, token_stream::TokenStream },
+        macros::{ change_err_msg, expect_token, get_pos, is_token, nth_is_token },
         parsable::Parsable,
     },
     domain::game::{
         entities::weak::stat::PlayerStat,
-        value_objects::{
-            data::{Datatype, Value},
-            visibility::PlayerStatVisibility,
-        },
+        value_objects::{ data::{ Datatype, Value }, visibility::PlayerStatVisibility },
     },
 };
 
@@ -26,34 +20,20 @@ impl Parsable for PlayerStat {
         let pos = get_pos!(ts);
 
         let visibility = match ts.next() {
-            Some(Token {
-                variant: TokenVariant::Hidden,
-                ..
-            }) => PlayerStatVisibility::Hidden,
-            Some(Token {
-                variant: TokenVariant::Private,
-                ..
-            }) => PlayerStatVisibility::Private,
-            Some(Token {
-                variant: TokenVariant::Public,
-                ..
-            }) => PlayerStatVisibility::Public,
-            Some(Token {
-                variant: TokenVariant::Protected,
-                ..
-            }) => PlayerStatVisibility::Protected,
+            Some(Token { variant: TokenVariant::Hidden, .. }) => PlayerStatVisibility::Hidden,
+            Some(Token { variant: TokenVariant::Private, .. }) => PlayerStatVisibility::Private,
+            Some(Token { variant: TokenVariant::Public, .. }) => PlayerStatVisibility::Public,
+            Some(Token { variant: TokenVariant::Protected, .. }) => PlayerStatVisibility::Protected,
             Some(token) => {
                 return Err(ParsingError::UnexpectedToken {
-                    expected: "Expected visibility modifier (hidden, private, public, protected)"
-                        .to_string(),
+                    expected: "Expected visibility modifier (hidden, private, public, protected)".to_string(),
                     found: token.variant.clone(),
                     pos: token.pos,
                 });
             }
             None => {
                 return Err(ParsingError::UnexpectedEOF {
-                    expected: "Expected visibility modifier (hidden, private, public, protected)"
-                        .to_string(),
+                    expected: "Expected visibility modifier (hidden, private, public, protected)".to_string(),
                 });
             }
         };
@@ -65,10 +45,7 @@ impl Parsable for PlayerStat {
         );
 
         let name = match ts.next() {
-            Some(Token {
-                variant: TokenVariant::Identifier(name),
-                ..
-            }) => name.clone(),
+            Some(Token { variant: TokenVariant::Identifier(name), .. }) => name.clone(),
             Some(token) => {
                 return Err(ParsingError::UnexpectedToken {
                     expected: "Expected identifier for player stat name".to_string(),
@@ -84,16 +61,17 @@ impl Parsable for PlayerStat {
         };
 
         // Optional: Check for a colon after the stat name, which could indicate a type declaration.
-        let datatype = if let Some(Token {
-            variant: TokenVariant::Colon,
-            ..
-        }) = ts.peek()
-        {
+        let datatype = if let Some(Token { variant: TokenVariant::Colon, .. }) = ts.peek() {
             ts.next(); // Consume the colon
 
-            Some(Datatype::parse(ts, source_code).map_err(|err|
-                change_err_msg!(err, "Expected type declaration (int, float, string, bool) after ':' in player stat declaration")
-            )?)
+            Some(
+                Datatype::parse(ts, source_code).map_err(|err|
+                    change_err_msg!(
+                        err,
+                        "Expected type declaration (int, float, string, bool) after ':' in player stat declaration"
+                    )
+                )?
+            )
         } else {
             None
         };
@@ -105,19 +83,20 @@ impl Parsable for PlayerStat {
         );
 
         let value: Value = match ts.next() {
-            Some(token) => match token.variant.clone() {
-                TokenVariant::IntLiteral(num) => Value::Int(num),
-                TokenVariant::FloatLiteral(num) => Value::Float(num),
-                TokenVariant::StringLiteral(s) => Value::String(s),
-                TokenVariant::BoolLiteral(b) => Value::Bool(b),
-                _ => {
-                    return Err(ParsingError::UnexpectedToken {
-                        expected: "Expected literal value (int, float, string, bool) after '=' in player stat declaration".to_string(),
-                        found: token.variant.clone(),
-                        pos: token.pos,
-                    });
+            Some(token) =>
+                match token.variant.clone() {
+                    TokenVariant::IntLiteral(num) => Value::Int(num),
+                    TokenVariant::FloatLiteral(num) => Value::Float(num),
+                    TokenVariant::StringLiteral(s) => Value::String(s),
+                    TokenVariant::BoolLiteral(b) => Value::Bool(b),
+                    _ => {
+                        return Err(ParsingError::UnexpectedToken {
+                            expected: "Expected literal value (int, float, string, bool) after '=' in player stat declaration".to_string(),
+                            found: token.variant.clone(),
+                            pos: token.pos,
+                        });
+                    }
                 }
-            },
             None => {
                 return Err(ParsingError::UnexpectedEOF {
                     expected: "Expected literal value (int, float, string, bool) after '=' in player stat declaration".to_string(),
@@ -137,7 +116,8 @@ impl Parsable for PlayerStat {
                 return Err(ParsingError::SyntaxError {
                     message: format!(
                         "Type mismatch: expected {} literal for player stat declared as {}",
-                        declared_type, declared_type
+                        declared_type,
+                        declared_type
                     ),
                     pos,
                 });
@@ -193,23 +173,22 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_with_type_decl_string() {
-        let (mut ts, source_code) =
-            test_token_stream!("hidden pstat secret: string = \"hidden_value\";");
+        let (mut ts, source_code) = test_token_stream!(
+            "hidden pstat secret: string = \"hidden_value\";"
+        );
 
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
 
         assert_eq!(pstat.name(), "secret");
-        assert_eq!(
-            pstat.default(),
-            &Value::String("hidden_value".to_string())
-        );
+        assert_eq!(pstat.default(), &Value::String("hidden_value".to_string()));
         assert_eq!(pstat.visibility(), &PlayerStatVisibility::Hidden);
     }
 
     #[test]
     fn test_parse_pstat_with_type_decl_bool() {
-        let (mut ts, source_code) =
-            test_token_stream!("protected pstat hasSpecialAbility: bool = false;");
+        let (mut ts, source_code) = test_token_stream!(
+            "protected pstat hasSpecialAbility: bool = false;"
+        );
 
         let pstat = PlayerStat::parse(&mut ts, &source_code).unwrap();
         assert_eq!(pstat.name(), "hasSpecialAbility");
@@ -219,8 +198,9 @@ mod tests {
 
     #[test]
     fn test_parse_pstat_type_mismatch() {
-        let (mut ts, source_code) =
-            test_token_stream!("public pstat level: int = \"not a number\";");
+        let (mut ts, source_code) = test_token_stream!(
+            "public pstat level: int = \"not a number\";"
+        );
 
         let err = PlayerStat::parse(&mut ts, &source_code).unwrap_err();
         match err {

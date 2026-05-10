@@ -1,5 +1,16 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::TokenVariant, token_stream::TokenStream}, macros::{change_err_msg, expect_token, get_pos, is_token}, parsable::Parsable, parsables::expression::Expression}, domain::game::abstract_syntax_tree::expression::{atom::ExpressionAtom, unary::{UnaryExpression, UnaryOperator}}};
-
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ token::TokenVariant, token_stream::TokenStream },
+        macros::{ change_err_msg, expect_token, get_pos, is_token },
+        parsable::Parsable,
+        parsables::expression::Expression,
+    },
+    domain::game::abstract_syntax_tree::expression::{
+        atom::ExpressionAtom,
+        unary::{ UnaryExpression, UnaryOperator },
+    },
+};
 
 impl Parsable for UnaryExpression {
     fn is_next(ts: &TokenStream) -> bool {
@@ -30,7 +41,7 @@ impl Parsable for UnaryExpression {
         if is_token!(ts, TokenVariant::OpenParen) {
             ts.next(); // consume '('
 
-            let expr = Expression::parse(ts, source_code).map_err(|err| 
+            let expr = Expression::parse(ts, source_code).map_err(|err|
                 change_err_msg!(err, "Expected expression after '(' in unary operator")
             )?;
 
@@ -44,7 +55,7 @@ impl Parsable for UnaryExpression {
         }
 
         // Otherwise, we can parse the next token as an expression atom and use that as the operand of the unary operator
-        let operant = ExpressionAtom::parse(ts, source_code).map_err(|err| 
+        let operant = ExpressionAtom::parse(ts, source_code).map_err(|err|
             change_err_msg!(err, "Expected expression atom or after '(' in unary operator")
         )?;
 
@@ -54,7 +65,10 @@ impl Parsable for UnaryExpression {
 
 #[cfg(test)]
 mod tests {
-    use crate::{application::common::parser::macros::test_token_stream, domain::common::position::Position};
+    use crate::{
+        application::common::parser::macros::test_token_stream,
+        domain::common::position::Position,
+    };
     use super::*;
 
     #[test]
@@ -65,7 +79,11 @@ mod tests {
         let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new(UnaryOperator::LogicalNot, Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 1))), Position::new(0, 0))
+            UnaryExpression::new(
+                UnaryOperator::LogicalNot,
+                Expression::Atom(ExpressionAtom::Variable("x".to_string(), Position::new(0, 1))),
+                Position::new(0, 0)
+            )
         );
     }
 
@@ -77,7 +95,11 @@ mod tests {
         let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new(UnaryOperator::Negation, Expression::Atom(ExpressionAtom::Variable("y".to_string(), Position::new(0, 1))), Position::new(0, 0))
+            UnaryExpression::new(
+                UnaryOperator::Negation,
+                Expression::Atom(ExpressionAtom::Variable("y".to_string(), Position::new(0, 1))),
+                Position::new(0, 0)
+            )
         );
     }
 
@@ -89,7 +111,11 @@ mod tests {
         let unary_expr = UnaryExpression::parse(&mut ts, &source_code).unwrap();
         assert_eq!(
             unary_expr,
-            UnaryExpression::new(UnaryOperator::LogicalNot, Expression::Atom(ExpressionAtom::Variable("z".to_string(), Position::new(0, 2))), Position::new(0, 0))
+            UnaryExpression::new(
+                UnaryOperator::LogicalNot,
+                Expression::Atom(ExpressionAtom::Variable("z".to_string(), Position::new(0, 2))),
+                Position::new(0, 0)
+            )
         );
     }
 }

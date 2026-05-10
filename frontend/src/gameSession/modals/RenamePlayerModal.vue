@@ -31,7 +31,11 @@ const renamePlayer = () => {
             placeholder="Enter new player name"
             class="input input-bordered w-full"
         />
-        <button type="submit" class="btn btn-primary w-full" :disabled="!newName.trim() || newName === props.player">
+        <button
+            type="submit"
+            class="btn btn-primary w-full"
+            :disabled="!newName.trim() || newName === props.player"
+        >
             Rename Player
         </button>
     </form>

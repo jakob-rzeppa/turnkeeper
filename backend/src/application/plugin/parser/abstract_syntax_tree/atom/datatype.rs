@@ -2,7 +2,7 @@ use std::fmt::Display;
 
 use crate::application::plugin::{
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{Parsable, ParsingError, TokenStream},
+    parser::abstract_syntax_tree::{ Parsable, ParsingError, TokenStream },
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -27,10 +27,10 @@ impl Display for Datatype {
 
 impl Parsable for Datatype {
     fn is_next(ts: &TokenStream) -> bool {
-        is_token!(ts, TokenVariant::IntType)
-            || is_token!(ts, TokenVariant::FloatType)
-            || is_token!(ts, TokenVariant::StringType)
-            || is_token!(ts, TokenVariant::BoolType)
+        is_token!(ts, TokenVariant::IntType) ||
+            is_token!(ts, TokenVariant::FloatType) ||
+            is_token!(ts, TokenVariant::StringType) ||
+            is_token!(ts, TokenVariant::BoolType)
     }
 
     fn parse(ts: &mut TokenStream) -> Result<Self, ParsingError> {
@@ -48,11 +48,12 @@ impl Parsable for Datatype {
             TokenVariant::FloatType => Ok(Datatype::Float),
             TokenVariant::StringType => Ok(Datatype::String),
             TokenVariant::BoolType => Ok(Datatype::Boolean),
-            _ => Err(ParsingError::UnexpectedToken {
-                expected: "datatype".to_string(),
-                found: token.variant.clone(),
-                pos: token.pos,
-            }),
+            _ =>
+                Err(ParsingError::UnexpectedToken {
+                    expected: "datatype".to_string(),
+                    found: token.variant.clone(),
+                    pos: token.pos,
+                }),
         }
     }
 }

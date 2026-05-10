@@ -1,4 +1,4 @@
-use crate::domain::common::{date_time::DateTime, identifier::Id};
+use crate::domain::common::{ date_time::DateTime, identifier::Id };
 
 #[derive(Debug, Clone, PartialEq, serde::Serialize)]
 pub struct GameInstanceMetadataProjection {

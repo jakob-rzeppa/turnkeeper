@@ -57,7 +57,7 @@ pub enum TokenVariant {
 
     // --- FROM Symbol and DoubleSymbol LEXEME ---
     // Assignment Operators
-    Assign,    // =
+    Assign, // =
     AddAssign, // +=
     SubAssign, // -=
     MulAssign, // *=
@@ -66,36 +66,36 @@ pub enum TokenVariant {
     PowAssign, // ^=
 
     // Operators
-    Plus,         // +
-    Minus,        // -
-    Star,         // *
-    Slash,        // /
-    Percent,      // %
-    Caret,        // ^
-    EqualEqual,   // ==
-    NotEqual,     // !=
-    Less,         // <
-    Greater,      // >
-    LessEqual,    // <=
+    Plus, // +
+    Minus, // -
+    Star, // *
+    Slash, // /
+    Percent, // %
+    Caret, // ^
+    EqualEqual, // ==
+    NotEqual, // !=
+    Less, // <
+    Greater, // >
+    LessEqual, // <=
     GreaterEqual, // >=
-    And,          // &&
-    Or,           // ||
-    Not,          // !
+    And, // &&
+    Or, // ||
+    Not, // !
 
     // Delimiters
-    LeftParen,    // (
-    RightParen,   // )
-    LeftBrace,    // {
-    RightBrace,   // }
-    LeftBracket,  // [
+    LeftParen, // (
+    RightParen, // )
+    LeftBrace, // {
+    RightBrace, // }
+    LeftBracket, // [
     RightBracket, // ]
-    Semicolon,    // ;
-    Colon,        // :
-    Comma,        // ,
-    Pipe,         // |
-    Underscore,   // _
-    ThickArrow,   // =>
-    ThinArrow,    // ->
+    Semicolon, // ;
+    Colon, // :
+    Comma, // ,
+    Pipe, // |
+    Underscore, // _
+    ThickArrow, // =>
+    ThinArrow, // ->
 
     // Special
     Question, // ?

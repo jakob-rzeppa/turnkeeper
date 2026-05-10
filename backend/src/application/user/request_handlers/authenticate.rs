@@ -3,19 +3,20 @@
 //! Validates a user JWT token and confirms the user exists.
 
 use crate::application::user::contracts::{
-    JwtGeneratorContract, JwtValidatorContract, UserRepositoryContract,
+    JwtGeneratorContract,
+    JwtValidatorContract,
+    UserRepositoryContract,
 };
 use crate::application::user::request_handlers::UserRequestHandler;
 use crate::application::user::requests::UserAuthenticateRequest;
 use crate::domain::user::entities::User;
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 
 impl<
     UserRepository: UserRepositoryContract,
     JwtGenerator: JwtGeneratorContract,
-    JwtValidator: JwtValidatorContract,
-> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator>
-{
+    JwtValidator: JwtValidatorContract
+> UserRequestHandler<UserRepository, JwtGenerator, JwtValidator> {
     /// Validates a JWT and checks that the referenced user still exists.
     pub async fn authenticate(&self, request: UserAuthenticateRequest) -> Result<User, UserError> {
         let user_id = self.jwt_validator.validate_token(&request.token)?;
@@ -36,7 +37,9 @@ mod tests {
 
     use crate::{
         application::user::contracts::{
-            MockJwtGeneratorContract, MockJwtValidatorContract, MockUserRepositoryContract,
+            MockJwtGeneratorContract,
+            MockJwtValidatorContract,
+            MockUserRepositoryContract,
         },
         domain::common::identifier::Id,
     };
@@ -75,16 +78,15 @@ mod tests {
                 let user = User::try_new(
                     user_id.clone(),
                     "test-user".to_string(),
-                    "password".to_string(),
-                )
-                .unwrap();
+                    "password".to_string()
+                ).unwrap();
                 Box::pin(async move { Ok(user) })
             });
 
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.authenticate(request).await;
 
@@ -113,7 +115,7 @@ mod tests {
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.authenticate(request).await;
 
@@ -149,7 +151,7 @@ mod tests {
         let handler = UserRequestHandler::new(
             Arc::new(user_repo),
             Arc::new(jwt_generator),
-            Arc::new(jwt_validator),
+            Arc::new(jwt_validator)
         );
         let result = handler.authenticate(request).await;
 

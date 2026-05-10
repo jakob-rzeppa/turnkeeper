@@ -19,10 +19,7 @@ pub trait UserRepositoryContract {
     /// * `Ok(true)` - User exists
     /// * `Ok(false)` - User does not exist
     /// * `Err(UserError)` - Database error occurred
-    fn check_if_exists(
-        &self,
-        id: &Id,
-    ) -> impl Future<Output = Result<bool, UserError>> + Send;
+    fn check_if_exists(&self, id: &Id) -> impl Future<Output = Result<bool, UserError>> + Send;
 
     /// Retrieves a user by their unique ID.
     ///

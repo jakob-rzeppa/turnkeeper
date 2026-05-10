@@ -121,7 +121,10 @@ onMounted(() => {
                             <RouterLink
                                 :to="{
                                     name: 'game-session',
-                                    params: { gameId: route.params.id, gameInstanceId: instance.id },
+                                    params: {
+                                        gameId: route.params.id,
+                                        gameInstanceId: instance.id,
+                                    },
                                 }"
                                 class="btn btn-primary"
                                 >Play</RouterLink

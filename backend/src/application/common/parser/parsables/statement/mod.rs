@@ -1,4 +1,23 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::token_stream::TokenStream, macros::get_pos, parsable::Parsable}, domain::{game::abstract_syntax_tree::{statement::{Statement, AssignmentStatement, IfStatement, VariableDeclarationStatement, WhileLoopStatement, ExpressionStatement}}}};
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::token_stream::TokenStream,
+        macros::get_pos,
+        parsable::Parsable,
+    },
+    domain::{
+        game::abstract_syntax_tree::{
+            statement::{
+                Statement,
+                AssignmentStatement,
+                IfStatement,
+                VariableDeclarationStatement,
+                WhileLoopStatement,
+                ExpressionStatement,
+            },
+        },
+    },
+};
 
 pub mod assignment;
 pub mod expression;
@@ -8,10 +27,10 @@ pub mod while_loop;
 
 impl Parsable for Statement {
     fn is_next(ts: &TokenStream) -> bool {
-        VariableDeclarationStatement::is_next(ts)
-            || AssignmentStatement::is_next(ts)
-            || IfStatement::is_next(ts)
-            || WhileLoopStatement::is_next(ts)
+        VariableDeclarationStatement::is_next(ts) ||
+            AssignmentStatement::is_next(ts) ||
+            IfStatement::is_next(ts) ||
+            WhileLoopStatement::is_next(ts)
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
@@ -20,9 +39,11 @@ impl Parsable for Statement {
         } else if WhileLoopStatement::is_next(ts) {
             Ok(Statement::WhileLoop(WhileLoopStatement::parse(ts, source_code)?))
         } else if VariableDeclarationStatement::is_next(ts) {
-            Ok(Statement::VariableDeclaration(
-                VariableDeclarationStatement::parse(ts, source_code)?,
-            ))
+            Ok(
+                Statement::VariableDeclaration(
+                    VariableDeclarationStatement::parse(ts, source_code)?
+                )
+            )
         } else if AssignmentStatement::is_next(ts) {
             Ok(Statement::Assignment(AssignmentStatement::parse(ts, source_code)?))
         } else if ExpressionStatement::is_next(ts) {

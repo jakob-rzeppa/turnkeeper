@@ -1,8 +1,8 @@
-use std::{error::Error, fmt::Display};
+use std::{ error::Error, fmt::Display };
 
 use crate::application::plugin::{
     common::Position,
-    runtime::memory::{error::MemoryError, identifier::Identifier, values::VariableValue},
+    runtime::memory::{ error::MemoryError, identifier::Identifier, values::VariableValue },
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -39,18 +39,20 @@ pub enum RuntimeError {
 impl RuntimeError {
     pub fn from_memory_error(err: MemoryError, pos: Position) -> Self {
         match err {
-            MemoryError::VariableNotFound(id) => RuntimeError::VariableNotFound {
-                identifier: id,
-                pos,
-            },
+            MemoryError::VariableNotFound(id) =>
+                RuntimeError::VariableNotFound {
+                    identifier: id,
+                    pos,
+                },
             MemoryError::VariableAlreadyDeclared(identifier) => {
                 RuntimeError::VariableAlreadyDeclared { identifier, pos }
             }
-            MemoryError::TypeMismatch { expected, found } => RuntimeError::TypeMismatch {
-                expected,
-                found,
-                pos,
-            },
+            MemoryError::TypeMismatch { expected, found } =>
+                RuntimeError::TypeMismatch {
+                    expected,
+                    found,
+                    pos,
+                },
         }
     }
 }
@@ -61,43 +63,25 @@ impl RuntimeError {
             RuntimeError::VariableNotFound { identifier, .. } => {
                 format!("Variable '{}' not found", identifier.to_string())
             }
-            RuntimeError::TypeMismatch {
-                expected, found, ..
-            } => {
+            RuntimeError::TypeMismatch { expected, found, .. } => {
                 format!("Type mismatch: expected {}, found {}", expected, found)
             }
-            RuntimeError::UndefinedUnaryOperation {
-                operator, operand, ..
-            } => {
-                format!(
-                    "Undefined unary operation '{}' for operand {}",
-                    operator, operand
-                )
+            RuntimeError::UndefinedUnaryOperation { operator, operand, .. } => {
+                format!("Undefined unary operation '{}' for operand {}", operator, operand)
             }
-            RuntimeError::UndefinedBinaryOperation {
-                left,
-                operator,
-                right,
-                ..
-            } => {
-                format!(
-                    "Undefined binary operation '{} {} {}'",
-                    left, operator, right
-                )
+            RuntimeError::UndefinedBinaryOperation { left, operator, right, .. } => {
+                format!("Undefined binary operation '{} {} {}'", left, operator, right)
             }
             RuntimeError::DivisionByZero { .. } => "Division by zero".to_string(),
             RuntimeError::VariableAlreadyDeclared { identifier, .. } => {
-                format!(
-                    "Variable '{}' already declared in the current scope",
-                    identifier
-                )
+                format!("Variable '{}' already declared in the current scope", identifier)
             }
         }
     }
 
     pub fn context_message(&self, source_code: &str) -> String {
         let pos = match self {
-            RuntimeError::VariableNotFound { pos, .. }
+            | RuntimeError::VariableNotFound { pos, .. }
             | RuntimeError::TypeMismatch { pos, .. }
             | RuntimeError::UndefinedUnaryOperation { pos, .. }
             | RuntimeError::UndefinedBinaryOperation { pos, .. }
@@ -143,7 +127,7 @@ impl RuntimeError {
         result.push('\n');
 
         // Next 2 lines
-        for i in (line_num + 1)..=(line_num + 2) {
+        for i in line_num + 1..=line_num + 2 {
             if i < lines.len() {
                 result.push_str(lines[i]);
                 result.push('\n');

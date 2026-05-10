@@ -1,6 +1,6 @@
 use crate::{
-    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
-    domain::{common::identifier::Id, game::projections::game::GameProjection},
+    application::game::{ error::GameApplicationError, request_handlers::GameRequestHandler },
+    domain::{ common::identifier::Id, game::projections::game::GameProjection },
 };
 
 pub struct GameGetByIdResponse {
@@ -8,10 +8,7 @@ pub struct GameGetByIdResponse {
 }
 
 impl GameRequestHandler {
-    pub async fn get_by_id(
-        &self,
-        id: Id,
-    ) -> Result<GameGetByIdResponse, GameApplicationError> {
+    pub async fn get_by_id(&self, id: Id) -> Result<GameGetByIdResponse, GameApplicationError> {
         let game = self.game_repository.get_by_id(&id).await?;
 
         if let Some(game) = game {
@@ -30,7 +27,7 @@ mod tests {
 
     use super::*;
     use crate::application::common::parser::MockGameParserContract;
-use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Id;
@@ -48,20 +45,24 @@ use crate::application::game::contracts::MockGameRepositoryContract;
             .withf(move |_| true)
             .times(1)
             .returning(move |_| {
-                Ok(Some(Game::new_raw(
-                    game_id.clone(),
-                    "Test Game".to_string(),
-                    "Test Description".to_string(),
-                    "Test Source Code".to_string(),
-                    DateTime::now(),
-                    DateTime::now(),
-                )))
+                Ok(
+                    Some(
+                        Game::new_raw(
+                            game_id.clone(),
+                            "Test Game".to_string(),
+                            "Test Description".to_string(),
+                            "Test Source Code".to_string(),
+                            DateTime::now(),
+                            DateTime::now()
+                        )
+                    )
+                )
             });
 
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.get_by_id(game_id).await;
 
@@ -88,7 +89,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.get_by_id(game_id).await;
 

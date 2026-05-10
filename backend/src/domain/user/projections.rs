@@ -1,4 +1,4 @@
-use crate::domain::{common::identifier::Id, user::entities::User};
+use crate::domain::{ common::identifier::Id, user::entities::User };
 
 pub struct UserListProjection {
     pub id: Id,

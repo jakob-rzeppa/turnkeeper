@@ -4,7 +4,7 @@ use crate::{
     application::common::error::DatabaseError,
     domain::{
         common::identifier::Id,
-        game::{entities::game::Game, projections::game_metadata::GameMetadataProjection},
+        game::{ entities::game::Game, projections::game_metadata::GameMetadataProjection },
     },
 };
 

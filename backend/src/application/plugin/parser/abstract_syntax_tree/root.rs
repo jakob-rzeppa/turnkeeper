@@ -1,5 +1,8 @@
 use crate::application::plugin::parser::abstract_syntax_tree::{
-    Parsable, ParsingError, TokenStream, statement::Statement,
+    Parsable,
+    ParsingError,
+    TokenStream,
+    statement::Statement,
 };
 
 #[derive(Debug, Clone, PartialEq)]

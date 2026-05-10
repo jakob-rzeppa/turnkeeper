@@ -1,10 +1,7 @@
 use std::fmt::Display;
 
 use crate::{
-    application::common::parser::{
-        error::ParsingError,
-        lexer::lexeme::{Lexeme, LexemeVariant},
-    },
+    application::common::parser::{ error::ParsingError, lexer::lexeme::{ Lexeme, LexemeVariant } },
     domain::common::position::Position,
 };
 
@@ -46,33 +43,33 @@ pub enum TokenVariant {
     Identifier(String),
 
     // --- FROM Symbol and DoubleSymbol LEXEME ---
-    Colon,        // :
-    Equal,        // =
-    OpenParen,    // (
-    CloseParen,   // )
-    OpenBrace,    // {
-    CloseBrace,   // }
-    OpenBracket,  // [
+    Colon, // :
+    Equal, // =
+    OpenParen, // (
+    CloseParen, // )
+    OpenBrace, // {
+    CloseBrace, // }
+    OpenBracket, // [
     CloseBracket, // ]
-    Comma,        // ,
-    Dot,          // .
-    Semicolon,    // ;
-    Pipe,         // |
-    Plus,         // +
-    Minus,        // -
-    Star,         // *
-    Slash,        // /
-    Percent,      // %
-    Caret,        // ^
-    Exclamation,   // !
+    Comma, // ,
+    Dot, // .
+    Semicolon, // ;
+    Pipe, // |
+    Plus, // +
+    Minus, // -
+    Star, // *
+    Slash, // /
+    Percent, // %
+    Caret, // ^
+    Exclamation, // !
 
-    And,        // &&
-    Or,          // ||
-    EqualEqual,    // ==
-    NotEqual,      // !=
-    LessThan,      // <
+    And, // &&
+    Or, // ||
+    EqualEqual, // ==
+    NotEqual, // !=
+    LessThan, // <
     LessThanEqual, // <=
-    GreaterThan,   // >
+    GreaterThan, // >
     GreaterThanEqual, // >=
 
     // --- FROM Number and DecimalNumber LEXEME ---
@@ -88,90 +85,97 @@ impl TryFrom<Lexeme> for Token {
 
     fn try_from(lexeme: Lexeme) -> Result<Self, ParsingError> {
         let variant = match lexeme.lexeme {
-            LexemeVariant::Text(text) => match text.as_str() {
-                "hidden" => TokenVariant::Hidden,
-                "private" => TokenVariant::Private,
-                "protected" => TokenVariant::Protected,
-                "public" => TokenVariant::Public,
-                "stat" => TokenVariant::Stat,
-                "pstat" => TokenVariant::Pstat,
-                "action" => TokenVariant::Action,
-                "after" => TokenVariant::After,
-                "before" => TokenVariant::Before,
-                "TurnAdvance" => TokenVariant::TurnAdvance,
-                "RoundAdvance" => TokenVariant::RoundAdvance,
-                "int" => TokenVariant::IntType,
-                "float" => TokenVariant::FloatType,
-                "string" => TokenVariant::StringType,
-                "bool" => TokenVariant::BoolType,
-                "true" => TokenVariant::BoolLiteral(true),
-                "false" => TokenVariant::BoolLiteral(false),
-                "if" => TokenVariant::If,
-                "else" => TokenVariant::Else,
-                "while" => TokenVariant::While,
-                "let" => TokenVariant::Let,
-                _ => TokenVariant::Identifier(text),
-            },
-            LexemeVariant::Symbol(symbol) => match symbol.as_str() {
-                ":" => TokenVariant::Colon,
-                "=" => TokenVariant::Equal,
-                "(" => TokenVariant::OpenParen,
-                ")" => TokenVariant::CloseParen,
-                "{" => TokenVariant::OpenBrace,
-                "}" => TokenVariant::CloseBrace,
-                "[" => TokenVariant::OpenBracket,
-                "]" => TokenVariant::CloseBracket,
-                "," => TokenVariant::Comma,
-                "." => TokenVariant::Dot,
-                ";" => TokenVariant::Semicolon,
-                "|" => TokenVariant::Pipe,
-                "+" => TokenVariant::Plus,
-                "-" => TokenVariant::Minus,
-                "*" => TokenVariant::Star,
-                "/" => TokenVariant::Slash,
-                "%" => TokenVariant::Percent,
-                "^" => TokenVariant::Caret,
-                "!" => TokenVariant::Exclamation,
-                "<" => TokenVariant::LessThan,
-                ">" => TokenVariant::GreaterThan,
-                _ => {
-                    return Err(ParsingError::InvalidToken {
-                        pos: lexeme.pos,
-                        message: format!("Unexpected symbol lexeme {}", symbol),
-                    });
+            LexemeVariant::Text(text) =>
+                match text.as_str() {
+                    "hidden" => TokenVariant::Hidden,
+                    "private" => TokenVariant::Private,
+                    "protected" => TokenVariant::Protected,
+                    "public" => TokenVariant::Public,
+                    "stat" => TokenVariant::Stat,
+                    "pstat" => TokenVariant::Pstat,
+                    "action" => TokenVariant::Action,
+                    "after" => TokenVariant::After,
+                    "before" => TokenVariant::Before,
+                    "TurnAdvance" => TokenVariant::TurnAdvance,
+                    "RoundAdvance" => TokenVariant::RoundAdvance,
+                    "int" => TokenVariant::IntType,
+                    "float" => TokenVariant::FloatType,
+                    "string" => TokenVariant::StringType,
+                    "bool" => TokenVariant::BoolType,
+                    "true" => TokenVariant::BoolLiteral(true),
+                    "false" => TokenVariant::BoolLiteral(false),
+                    "if" => TokenVariant::If,
+                    "else" => TokenVariant::Else,
+                    "while" => TokenVariant::While,
+                    "let" => TokenVariant::Let,
+                    _ => TokenVariant::Identifier(text),
                 }
-            },
-            LexemeVariant::DoubleSymbol(double_symbol) => match double_symbol.as_str() {
-                "&&" => TokenVariant::And,  
-                "||" => TokenVariant::Or,
-                "==" => TokenVariant::EqualEqual,
-                "!=" => TokenVariant::NotEqual,
-                "<" => TokenVariant::LessThan,
-                "<=" => TokenVariant::LessThanEqual,
-                ">" => TokenVariant::GreaterThan,
-                ">=" => TokenVariant::GreaterThanEqual,
-                _ => {
-                    return Err(ParsingError::InvalidToken {
-                        pos: lexeme.pos,
-                        message: format!("Unexpected double symbol lexeme {}", double_symbol),
-                    });
-                }
-            }
-            LexemeVariant::Number(num) => {
-                TokenVariant::IntLiteral(num.parse::<i64>().map_err(|_| {
-                    ParsingError::InvalidToken {
-                        pos: lexeme.pos.clone(),
-                        message: format!("Invalid integer literal {}", num),
+            LexemeVariant::Symbol(symbol) =>
+                match symbol.as_str() {
+                    ":" => TokenVariant::Colon,
+                    "=" => TokenVariant::Equal,
+                    "(" => TokenVariant::OpenParen,
+                    ")" => TokenVariant::CloseParen,
+                    "{" => TokenVariant::OpenBrace,
+                    "}" => TokenVariant::CloseBrace,
+                    "[" => TokenVariant::OpenBracket,
+                    "]" => TokenVariant::CloseBracket,
+                    "," => TokenVariant::Comma,
+                    "." => TokenVariant::Dot,
+                    ";" => TokenVariant::Semicolon,
+                    "|" => TokenVariant::Pipe,
+                    "+" => TokenVariant::Plus,
+                    "-" => TokenVariant::Minus,
+                    "*" => TokenVariant::Star,
+                    "/" => TokenVariant::Slash,
+                    "%" => TokenVariant::Percent,
+                    "^" => TokenVariant::Caret,
+                    "!" => TokenVariant::Exclamation,
+                    "<" => TokenVariant::LessThan,
+                    ">" => TokenVariant::GreaterThan,
+                    _ => {
+                        return Err(ParsingError::InvalidToken {
+                            pos: lexeme.pos,
+                            message: format!("Unexpected symbol lexeme {}", symbol),
+                        });
                     }
-                })?)
+                }
+            LexemeVariant::DoubleSymbol(double_symbol) =>
+                match double_symbol.as_str() {
+                    "&&" => TokenVariant::And,
+                    "||" => TokenVariant::Or,
+                    "==" => TokenVariant::EqualEqual,
+                    "!=" => TokenVariant::NotEqual,
+                    "<" => TokenVariant::LessThan,
+                    "<=" => TokenVariant::LessThanEqual,
+                    ">" => TokenVariant::GreaterThan,
+                    ">=" => TokenVariant::GreaterThanEqual,
+                    _ => {
+                        return Err(ParsingError::InvalidToken {
+                            pos: lexeme.pos,
+                            message: format!("Unexpected double symbol lexeme {}", double_symbol),
+                        });
+                    }
+                }
+            LexemeVariant::Number(num) => {
+                TokenVariant::IntLiteral(
+                    num.parse::<i64>().map_err(|_| {
+                        ParsingError::InvalidToken {
+                            pos: lexeme.pos.clone(),
+                            message: format!("Invalid integer literal {}", num),
+                        }
+                    })?
+                )
             }
             LexemeVariant::DecimalNumber(num) => {
-                TokenVariant::FloatLiteral(num.parse::<f64>().map_err(|_| {
-                    ParsingError::InvalidToken {
-                        pos: lexeme.pos.clone(),
-                        message: format!("Invalid float literal {}", num),
-                    }
-                })?)
+                TokenVariant::FloatLiteral(
+                    num.parse::<f64>().map_err(|_| {
+                        ParsingError::InvalidToken {
+                            pos: lexeme.pos.clone(),
+                            message: format!("Invalid float literal {}", num),
+                        }
+                    })?
+                )
             }
             LexemeVariant::Quote(quote) => TokenVariant::StringLiteral(quote),
         };

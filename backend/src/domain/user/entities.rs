@@ -3,7 +3,7 @@
 //! Defines the User aggregate root.
 
 use crate::domain::common::identifier::Id;
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 use crate::domain::user::value_objects::user_name::UserName;
 use crate::domain::user::value_objects::user_password::UserPassword;
 
@@ -43,10 +43,12 @@ impl User {
     /// - Name is empty or contains invalid characters
     /// - Password doesn't meet requirements
     pub fn try_new(id: Id, name: String, password: String) -> Result<Self, UserError> {
-        let name = UserName::try_new(name)
-            .map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
-        let password = UserPassword::try_new(password)
-            .map_err(|e| UserError::with_source(UserErrorKind::InvalidUser, Box::new(e)))?;
+        let name = UserName::try_new(name).map_err(|e|
+            UserError::with_source(UserErrorKind::InvalidUser, Box::new(e))
+        )?;
+        let password = UserPassword::try_new(password).map_err(|e|
+            UserError::with_source(UserErrorKind::InvalidUser, Box::new(e))
+        )?;
 
         Ok(Self { id, name, password })
     }
@@ -82,8 +84,9 @@ impl User {
     /// - The password format is invalid
     /// - The password doesn't match
     pub fn check_password(&self, password: String) -> Result<(), UserError> {
-        let password = UserPassword::try_new(password)
-            .map_err(|e| UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e)))?;
+        let password = UserPassword::try_new(password).map_err(|e|
+            UserError::with_source(UserErrorKind::InvalidCredentials, Box::new(e))
+        )?;
 
         if password != self.password {
             return Err(UserError::new(UserErrorKind::InvalidCredentials));
@@ -103,9 +106,8 @@ mod tests {
             let user = User::try_new(
                 Id::new(),
                 "name".to_string(),
-                "password".to_string(),
-            )
-            .unwrap();
+                "password".to_string()
+            ).unwrap();
 
             let res = user.check_password("password".to_string());
 
@@ -117,9 +119,8 @@ mod tests {
             let user = User::try_new(
                 Id::new(),
                 "name".to_string(),
-                "password".to_string(),
-            )
-            .unwrap();
+                "password".to_string()
+            ).unwrap();
 
             let res = user.check_password("".to_string());
 
@@ -133,9 +134,8 @@ mod tests {
             let user = User::try_new(
                 Id::new(),
                 "name".to_string(),
-                "password".to_string(),
-            )
-            .unwrap();
+                "password".to_string()
+            ).unwrap();
 
             let res = user.check_password("invalid".to_string());
 

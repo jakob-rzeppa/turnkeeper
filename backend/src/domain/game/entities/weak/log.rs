@@ -1,4 +1,4 @@
-use crate::domain::common::{date_time::DateTime, identifier::Id};
+use crate::domain::common::{ date_time::DateTime, identifier::Id };
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
 pub struct Log {
@@ -47,12 +47,10 @@ impl Log {
     }
 
     pub fn log_system(&mut self, message: String) {
-        self.entries
-            .push((LogEntry::System { message }, DateTime::now()));
+        self.entries.push((LogEntry::System { message }, DateTime::now()));
     }
 
     pub fn log_error(&mut self, message: String) {
-        self.entries
-            .push((LogEntry::Error { message }, DateTime::now()));
+        self.entries.push((LogEntry::Error { message }, DateTime::now()));
     }
 }

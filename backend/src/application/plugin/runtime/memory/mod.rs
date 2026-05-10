@@ -1,7 +1,9 @@
 use std::collections::HashMap;
 
 use crate::application::plugin::runtime::memory::{
-    error::MemoryError, identifier::Identifier, values::VariableValue,
+    error::MemoryError,
+    identifier::Identifier,
+    values::VariableValue,
 };
 
 pub mod error;
@@ -35,15 +37,13 @@ impl MemoryManager {
     }
 
     fn current_scope(&mut self) -> &mut HashMap<Identifier, VariableValue> {
-        self.variables
-            .last_mut()
-            .expect("there should always be a active scope")
+        self.variables.last_mut().expect("there should always be a active scope")
     }
 
     pub fn declare_variable(
         &mut self,
         name: Identifier,
-        value: VariableValue,
+        value: VariableValue
     ) -> Result<(), MemoryError> {
         // Check if the variable already exists in the current scope
         // If the variable already exists in a higher scope, we allow it to be shadowed, but if it exists in the current scope, it's an error
@@ -58,7 +58,7 @@ impl MemoryManager {
     pub fn assign_variable(
         &mut self,
         name: Identifier,
-        value: VariableValue,
+        value: VariableValue
     ) -> Result<(), MemoryError> {
         // Look for the variable first in the current scope and then in outer scopes
         for scope in self.variables.iter_mut().rev() {

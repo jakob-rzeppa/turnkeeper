@@ -1,9 +1,22 @@
-use crate::{application::common::parser::{error::ParsingError, lexer::{token::{Token, TokenVariant}, token_stream::TokenStream}, macros::{get_pos, is_token}, parsable::Parsable}, domain::{common::position::{Position, Positioned}, game::{abstract_syntax_tree::expression::atom::ExpressionAtom, value_objects::data::Value}}};
+use crate::{
+    application::common::parser::{
+        error::ParsingError,
+        lexer::{ token::{ Token, TokenVariant }, token_stream::TokenStream },
+        macros::{ get_pos, is_token },
+        parsable::Parsable,
+    },
+    domain::{
+        common::position::{ Position, Positioned },
+        game::{
+            abstract_syntax_tree::expression::atom::ExpressionAtom,
+            value_objects::data::Value,
+        },
+    },
+};
 
 impl Parsable for ExpressionAtom {
     fn is_next(ts: &TokenStream) -> bool {
-        Value::is_next(ts)
-            || is_token!(ts, TokenVariant::Identifier(_))
+        Value::is_next(ts) || is_token!(ts, TokenVariant::Identifier(_))
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {
@@ -13,8 +26,9 @@ impl Parsable for ExpressionAtom {
             Ok(ExpressionAtom::Literal(Value::parse(ts, source_code)?, pos))
         } else if is_token!(ts, TokenVariant::Identifier(_)) {
             match ts.next() {
-                Some(Token { variant: TokenVariant::Identifier(name), .. }) => Ok(ExpressionAtom::Variable(name.clone(), pos)),
-                _ => unreachable!("Token wasn't a Identifier after checking it was one.")
+                Some(Token { variant: TokenVariant::Identifier(name), .. }) =>
+                    Ok(ExpressionAtom::Variable(name.clone(), pos)),
+                _ => unreachable!("Token wasn't a Identifier after checking it was one."),
             }
         } else {
             Err(ParsingError::SyntaxError {
@@ -64,7 +78,10 @@ mod tests {
 
         assert!(ExpressionAtom::is_next(&ts));
         let atom = ExpressionAtom::parse(&mut ts, &source_code).unwrap();
-        assert_eq!(atom, ExpressionAtom::Literal(Value::String("hello".to_string()), Position::new(0, 0)));
+        assert_eq!(
+            atom,
+            ExpressionAtom::Literal(Value::String("hello".to_string()), Position::new(0, 0))
+        );
     }
 
     #[test]

@@ -1,6 +1,6 @@
 use crate::domain::{
     common::position::Position,
-    game::{projections::page::PageMetadataProjection, value_objects::visibility::PageVisibility},
+    game::{ projections::page::PageMetadataProjection, value_objects::visibility::PageVisibility },
 };
 
 #[derive(Clone, Debug, PartialEq, serde::Serialize, serde::Deserialize)]
@@ -18,7 +18,7 @@ impl Page {
         name: String,
         visibility: PageVisibility,
         source_code: String,
-        pos: Position,
+        pos: Position
     ) -> Self {
         Self {
             name,
@@ -32,7 +32,7 @@ impl Page {
         name: String,
         visibility: PageVisibility,
         source_code: String,
-        pos: Position,
+        pos: Position
     ) -> Self {
         Self {
             name,

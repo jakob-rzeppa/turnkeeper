@@ -1,5 +1,5 @@
 use crate::{
-    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
+    application::game::{ error::GameApplicationError, request_handlers::GameRequestHandler },
     domain::common::identifier::Id,
 };
 
@@ -9,11 +9,7 @@ pub struct DeleteGameRequest {
 
 impl GameRequestHandler {
     pub async fn delete(&self, request: DeleteGameRequest) -> Result<(), GameApplicationError> {
-        if self
-            .game_instance_repository
-            .game_has_instances(request.id.clone())
-            .await?
-        {
+        if self.game_instance_repository.game_has_instances(request.id.clone()).await? {
             return Err(GameApplicationError::GameHasInstances);
         }
 
@@ -29,7 +25,7 @@ mod tests {
 
     use super::*;
     use crate::application::common::parser::MockGameParserContract;
-use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::identifier::Id;
 
@@ -56,7 +52,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let request = DeleteGameRequest { id: game_id };
         let result = handler.delete(request).await;
@@ -83,7 +79,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameRequestHandler::new(
             Arc::new(game_repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let request = DeleteGameRequest { id: game_id };
         let result = handler.delete(request).await;

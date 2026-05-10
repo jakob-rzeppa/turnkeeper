@@ -1,6 +1,6 @@
-use serde::{Deserialize, Serialize};
+use serde::{ Deserialize, Serialize };
 
-use crate::domain::{common::identifier::Id, game::value_objects::data::Value};
+use crate::domain::{ common::identifier::Id, game::value_objects::data::Value };
 
 #[derive(Debug, Clone, Serialize, Deserialize)]
 pub struct StatValueProjection {
@@ -13,30 +13,34 @@ pub struct StatValueProjection {
 impl From<Value> for StatValueProjection {
     fn from(value: Value) -> Self {
         match value {
-            Value::Int(v) => StatValueProjection {
-                int_value: Some(v),
-                float_value: None,
-                str_value: None,
-                bool_value: None,
-            },
-            Value::Float(v) => StatValueProjection {
-                int_value: None,
-                float_value: Some(v),
-                str_value: None,
-                bool_value: None,
-            },
-            Value::String(v) => StatValueProjection {
-                int_value: None,
-                float_value: None,
-                str_value: Some(v),
-                bool_value: None,
-            },
-            Value::Bool(v) => StatValueProjection {
-                int_value: None,
-                float_value: None,
-                str_value: None,
-                bool_value: Some(v),
-            },
+            Value::Int(v) =>
+                StatValueProjection {
+                    int_value: Some(v),
+                    float_value: None,
+                    str_value: None,
+                    bool_value: None,
+                },
+            Value::Float(v) =>
+                StatValueProjection {
+                    int_value: None,
+                    float_value: Some(v),
+                    str_value: None,
+                    bool_value: None,
+                },
+            Value::String(v) =>
+                StatValueProjection {
+                    int_value: None,
+                    float_value: None,
+                    str_value: Some(v),
+                    bool_value: None,
+                },
+            Value::Bool(v) =>
+                StatValueProjection {
+                    int_value: None,
+                    float_value: None,
+                    str_value: None,
+                    bool_value: Some(v),
+                },
         }
     }
 }

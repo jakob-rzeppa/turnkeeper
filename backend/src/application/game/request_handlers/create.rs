@@ -10,10 +10,7 @@ pub struct CreateGameRequest {
 
 impl GameRequestHandler {
     /// Creates a game with a generated UUID and returns the new ID.
-    pub async fn create(
-        &self,
-        request: CreateGameRequest,
-    ) -> Result<Id, GameApplicationError> {
+    pub async fn create(&self, request: CreateGameRequest) -> Result<Id, GameApplicationError> {
         let game = Game::new(request.name, request.description);
 
         self.game_repository.save(&game).await?;
@@ -28,7 +25,9 @@ mod tests {
 
     use super::*;
     use crate::application::{
-        common::parser::MockGameParserContract, game::contracts::MockGameRepositoryContract, game_instance::contracts::MockGameInstanceRepositoryContract
+        common::parser::MockGameParserContract,
+        game::contracts::MockGameRepositoryContract,
+        game_instance::contracts::MockGameInstanceRepositoryContract,
     };
 
     #[tokio::test]
@@ -43,12 +42,15 @@ mod tests {
         };
 
         // Save should be called once
-        repository.expect_save().times(1).returning(|_| Ok(()));
+        repository
+            .expect_save()
+            .times(1)
+            .returning(|_| Ok(()));
 
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.create(request).await;
 

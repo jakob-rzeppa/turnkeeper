@@ -1,6 +1,6 @@
-use std::{error::Error, fmt::Display};
+use std::{ error::Error, fmt::Display };
 
-use crate::application::plugin::{common::Position, lexer::token::TokenVariant};
+use crate::application::plugin::{ common::Position, lexer::token::TokenVariant };
 
 #[derive(Debug)]
 pub enum ParsingError {
@@ -30,13 +30,8 @@ impl ParsingError {
     pub fn message(&self) -> String {
         match self {
             ParsingError::SyntaxError { message, .. } => format!("Syntax error: {}", message),
-            ParsingError::UnexpectedToken {
-                expected, found, ..
-            } => {
-                format!(
-                    "Unexpected token: Expected {}, but found {}",
-                    expected, found
-                )
+            ParsingError::UnexpectedToken { expected, found, .. } => {
+                format!("Unexpected token: Expected {}, but found {}", expected, found)
             }
             ParsingError::UnexpectedEOF { expected } => {
                 format!("Unexpected end of file. Expected {}", expected)
@@ -85,7 +80,7 @@ impl ParsingError {
                 result.push('\n');
 
                 // Next 2 lines
-                for i in (line_num + 1)..=(line_num + 2) {
+                for i in line_num + 1..=line_num + 2 {
                     if i < lines.len() {
                         result.push_str(lines[i]);
                         result.push('\n');

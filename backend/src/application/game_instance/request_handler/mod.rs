@@ -1,7 +1,9 @@
 use std::sync::Arc;
 
 use crate::application::{
-    common::parser::GameParserContract, game::contracts::GameRepositoryContract, game_instance::contracts::GameInstanceRepositoryContract
+    common::parser::GameParserContract,
+    game::contracts::GameRepositoryContract,
+    game_instance::contracts::GameInstanceRepositoryContract,
 };
 
 pub mod create;
@@ -18,7 +20,7 @@ impl GameInstanceRequestHandler {
     pub fn new(
         game_instance_repository: Arc<dyn GameInstanceRepositoryContract>,
         game_repository: Arc<dyn GameRepositoryContract>,
-        game_root_parser: Arc<dyn GameParserContract>,
+        game_root_parser: Arc<dyn GameParserContract>
     ) -> Self {
         Self {
             game_instance_repository,

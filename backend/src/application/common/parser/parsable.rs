@@ -1,4 +1,4 @@
-use crate::application::common::parser::{error::ParsingError, lexer::token_stream::TokenStream};
+use crate::application::common::parser::{ error::ParsingError, lexer::token_stream::TokenStream };
 
 pub trait Parsable: Sized {
     fn is_next(ts: &TokenStream) -> bool;

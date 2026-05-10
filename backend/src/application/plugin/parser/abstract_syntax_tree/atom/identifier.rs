@@ -1,6 +1,6 @@
 use crate::application::plugin::{
     lexer::token::TokenVariant,
-    parser::abstract_syntax_tree::{Parsable, ParsingError, TokenStream},
+    parser::abstract_syntax_tree::{ Parsable, ParsingError, TokenStream },
 };
 
 #[derive(Debug, Clone, PartialEq)]
@@ -31,11 +31,12 @@ impl Parsable for Identifier {
 
         match &token.variant {
             TokenVariant::Identifier(name) => Ok(Identifier { name: name.clone() }),
-            _ => Err(ParsingError::UnexpectedToken {
-                expected: "identifier".to_string(),
-                found: token.variant.clone(),
-                pos: token.pos,
-            }),
+            _ =>
+                Err(ParsingError::UnexpectedToken {
+                    expected: "identifier".to_string(),
+                    found: token.variant.clone(),
+                    pos: token.pos,
+                }),
         }
     }
 }

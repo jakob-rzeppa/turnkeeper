@@ -1,5 +1,5 @@
 use crate::{
-    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
+    application::game::{ error::GameApplicationError, request_handlers::GameRequestHandler },
     domain::game::projections::game_metadata::GameMetadataProjection,
 };
 
@@ -21,7 +21,7 @@ mod tests {
 
     use super::*;
     use crate::application::common::parser::MockGameParserContract;
-use crate::application::game::contracts::MockGameRepositoryContract;
+    use crate::application::game::contracts::MockGameRepositoryContract;
     use crate::application::game_instance::contracts::MockGameInstanceRepositoryContract;
     use crate::domain::common::date_time::DateTime;
     use crate::domain::common::identifier::Id;
@@ -46,19 +46,22 @@ use crate::application::game::contracts::MockGameRepositoryContract;
                 description: "Description 2".to_string(),
                 created_at: DateTime::parse_str("2024-01-02T00:00:00Z").unwrap(),
                 updated_at: DateTime::parse_str("2024-01-02T00:00:00Z").unwrap(),
-            },
+            }
         ];
 
         let games_metadata_clone = games_metadata.clone();
-        repository.expect_list_all().times(1).returning(move || {
-            let cloned = games_metadata_clone.clone();
-            Ok(cloned)
-        });
+        repository
+            .expect_list_all()
+            .times(1)
+            .returning(move || {
+                let cloned = games_metadata_clone.clone();
+                Ok(cloned)
+            });
 
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.list_all().await;
 
@@ -83,7 +86,7 @@ use crate::application::game::contracts::MockGameRepositoryContract;
         let handler = GameRequestHandler::new(
             Arc::new(repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
         let result = handler.list_all().await;
 

@@ -64,7 +64,8 @@ macro_rules! expect_token {
 ///
 /// Usage: `let name = expect_parse!(tokens, index, Identifier, "variable name")`
 macro_rules! expect_parse {
-    ($tokenstream:expr, $expected_parse:ty, $expected_msg:expr) => {{
+    ($tokenstream:expr, $expected_parse:ty, $expected_msg:expr) => {
+        {
         <$expected_parse>::parse($tokenstream).map_err(|err| match err {
             ParsingError::UnexpectedToken { found, pos, .. } => ParsingError::UnexpectedToken {
                 expected: $expected_msg.to_string(),
@@ -78,7 +79,8 @@ macro_rules! expect_parse {
                 ParsingError::SyntaxError { message, pos }
             }
         })?
-    }};
+        }
+    };
 }
 
 /// Macro to get the position of the current token for error reporting

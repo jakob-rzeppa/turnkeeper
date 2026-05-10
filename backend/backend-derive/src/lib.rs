@@ -1,8 +1,17 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{
-    DeriveInput, ExprMethodCall, FnArg, ImplItemFn, PatType, Token, parse_macro_input, parse_quote,
-    punctuated::Punctuated, visit_mut::VisitMut, ItemImpl,
+    DeriveInput,
+    ExprMethodCall,
+    FnArg,
+    ImplItemFn,
+    PatType,
+    Token,
+    parse_macro_input,
+    parse_quote,
+    punctuated::Punctuated,
+    visit_mut::VisitMut,
+    ItemImpl,
 };
 
 /// Derive macro to automatically implement `axum::extract::FromRequest`
@@ -57,7 +66,8 @@ pub fn derive_json_request(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
-    let expanded = quote! {
+    let expanded =
+        quote! {
         impl<S> axum::extract::FromRequest<S> for #name
         where
             S: Send + Sync,
@@ -114,7 +124,8 @@ pub fn derive_json_response(input: TokenStream) -> TokenStream {
     let input = parse_macro_input!(input as DeriveInput);
     let name = &input.ident;
 
-    let expanded = quote! {
+    let expanded =
+        quote! {
         impl axum::response::IntoResponse for #name {
             fn into_response(self) -> axum::response::Response {
                 (axum::http::StatusCode::OK, axum::Json(self)).into_response()
@@ -143,27 +154,27 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let method = parse_macro_input!(input as ImplItemFn);
 
     if method.sig.ident != "execute" {
-        return syn::Error::new_spanned(
-            &method.sig.ident,
-            "#[execute_debug] can only be used on a method named execute",
-        )
-        .to_compile_error()
-        .into();
+        return syn::Error
+            ::new_spanned(
+                &method.sig.ident,
+                "#[execute_debug] can only be used on a method named execute"
+            )
+            .to_compile_error()
+            .into();
     }
 
     if method.sig.asyncness.is_none() {
-        return syn::Error::new_spanned(
-            &method.sig.ident,
-            "#[execute_debug] can only be used on async methods",
-        )
-        .to_compile_error()
-        .into();
+        return syn::Error
+            ::new_spanned(&method.sig.ident, "#[execute_debug] can only be used on async methods")
+            .to_compile_error()
+            .into();
     }
 
     let mut debug_method = method.clone();
     debug_method.sig.ident = syn::Ident::new("execute_debug", debug_method.sig.ident.span());
 
-    let debug_arg: FnArg = parse_quote!(
+    let debug_arg: FnArg =
+        parse_quote!(
         debug_env: &mut crate::application::plugin::runtime::debug::DebugEnvironment
     );
 
@@ -172,9 +183,10 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
     for arg in &method.sig.inputs {
         new_inputs.push(arg.clone());
 
-        if let FnArg::Typed(PatType { pat, .. }) = arg
-            && let syn::Pat::Ident(pat_ident) = pat.as_ref()
-            && pat_ident.ident == "env"
+        if
+            let FnArg::Typed(PatType { pat, .. }) = arg &&
+            let syn::Pat::Ident(pat_ident) = pat.as_ref() &&
+            pat_ident.ident == "env"
         {
             new_inputs.push(debug_arg.clone());
             inserted = true;
@@ -182,12 +194,13 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
     }
 
     if !inserted {
-        return syn::Error::new_spanned(
-            &method.sig.ident,
-            "#[execute_debug] expected an `env` argument to place `debug_env` next to it",
-        )
-        .to_compile_error()
-        .into();
+        return syn::Error
+            ::new_spanned(
+                &method.sig.ident,
+                "#[execute_debug] expected an `env` argument to place `debug_env` next to it"
+            )
+            .to_compile_error()
+            .into();
     }
 
     debug_method.sig.inputs = new_inputs;
@@ -195,7 +208,8 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut rewritten_block = method.block.clone();
     ExecuteToDebugRewriter.visit_block_mut(&mut rewritten_block);
 
-    debug_method.block = parse_quote!({
+    debug_method.block =
+        parse_quote!({
         let stepping_over = debug_env
             .wait(
                 crate::application::plugin::parser::abstract_syntax_tree::Positioned::position(self)
@@ -252,11 +266,12 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
 #[proc_macro_attribute]
 pub fn serialize_use_display(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(input as ItemImpl);
-    
+
     let target_type = &impl_block.self_ty;
     let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
 
-    let serialize_impl = quote! {
+    let serialize_impl =
+        quote! {
         impl #impl_generics serde::Serialize for #target_type #ty_generics #where_clause {
             fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
             where
@@ -309,11 +324,12 @@ pub fn serialize_use_display(_attr: TokenStream, input: TokenStream) -> TokenStr
 #[proc_macro_attribute]
 pub fn deserialize_use_from_str(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let impl_block = parse_macro_input!(input as ItemImpl);
-    
+
     let target_type = &impl_block.self_ty;
     let (impl_generics, ty_generics, where_clause) = impl_block.generics.split_for_impl();
 
-    let deserialize_impl = quote! {
+    let deserialize_impl =
+        quote! {
         impl #impl_generics<'de> serde::Deserialize<'de> for #target_type #ty_generics #where_clause {
             fn deserialize<D>(deserializer: D) -> Result<Self, D::Error>
             where

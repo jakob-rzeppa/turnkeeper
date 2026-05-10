@@ -1,6 +1,6 @@
 use crate::application::plugin::{
     parser::old_abstract_syntax_tree::expression::FunctionCall,
-    runtime::{RuntimeEnvironment, memory::VariableValue},
+    runtime::{ RuntimeEnvironment, memory::VariableValue },
 };
 
 impl RuntimeEnvironment {
@@ -10,14 +10,13 @@ impl RuntimeEnvironment {
 
     pub fn evaluate_function(
         &mut self,
-        function_call: &FunctionCall,
+        function_call: &FunctionCall
     ) -> Result<VariableValue, String> {
         let function_identifier = function_call.identifier.to_string();
 
         match function_identifier.as_str() {
             "print" => {
-                let arguments = function_call
-                    .arguments
+                let arguments = function_call.arguments
                     .iter()
                     .map(|arg| self.evaluate_expression(arg))
                     .collect::<Result<Vec<VariableValue>, String>>()?;
@@ -34,7 +33,7 @@ mod tests {
     use crate::application::plugin::{
         common::Position,
         parser::old_abstract_syntax_tree::{
-            expression::{Expr, ExprAtom, Literal},
+            expression::{ Expr, ExprAtom, Literal },
             identifier::Identifier,
         },
     };
@@ -46,9 +45,9 @@ mod tests {
         let mut runtime_env = RuntimeEnvironment::new();
         let function_call = FunctionCall {
             identifier: Identifier::new("print".to_string(), Position::new(0, 0)),
-            arguments: vec![Expr::Atom(ExprAtom::Literal(Literal::String(
-                "Hello, World!".to_string(),
-            )))],
+            arguments: vec![
+                Expr::Atom(ExprAtom::Literal(Literal::String("Hello, World!".to_string())))
+            ],
             catch_block: None,
         };
         let result = runtime_env.evaluate_function(&function_call);

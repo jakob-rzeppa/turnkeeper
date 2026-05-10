@@ -27,13 +27,14 @@ async fn main() {
     dotenv::dotenv().expect("Failed to load .env file");
     println!("[STARTUP] .env file loaded");
 
-    let database_url =
-        std::env::var("DATABASE_URL").unwrap_or("sqlite://var/db/turnkeeper.db".to_string());
+    let database_url = std::env
+        ::var("DATABASE_URL")
+        .unwrap_or("sqlite://var/db/turnkeeper.db".to_string());
 
     println!("[STARTUP] Connecting to database: {}", database_url);
-    let db = create_pool(&database_url)
-        .await
-        .expect(format!("Failed to create database pool: {}", database_url).as_str());
+    let db = create_pool(&database_url).await.expect(
+        format!("Failed to create database pool: {}", database_url).as_str()
+    );
     println!("[STARTUP] Database connected");
 
     println!("[STARTUP] Creating AppState...");
@@ -48,15 +49,13 @@ async fn main() {
     println!("[STARTUP] Binding TCP listener...");
     // Specify the address to bind to (0.0.0.0 to listen on all interfaces)
     let addr = SocketAddr::from(([0, 0, 0, 0], 8080));
-    let listener = TcpListener::bind(addr)
-        .await
-        .expect(format!("Failed to create TCP listener: {}", addr).as_str());
+    let listener = TcpListener::bind(addr).await.expect(
+        format!("Failed to create TCP listener: {}", addr).as_str()
+    );
     println!("[STARTUP] TCP listener bound on {}", addr);
 
     // Start the Axum server
     println!("[STARTUP] Starting server...");
-    axum::serve(listener, app)
-        .await
-        .expect("Failed to launch server");
+    axum::serve(listener, app).await.expect("Failed to launch server");
     println!("[STARTUP] Server running at {}", addr);
 }

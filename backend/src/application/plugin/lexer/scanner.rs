@@ -24,15 +24,49 @@ pub enum LexemeType {
 
 fn is_symbol_char(char: char) -> bool {
     let symbols = [
-        '=', '+', '-', '*', '/', '%', '^', '!', '&', '|', '<', '>', ';', '(', ')', '{', '}', '[',
-        ']', ',', '.', ':', '?',
+        '=',
+        '+',
+        '-',
+        '*',
+        '/',
+        '%',
+        '^',
+        '!',
+        '&',
+        '|',
+        '<',
+        '>',
+        ';',
+        '(',
+        ')',
+        '{',
+        '}',
+        '[',
+        ']',
+        ',',
+        '.',
+        ':',
+        '?',
     ];
     symbols.contains(&char)
 }
 
 fn is_double_symbol(first: &str, second: char) -> bool {
     let double_symbols = [
-        "==", "!=", "<=", ">=", "&&", "||", "+=", "-=", "*=", "/=", "%=", "^=", "=>", "->",
+        "==",
+        "!=",
+        "<=",
+        ">=",
+        "&&",
+        "||",
+        "+=",
+        "-=",
+        "*=",
+        "/=",
+        "%=",
+        "^=",
+        "=>",
+        "->",
     ];
     let candidate = format!("{}{}", first, second);
     double_symbols.contains(&candidate.as_str())
@@ -244,10 +278,12 @@ impl Scanner {
             _ => None,
         };
 
-        Some(Lexeme::new(
-            lexeme_type?,
-            Position::new(self.lexeme_start_line, self.lexeme_start_column),
-        ))
+        Some(
+            Lexeme::new(
+                lexeme_type?,
+                Position::new(self.lexeme_start_line, self.lexeme_start_column)
+            )
+        )
     }
 }
 
@@ -281,10 +317,7 @@ mod tests {
         let result = scan_source_code("hello");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("hello".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("hello".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -295,7 +328,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Text("hello".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Text("world".to_string()), Position::new(0, 6)),
+                Lexeme::new(LexemeType::Text("world".to_string()), Position::new(0, 6))
             ]
         );
     }
@@ -305,10 +338,7 @@ mod tests {
         let result = scan_source_code("hello_world");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("hello_world".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("hello_world".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -317,10 +347,7 @@ mod tests {
         let result = scan_source_code("hello-world");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("hello-world".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("hello-world".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -329,10 +356,7 @@ mod tests {
         let result = scan_source_code("test123");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("test123".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("test123".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -342,10 +366,7 @@ mod tests {
         let result = scan_source_code("5");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Number("5".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Number("5".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -354,10 +375,7 @@ mod tests {
         let result = scan_source_code("12345");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Number("12345".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Number("12345".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -366,10 +384,7 @@ mod tests {
         let result = scan_source_code("123.45");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::NumberWithDot("123.45".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::NumberWithDot("123.45".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -381,7 +396,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Number("1".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 2)),
-                Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 4)),
+                Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 4))
             ]
         );
     }
@@ -391,10 +406,7 @@ mod tests {
         let result = scan_source_code("0.0");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::NumberWithDot("0.0".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::NumberWithDot("0.0".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -404,10 +416,7 @@ mod tests {
         let result = scan_source_code("\"hello\"");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Quote("hello".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Quote("hello".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -416,10 +425,7 @@ mod tests {
         let result = scan_source_code("\"hello world\"");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Quote("hello world".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Quote("hello world".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -428,10 +434,7 @@ mod tests {
         let result = scan_source_code("\"test 123\"");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Quote("test 123".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Quote("test 123".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -440,10 +443,7 @@ mod tests {
         let result = scan_source_code("\"a+b\"");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Quote("a+b".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Quote("a+b".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -454,7 +454,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Quote("first".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Quote("second".to_string()), Position::new(0, 8)),
+                Lexeme::new(LexemeType::Quote("second".to_string()), Position::new(0, 8))
             ]
         );
     }
@@ -464,10 +464,7 @@ mod tests {
         let result = scan_source_code("\"\"");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Quote("".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Quote("".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -477,10 +474,7 @@ mod tests {
         let result = scan_source_code("+");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Symbol("+".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -489,10 +483,7 @@ mod tests {
         let result = scan_source_code("=");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Symbol("=".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Symbol("=".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -504,7 +495,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol("-".to_string()), Position::new(0, 2)),
-                Lexeme::new(LexemeType::Symbol("*".to_string()), Position::new(0, 4)),
+                Lexeme::new(LexemeType::Symbol("*".to_string()), Position::new(0, 4))
             ]
         );
     }
@@ -516,7 +507,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("(".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 2)),
+                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 2))
             ]
         );
     }
@@ -528,7 +519,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("(".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 1)),
+                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 1))
             ]
         );
     }
@@ -540,7 +531,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("[".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 2)),
+                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 2))
             ]
         );
     }
@@ -552,7 +543,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("[".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 1)),
+                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 1))
             ]
         );
     }
@@ -564,7 +555,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 2)),
+                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 2))
             ]
         );
     }
@@ -576,7 +567,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 1)),
+                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 1))
             ]
         );
     }
@@ -587,10 +578,7 @@ mod tests {
         let result = scan_source_code("==");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::DoubleSymbol("==".to_string()),
-                Position::new(0, 0)
-            ),]
+            vec![Lexeme::new(LexemeType::DoubleSymbol("==".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -599,10 +587,7 @@ mod tests {
         let result = scan_source_code("+=");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::DoubleSymbol("+=".to_string()),
-                Position::new(0, 0)
-            ),]
+            vec![Lexeme::new(LexemeType::DoubleSymbol("+=".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -646,7 +631,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Number("10".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(0, 3)),
-                Lexeme::new(LexemeType::Number("5".to_string()), Position::new(0, 5)),
+                Lexeme::new(LexemeType::Number("5".to_string()), Position::new(0, 5))
             ]
         );
     }
@@ -659,7 +644,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("x".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol("=".to_string()), Position::new(0, 2)),
-                Lexeme::new(LexemeType::Number("10".to_string()), Position::new(0, 4)),
+                Lexeme::new(LexemeType::Number("10".to_string()), Position::new(0, 4))
             ]
         );
     }
@@ -675,7 +660,7 @@ mod tests {
                 Lexeme::new(LexemeType::Number("1".to_string()), Position::new(0, 5)),
                 Lexeme::new(LexemeType::Symbol(",".to_string()), Position::new(0, 6)),
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 8)),
-                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 9)),
+                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 9))
             ]
         );
     }
@@ -691,7 +676,7 @@ mod tests {
                 Lexeme::new(LexemeType::Number("1".to_string()), Position::new(0, 5)),
                 Lexeme::new(LexemeType::Symbol(",".to_string()), Position::new(0, 6)),
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 7)),
-                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 8)),
+                Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 8))
             ]
         );
     }
@@ -704,21 +689,12 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("if".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Text("x".to_string()), Position::new(0, 3)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol(">=".to_string()),
-                    Position::new(0, 5)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol(">=".to_string()), Position::new(0, 5)),
                 Lexeme::new(LexemeType::Number("5".to_string()), Position::new(0, 8)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("&&".to_string()),
-                    Position::new(0, 10)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("&&".to_string()), Position::new(0, 10)),
                 Lexeme::new(LexemeType::Text("y".to_string()), Position::new(0, 13)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("<=".to_string()),
-                    Position::new(0, 15)
-                ),
-                Lexeme::new(LexemeType::Number("10".to_string()), Position::new(0, 18)),
+                Lexeme::new(LexemeType::DoubleSymbol("<=".to_string()), Position::new(0, 15)),
+                Lexeme::new(LexemeType::Number("10".to_string()), Position::new(0, 18))
             ]
         );
     }
@@ -735,7 +711,7 @@ mod tests {
                 Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 6)),
                 Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 8)),
                 Lexeme::new(LexemeType::Symbol("*".to_string()), Position::new(0, 10)),
-                Lexeme::new(LexemeType::Text("c".to_string()), Position::new(0, 12)),
+                Lexeme::new(LexemeType::Text("c".to_string()), Position::new(0, 12))
             ]
         );
     }
@@ -747,7 +723,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Text("price".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Quote("$100".to_string()), Position::new(0, 6)),
+                Lexeme::new(LexemeType::Quote("$100".to_string()), Position::new(0, 6))
             ]
         );
     }
@@ -760,10 +736,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("value".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol("=".to_string()), Position::new(0, 6)),
-                Lexeme::new(
-                    LexemeType::NumberWithDot("3.14".to_string()),
-                    Position::new(0, 8)
-                ),
+                Lexeme::new(LexemeType::NumberWithDot("3.14".to_string()), Position::new(0, 8))
             ]
         );
     }
@@ -780,7 +753,7 @@ mod tests {
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 3)),
                 Lexeme::new(LexemeType::Symbol(",".to_string()), Position::new(0, 4)),
                 Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 5)),
-                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 6)),
+                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 6))
             ]
         );
     }
@@ -797,7 +770,7 @@ mod tests {
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 6)),
                 Lexeme::new(LexemeType::Symbol(",".to_string()), Position::new(0, 8)),
                 Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 10)),
-                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 12)),
+                Lexeme::new(LexemeType::Symbol("]".to_string()), Position::new(0, 12))
             ]
         );
     }
@@ -815,7 +788,7 @@ mod tests {
                 Lexeme::new(LexemeType::Symbol("%".to_string()), Position::new(0, 8)),
                 Lexeme::new(LexemeType::Symbol("^".to_string()), Position::new(0, 10)),
                 Lexeme::new(LexemeType::Symbol("!".to_string()), Position::new(0, 12)),
-                Lexeme::new(LexemeType::Symbol("&".to_string()), Position::new(0, 14)),
+                Lexeme::new(LexemeType::Symbol("&".to_string()), Position::new(0, 14))
             ]
         );
     }
@@ -825,10 +798,7 @@ mod tests {
         let result = scan_source_code("!=");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::DoubleSymbol("!=".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::DoubleSymbol("!=".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -842,7 +812,7 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Number("123".to_string()), Position::new(0, 0)),
-                Lexeme::new(LexemeType::Text("abc".to_string()), Position::new(0, 3)),
+                Lexeme::new(LexemeType::Text("abc".to_string()), Position::new(0, 3))
             ]
         );
     }
@@ -852,10 +822,7 @@ mod tests {
         let result = scan_source_code("_");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("_".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("_".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -864,10 +831,7 @@ mod tests {
         let result = scan_source_code("___");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("___".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("___".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -876,10 +840,7 @@ mod tests {
         let result = scan_source_code("_123text");
         assert_eq!(
             result,
-            vec![Lexeme::new(
-                LexemeType::Text("_123text".to_string()),
-                Position::new(0, 0)
-            )]
+            vec![Lexeme::new(LexemeType::Text("_123text".to_string()), Position::new(0, 0))]
         );
     }
 
@@ -892,7 +853,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("text".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol(".".to_string()), Position::new(0, 4)),
-                Lexeme::new(LexemeType::Text("method".to_string()), Position::new(0, 5)),
+                Lexeme::new(LexemeType::Text("method".to_string()), Position::new(0, 5))
             ]
         );
     }
@@ -905,7 +866,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("a".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 2)),
-                Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 4)),
+                Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 4))
             ]
         );
     }
@@ -918,7 +879,7 @@ mod tests {
             vec![
                 Lexeme::new(LexemeType::Text("a".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 1)),
-                Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 2)),
+                Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 2))
             ]
         );
     }
@@ -932,7 +893,7 @@ mod tests {
                 Lexeme::new(LexemeType::Text("a".to_string()), Position::new(0, 0)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 1)),
                 Lexeme::new(LexemeType::Text("hello".to_string()), Position::new(1, 0)),
-                Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(1, 5)),
+                Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(1, 5))
             ]
         );
     }
@@ -944,47 +905,29 @@ mod tests {
             result,
             vec![
                 Lexeme::new(LexemeType::Text("a".to_string()), Position::new(0, 0)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("+=".to_string()),
-                    Position::new(0, 2)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("+=".to_string()), Position::new(0, 2)),
                 Lexeme::new(LexemeType::Number("5".to_string()), Position::new(0, 5)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 6)),
                 Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 8)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("-=".to_string()),
-                    Position::new(0, 10)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("-=".to_string()), Position::new(0, 10)),
                 Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 13)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 14)),
                 Lexeme::new(LexemeType::Text("c".to_string()), Position::new(0, 16)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("*=".to_string()),
-                    Position::new(0, 18)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("*=".to_string()), Position::new(0, 18)),
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 21)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 22)),
                 Lexeme::new(LexemeType::Text("d".to_string()), Position::new(0, 24)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("/=".to_string()),
-                    Position::new(0, 26)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("/=".to_string()), Position::new(0, 26)),
                 Lexeme::new(LexemeType::Number("4".to_string()), Position::new(0, 29)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 30)),
                 Lexeme::new(LexemeType::Text("e".to_string()), Position::new(0, 32)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("%=".to_string()),
-                    Position::new(0, 34)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("%=".to_string()), Position::new(0, 34)),
                 Lexeme::new(LexemeType::Number("3".to_string()), Position::new(0, 37)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 38)),
                 Lexeme::new(LexemeType::Text("f".to_string()), Position::new(0, 40)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("^=".to_string()),
-                    Position::new(0, 42)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("^=".to_string()), Position::new(0, 42)),
                 Lexeme::new(LexemeType::Number("2".to_string()), Position::new(0, 45)),
-                Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 46)),
+                Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 46))
             ]
         );
     }
@@ -1006,10 +949,7 @@ mod tests {
                 Lexeme::new(LexemeType::Symbol(":".to_string()), Position::new(0, 16)),
                 Lexeme::new(LexemeType::Text("int".to_string()), Position::new(0, 18)),
                 Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 21)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("->".to_string()),
-                    Position::new(0, 23)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("->".to_string()), Position::new(0, 23)),
                 Lexeme::new(LexemeType::Text("int".to_string()), Position::new(0, 26)),
                 Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(0, 30)),
                 Lexeme::new(LexemeType::Text("return".to_string()), Position::new(0, 32)),
@@ -1017,7 +957,7 @@ mod tests {
                 Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(0, 41)),
                 Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 43)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 44)),
-                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 46)),
+                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 46))
             ]
         );
     }
@@ -1039,10 +979,7 @@ mod tests {
                 Lexeme::new(LexemeType::Symbol(":".to_string()), Position::new(0, 16)),
                 Lexeme::new(LexemeType::Text("int".to_string()), Position::new(0, 18)),
                 Lexeme::new(LexemeType::Symbol(")".to_string()), Position::new(0, 21)),
-                Lexeme::new(
-                    LexemeType::DoubleSymbol("->".to_string()),
-                    Position::new(0, 23)
-                ),
+                Lexeme::new(LexemeType::DoubleSymbol("->".to_string()), Position::new(0, 23)),
                 Lexeme::new(LexemeType::Text("int".to_string()), Position::new(0, 26)),
                 Lexeme::new(LexemeType::Symbol("?".to_string()), Position::new(0, 29)),
                 Lexeme::new(LexemeType::Symbol("{".to_string()), Position::new(0, 31)),
@@ -1051,7 +988,7 @@ mod tests {
                 Lexeme::new(LexemeType::Symbol("+".to_string()), Position::new(0, 42)),
                 Lexeme::new(LexemeType::Text("b".to_string()), Position::new(0, 44)),
                 Lexeme::new(LexemeType::Symbol(";".to_string()), Position::new(0, 45)),
-                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 47)),
+                Lexeme::new(LexemeType::Symbol("}".to_string()), Position::new(0, 47))
             ]
         );
     }

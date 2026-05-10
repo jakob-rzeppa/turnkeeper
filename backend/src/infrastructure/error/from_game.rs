@@ -1,4 +1,4 @@
-use crate::{application::game::error::GameApplicationError, infrastructure::error::HttpError};
+use crate::{ application::game::error::GameApplicationError, infrastructure::error::HttpError };
 
 impl From<GameApplicationError> for HttpError {
     fn from(e: GameApplicationError) -> Self {

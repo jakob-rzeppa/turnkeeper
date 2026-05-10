@@ -1,5 +1,5 @@
 use crate::{
-    application::game::{error::GameApplicationError, request_handlers::GameRequestHandler},
+    application::game::{ error::GameApplicationError, request_handlers::GameRequestHandler },
     domain::common::identifier::Id,
 };
 
@@ -7,13 +7,9 @@ impl GameRequestHandler {
     pub async fn set_source_code(
         &self,
         id: Id,
-        source_code: String,
+        source_code: String
     ) -> Result<(), GameApplicationError> {
-        if self
-            .game_instance_repository
-            .game_has_instances(id.clone())
-            .await?
-        {
+        if self.game_instance_repository.game_has_instances(id.clone()).await? {
             return Err(GameApplicationError::GameHasInstances);
         }
 
@@ -34,7 +30,9 @@ mod tests {
     use std::sync::Arc;
 
     use crate::application::{
-        common::parser::MockGameParserContract, game::contracts::MockGameRepositoryContract, game_instance::contracts::MockGameInstanceRepositoryContract
+        common::parser::MockGameParserContract,
+        game::contracts::MockGameRepositoryContract,
+        game_instance::contracts::MockGameInstanceRepositoryContract,
     };
 
     use super::*;
@@ -55,14 +53,18 @@ mod tests {
             .expect_get_by_id()
             .times(1)
             .returning(move |_| {
-                Ok(Some(crate::domain::game::entities::game::Game::new_raw(
-                    Id::new(),
-                    "Test Game".to_string(),
-                    "Test Description".to_string(),
-                    "Old Source Code".to_string(),
-                    crate::domain::common::date_time::DateTime::now(),
-                    crate::domain::common::date_time::DateTime::now(),
-                )))
+                Ok(
+                    Some(
+                        crate::domain::game::entities::game::Game::new_raw(
+                            Id::new(),
+                            "Test Game".to_string(),
+                            "Test Description".to_string(),
+                            "Old Source Code".to_string(),
+                            crate::domain::common::date_time::DateTime::now(),
+                            crate::domain::common::date_time::DateTime::now()
+                        )
+                    )
+                )
             });
 
         game_repository
@@ -74,13 +76,10 @@ mod tests {
         let handler = GameRequestHandler::new(
             Arc::new(game_repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
 
-        handler
-            .set_source_code(Id::new(), "New Source Code".to_string())
-            .await
-            .unwrap();
+        handler.set_source_code(Id::new(), "New Source Code".to_string()).await.unwrap();
     }
 
     #[tokio::test]
@@ -101,12 +100,11 @@ mod tests {
         let handler = GameRequestHandler::new(
             Arc::new(game_repository),
             Arc::new(game_instance_repository),
-            Arc::new(game_root_parser),
+            Arc::new(game_root_parser)
         );
 
         let result = handler
-            .set_source_code(Id::new(), "New Source Code".to_string())
-            .await
+            .set_source_code(Id::new(), "New Source Code".to_string()).await
             .unwrap_err();
 
         assert!(matches!(result, GameApplicationError::GameHasInstances));

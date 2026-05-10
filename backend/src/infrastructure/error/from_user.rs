@@ -1,4 +1,4 @@
-use crate::domain::user::error::{UserError, UserErrorKind};
+use crate::domain::user::error::{ UserError, UserErrorKind };
 use crate::infrastructure::error::HttpError;
 
 impl From<UserError> for HttpError {
@@ -13,11 +13,11 @@ impl From<UserError> for HttpError {
             UserErrorKind::JwtGenerationError => {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
-            },
+            }
             UserErrorKind::DatabaseError => {
                 eprintln!("{}", e);
                 HttpError::InternalServerError
-            },
+            }
             UserErrorKind::InvalidToken => HttpError::Unauthorized(e.to_string()),
         }
     }

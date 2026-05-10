@@ -16,8 +16,8 @@ use axum::extract::State;
 use axum::http::StatusCode;
 use axum::response::IntoResponse;
 use axum::response::Response;
-use backend_derive::{JsonRequest, JsonResponse};
-use serde::{Deserialize, Serialize};
+use backend_derive::{ JsonRequest, JsonResponse };
+use serde::{ Deserialize, Serialize };
 
 #[derive(Serialize, Debug)]
 pub struct GamesGetResponseGameMetadata {
@@ -54,8 +54,7 @@ pub async fn games_get(State(state): State<AppState>) -> Result<GamesGetResponse
     let games_overview = state.game_request_handler().list_all().await?;
 
     Ok(GamesGetResponse {
-        games: games_overview
-            .games_metadata
+        games: games_overview.games_metadata
             .into_iter()
             .map(|metadata| metadata.into())
             .collect(),
@@ -92,12 +91,9 @@ impl From<GameProjection> for GamesGetByIdResponse {
 /// Returns the full game projection for a game
 pub async fn games_get_by_id(
     State(state): State<AppState>,
-    Path(id): Path<String>,
+    Path(id): Path<String>
 ) -> Result<GamesGetByIdResponse, HttpError> {
-    let res = state
-        .game_request_handler()
-        .get_by_id(Id::parse_str(&id)?)
-        .await?;
+    let res = state.game_request_handler().get_by_id(Id::parse_str(&id)?).await?;
 
     Ok(res.game.into())
 }
@@ -118,15 +114,12 @@ pub struct GamesCreateHttpResponse {
 /// Creates a game and returns the initial game state
 pub async fn games_create(
     State(state): State<AppState>,
-    request: GamesCreateHttpRequest,
+    request: GamesCreateHttpRequest
 ) -> Result<GamesCreateHttpResponse, HttpError> {
-    let id = state
-        .game_request_handler()
-        .create(CreateGameRequest {
-            name: request.name,
-            description: request.description,
-        })
-        .await?;
+    let id = state.game_request_handler().create(CreateGameRequest {
+        name: request.name,
+        description: request.description,
+    }).await?;
 
     Ok(GamesCreateHttpResponse { id: id.to_string() })
 }
@@ -142,14 +135,11 @@ pub struct GamesUpdateSourceCodeHttpRequest {
 pub async fn games_update_source_code(
     State(state): State<AppState>,
     Path(id): Path<String>,
-    request: GamesUpdateSourceCodeHttpRequest,
+    request: GamesUpdateSourceCodeHttpRequest
 ) -> Result<StatusCode, HttpError> {
     let id = Id::parse_str(&id)?;
 
-    state
-        .game_request_handler()
-        .set_source_code(id, request.source_code)
-        .await?;
+    state.game_request_handler().set_source_code(id, request.source_code).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }
@@ -179,36 +169,35 @@ struct GamesCheckSourceCodeInvalidResponse {
 /// Checks if the source code of a game is valid and can be parsed
 pub async fn games_check_source_code(
     State(state): State<AppState>,
-    Path(game_id): Path<String>,
+    Path(game_id): Path<String>
 ) -> Result<Response, HttpError> {
     let game_id = Id::parse_str(&game_id)?;
 
-    let response = state
-        .game_request_handler()
-        .check_source_code(game_id)
-        .await?;
+    let response = state.game_request_handler().check_source_code(game_id).await?;
 
     match response {
-        CheckSourceCodeResponse::Valid {
-            game_stats,
-            player_stats,
-            actions,
-            pages,
-        } => Ok(GamesCheckSourceCodeValidResponse {
-            is_valid: true,
-            output: GamesCheckSourceCodeValidRequestOutput {
-                game_stats,
-                player_stats,
-                actions,
-                pages,
-            },
-        }
-        .into_response()),
-        CheckSourceCodeResponse::Invalid { errors } => Ok(GamesCheckSourceCodeInvalidResponse {
-            is_valid: false,
-            errors: errors.into_iter().map(|e| e.to_string()).collect(),
-        }
-        .into_response()),
+        CheckSourceCodeResponse::Valid { game_stats, player_stats, actions, pages } =>
+            Ok(
+                (GamesCheckSourceCodeValidResponse {
+                    is_valid: true,
+                    output: GamesCheckSourceCodeValidRequestOutput {
+                        game_stats,
+                        player_stats,
+                        actions,
+                        pages,
+                    },
+                }).into_response()
+            ),
+        CheckSourceCodeResponse::Invalid { errors } =>
+            Ok(
+                (GamesCheckSourceCodeInvalidResponse {
+                    is_valid: false,
+                    errors: errors
+                        .into_iter()
+                        .map(|e| e.to_string())
+                        .collect(),
+                }).into_response()
+            ),
     }
 }
 
@@ -217,14 +206,11 @@ pub async fn games_check_source_code(
 /// Deletes a game if no current connection to it
 pub async fn games_delete(
     State(state): State<AppState>,
-    Path(id): Path<String>,
+    Path(id): Path<String>
 ) -> Result<StatusCode, HttpError> {
     let id = Id::parse_str(&id)?;
 
-    state
-        .game_request_handler()
-        .delete(DeleteGameRequest { id })
-        .await?;
+    state.game_request_handler().delete(DeleteGameRequest { id }).await?;
 
     Ok(StatusCode::NO_CONTENT)
 }

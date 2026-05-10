@@ -1,8 +1,9 @@
+use crate::{
+    application::common::parser::lexer::token::{ Token, TokenVariant },
+    domain::game::abstract_syntax_tree::expression::binary::BinaryOperator,
+};
 
-use crate::{application::common::parser::lexer::token::{Token, TokenVariant}, domain::game::abstract_syntax_tree::expression::binary::BinaryOperator};
-
-
-// Since BinaryExpression is not directly parsable (it requires operator precedence parsing), we don't implement Parsable for it. 
+// Since BinaryExpression is not directly parsable (it requires operator precedence parsing), we don't implement Parsable for it.
 // Instead, we'll implement the parsing logic in the Expression, where we can handle operator precedence and associativity correctly.
 
 impl BinaryOperator {
@@ -31,7 +32,7 @@ impl BinaryOperator {
             BinaryOperator::LogicalOr => (40, 41),
             BinaryOperator::LogicalAnd => (50, 51),
             BinaryOperator::Equal | BinaryOperator::NotEqual => (60, 61),
-            BinaryOperator::LessThan
+            | BinaryOperator::LessThan
             | BinaryOperator::LessThanOrEqual
             | BinaryOperator::GreaterThan
             | BinaryOperator::GreaterThanOrEqual => (70, 71),

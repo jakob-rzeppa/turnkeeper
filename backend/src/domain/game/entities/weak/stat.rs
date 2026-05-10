@@ -4,10 +4,10 @@ use crate::domain::{
     common::position::Position,
     game::{
         error::GameInstanceError,
-        projections::stat::{GameStatMetadataProjection, PlayerStatMetadataProjection},
+        projections::stat::{ GameStatMetadataProjection, PlayerStatMetadataProjection },
         value_objects::{
-            data::{Datatype, Value},
-            visibility::{GameStatVisibility, PlayerStatVisibility},
+            data::{ Datatype, Value },
+            visibility::{ GameStatVisibility, PlayerStatVisibility },
         },
     },
 };
@@ -33,7 +33,7 @@ impl GameStat {
         datatype: Datatype,
         default: Value,
         visibility: GameStatVisibility,
-        pos: Position,
+        pos: Position
     ) -> Self {
         Self {
             name,
@@ -54,7 +54,7 @@ impl GameStat {
         value: Value,
         default: Value,
         visibility: GameStatVisibility,
-        pos: Position,
+        pos: Position
     ) -> Self {
         Self {
             name,
@@ -128,12 +128,9 @@ impl PlayerStat {
         datatype: Datatype,
         default: Value,
         visibility: PlayerStatVisibility,
-        pos: Position,
+        pos: Position
     ) -> Self {
-        assert!(
-            default.is_type(&datatype),
-            "Default value must match the datatype of the stat"
-        );
+        assert!(default.is_type(&datatype), "Default value must match the datatype of the stat");
 
         Self {
             name,
@@ -154,7 +151,7 @@ impl PlayerStat {
         values: HashMap<String, Value>, // player_name -> value
         default: Value,
         visibility: PlayerStatVisibility,
-        pos: Position,
+        pos: Position
     ) -> Self {
         Self {
             name,
@@ -195,14 +192,13 @@ impl PlayerStat {
     }
 
     pub fn initialize_value_for_player(&mut self, player_name: &str) {
-        self.values
-            .insert(player_name.to_string(), self.default.clone());
+        self.values.insert(player_name.to_string(), self.default.clone());
     }
 
     pub fn set_value_for_player(
         &mut self,
         player_name: &str,
-        value: Value,
+        value: Value
     ) -> Result<(), GameInstanceError> {
         if let None = self.values.get(player_name) {
             return Err(GameInstanceError::PlayerInStatNotFound {
