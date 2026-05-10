@@ -1,9 +1,16 @@
 use crate::{
-    application::game_instance::action_interpreter::error::ActionInterpreterError,
+    application::game_instance::action_interpreter::{
+        debug_env::DebugEnvironment,
+        error::ActionInterpreterError,
+        runtime_env::RuntimeEnvironment,
+    },
     domain::game::entities::{ game_instance::GameInstance, weak::action::Action },
 };
 
 pub mod error;
+pub mod runtime_env;
+pub mod debug_env;
+
 pub struct ActionExecutor {
     game_instance: GameInstance,
     action: Action,
@@ -26,4 +33,17 @@ impl ActionExecutor {
             action,
         })
     }
+}
+
+pub trait Executable<R> {
+    fn execute(
+        &self,
+        env: &mut RuntimeEnvironment
+    ) -> impl std::future::Future<Output = Result<R, ActionInterpreterError>>;
+
+    fn execute_debug(
+        &self,
+        env: &mut RuntimeEnvironment,
+        debug_env: &mut DebugEnvironment
+    ) -> impl std::future::Future<Output = Result<R, ActionInterpreterError>>;
 }
