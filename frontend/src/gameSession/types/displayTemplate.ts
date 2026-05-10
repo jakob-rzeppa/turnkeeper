@@ -7,7 +7,7 @@ export interface DisplayTemplate {
 
 export interface GameStat {
     name: string;
-    datatype: 'string' | 'int' | 'float' | 'boolean';
+    datatype: 'string' | 'int' | 'float' | 'bool';
     default: string;
     visibility: 'public' | 'private';
     pos: string;
@@ -15,7 +15,7 @@ export interface GameStat {
 
 export interface PlayerStat {
     name: string;
-    datatype: 'string' | 'int' | 'float' | 'boolean';
+    datatype: 'string' | 'int' | 'float' | 'bool';
     default: string;
     visibility: 'public' | 'protected' | 'private';
     pos: string;

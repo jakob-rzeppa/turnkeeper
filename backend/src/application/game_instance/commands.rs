@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use serde::{Deserialize, Serialize};
 
 use crate::domain::{common::identifier::Id, game::value_objects::data::Value};
@@ -25,7 +27,7 @@ pub enum GameSessionCommand {
     ChangePlayerStat { player: String, stat: String, new_value: Value },
 
     // Actions
-    ExecuteAction { action: String, payload: String },
+    ExecuteAction { action: String, params: HashMap<String, Value> }, // params: name -> value
 
     // Debug
     Debug(String),

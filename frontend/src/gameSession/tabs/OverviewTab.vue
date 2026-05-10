@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSession } from '../useSession';
 import StatDisplay from '../components/StatDisplay.vue';
+import ActionExecutor from '../components/ActionExecutor.vue';
 
 const session = useSession();
 </script>
@@ -70,24 +71,12 @@ const session = useSession();
         <!-- Actions -->
         <div>
             <h2 class="text-2xl font-bold mb-4">Available Actions</h2>
-            <div v-if="session.displayTemplate.value && session.displayTemplate.value.actions.length > 0" class="space-y-3">
-                <div
-                    v-for="action in session.displayTemplate.value.actions"
-                    :key="action.name"
-                    class="p-3 bg-base-200 rounded"
-                >
-                    <div class="font-semibold mb-2">{{ action.name }}</div>
-                    <div class="space-y-2 text-sm">
-                        <div v-if="action.parameters.length > 0" class="text-gray-600">
-                            <span>Parameters:</span>
-                            <div class="font-mono text-gray-700 mt-1">{{ action.parameters.join(', ') }}</div>
-                        </div>
-                        <div v-if="action.execution_triggers.length > 0" class="text-gray-600">
-                            <span>Triggers:</span>
-                            <div class="font-mono text-gray-700 mt-1">{{ action.execution_triggers.join(', ') }}</div>
-                        </div>
-                    </div>
-                </div>
+            <div v-if="session.displayTemplate.value && session.displayTemplate.value.actions.length > 0" class="space-y-3 p-3 bg-base-200 rounded">
+                <ActionExecutor 
+                    v-for="action in session.displayTemplate.value.actions" 
+                    :key="action.name" 
+                    :actionName="action.name"
+                />
             </div>
             <p v-else class="text-gray-500 italic">No actions available</p>
         </div>

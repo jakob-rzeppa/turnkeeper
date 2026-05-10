@@ -275,11 +275,11 @@ impl GameSession {
                                 GameSessionCommand::Debug(msg) => {
                                     println!("Debug command received: {}", msg);
                                 }
-                                GameSessionCommand::ExecuteAction { action, payload } => {
+                                GameSessionCommand::ExecuteAction { action, params } => {
                                     unimplemented!(
-                                        "Action execution not implemented yet: {} with payload {}",
+                                        "Action execution not implemented yet: {} with params {:?}",
                                         action,
-                                        payload
+                                        params
                                     );
                                 }
                             },

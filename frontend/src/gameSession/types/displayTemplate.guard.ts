@@ -17,9 +17,9 @@ export function isDisplayTemplate(obj: unknown): obj is DisplayTemplate {
                 typeof e === "function") &&
             typeof e["name"] === "string" &&
             (e["datatype"] === "string" ||
-                e["datatype"] === "boolean" ||
                 e["datatype"] === "int" ||
-                e["datatype"] === "float") &&
+                e["datatype"] === "float" ||
+                e["datatype"] === "bool") &&
             typeof e["default"] === "string" &&
             (e["visibility"] === "public" ||
                 e["visibility"] === "private") &&
@@ -32,9 +32,9 @@ export function isDisplayTemplate(obj: unknown): obj is DisplayTemplate {
                 typeof e === "function") &&
             typeof e["name"] === "string" &&
             (e["datatype"] === "string" ||
-                e["datatype"] === "boolean" ||
                 e["datatype"] === "int" ||
-                e["datatype"] === "float") &&
+                e["datatype"] === "float" ||
+                e["datatype"] === "bool") &&
             typeof e["default"] === "string" &&
             (e["visibility"] === "public" ||
                 e["visibility"] === "private" ||

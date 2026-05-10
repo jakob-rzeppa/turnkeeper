@@ -3,7 +3,7 @@ import { computed, ref } from 'vue';
 import { useSession } from '../useSession';
 import { useCommandEmitter } from '../useCommandEmitter';
 import { err, ok, type Result } from 'neverthrow';
-
+import { convertValueToStringValue } from '../common/value';
 
 const props = defineProps<{
     player: string | null; // Null for game stat, player name for player stat
@@ -22,19 +22,19 @@ const statTypeKey = computed(() => {
         ? session.gameState.value?.player_stats.find(p => p.name === props.statName)?.values.find(v => v[0] === props.player)?.[1] ?? null
         : session.gameState.value?.game_stats.find(s => s.name === props.statName)?.value ?? null;
 
-    if (statValue?.int_value !== null) return 'int_value';
-    if (statValue?.float_value !== null) return 'float_value';
-    if (statValue?.str_value !== null) return 'str_value';
-    if (statValue?.bool_value !== null) return 'bool_value';
+    if (statValue?.int_value !== null) return 'int';
+    if (statValue?.float_value !== null) return 'float';
+    if (statValue?.str_value !== null) return 'string';
+    if (statValue?.bool_value !== null) return 'bool';
     return null;
 });
 
 const dataTypeLabel = computed(() => {
     const typeKey = statTypeKey.value;
-    if (typeKey === 'int_value') return 'int';
-    if (typeKey === 'float_value') return 'float';
-    if (typeKey === 'str_value') return 'string';
-    if (typeKey === 'bool_value') return 'bool';
+    if (typeKey === 'int') return 'int';
+    if (typeKey === 'float') return 'float';
+    if (typeKey === 'string') return 'string';
+    if (typeKey === 'bool') return 'bool';
     return 'unknown';
 });
 
@@ -70,34 +70,13 @@ const startEditing = () => {
     isEditing.value = true;
 };
 
-const convertValue = (newVal: string): Result<string, string> => {
-    const typeKey = statTypeKey.value;
-    
-    if (typeKey === 'int_value') {
-        const intVal = parseInt(newVal, 10);
-        if (isNaN(intVal)) return err(`Invalid integer: "${newVal}"`);
-        return ok("int(" + intVal + ")");
-    }
-    
-    if (typeKey === 'float_value') {
-        const floatVal = parseFloat(newVal);
-        if (isNaN(floatVal)) return err(`Invalid float: "${newVal}"`);
-        return ok('float(' + floatVal + ')');
-    }
-    
-    if (typeKey === 'bool_value') {
-        const lower = newVal.toLowerCase();
-        if (!['true', 'false', '0', '1', 'yes', 'no'].includes(lower)) {
-            return err(`Invalid boolean: "${newVal}". Use true/false, yes/no, or 0/1`);
-        }
-        return ok("bool(" + ['true', '1', 'yes'].includes(lower) + ")");
-    }
-    
-    return ok("string(" + newVal + ")");
-};
-
 const updateValue = () => {
-    const newVal = convertValue(editValue.value);
+    if (!statTypeKey.value) {
+        alert('Cannot determine stat type');
+        return;
+    }
+
+    const newVal = convertValueToStringValue(statTypeKey.value, editValue.value);
 
     if (newVal.isErr()) {
         alert(`Error: ${newVal.error}`);
@@ -132,7 +111,7 @@ const cancelEditing = () => {
         </div>
         <div v-else class="flex gap-1 items-center w-full">
             <input
-                v-if="statTypeKey !== 'bool_value'"
+                v-if="statTypeKey !== 'bool'"
                 v-model="editValue"
                 type="text"
                 class="input input-xs input-bordered flex-1"
