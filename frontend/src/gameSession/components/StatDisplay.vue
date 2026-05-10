@@ -119,7 +119,7 @@ const cancelEditing = () => {
 </script>
 
 <template>
-    <div class="flex items-center gap-3 px-3 py-2 bg-base-200 rounded text-sm">
+    <div class="flex items-center gap-3 px-3 py-2 bg-base-200 rounded text-sm border">
         <!-- Name -->
         <span class="font-semibold min-w-max">{{ props.statName }}</span>
         

@@ -1,17 +1,8 @@
 <script setup lang="ts">
 import { useSession } from '../useSession';
-import type { StatValue } from '../types/state';
 import StatDisplay from '../components/StatDisplay.vue';
 
 const session = useSession();
-
-const getStatValue = (stat: StatValue): string | number | boolean => {
-    if (stat.int_value !== null) return stat.int_value;
-    if (stat.float_value !== null) return stat.float_value;
-    if (stat.str_value !== null) return stat.str_value;
-    if (stat.bool_value !== null) return stat.bool_value;
-    return 'N/A';
-};
 </script>
 
 <template>
@@ -33,11 +24,15 @@ const getStatValue = (stat: StatValue): string | number | boolean => {
             <h2 class="text-2xl font-bold mb-4">Game Stats</h2>
             <div v-if="session.gameState.value && session.gameState.value.game_stats.length > 0" class="space-y-3">
                 <div
-                    v-for="stat in session.gameState.value.game_stats"
-                    :key="stat.name"
-                    class="p-3 bg-base-200 rounded"
+                    class="p-3 bg-base-200 rounded flex flex-col gap-4"
                 >
-                    <StatDisplay :statName="stat.name" :player="null" :editable="true" />
+                    <StatDisplay 
+                        v-for="stat in session.gameState.value.game_stats"
+                        :key="stat.name" 
+                        :statName="stat.name" 
+                        :player="null" 
+                        :editable="true"
+                    />
                 </div>
             </div>
             <p v-else class="text-gray-500 italic">No game stats available</p>
@@ -59,16 +54,13 @@ const getStatValue = (stat: StatValue): string | number | boolean => {
                         </span>
                     </div>
                     <div v-if="session.gameState.value.player_stats.length > 0" class="space-y-2 ml-2">
-                        <div v-for="playerStat in session.gameState.value.player_stats" :key="playerStat.name" class="text-sm">
-                            <span class="text-gray-600">{{ playerStat.name }}:</span>
-                            <span class="font-semibold ml-2">
-                                {{
-                                    playerStat.values.find(([name]) => name === player.name)?.[1]
-                                        ? getStatValue(playerStat.values.find(([name]) => name === player.name)![1])
-                                        : 'N/A'
-                                }}
-                            </span>
-                        </div>
+                        <StatDisplay 
+                            v-for="playerStat in session.gameState.value.player_stats"
+                            :key="playerStat.name" 
+                            :statName="playerStat.name" 
+                            :player="player.name" 
+                            :editable="true"
+                        />
                     </div>
                 </div>
             </div>

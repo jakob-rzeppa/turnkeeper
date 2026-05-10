@@ -194,6 +194,11 @@ impl PlayerStat {
         self.values.get(player_name)
     }
 
+    pub fn initialize_value_for_player(&mut self, player_name: &str) {
+        self.values
+            .insert(player_name.to_string(), self.default.clone());
+    }
+
     pub fn set_value_for_player(
         &mut self,
         player_name: &str,

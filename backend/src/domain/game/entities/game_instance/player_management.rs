@@ -1,7 +1,7 @@
 use crate::domain::{
     common::identifier::Id,
     game::{
-        entities::{game_instance::GameInstance, weak::player::Player},
+        entities::{game_instance::GameInstance, weak::player::{self, Player}},
         error::GameInstanceError,
     },
 };
@@ -12,9 +12,15 @@ impl GameInstance {
     /// # Invariants
     ///
     /// - The `name` must be unique among all players in the game.
+    /// - The `player` must be added to the player stats.
     pub fn add_player(&mut self) -> Result<(), GameInstanceError> {
         let player = Player::new();
+        let player_name = player.name().to_string();
         self.players.push(player);
+
+        self.player_stats.iter_mut().for_each(|s| {
+            s.initialize_value_for_player(&player_name);
+        });
 
         Ok(())
     }
