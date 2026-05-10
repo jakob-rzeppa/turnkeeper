@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
 
-use crate::domain::common::identifier::Id;
+use crate::domain::{common::identifier::Id, game::value_objects::data::Value};
 
 /// A command that mutates the game aggregate's state.
 ///
@@ -19,6 +19,10 @@ pub enum GameSessionCommand {
     ChangePlayerOrder { names_in_order: Vec<String> },
     AttachUserToPlayer { player: String, user_id: Id },
     DetachUserFromPlayer { player: String },
+
+    // Stats
+    ChangeGameStat { stat: String, new_value: Value },
+    ChangePlayerStat { player: String, stat: String, new_value: Value },
 
     // Actions
     ExecuteAction { action: String, payload: String },

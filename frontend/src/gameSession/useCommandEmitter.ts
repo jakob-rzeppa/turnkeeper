@@ -2,6 +2,8 @@ import { useSession } from './useSession';
 
 /**
  * Game commands matching the Rust GameCommand enum.
+ * 
+ * Every Stat Value / Parameter is send in the form of a string: int(5), float(3.14), string(hello), bool(true)
  */
 type GameCommand =
     | 'Connect'
@@ -11,7 +13,9 @@ type GameCommand =
     | { ChangePlayerOrder: { names_in_order: string[] } }
     | { AttachUserToPlayer: { player: string, user_id: string } }
     | { DetachUserFromPlayer: { player: string } }
-    | { ExecuteAction: { action: string, params: Record<string, string> } } // Params: name -> value (int(5), float(3.14), string(hello), bool(true))
+    | { ChangeGameStat: { stat: string, new_value: string } }
+    | { ChangePlayerStat: { player: string, stat: string, new_value: string } }
+    | { ExecuteAction: { action: string, params: Record<string, string> } } // Params: name -> value
     | { Debug: string };
 
 export function useCommandEmitter() {
@@ -29,6 +33,8 @@ export function useCommandEmitter() {
     const changePlayerOrder = (names_in_order: string[]) => emit({ ChangePlayerOrder: { names_in_order } });
     const attachUserToPlayer = (player: string, user_id: string) => emit({ AttachUserToPlayer: { player, user_id } });
     const detachUserFromPlayer = (player: string) => emit({ DetachUserFromPlayer: { player } });
+    const changeGameStat = (stat: string, new_value: string) => emit({ ChangeGameStat: { stat, new_value } });
+    const changePlayerStat = (player: string, stat: string, new_value: string) => emit({ ChangePlayerStat: { player, stat, new_value } });
     const executeAction = (action: string, params: Record<string, string>) => emit({ ExecuteAction: { action, params } });
     const debug = (message: string) => emit({ Debug: message });
 
@@ -39,6 +45,8 @@ export function useCommandEmitter() {
         changePlayerOrder,
         attachUserToPlayer,
         detachUserFromPlayer,
+        changeGameStat,
+        changePlayerStat,
         executeAction,
         debug,
     };

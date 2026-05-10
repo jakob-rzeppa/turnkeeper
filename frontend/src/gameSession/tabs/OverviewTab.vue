@@ -1,6 +1,7 @@
 <script setup lang="ts">
 import { useSession } from '../useSession';
 import type { StatValue } from '../types/state';
+import StatDisplay from '../components/StatDisplay.vue';
 
 const session = useSession();
 
@@ -36,17 +37,7 @@ const getStatValue = (stat: StatValue): string | number | boolean => {
                     :key="stat.name"
                     class="p-3 bg-base-200 rounded"
                 >
-                    <div class="font-semibold mb-2">{{ stat.name }}</div>
-                    <div class="flex gap-6 text-sm">
-                        <div>
-                            <span class="text-gray-600">Value:</span>
-                            <span class="font-semibold ml-2">{{ getStatValue(stat.value) }}</span>
-                        </div>
-                        <div>
-                            <span class="text-gray-600">Default:</span>
-                            <span class="font-semibold ml-2">{{ getStatValue(stat.default) }}</span>
-                        </div>
-                    </div>
+                    <StatDisplay :statName="stat.name" :player="null" :editable="true" />
                 </div>
             </div>
             <p v-else class="text-gray-500 italic">No game stats available</p>

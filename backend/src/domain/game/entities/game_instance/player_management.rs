@@ -112,7 +112,7 @@ impl GameInstance {
         self.players.iter().map(|p| p.name().to_string()).collect()
     }
 
-    pub fn get_attatched_user_ids(&self) -> Vec<Id> {
+    pub fn get_attached_user_ids(&self) -> Vec<Id> {
         self.players
             .iter()
             .filter_map(|p| p.user_id().cloned())
@@ -229,20 +229,20 @@ mod tests {
         game.add_player().unwrap();
 
         // No attachments yet, should return an empty list
-        let user_ids = game.get_attatched_user_ids();
+        let user_ids = game.get_attached_user_ids();
         assert_eq!(user_ids.len(), 0);
 
         game.get_player_names();
         game.attach_user_to_player(Id::new(), game.players[0].name().to_string())
             .unwrap();
 
-        let user_ids = game.get_attatched_user_ids();
+        let user_ids = game.get_attached_user_ids();
         assert_eq!(user_ids.len(), 1);
 
         game.attach_user_to_player(Id::new(), game.players[1].name().to_string())
             .unwrap();
 
-        let user_ids = game.get_attatched_user_ids();
+        let user_ids = game.get_attached_user_ids();
         assert_eq!(user_ids.len(), 2);
     }
 }

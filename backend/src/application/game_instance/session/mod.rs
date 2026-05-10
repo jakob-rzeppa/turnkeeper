@@ -205,6 +205,58 @@ impl GameSession {
                                             .await;
                                     }
                                 }
+                                GameSessionCommand::ChangeGameStat { stat, new_value } => {
+                                    if &sending_user_id != game_instance.gm_user_id() {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(
+                                                    "Only the GM can change game stats".to_string(),
+                                                ),
+                                            )
+                                            .await;
+                                        continue;
+                                    }
+
+                                    let res = game_instance.set_game_stat_value(&stat, new_value);
+                                    if let Err(e) = res {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(format!(
+                                                    "Changing game stat failed: {}",
+                                                    e
+                                                )),
+                                            )
+                                            .await;
+                                    }
+                                }
+                                GameSessionCommand::ChangePlayerStat { player, stat, new_value } => {
+                                    if &sending_user_id != game_instance.gm_user_id() {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(
+                                                    "Only the GM can change player stats".to_string(),
+                                                ),
+                                            )
+                                            .await;
+                                        continue;
+                                    }
+
+                                    let res = game_instance.set_player_stat_value(&player, &stat, new_value);
+                                    if let Err(e) = res {
+                                        _ = outgoing_sender
+                                            .send_to(
+                                                sending_user_id,
+                                                OutgoingMessageDto::Error(format!(
+                                                    "Changing player stat failed: {}",
+                                                    e
+                                                )),
+                                            )
+                                            .await;
+                                    }
+                                }
                                 GameSessionCommand::AdvanceTurn => {
                                     if &sending_user_id != game_instance.gm_user_id() {
                                         _ = outgoing_sender
@@ -252,7 +304,7 @@ impl GameSession {
                         ).await; // Ignore errors since the gm might not be attached to a player and thus not receive state updates
 
                         // Send the updated state to all attached players
-                        for user_id in game_instance.get_attatched_user_ids() {
+                        for user_id in game_instance.get_attached_user_ids() {
                             _ = outgoing_sender.send_to(
                                 user_id,
                                 OutgoingMessageDto::State(game_instance.get_state(&user_id)),
