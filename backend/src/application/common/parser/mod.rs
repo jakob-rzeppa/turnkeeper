@@ -58,17 +58,29 @@ impl GameParserContract for GameParser {
 
         let mut token_stream = TokenStream::new(tokens);
 
-        let mut game_stats = Vec::new();
-        let mut player_stats = Vec::new();
-        let mut actions = Vec::new();
+        let mut game_stats = Vec::<GameStat>::new();
+        let mut player_stats = Vec::<PlayerStat>::new();
+        let mut actions = Vec::<Action>::new();
 
         while token_stream.peek().is_some() {
             if PlayerStat::is_next(&token_stream) {
-                player_stats.push(PlayerStat::parse(&mut token_stream, source_code)?);
+                let player_stat = PlayerStat::parse(&mut token_stream, source_code)?;
+                if player_stats.iter().any(|s| s.name() == player_stat.name()) {
+                    return Err(ParsingError::DuplicatePlayerStat(player_stat.name().to_string()));
+                }
+                player_stats.push(player_stat);
             } else if GameStat::is_next(&token_stream) {
-                game_stats.push(GameStat::parse(&mut token_stream, source_code)?);
+                let game_stat = GameStat::parse(&mut token_stream, source_code)?;
+                if game_stats.iter().any(|s| s.name() == game_stat.name()) {
+                    return Err(ParsingError::DuplicateGameStat(game_stat.name().to_string()));
+                }
+                game_stats.push(game_stat);
             } else if Action::is_next(&token_stream) {
-                actions.push(Action::parse(&mut token_stream, source_code)?);
+                let action = Action::parse(&mut token_stream, source_code)?;
+                if actions.iter().any(|a| a.name() == action.name()) {
+                    return Err(ParsingError::DuplicateAction(action.name().to_string()));
+                }
+                actions.push(action);
             } else {
                 return Err(ParsingError::UnexpectedToken {
                     expected: "PlayerStat, GameStat or Action".to_string(),
@@ -138,5 +150,44 @@ public action heal(amount: float) {
     health = health + amount;
 }"#.to_string()
         );
+    }
+
+    #[test]
+    fn test_parse_game_duplicate_stats() {
+        let parser = GameParser::new();
+
+        let source_code = r#"public stat score = 0;
+public stat score = 1;"#;
+
+        let result = parser.parse_game(source_code);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_game_duplicate_player_stats() {
+        let parser = GameParser::new();
+
+        let source_code = r#"public pstat health: float = 10.0;
+public pstat health: float = 20.0;"#;
+
+        let result = parser.parse_game(source_code);
+
+        assert!(result.is_err());
+    }
+
+    #[test]
+    fn test_parse_game_duplicate_actions() {
+        let parser = GameParser::new();
+
+        let source_code =
+            r#"public action heal(amount: float) {
+}
+public action heal(amount: float) {
+}"#;
+
+        let result = parser.parse_game(source_code);
+
+        assert!(result.is_err());
     }
 }

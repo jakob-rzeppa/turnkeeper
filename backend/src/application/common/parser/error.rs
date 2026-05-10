@@ -23,4 +23,7 @@ pub enum ParsingError {
     #[error("Unexpected end of file: expected {expected}")] UnexpectedEOF {
         expected: String,
     },
+    #[error("Duplicate player stat: {0}")] DuplicatePlayerStat(String),
+    #[error("Duplicate game stat: {0}")] DuplicateGameStat(String),
+    #[error("Duplicate action: {0}")] DuplicateAction(String),
 }
