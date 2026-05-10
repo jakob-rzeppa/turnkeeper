@@ -1,12 +1,14 @@
 use backend_derive::execute_debug;
 
-use crate::application::plugin::{
-    parser::abstract_syntax_tree::{ Positioned, statement::while_loop::WhileLoopStatement },
-    runtime::{
-        RuntimeEnvironment,
+use crate::{
+    application::game_instance::action_interpreter::{
         error::RuntimeError,
         execute::Executable,
-        memory::values::VariableValue,
+        runtime_env::RuntimeEnvironment,
+    },
+    domain::{
+        common::position::Positioned,
+        game::{ abstract_syntax_tree::statement::WhileLoopStatement, value_objects::data::Value },
     },
 };
 
@@ -19,20 +21,20 @@ impl Executable<()> for WhileLoopStatement {
             let condition_value = condition.execute(env).await?;
 
             match condition_value {
-                VariableValue::Bool(true) => {
-                    env.memory_manager.push_scope();
+                Value::Bool(true) => {
+                    env.push_scope();
                     for stmt in self.body() {
                         match Box::pin(stmt.execute(env)).await {
                             Ok(()) => {}
                             Err(err) => {
-                                env.memory_manager.pop_scope();
+                                env.pop_scope();
                                 return Err(err);
                             }
                         }
                     }
-                    env.memory_manager.pop_scope();
+                    env.pop_scope();
                 }
-                VariableValue::Bool(false) => {
+                Value::Bool(false) => {
                     break;
                 }
                 _ => {

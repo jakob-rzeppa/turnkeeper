@@ -1,7 +1,7 @@
-use crate::application::plugin::runtime::{
-    RuntimeEnvironment,
-    debug::DebugEnvironment,
+use crate::application::game_instance::action_interpreter::{
+    debug_env::DebugEnvironment,
     error::RuntimeError,
+    runtime_env::RuntimeEnvironment,
 };
 
 mod expression;

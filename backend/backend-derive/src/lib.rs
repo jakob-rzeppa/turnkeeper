@@ -175,7 +175,7 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let debug_arg: FnArg =
         parse_quote!(
-        debug_env: &mut crate::application::plugin::runtime::debug::DebugEnvironment
+        debug_env: &mut crate::application::game_instance::action_interpreter::debug_env::DebugEnvironment
     );
 
     let mut new_inputs: Punctuated<FnArg, Token![,]> = Punctuated::new();
@@ -212,9 +212,9 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
         parse_quote!({
         let stepping_over = debug_env
             .wait(
-                crate::application::plugin::parser::abstract_syntax_tree::Positioned::position(self)
+                crate::domain::common::position::Positioned::position(self)
                     .line(),
-                env.get_debug_state(),
+                env.clone(),
             )
             .await;
 

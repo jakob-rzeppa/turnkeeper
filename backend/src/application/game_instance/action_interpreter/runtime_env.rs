@@ -17,4 +17,45 @@ impl RuntimeEnvironment {
             variables: vec![HashMap::new()], // Start with a global scope
         }
     }
+
+    pub fn get_variable(&self, name: &str) -> Option<Value> {
+        for scope in self.variables.iter().rev() {
+            if let Some(value) = scope.get(name) {
+                return Some(value.clone());
+            }
+        }
+        None
+    }
+
+    pub fn declare_variable(&mut self, name: String, value: Value) -> bool {
+        if let Some(scope) = self.variables.last_mut() {
+            if scope.contains_key(&name) {
+                return false; // Variable already declared in the current scope
+            }
+
+            scope.insert(name, value);
+            true
+        } else {
+            unreachable!("There is always a global var scope")
+        }
+    }
+
+    pub fn assign_variable(&mut self, name: String, value: Value) -> bool {
+        for scope in self.variables.iter_mut().rev() {
+            if scope.contains_key(&name) {
+                scope.insert(name, value);
+                return true; // Variable found and assigned
+            }
+        }
+
+        false // Variable not found in any scope
+    }
+
+    pub fn push_scope(&mut self) {
+        self.variables.push(HashMap::new());
+    }
+
+    pub fn pop_scope(&mut self) {
+        self.variables.pop();
+    }
 }

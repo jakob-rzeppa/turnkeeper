@@ -1,12 +1,14 @@
 use backend_derive::execute_debug;
 
-use crate::application::plugin::{
-    parser::abstract_syntax_tree::{ Positioned, statement::if_statement::IfStatement },
-    runtime::{
-        RuntimeEnvironment,
+use crate::{
+    application::game_instance::action_interpreter::{
         error::RuntimeError,
         execute::Executable,
-        memory::values::VariableValue,
+        runtime_env::RuntimeEnvironment,
+    },
+    domain::{
+        common::position::Positioned,
+        game::{ abstract_syntax_tree::statement::IfStatement, value_objects::data::Value },
     },
 };
 
@@ -17,37 +19,37 @@ impl Executable<()> for IfStatement {
         let condition_value = condition.execute(env).await?;
 
         match condition_value {
-            VariableValue::Bool(true) => {
-                env.memory_manager.push_scope();
+            Value::Bool(true) => {
+                env.push_scope();
                 for stmt in self.then_statements() {
                     match Box::pin(stmt.execute(env)).await {
                         Ok(()) => {}
                         Err(err) => {
-                            env.memory_manager.pop_scope();
+                            env.pop_scope();
                             return Err(err);
                         }
                     }
                 }
-                env.memory_manager.pop_scope();
+                env.pop_scope();
             }
-            VariableValue::Bool(false) => {
+            Value::Bool(false) => {
                 for else_if in self.else_if_branches() {
                     let else_if_condition = else_if.condition();
                     let else_if_condition_value = else_if_condition.execute(env).await?;
-                    if let VariableValue::Bool(true) = else_if_condition_value {
-                        env.memory_manager.push_scope();
+                    if let Value::Bool(true) = else_if_condition_value {
+                        env.push_scope();
                         for stmt in else_if.then_statements() {
                             match Box::pin(stmt.execute(env)).await {
                                 Ok(()) => {}
                                 Err(err) => {
-                                    env.memory_manager.pop_scope();
+                                    env.pop_scope();
                                     return Err(err);
                                 }
                             }
                         }
-                        env.memory_manager.pop_scope();
+                        env.pop_scope();
                         return Ok(());
-                    } else if !matches!(else_if_condition_value, VariableValue::Bool(_)) {
+                    } else if !matches!(else_if_condition_value, Value::Bool(_)) {
                         return Err(RuntimeError::TypeMismatch {
                             expected: "boolean in else-if condition".to_string(),
                             found: else_if_condition_value,
@@ -57,17 +59,17 @@ impl Executable<()> for IfStatement {
                 }
 
                 if let Some(else_branch) = self.else_branch() {
-                    env.memory_manager.push_scope();
+                    env.push_scope();
                     for stmt in else_branch.then_statements() {
                         match Box::pin(stmt.execute(env)).await {
                             Ok(()) => {}
                             Err(err) => {
-                                env.memory_manager.pop_scope();
+                                env.pop_scope();
                                 return Err(err);
                             }
                         }
                     }
-                    env.memory_manager.pop_scope();
+                    env.pop_scope();
                 }
             }
             _ => {

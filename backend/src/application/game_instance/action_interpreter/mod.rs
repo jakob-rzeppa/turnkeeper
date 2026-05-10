@@ -1,7 +1,7 @@
 use crate::{
     application::game_instance::action_interpreter::{
         debug_env::DebugEnvironment,
-        error::ActionInterpreterError,
+        error::{ ActionInterpreterError, RuntimeError },
         runtime_env::RuntimeEnvironment,
     },
     domain::game::entities::{ game_instance::GameInstance, weak::action::Action },
@@ -9,7 +9,8 @@ use crate::{
 
 pub mod error;
 pub mod runtime_env;
-pub mod debug_env;
+mod debug_env;
+mod execute;
 
 pub struct ActionExecutor {
     game_instance: GameInstance,
@@ -33,17 +34,4 @@ impl ActionExecutor {
             action,
         })
     }
-}
-
-pub trait Executable<R> {
-    fn execute(
-        &self,
-        env: &mut RuntimeEnvironment
-    ) -> impl std::future::Future<Output = Result<R, ActionInterpreterError>>;
-
-    fn execute_debug(
-        &self,
-        env: &mut RuntimeEnvironment,
-        debug_env: &mut DebugEnvironment
-    ) -> impl std::future::Future<Output = Result<R, ActionInterpreterError>>;
 }

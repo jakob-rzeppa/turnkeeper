@@ -1,8 +1,12 @@
 use backend_derive::execute_debug;
 
-use crate::application::plugin::{
-    parser::abstract_syntax_tree::statement::Statement,
-    runtime::{ RuntimeEnvironment, error::RuntimeError, execute::Executable },
+use crate::{
+    application::game_instance::action_interpreter::{
+        error::RuntimeError,
+        execute::Executable,
+        runtime_env::RuntimeEnvironment,
+    },
+    domain::game::abstract_syntax_tree::statement::Statement,
 };
 
 mod assignment_statement;
