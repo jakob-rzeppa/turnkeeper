@@ -11,10 +11,14 @@ pub struct RuntimeEnvironment {
 }
 
 impl RuntimeEnvironment {
-    pub fn new(game_instance: GameInstance) -> Self {
+    pub fn new(game_instance: GameInstance, params: HashMap<String, Value>) -> Self {
+        // Start with a action scope containing the parameters
+        let mut variables = vec![HashMap::new()];
+        variables[0].extend(params);
+
         Self {
             game_instance,
-            variables: vec![HashMap::new()], // Start with a global scope
+            variables,
         }
     }
 

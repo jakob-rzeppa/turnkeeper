@@ -14,6 +14,7 @@ use crate::{
         },
         game::error::GameApplicationError,
         game_instance::{
+            action_interpreter::ActionExecutor,
             commands::GameSessionCommand,
             contracts::GameInstanceRepositoryContract,
             dto::{ IncomingMessageDto, OutgoingMessageDto },
@@ -286,11 +287,37 @@ impl GameSession {
                                     println!("Debug command received: {}", msg);
                                 }
                                 GameSessionCommand::ExecuteAction { action, params } => {
-                                    unimplemented!(
-                                        "Action execution not implemented yet: {} with params {:?}",
-                                        action,
-                                        params
-                                    );
+                                    let executor = match ActionExecutor::new(game_instance.clone(), &action, sending_user_id) {
+                                        Ok(executor) => executor,
+                                        Err(e) => {
+                                            _ = outgoing_sender
+                                                .send_to(
+                                                    sending_user_id,
+                                                    OutgoingMessageDto::Error(e.to_string()),
+                                                )
+                                                .await;
+                                            continue;
+                                        }
+                                    };
+
+                                    let updated_game_instance = match executor.execute(params).await {
+                                        Ok(instance) => instance,
+                                        Err(e) => {
+                                            _ = outgoing_sender
+                                                .send_to(
+                                                    sending_user_id,
+                                                    OutgoingMessageDto::Error(format!(
+                                                        "Executing action failed: {}",
+                                                        e
+                                                    )),
+                                                )
+                                                .await;
+                                            continue;
+                                        }
+                                    };
+
+                                    // Update the game instance after executing the action successfully
+                                    game_instance = updated_game_instance;
                                 }
                             },
                         }

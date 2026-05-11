@@ -18,10 +18,10 @@ action fight(attackingPowerLevel: int, defendingPowerLevel: int, defendingPlayer
         // You can access a player via game.players[id].<stat>
 
         // You can use the global game.currentPlayer
-        pset currentPlayer.id gold += 200;
+        pset(currentPlayer.name, gold, gold + 200);
 
         // You can add a : Player to the action parameters -> a dropdown in the frontend
-        pset defendingPlayer.id gold -= 200;
+        pset defendingPlayer.name gold -= 200;
     } else {
         // To mutate a game stat use the set keyword.
         set defendingMultiplier = 1.6; // For some reason we change the multiplier here?

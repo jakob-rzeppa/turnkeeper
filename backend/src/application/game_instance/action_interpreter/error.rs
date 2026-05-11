@@ -1,8 +1,19 @@
-use crate::domain::{ common::position::Position, game::value_objects::data::Value };
+use crate::domain::{
+    common::{ identifier::Id, position::Position },
+    game::value_objects::{ data::Value, visibility::ActionVisibility },
+};
 
 #[derive(Debug, thiserror::Error)]
 pub enum ActionInterpreterError {
     #[error("Action not found: {0}")] ActionNotFound(String),
+    #[error(
+        "Permission denied for user: {user_id} with visibility: {visibility}"
+    )] PermissionDenied {
+        user_id: Id,
+        visibility: ActionVisibility,
+    },
+    #[error("Missing parameter: {0}")] MissingParameter(String),
+    #[error("Runtime error: {0}")] RuntimeError(#[from] RuntimeError),
 }
 
 #[derive(Debug, thiserror::Error)]

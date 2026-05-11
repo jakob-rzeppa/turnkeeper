@@ -107,6 +107,8 @@ impl DebugEnvironment {
 
 #[cfg(test)]
 mod tests {
+    use std::collections::HashMap;
+
     use crate::domain::{
         common::identifier::Id,
         game::entities::{ game::Game, game_instance::GameInstance },
@@ -124,7 +126,8 @@ mod tests {
                 vec![],
                 vec![],
                 Game::new("Test Game".to_string(), "".to_string())
-            )
+            ),
+            HashMap::new()
         )
     }
 
