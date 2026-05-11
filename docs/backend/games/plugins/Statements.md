@@ -39,3 +39,13 @@ while (<expression>) {
     {<statement>}
 }
 ```
+
+## Stat Assignment
+
+```
+set <name> = <expression>;
+```
+
+```
+pset <name> for <expression (string) (the player)> = <expression>;
+```

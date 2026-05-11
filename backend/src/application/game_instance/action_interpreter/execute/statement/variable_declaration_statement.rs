@@ -9,7 +9,7 @@ use crate::{
     domain::{
         common::position::Positioned,
         game::{
-            abstract_syntax_tree::statement::VariableDeclarationStatement,
+            abstract_syntax_tree::statement::variable_declaration::VariableDeclarationStatement,
             value_objects::data::{ Datatype, Value },
         },
     },

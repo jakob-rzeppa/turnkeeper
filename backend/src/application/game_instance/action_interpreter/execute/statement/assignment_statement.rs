@@ -8,7 +8,7 @@ use crate::{
     },
     domain::{
         common::position::Positioned,
-        game::abstract_syntax_tree::statement::AssignmentStatement,
+        game::abstract_syntax_tree::statement::assignment::AssignmentStatement,
     },
 };
 

@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use crate::domain::game::{ entities::game_instance::GameInstance, value_objects::data::Value };
+use crate::{
+    application::game_instance::action_interpreter::error::RuntimeError,
+    domain::game::{ entities::game_instance::GameInstance, value_objects::data::Value },
+};
 
 #[derive(Debug, serde::Serialize)]
 pub struct RuntimeEnvironment {
@@ -67,8 +70,23 @@ impl RuntimeEnvironment {
         self.game_instance.get_game_stat_value(name)
     }
 
+    pub fn set_game_stat(&mut self, name: &str, value: Value) -> Result<(), RuntimeError> {
+        self.game_instance.set_game_stat_value(name, value)?;
+        Ok(())
+    }
+
     pub fn get_player_stat(&self, player_name: &str, stat_name: &str) -> Option<Value> {
         self.game_instance.get_player_stat_value(player_name, stat_name)
+    }
+
+    pub fn set_player_stat(
+        &mut self,
+        stat_name: &str,
+        player_name: &str,
+        value: Value
+    ) -> Result<(), RuntimeError> {
+        self.game_instance.set_player_stat_value(player_name, stat_name, value)?;
+        Ok(())
     }
 
     pub fn projection(&self) -> RuntimeEnvironment {

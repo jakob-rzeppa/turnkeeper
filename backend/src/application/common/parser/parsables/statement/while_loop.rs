@@ -7,7 +7,10 @@ use crate::{
         parsables::statement::Statement,
     },
     domain::{
-        game::abstract_syntax_tree::{ statement::WhileLoopStatement, expression::Expression },
+        game::abstract_syntax_tree::{
+            statement::while_loop::WhileLoopStatement,
+            expression::Expression,
+        },
     },
 };
 
@@ -48,7 +51,7 @@ mod tests {
                         atom::ExpressionAtom,
                         binary::{ BinaryExpression, BinaryOperator },
                     },
-                    statement::AssignmentStatement,
+                    statement::{ assignment::AssignmentStatement, while_loop::WhileLoopStatement },
                 },
                 value_objects::data::Value,
             },

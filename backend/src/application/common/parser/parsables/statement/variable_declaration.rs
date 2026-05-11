@@ -6,7 +6,10 @@ use crate::{
         parsable::Parsable,
     },
     domain::game::{
-        abstract_syntax_tree::{ expression::Expression, statement::VariableDeclarationStatement },
+        abstract_syntax_tree::{
+            expression::Expression,
+            statement::variable_declaration::VariableDeclarationStatement,
+        },
         value_objects::data::Datatype,
     },
 };

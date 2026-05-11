@@ -8,7 +8,10 @@ use crate::{
     },
     domain::{
         common::position::Positioned,
-        game::{ abstract_syntax_tree::statement::IfStatement, value_objects::data::Value },
+        game::{
+            abstract_syntax_tree::statement::if_statement::IfStatement,
+            value_objects::data::Value,
+        },
     },
 };
 

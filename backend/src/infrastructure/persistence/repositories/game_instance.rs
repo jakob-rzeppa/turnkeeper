@@ -190,7 +190,7 @@ mod tests {
         domain::{
             common::{date_time::DateTime, identifier::Id, position::Position},
             game::{
-                abstract_syntax_tree::{expression::{Expression, atom::ExpressionAtom}, statement::{Statement, VariableDeclarationStatement}}, entities::{
+                abstract_syntax_tree::{expression::{Expression, atom::ExpressionAtom}, statement::{Statement, variable_declaration::VariableDeclarationStatement}}, entities::{
                     game::Game,
                     game_instance::GameInstance,
                     weak::{

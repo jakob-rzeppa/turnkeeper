@@ -36,7 +36,10 @@ pub enum TokenVariant {
     If,
     Else,
     While,
+    For,
     Let,
+    Set,
+    Pset,
 
     BoolLiteral(bool),
 
@@ -108,6 +111,9 @@ impl TryFrom<Lexeme> for Token {
                     "else" => TokenVariant::Else,
                     "while" => TokenVariant::While,
                     "let" => TokenVariant::Let,
+                    "set" => TokenVariant::Set,
+                    "pset" => TokenVariant::Pset,
+                    "for" => TokenVariant::For,
                     _ => TokenVariant::Identifier(text),
                 }
             LexemeVariant::Symbol(symbol) =>
@@ -241,6 +247,9 @@ impl Display for TokenVariant {
             TokenVariant::Else => write!(f, "else"),
             TokenVariant::While => write!(f, "while"),
             TokenVariant::Let => write!(f, "let"),
+            TokenVariant::Set => write!(f, "set"),
+            TokenVariant::Pset => write!(f, "pset"),
+            TokenVariant::For => write!(f, "for"),
         }
     }
 }

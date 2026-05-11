@@ -8,7 +8,10 @@ use crate::{
     },
     domain::{
         common::position::Positioned,
-        game::{ abstract_syntax_tree::statement::WhileLoopStatement, value_objects::data::Value },
+        game::{
+            abstract_syntax_tree::statement::while_loop::WhileLoopStatement,
+            value_objects::data::Value,
+        },
     },
 };
 

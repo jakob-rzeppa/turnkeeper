@@ -1,6 +1,9 @@
 use crate::domain::{
     common::{ identifier::Id, position::Position },
-    game::value_objects::{ data::Value, visibility::ActionVisibility },
+    game::{
+        error::GameInstanceError,
+        value_objects::{ data::Value, visibility::ActionVisibility },
+    },
 };
 
 #[derive(Debug, thiserror::Error)]
@@ -47,4 +50,5 @@ pub enum RuntimeError {
         name: String,
         pos: Position,
     },
+    #[error("Game instance error: {0}")] GameInstanceError(#[from] GameInstanceError),
 }

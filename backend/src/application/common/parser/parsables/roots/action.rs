@@ -335,7 +335,7 @@ mod tests {
             game::{
                 abstract_syntax_tree::{
                     expression::{ Expression, atom::ExpressionAtom },
-                    statement::VariableDeclarationStatement,
+                    statement::variable_declaration::VariableDeclarationStatement,
                 },
                 value_objects::data::Value,
             },

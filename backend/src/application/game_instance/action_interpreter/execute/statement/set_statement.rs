@@ -6,13 +6,16 @@ use crate::{
         execute::Executable,
         runtime_env::RuntimeEnvironment,
     },
-    domain::game::abstract_syntax_tree::statement::expression_statement::ExpressionStatement,
+    domain::game::abstract_syntax_tree::statement::set_statement::SetStatement,
 };
 
-impl Executable<()> for ExpressionStatement {
+impl Executable<()> for SetStatement {
     #[execute_debug]
     async fn execute(&self, env: &mut RuntimeEnvironment) -> Result<(), RuntimeError> {
-        _ = self.expression().execute(env).await?;
+        let value = self.value().execute(env).await?;
+
+        env.set_game_stat(self.stat(), value)?;
+
         Ok(())
     }
 }

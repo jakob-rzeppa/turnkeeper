@@ -8,7 +8,11 @@ use crate::{
     },
     domain::{
         game::abstract_syntax_tree::{
-            statement::{ IfStatement, ElseBranch, ElseIfBranch },
+            statement::{
+                if_statement::IfStatement,
+                else_branch::ElseBranch,
+                else_if_branch::ElseIfBranch,
+            },
             expression::Expression,
         },
     },
@@ -117,7 +121,7 @@ mod tests {
                         binary::{ BinaryExpression, BinaryOperator },
                         unary::{ UnaryExpression, UnaryOperator },
                     },
-                    statement::AssignmentStatement,
+                    statement::assignment::AssignmentStatement,
                 },
                 value_objects::data::Value,
             },
