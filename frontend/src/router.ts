@@ -9,7 +9,7 @@ const routes = [
     {
         path: '/games/:id/editor',
         name: 'game-editor',
-        component: () => import('./views/GameEditorView.vue'),
+        component: () => import('./editor/GameEditorView.vue'),
     },
     {
         path: '/games/:gameId/instances/:gameInstanceId/session',
