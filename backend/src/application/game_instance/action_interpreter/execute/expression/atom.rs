@@ -22,6 +22,18 @@ impl Executable<Value> for ExpressionAtom {
                     name: var.clone(),
                     pos: *pos,
                 }),
+            ExpressionAtom::FunctionCall { name, args, pos: _ } => {
+                // Evaluate arguments
+                let mut evaluated_args = Vec::new();
+                for arg in args {
+                    let evaluated_arg = arg.execute(env).await?;
+                    evaluated_args.push(evaluated_arg);
+                }
+
+                // Placeholder
+                println!("Executing function call: {} with args: {:?}", name, evaluated_args);
+                Ok(Value::Null) // Placeholder return value
+            }
         }
     }
 }

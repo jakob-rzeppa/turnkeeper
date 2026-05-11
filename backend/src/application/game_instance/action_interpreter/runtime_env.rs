@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use crate::domain::game::{ entities::game_instance::GameInstance, value_objects::data::Value };
 
-#[derive(Debug, Clone, serde::Serialize)]
+#[derive(Debug, serde::Serialize)]
 pub struct RuntimeEnvironment {
     /// The game instance the action is performed on
     game_instance: GameInstance,
@@ -61,5 +61,16 @@ impl RuntimeEnvironment {
 
     pub fn pop_scope(&mut self) {
         self.variables.pop();
+    }
+
+    pub fn projection(&self) -> RuntimeEnvironment {
+        RuntimeEnvironment {
+            game_instance: self.game_instance.clone(),
+            variables: self.variables.clone(),
+        }
+    }
+
+    pub fn extract_updated_game_instance(self) -> GameInstance {
+        self.game_instance
     }
 }

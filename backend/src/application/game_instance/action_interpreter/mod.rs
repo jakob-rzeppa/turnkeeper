@@ -74,12 +74,12 @@ impl ActionExecutor {
             }
         }
 
-        let runtime = RuntimeEnvironment::new(self.game_instance.clone(), params);
+        let mut runtime = RuntimeEnvironment::new(self.game_instance, params);
 
         for statement in self.action.execution_block() {
-            statement.execute(&mut runtime.clone()).await?;
+            statement.execute(&mut runtime).await?;
         }
 
-        Ok(self.game_instance)
+        Ok(runtime.extract_updated_game_instance())
     }
 }

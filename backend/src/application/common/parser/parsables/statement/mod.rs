@@ -30,7 +30,8 @@ impl Parsable for Statement {
         VariableDeclarationStatement::is_next(ts) ||
             AssignmentStatement::is_next(ts) ||
             IfStatement::is_next(ts) ||
-            WhileLoopStatement::is_next(ts)
+            WhileLoopStatement::is_next(ts) ||
+            ExpressionStatement::is_next(ts)
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {

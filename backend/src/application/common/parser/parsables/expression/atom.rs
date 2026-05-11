@@ -2,13 +2,13 @@ use crate::{
     application::common::parser::{
         error::ParsingError,
         lexer::{ token::{ Token, TokenVariant }, token_stream::TokenStream },
-        macros::{ get_pos, is_token },
+        macros::{ expect_token, get_pos, is_token },
         parsable::Parsable,
     },
     domain::{
         common::position::{ Position, Positioned },
         game::{
-            abstract_syntax_tree::expression::atom::ExpressionAtom,
+            abstract_syntax_tree::expression::{ Expression, atom::ExpressionAtom },
             value_objects::data::Value,
         },
     },
@@ -25,10 +25,33 @@ impl Parsable for ExpressionAtom {
         if Value::is_next(ts) {
             Ok(ExpressionAtom::Literal(Value::parse(ts, source_code)?, pos))
         } else if is_token!(ts, TokenVariant::Identifier(_)) {
-            match ts.next() {
-                Some(Token { variant: TokenVariant::Identifier(name), .. }) =>
-                    Ok(ExpressionAtom::Variable(name.clone(), pos)),
+            let name = match ts.next() {
+                Some(Token { variant: TokenVariant::Identifier(name), .. }) => name.clone(),
                 _ => unreachable!("Token wasn't a Identifier after checking it was one."),
+            };
+
+            if is_token!(ts, TokenVariant::OpenParen) {
+                // Function Call
+                let mut args = Vec::new();
+
+                ts.next(); // Consume '('
+                while Expression::is_next(ts) {
+                    args.push(Expression::parse(ts, source_code)?); // Parse arguments
+                    if is_token!(ts, TokenVariant::Comma) {
+                        ts.next(); // Consume ','
+                    } else {
+                        break;
+                    }
+                }
+                expect_token!(
+                    ts,
+                    TokenVariant::CloseParen,
+                    "Expected closing parenthesis for function call."
+                ); // Expect ')'
+
+                Ok(ExpressionAtom::FunctionCall { name, args, pos })
+            } else {
+                Ok(ExpressionAtom::Variable(name, pos))
             }
         } else {
             Err(ParsingError::SyntaxError {
@@ -44,6 +67,7 @@ impl Positioned for ExpressionAtom {
         match self {
             ExpressionAtom::Literal(_, pos) => *pos,
             ExpressionAtom::Variable(_, pos) => *pos,
+            ExpressionAtom::FunctionCall { pos, .. } => *pos,
         }
     }
 }

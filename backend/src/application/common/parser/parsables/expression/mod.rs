@@ -24,7 +24,9 @@ pub mod unary;
 
 impl Parsable for Expression {
     fn is_next(_ts: &TokenStream) -> bool {
-        true
+        UnaryExpression::is_next(_ts) ||
+            ExpressionAtom::is_next(_ts) ||
+            is_token!(_ts, TokenVariant::OpenParen)
     }
 
     fn parse(ts: &mut TokenStream, source_code: &str) -> Result<Self, ParsingError> {

@@ -214,7 +214,7 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
             .wait(
                 crate::domain::common::position::Positioned::position(self)
                     .line(),
-                env.clone(),
+                env.projection(),
             )
             .await;
 

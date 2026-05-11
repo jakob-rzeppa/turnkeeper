@@ -41,6 +41,13 @@ impl From<Value> for StatValueProjection {
                     str_value: None,
                     bool_value: Some(v),
                 },
+            Value::Null =>
+                StatValueProjection {
+                    int_value: None,
+                    float_value: None,
+                    str_value: None,
+                    bool_value: None,
+                },
         }
     }
 }

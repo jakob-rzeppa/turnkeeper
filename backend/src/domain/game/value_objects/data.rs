@@ -8,6 +8,7 @@ pub enum Value {
     Float(f64),
     Bool(bool),
     String(String),
+    Null,
 }
 
 impl Value {
@@ -17,6 +18,7 @@ impl Value {
             Value::Float(_) => Datatype::Float,
             Value::Bool(_) => Datatype::Bool,
             Value::String(_) => Datatype::String,
+            Value::Null => Datatype::Null,
         }
     }
 
@@ -33,6 +35,7 @@ impl Display for Value {
             Value::Float(fl) => write!(f, "float({})", fl),
             Value::Bool(b) => write!(f, "bool({})", b),
             Value::String(s) => write!(f, "string({})", s),
+            Value::Null => write!(f, "null"),
         }
     }
 }
@@ -63,6 +66,8 @@ impl FromStr for Value {
         } else if s.starts_with("string(") && s.ends_with(")") {
             let inner = &s[7..s.len() - 1];
             Ok(Value::String(inner.to_string()))
+        } else if s == "null" {
+            Ok(Value::Null)
         } else {
             Err(format!("Invalid VariableValue string: {}", s))
         }
@@ -75,6 +80,7 @@ pub enum Datatype {
     Float,
     Bool,
     String,
+    Null,
 }
 
 #[serialize_use_display]
@@ -85,6 +91,7 @@ impl Display for Datatype {
             Datatype::Float => write!(f, "float"),
             Datatype::Bool => write!(f, "bool"),
             Datatype::String => write!(f, "string"),
+            Datatype::Null => write!(f, "null"),
         }
     }
 }
@@ -99,6 +106,7 @@ impl FromStr for Datatype {
             "float" => Ok(Datatype::Float),
             "bool" => Ok(Datatype::Bool),
             "string" => Ok(Datatype::String),
+            "null" => Ok(Datatype::Null),
             _ => Err(format!("Invalid VariableType string: {}", s)),
         }
     }
