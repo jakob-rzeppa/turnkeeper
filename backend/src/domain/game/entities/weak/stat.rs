@@ -211,6 +211,10 @@ impl PlayerStat {
         Ok(())
     }
 
+    pub fn get_value_for_player(&self, player_name: &str) -> Option<&Value> {
+        self.values.get(player_name)
+    }
+
     pub fn get_metadata_projection(&self) -> PlayerStatMetadataProjection {
         PlayerStatMetadataProjection {
             name: self.name.clone(),

@@ -18,6 +18,13 @@ impl GameInstance {
         }
     }
 
+    pub fn get_game_stat_value(&self, stat_name: &str) -> Option<Value> {
+        self.game_stats
+            .iter()
+            .find(|s| s.name() == stat_name)
+            .map(|s| s.value().clone())
+    }
+
     pub fn set_player_stat_value(
         &mut self,
         player_name: &str,
@@ -29,6 +36,13 @@ impl GameInstance {
         } else {
             Err(GameInstanceError::PlayerStatNotFound(stat_name.to_string()))
         }
+    }
+
+    pub fn get_player_stat_value(&self, player_name: &str, stat_name: &str) -> Option<Value> {
+        self.player_stats
+            .iter()
+            .find(|s| s.name() == stat_name)
+            .and_then(|s| s.get_value_for_player(player_name).cloned())
     }
 
     pub fn advance_turn(&mut self) {

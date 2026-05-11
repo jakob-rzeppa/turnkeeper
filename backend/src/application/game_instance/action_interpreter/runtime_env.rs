@@ -63,6 +63,14 @@ impl RuntimeEnvironment {
         self.variables.pop();
     }
 
+    pub fn get_game_stat(&self, name: &str) -> Option<Value> {
+        self.game_instance.get_game_stat_value(name)
+    }
+
+    pub fn get_player_stat(&self, player_name: &str, stat_name: &str) -> Option<Value> {
+        self.game_instance.get_player_stat_value(player_name, stat_name)
+    }
+
     pub fn projection(&self) -> RuntimeEnvironment {
         RuntimeEnvironment {
             game_instance: self.game_instance.clone(),

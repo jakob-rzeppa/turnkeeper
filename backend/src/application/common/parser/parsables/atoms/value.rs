@@ -2,7 +2,7 @@ use crate::{
     application::common::parser::{
         error::ParsingError,
         lexer::{ token::TokenVariant, token_stream::TokenStream },
-        macros::{ get_pos, is_token },
+        macros::is_token,
         parsable::Parsable,
     },
     domain::game::value_objects::data::Value,
