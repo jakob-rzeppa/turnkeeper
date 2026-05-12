@@ -1,3 +1,4 @@
+use crate::application::common::parser::error::ParsingErrorProjection;
 use crate::application::game::request_handlers::check_source_code::CheckSourceCodeResponse;
 use crate::application::game::request_handlers::create::CreateGameRequest;
 use crate::application::game::request_handlers::delete::DeleteGameRequest;
@@ -161,7 +162,7 @@ struct GamesCheckSourceCodeValidResponse {
 #[derive(Serialize, JsonResponse, Debug)]
 struct GamesCheckSourceCodeInvalidResponse {
     is_valid: bool,
-    errors: Vec<String>,
+    errors: Vec<ParsingErrorProjection>,
 }
 
 /// GET /games/{game_id}/check
@@ -194,7 +195,7 @@ pub async fn games_check_source_code(
                     is_valid: false,
                     errors: errors
                         .into_iter()
-                        .map(|e| e.to_string())
+                        .map(|e| e.projection())
                         .collect(),
                 }).into_response()
             ),

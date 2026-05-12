@@ -23,7 +23,64 @@ pub enum ParsingError {
     #[error("Unexpected end of file: expected {expected}")] UnexpectedEOF {
         expected: String,
     },
-    #[error("Duplicate player stat: {0}")] DuplicatePlayerStat(String),
-    #[error("Duplicate game stat: {0}")] DuplicateGameStat(String),
-    #[error("Duplicate action: {0}")] DuplicateAction(String),
+    #[error("Duplicate player stat {name} at position {pos}")] DuplicatePlayerStat {
+        name: String,
+        pos: Position,
+    },
+    #[error("Duplicate game stat {name} at position {pos}")] DuplicateGameStat {
+        name: String,
+        pos: Position,
+    },
+    #[error("Duplicate action {name} at position {pos}")] DuplicateAction {
+        name: String,
+        pos: Position,
+    },
+}
+
+impl ParsingError {
+    pub fn projection(&self) -> ParsingErrorProjection {
+        match self {
+            ParsingError::InvalidToken { pos, message } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+            ParsingError::SyntaxError { message, pos } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+            ParsingError::UnexpectedToken { expected, found, pos } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+            ParsingError::UnexpectedEOF { expected } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: "EOF".to_string(),
+                },
+            ParsingError::DuplicatePlayerStat { name, pos } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+            ParsingError::DuplicateGameStat { name, pos } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+            ParsingError::DuplicateAction { name, pos } =>
+                ParsingErrorProjection {
+                    message: self.to_string(),
+                    pos: pos.to_string(),
+                },
+        }
+    }
+}
+
+#[derive(Debug, Clone, PartialEq, serde::Serialize)]
+pub struct ParsingErrorProjection {
+    pub message: String,
+    pub pos: String, // (line, column) or EOF
 }

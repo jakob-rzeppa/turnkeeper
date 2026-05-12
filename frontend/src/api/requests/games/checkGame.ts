@@ -8,7 +8,10 @@ export type CheckGamesResponse =
       }
     | {
           is_valid: false;
-          errors: string[];
+          errors: {
+              message: string;
+              pos: string;
+          }[];
       };
 
 const isValidResponse = (res: unknown): res is CheckGamesResponse => {
@@ -32,7 +35,15 @@ const isValidResponse = (res: unknown): res is CheckGamesResponse => {
         if (!Array.isArray(obj.errors)) {
             return false;
         }
-        if (!obj.errors.every(error => typeof error === 'string')) {
+        if (
+            !obj.errors.every(
+                error =>
+                    typeof error === 'object' &&
+                    error !== null &&
+                    'message' in error &&
+                    'pos' in error
+            )
+        ) {
             return false;
         }
         return true;

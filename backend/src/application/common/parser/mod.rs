@@ -66,19 +66,28 @@ impl GameParserContract for GameParser {
             if PlayerStat::is_next(&token_stream) {
                 let player_stat = PlayerStat::parse(&mut token_stream, source_code)?;
                 if player_stats.iter().any(|s| s.name() == player_stat.name()) {
-                    return Err(ParsingError::DuplicatePlayerStat(player_stat.name().to_string()));
+                    return Err(ParsingError::DuplicatePlayerStat {
+                        name: player_stat.name().to_string(),
+                        pos: player_stat.pos().clone(),
+                    });
                 }
                 player_stats.push(player_stat);
             } else if GameStat::is_next(&token_stream) {
                 let game_stat = GameStat::parse(&mut token_stream, source_code)?;
                 if game_stats.iter().any(|s| s.name() == game_stat.name()) {
-                    return Err(ParsingError::DuplicateGameStat(game_stat.name().to_string()));
+                    return Err(ParsingError::DuplicateGameStat {
+                        name: game_stat.name().to_string(),
+                        pos: game_stat.pos().clone(),
+                    });
                 }
                 game_stats.push(game_stat);
             } else if Action::is_next(&token_stream) {
                 let action = Action::parse(&mut token_stream, source_code)?;
                 if actions.iter().any(|a| a.name() == action.name()) {
-                    return Err(ParsingError::DuplicateAction(action.name().to_string()));
+                    return Err(ParsingError::DuplicateAction {
+                        name: action.name().to_string(),
+                        pos: action.pos().clone(),
+                    });
                 }
                 actions.push(action);
             } else {
