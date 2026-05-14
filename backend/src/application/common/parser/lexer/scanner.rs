@@ -45,6 +45,8 @@ enum ScannerTransverserState {
 
     Symbol,
     DoubleSymbol,
+
+    Comment,
 }
 
 impl ScannerTransverser {
@@ -157,9 +159,21 @@ impl ScannerTransverser {
     }
 
     fn step_double_symbol(&mut self, char: char) -> Option<LexemeVariant> {
+        // Check for comment start (e.g., "//") and transition to comment state if detected
+        if self.buffer == "//" {
+            self.state = ScannerTransverserState::Comment;
+            return None;
+        }
+
         let lexeme = LexemeVariant::DoubleSymbol(self.buffer.clone());
         self.step_next_lexeme(char);
         Some(lexeme)
+    }
+
+    fn step_comment(&mut self, _char: char) -> Option<LexemeVariant> {
+        // Comments continue until the end of the line (newline character)
+        // This is checked in the `step` method, so we just ignore characters here
+        None
     }
 
     fn step(&mut self, char: char) -> Option<Lexeme> {
@@ -182,9 +196,15 @@ impl ScannerTransverser {
                 }
                 ScannerTransverserState::Symbol => Some(LexemeVariant::Symbol(self.buffer.clone())),
                 ScannerTransverserState::DoubleSymbol => {
-                    Some(LexemeVariant::DoubleSymbol(self.buffer.clone()))
+                    if self.buffer == "//" {
+                        // If we ended on a comment with no content, we return None
+                        None
+                    } else {
+                        Some(LexemeVariant::DoubleSymbol(self.buffer.clone()))
+                    }
                 }
-                _ => None,
+                ScannerTransverserState::Comment => None, // Comments are ignored in final lexemes
+                ScannerTransverserState::None => None,
             };
 
             // Reset for next line (column stays at next position for newline)
@@ -204,6 +224,7 @@ impl ScannerTransverser {
                 ScannerTransverserState::ClosedQuote => self.step_closed_quote(char),
                 ScannerTransverserState::Symbol => self.step_symbol(char),
                 ScannerTransverserState::DoubleSymbol => self.step_double_symbol(char),
+                ScannerTransverserState::Comment => self.step_comment(char),
             }
         };
 
@@ -236,7 +257,8 @@ impl ScannerTransverser {
             ScannerTransverserState::DoubleSymbol => {
                 Some(LexemeVariant::DoubleSymbol(self.buffer.clone()))
             }
-            _ => None,
+            ScannerTransverserState::Comment => None, // Comments are ignored in final lexemes
+            ScannerTransverserState::None => None,
         };
 
         Some(

@@ -56,6 +56,7 @@ impl Lexeme {
             "^=",
             "=>",
             "->",
+            "//",
         ];
         let candidate = format!("{}{}", first, second);
         double_symbols.contains(&candidate.as_str())
