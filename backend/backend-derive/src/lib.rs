@@ -175,7 +175,7 @@ pub fn execute_debug(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
     let debug_arg: FnArg =
         parse_quote!(
-        debug_env: &mut crate::application::game_instance::action_interpreter::debug_env::DebugEnvironment
+        debug_env: &mut crate::application::action_interpreter::debug_env::DebugEnvironment
     );
 
     let mut new_inputs: Punctuated<FnArg, Token![,]> = Punctuated::new();

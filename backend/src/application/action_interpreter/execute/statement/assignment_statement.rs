@@ -1,7 +1,7 @@
 use backend_derive::execute_debug;
 
 use crate::{
-    application::game_instance::action_interpreter::{
+    application::action_interpreter::{
         error::RuntimeError,
         execute::Executable,
         runtime_env::RuntimeEnvironment,

@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    application::game_instance::action_interpreter::error::RuntimeError,
+    application::action_interpreter::error::RuntimeError,
     domain::game::{ entities::game_instance::GameInstance, value_objects::data::Value },
 };
 

@@ -2,7 +2,7 @@ use tokio::sync::oneshot;
 
 use crate::application::{
     common::channels::mpsc::{ MpscChannel, MpscChannelReceiver, MpscChannelSender },
-    game_instance::action_interpreter::runtime_env::RuntimeEnvironment,
+    action_interpreter::runtime_env::RuntimeEnvironment,
 };
 
 #[derive(Debug)]

@@ -1,4 +1,4 @@
-use crate::application::game_instance::action_interpreter::{
+use crate::application::action_interpreter::{
     debug_env::DebugEnvironment,
     error::RuntimeError,
     runtime_env::RuntimeEnvironment,

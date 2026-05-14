@@ -4,6 +4,7 @@ use tokio::task::JoinHandle;
 
 use crate::{
     application::{
+        action_interpreter::ActionExecutor,
         common::channels::{
             mpsc::{ MpscChannel, MpscChannelSender },
             targeted_broadcast::{
@@ -14,7 +15,6 @@ use crate::{
         },
         game::error::GameApplicationError,
         game_instance::{
-            action_interpreter::ActionExecutor,
             commands::GameSessionCommand,
             contracts::GameInstanceRepositoryContract,
             dto::{ IncomingMessageDto, OutgoingMessageDto },

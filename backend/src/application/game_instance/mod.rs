@@ -1,4 +1,3 @@
-pub mod action_interpreter;
 pub mod commands;
 pub mod contracts;
 pub mod dto;

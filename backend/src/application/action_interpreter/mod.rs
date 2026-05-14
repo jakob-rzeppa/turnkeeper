@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
 use crate::{
-    application::game_instance::action_interpreter::{
+    application::action_interpreter::{
         error::ActionInterpreterError,
         execute::Executable,
         runtime_env::RuntimeEnvironment,
