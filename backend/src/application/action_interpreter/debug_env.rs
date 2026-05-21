@@ -1,8 +1,8 @@
 use tokio::sync::oneshot;
 
 use crate::application::{
+    action_interpreter::runtime_env::{ RuntimeEnvironmentProjection },
     common::channels::mpsc::{ MpscChannel, MpscChannelReceiver, MpscChannelSender },
-    action_interpreter::runtime_env::RuntimeEnvironment,
 };
 
 #[derive(Debug)]
@@ -17,7 +17,7 @@ pub struct DebugEnvironment {
     breakpoints: Vec<usize>,
 
     breakpoint_channel_sender: MpscChannelSender<
-        (RuntimeEnvironment, oneshot::Sender<DebugCommand>)
+        (RuntimeEnvironmentProjection, oneshot::Sender<DebugCommand>)
     >,
 
     is_halted: bool,
@@ -28,7 +28,10 @@ pub struct DebugEnvironment {
 impl DebugEnvironment {
     pub fn new(
         breakpoints: Vec<usize>
-    ) -> (Self, MpscChannelReceiver<(RuntimeEnvironment, oneshot::Sender<DebugCommand>)>) {
+    ) -> (
+        Self,
+        MpscChannelReceiver<(RuntimeEnvironmentProjection, oneshot::Sender<DebugCommand>)>,
+    ) {
         let (breakpoint_channel_sender, breakpoint_channel_receiver) = MpscChannel::new();
 
         (
@@ -46,7 +49,7 @@ impl DebugEnvironment {
     /// Waits at a breakpoint if the current line has a breakpoint set.
     ///
     /// Returns `true` if execution should call finish_step_over after the current execution unit to reset stepping over state, `false` otherwise.
-    pub async fn wait(&mut self, current_line: usize, state: RuntimeEnvironment) -> bool {
+    pub async fn wait(&mut self, current_line: usize, state: RuntimeEnvironmentProjection) -> bool {
         // If the user has disconnected, we don't want to halt execution at breakpoints anymore -> just continue running until the end of the program
         if !self.user_is_connected {
             return false;
@@ -116,9 +119,9 @@ mod tests {
 
     use super::*;
 
-    fn empty_debug_state() -> RuntimeEnvironment {
-        RuntimeEnvironment::new(
-            GameInstance::new(
+    fn empty_debug_state() -> RuntimeEnvironmentProjection {
+        RuntimeEnvironmentProjection {
+            game_instance: GameInstance::new(
                 "Test Game".to_string(),
                 Id::new(),
                 vec![],
@@ -127,8 +130,8 @@ mod tests {
                 vec![],
                 Game::new("Test Game".to_string(), "".to_string())
             ),
-            HashMap::new()
-        )
+            variables: vec![HashMap::new()],
+        }
     }
 
     #[tokio::test]

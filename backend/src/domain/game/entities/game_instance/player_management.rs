@@ -13,7 +13,7 @@ impl GameInstance {
     ///
     /// - The `name` must be unique among all players in the game.
     /// - The `player` must be added to the player stats.
-    pub fn add_player(&mut self) -> Result<(), GameInstanceError> {
+    pub fn add_player(&mut self) -> Result<String, GameInstanceError> {
         let player = Player::new();
         let player_name = player.name().to_string();
         self.players.push(player);
@@ -22,7 +22,7 @@ impl GameInstance {
             s.initialize_value_for_player(&player_name);
         });
 
-        Ok(())
+        Ok(player_name)
     }
 
     pub fn change_player_name(

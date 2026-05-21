@@ -4,7 +4,7 @@ use crate::{
     application::action_interpreter::{
         error::ActionInterpreterError,
         execute::Executable,
-        runtime_env::RuntimeEnvironment,
+        runtime_env::{ RuntimeEnvironment, RuntimeEnvironmentProjection },
     },
     domain::{
         common::identifier::Id,
@@ -17,7 +17,7 @@ use crate::{
 
 pub mod error;
 pub mod runtime_env;
-mod debug_env;
+pub mod debug_env;
 mod execute;
 
 pub struct ActionExecutor {
@@ -81,5 +81,25 @@ impl ActionExecutor {
         }
 
         Ok(runtime.extract_updated_game_instance())
+    }
+
+    pub async fn execute_debug(
+        self,
+        params: HashMap<String, Value>,
+        debug_env: &mut debug_env::DebugEnvironment
+    ) -> Result<RuntimeEnvironmentProjection, ActionInterpreterError> {
+        for param in self.action.parameters() {
+            if !params.contains_key(param.name()) {
+                return Err(ActionInterpreterError::MissingParameter(param.name().to_string()));
+            }
+        }
+
+        let mut runtime = RuntimeEnvironment::new(self.game_instance, params);
+
+        for statement in self.action.execution_block() {
+            statement.execute_debug(&mut runtime, debug_env).await?;
+        }
+
+        Ok(runtime.projection())
     }
 }

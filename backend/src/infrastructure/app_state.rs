@@ -34,6 +34,7 @@ pub struct AppState {
     user_request_handler: UserRequestHandler<SqliteUserRepository, JwtGenerator, JwtValidator>,
     ws_ticket_manager: WsTicketManager,
     game_session_manager: GameSessionManager,
+    game_repository: Arc<SqliteGameRepository>,
 }
 
 impl AppState {
@@ -55,7 +56,7 @@ impl AppState {
             ),
             game_instance_request_handler: GameInstanceRequestHandler::new(
                 sqlite_game_instance_repository.clone(),
-                sqlite_game_repository,
+                sqlite_game_repository.clone(),
                 game_root_parser
             ),
             user_request_handler: UserRequestHandler::new(
@@ -65,6 +66,7 @@ impl AppState {
             ),
             ws_ticket_manager: WsTicketManager::new(),
             game_session_manager: GameSessionManager::new(sqlite_game_instance_repository),
+            game_repository: sqlite_game_repository,
         }
     }
 
@@ -88,5 +90,9 @@ impl AppState {
 
     pub fn game_session_manager(&self) -> GameSessionManager {
         self.game_session_manager.clone()
+    }
+
+    pub fn game_repository(&self) -> Arc<SqliteGameRepository> {
+        self.game_repository.clone()
     }
 }

@@ -15,7 +15,7 @@ pub struct UserWsQueryParams {
 
 /// Handles WebSocket upgrade requests.
 ///
-/// Requires a valid `?ticket=...` query parameter obtained from `POST /user/ws/ticket/{game_id}`.
+/// Requires a valid `?ticket=...` query parameter obtained from `POST /ws/ticket/{game_id}`.
 #[axum::debug_handler]
 pub async fn game_session_websocket_handler(
     State(state): State<AppState>,

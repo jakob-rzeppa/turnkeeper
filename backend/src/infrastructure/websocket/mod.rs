@@ -5,6 +5,7 @@
 mod game_session;
 pub mod game_session_manager;
 mod ticket;
+mod debugger_session;
 
 use crate::AppState;
 use crate::infrastructure::auth::middleware::auth_middleware;

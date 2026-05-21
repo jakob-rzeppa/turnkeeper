@@ -6,7 +6,7 @@ use crate::domain::{
     },
 };
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum ActionInterpreterError {
     #[error("Action not found: {0}")] ActionNotFound(String),
     #[error(
@@ -19,7 +19,7 @@ pub enum ActionInterpreterError {
     #[error("Runtime error: {0}")] RuntimeError(#[from] RuntimeError),
 }
 
-#[derive(Debug, thiserror::Error)]
+#[derive(Debug, Clone, thiserror::Error)]
 pub enum RuntimeError {
     #[error("Undefined unary operation: {operator} {operand} at {pos}")] UndefinedUnaryOperation {
         operator: String,

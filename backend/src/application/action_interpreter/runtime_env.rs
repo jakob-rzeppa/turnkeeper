@@ -89,8 +89,8 @@ impl RuntimeEnvironment {
         Ok(())
     }
 
-    pub fn projection(&self) -> RuntimeEnvironment {
-        RuntimeEnvironment {
+    pub fn projection(&self) -> RuntimeEnvironmentProjection {
+        RuntimeEnvironmentProjection {
             game_instance: self.game_instance.clone(),
             variables: self.variables.clone(),
         }
@@ -99,4 +99,12 @@ impl RuntimeEnvironment {
     pub fn extract_updated_game_instance(self) -> GameInstance {
         self.game_instance
     }
+}
+
+#[derive(Debug, Clone, serde::Serialize)]
+pub struct RuntimeEnvironmentProjection {
+    /// The game instance the action is performed on
+    pub game_instance: GameInstance,
+    /// Stack of variable scopes, with the last element being the current scope
+    pub variables: Vec<HashMap<String, Value>>,
 }
